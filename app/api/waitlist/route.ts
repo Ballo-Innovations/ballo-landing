@@ -1,29 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { adminBackendFetch, getPublicBackendBaseUrl } from '@/lib/serverBackendApi'
-
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    const limit = parseInt(searchParams.get('limit') || '100', 10)
-    const res = await adminBackendFetch(`Backoffice/waitlist?PageNumber=${page}&PageSize=${limit}`)
-    const text = await res.text()
-    const data = text ? JSON.parse(text) : {}
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: (data && (data.error || data.message)) || 'Failed to fetch waitlist entries. Please try again.' },
-        { status: res.status }
-      )
-    }
-    return NextResponse.json(data, { status: 200 })
-  } catch (error) {
-    console.error('Error fetching waitlist entries:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch waitlist entries. Please try again.' },
-      { status: 500 }
-    )
-  }
-}
+import { getPublicBackendBaseUrl } from '@/lib/serverBackendApi'
 
 export async function POST(request: NextRequest) {
   try {
