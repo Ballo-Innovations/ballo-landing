@@ -1,0 +1,1022 @@
+/* ============================================
+   Home Page Styles
+   File: app/page.tsx
+   ============================================ */
+
+/* Hero marquee — CSS-driven, zero JS */
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 24s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Hero Section */
+.home-hero {
+  /* Add hero section styles here */
+}
+
+/* Background Pattern */
+.home-hero__pattern {
+  /* Add pattern overlay styles here */
+}
+
+/* Large Faded Text */
+.home-hero__faded-text {
+  text-size-adjust: 24px;
+  /* Add faded text styles here */
+}
+
+/* Hero Content */
+.home-hero__content {
+  /* Add hero content container styles here */
+}
+
+/* Hero Title */
+.home-hero__title {
+  /* Add hero title styles here */
+}
+
+/* Hero CTA Button */
+.home-hero__cta {
+  /* Add CTA button styles here */
+}
+
+/* Carousel Dots */
+.home-hero__dots {
+  /* Add carousel dots styles here */
+}
+
+/* Phone Image Container */
+.home-hero__phone-container {
+  /* Add phone image container styles here */
+}
+
+.home-hero_ring-container {
+  height: 200%;
+  width: 100%;
+}
+
+/* Powerful and Versatile Banner */
+.home-banner {
+  /* Add banner section styles here */
+}
+
+.home-banner__content {
+  /* Add banner content styles here */
+}
+
+.home-banner__title {
+  padding-left: 50%;
+  /* Add banner title styles here */
+}
+
+/* What We're About Section */
+.home-about {
+  /* Add about section styles here */
+}
+
+.home-about__container {
+  /* Add about container styles here */
+}
+
+.home-about__phone-mockup {
+  /* Add phone mockup styles here */
+}
+
+.home-about__content-card {
+  /* Add content card styles here */
+}
+
+.home-about__title {
+  /* Add about title styles here */
+}
+
+.home-about__description {
+  /* Add about description styles here */
+}
+
+/* Why Choose — color system (mirrors CodePen approach) */
+@property --bg-hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 190;
+}
+
+@property --bg-alpha {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+:root {
+  --why-start: 190;
+  --why-end: 340;
+  --why-lightness: 74%;
+  --why-chroma: 0.24;
+}
+
+.why-scroll-sticky {
+  --bg-hue: 190;
+  --bg-alpha: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  background: oklch(11% 0.18 var(--bg-hue) / var(--bg-alpha));
+}
+
+.why-scroll-inner {
+  display: flex;
+  align-items: center;
+  gap: 5rem;
+  padding-left: 4rem;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Left column — gradient heading like CodePen's h2 */
+.why-scroll-heading {
+  width: fit-content;
+  flex-shrink: 0;
+}
+
+.why-scroll-heading h2 {
+  line-height: 1.1;
+}
+
+/* Right column — fills remaining space, contains bg images + phone */
+.why-right-area {
+  position: relative;
+  flex: 1;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Dashboard screenshot crossfade layer */
+.why-bg-images {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+
+/* Static bg image behind the phone */
+.why-bg-img {
+  object-fit: cover;
+  object-position: center top;
+  z-index: 1;
+}
+
+/* Phone frame wrapper — sits above bg images */
+.why-phone-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.why-phone-frame-img {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: auto;
+  display: block;
+  pointer-events: none;
+}
+
+/* Feature list — absolutely fills the phone screen area */
+.why-scroll-items {
+  --step: calc((var(--why-end) - var(--why-start)) / (var(--count, 5) - 1));
+  position: absolute;
+  top: 8%;
+  left: 5.5%;
+  right: 5.5%;
+  bottom: 3.5%;
+  z-index: 5;
+  border-radius: 36px;
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  /* Phone screen bg tracks the same animated hue as the section */
+  background: oklch(11% 0.18 var(--bg-hue));
+  margin-top: -2.5rem;
+  height: 96%;
+}
+
+/* Each item fills the full screen — stacked, GSAP crossfades between them */
+.why-scroll-item {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1.75rem;
+  opacity: 0;
+}
+
+.why-scroll-item:last-child {
+  background: #050829;
+}
+
+.why-scroll-item-num {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: oklch(var(--why-lightness) var(--why-chroma) calc(var(--why-start) + (var(--step) * var(--i, 0))));
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  margin-bottom: 0.75rem;
+}
+
+.why-scroll-item-title {
+  font-size: clamp(1.5rem, 4.5cqw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 0.6rem;
+  color: oklch(var(--why-lightness) var(--why-chroma) calc(var(--why-start) + (var(--step) * var(--i, 0))));
+}
+
+.why-scroll-item-desc {
+  font-size: 1rem;
+  color: rgba(255, 255, 255);
+  margin: 0;
+  line-height: 1.55;
+}
+
+@media (max-width: 768px) {
+  .why-scroll-sticky {
+    height: auto;
+    padding: 3rem 0;
+  }
+
+  .why-scroll-inner {
+    flex-direction: column;
+    padding: 0 1.5rem;
+    gap: 2.5rem;
+  }
+
+  .why-scroll-heading {
+    width: 100%;
+  }
+
+  .why-right-area {
+    height: auto;
+    min-height: 320px;
+    width: 100%;
+  }
+
+  .why-phone-wrapper {
+    width: 220px;
+    margin: 0 auto;
+  }
+
+  .why-scroll-item {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+/* =============================================
+   Who Can Use — scroll-pinned section
+   ============================================= */
+
+.who-scroll-sticky {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 4rem;
+}
+
+.who-scroll-inner {
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.who-scroll-heading-text {
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  font-weight: 700;
+  text-align: center;
+  color: white;
+  letter-spacing: -0.02em;
+  margin-bottom: 3rem;
+}
+
+.who-content-grid {
+  position: relative;
+  width: 100%;
+}
+
+.who-left-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* Items dim by default; GSAP sets active to opacity 1 */
+.who-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  opacity: 0.25;
+}
+
+.who-list-icon {
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+  color: white;
+}
+
+.who-list-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.who-list-title {
+  font-size: clamp(1rem, 2.2vw, 1.75rem);
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+}
+
+.who-list-subtext {
+  font-size: clamp(0.75rem, 1.3vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+/* Right — spiral WebGL gallery */
+.who-spiral-container {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  overflow: hidden;
+  margin-left: 20rem;
+}
+
+.who-spiral-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .who-scroll-sticky {
+    height: auto;
+    padding: 3rem 1.5rem;
+  }
+
+  .who-content-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .who-spiral-container {
+    height: 280px;
+  }
+}
+
+/* Trusted By Section */
+.home-trusted {
+  /* Add trusted section styles here */
+}
+
+.home-trusted__title {
+  /* Add trusted title styles here */
+}
+
+.home-trusted__companies {
+  /* Add companies list styles here */
+}
+
+.home-trusted__company {
+  /* Add individual company styles here */
+}
+
+/* Who Can Use Section */
+.home-who {
+  /* Add who section styles here */
+}
+
+.home-who__title {
+  /* Add who title styles here */
+}
+
+.home-who__container {
+  /* Add who container styles here */
+}
+
+.home-who__list {
+  /* Add who list styles here */
+}
+
+.home-who__list-item {
+  /* Add who list item styles here */
+}
+
+.home-who__icon {
+  /* Add who icon styles here */
+}
+
+.home-who__building-image {
+  /* Add building image container styles here */
+}
+
+/* Testimonials Section */
+.home-testimonials {
+  /* Add testimonials section styles here */
+}
+
+.home-testimonials__title {
+  /* Add testimonials title styles here */
+}
+
+.home-testimonials__card {
+  /* Add testimonial card styles here */
+}
+
+.home-testimonials__quote {
+  /* Add testimonial quote styles here */
+}
+
+.home-testimonials__author {
+  /* Add testimonial author styles here */
+}
+
+.home-testimonials__author-name {
+  /* Add author name styles here */
+}
+
+.home-testimonials__author-title {
+  /* Add author title styles here */
+}
+
+/* Sign Up Form Section */
+.home-signup {
+  /* Add signup section styles here */
+}
+
+.home-signup__title {
+  /* Add signup title styles here */
+}
+
+.home-signup__container {
+  /* Add signup container styles here */
+}
+
+.home-signup__phone-mockup {
+  /* Add signup phone mockup styles here */
+}
+
+.home-signup__form-container {
+  /* Add form container styles here */
+}
+
+.home-signup__form {
+  /* Add form styles here */
+}
+
+.home-signup__form-input {
+  /* Add form input styles here */
+}
+
+.home-signup__form-textarea {
+  /* Add form textarea styles here */
+}
+
+.home-signup__form-button {
+  /* Add form submit button styles here */
+}
+
+/* Powerful and Versatile - Realism Border */
+.pv-border-wrapper {
+  position: relative;
+  width: 130%;
+  left: -15%;
+  border-radius: 2.25rem;
+  padding: 2px;
+  background: radial-gradient(circle 80px at 80% -10%, #ffffff, #181b1b);
+  box-shadow: 28px 32px 80px rgba(0, 0, 0, 0.65), -6px 0 35px rgba(0, 0, 0, 0.3);
+}
+
+.pv-border-wrapper::after {
+  content: "";
+  position: absolute;
+  width: 65%;
+  height: 60%;
+  border-radius: 120px;
+  top: 0;
+  right: 0;
+  box-shadow: 0 0 20px #ffffff38;
+  z-index: -1;
+}
+
+.pv-blob1 {
+  position: absolute;
+  width: 70px;
+  height: 100%;
+  border-radius: 2.25rem;
+  bottom: 0;
+  left: 0;
+  background: radial-gradient(circle 60px at 0% 100%, #3fe9ff, #0000ff80, transparent);
+  box-shadow: -10px 10px 30px #0051ff2d;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.pv-inner {
+  border-radius: calc(2.25rem - 2px);
+  background: radial-gradient(circle at center, #6b6f9b 0%, #040739ff 50%);
+  background-color: #060648;
+  margin: 0 auto;
+}
+
+.pv-inner::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  border-radius: calc(2.25rem - 2px);
+  background: radial-gradient(circle 60px at 0% 100%, #00e1ff1a, #0000ff11, transparent);
+}
+
+/* Responsive Breakpoints */
+/* Powerful and Versatile Banner Aurora Effect */
+.home-banner__aurora-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  mix-blend-mode: darken;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.home-banner__aurora-item {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  /* All items start centered; keyframes use transform: translate() — GPU compositable, no layout recalc */
+  top: 50%;
+  left: 50%;
+  filter: blur(2rem);
+  mix-blend-mode: overlay;
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.home-banner__aurora-item:nth-of-type(1) {
+  background-color: #00c2ff;
+  animation: aurora-1 12s ease-in-out infinite alternate;
+}
+
+.home-banner__aurora-item:nth-of-type(2) {
+  background-color: #ffc640;
+  animation: aurora-2 12s ease-in-out infinite alternate;
+}
+
+.home-banner__aurora-item:nth-of-type(3) {
+  background-color: #33ff8c;
+  animation: aurora-3 8s ease-in-out infinite alternate;
+}
+
+.home-banner__aurora-item:nth-of-type(4) {
+  background-color: #e54cff;
+  animation: aurora-4 24s ease-in-out infinite alternate;
+}
+
+/* border-radius merged into each keyframe so transform stays on its own compositing layer */
+@keyframes aurora-1 {
+  0% {
+    transform: translate(0%, -90%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+
+  25% {
+    transform: translate(-20%, -70%);
+    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
+  }
+
+  50% {
+    transform: translate(-90%, 10%);
+    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
+  }
+
+  75% {
+    transform: translate(-60%, 10%);
+    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
+  }
+
+  100% {
+    transform: translate(0%, -90%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+}
+
+@keyframes aurora-2 {
+  0% {
+    transform: translate(-100%, -90%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+
+  25% {
+    transform: translate(-80%, -60%);
+    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
+  }
+
+  60% {
+    transform: translate(10%, 10%);
+    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
+  }
+
+  85% {
+    transform: translate(-40%, 10%);
+    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
+  }
+
+  100% {
+    transform: translate(-100%, -90%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+}
+
+@keyframes aurora-3 {
+  0% {
+    transform: translate(-100%, 10%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+
+  25% {
+    transform: translate(-60%, -40%);
+    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
+  }
+
+  40% {
+    transform: translate(10%, -100%);
+    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
+  }
+
+  65% {
+    transform: translate(-40%, -60%);
+    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
+  }
+
+  100% {
+    transform: translate(-100%, 10%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+}
+
+@keyframes aurora-4 {
+  0% {
+    transform: translate(0%, 10%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+
+  25% {
+    transform: translate(-30%, -20%);
+    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
+  }
+
+  50% {
+    transform: translate(-60%, -60%);
+    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
+  }
+
+  90% {
+    transform: translate(-30%, -90%);
+    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
+  }
+
+  100% {
+    transform: translate(0%, 10%);
+    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Tablet styles */
+}
+
+@media (min-width: 1024px) {
+  /* Desktop styles */
+}
+
+@media (min-width: 1280px) {
+  /* Large desktop styles */
+}
+
+/* ============================================
+   3D Phone Mockup
+   ============================================ */
+
+.phone3d-scene {
+  perspective: 800px;
+  display: flex;
+  justify-content: center;
+}
+
+.phone3d {
+  width: 256px;
+  height: 537px;
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.phone3d-back {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, #c0d0de, #a8bcd0, #b4c4d4);
+  border-radius: 30px;
+  transform: translateZ(-16px);
+}
+
+.phone3d-edge {
+  position: absolute;
+  background: linear-gradient(180deg, #c8d8e5, #a8b8ca, #b8c8d6);
+}
+
+.phone3d-edge-r {
+  top: 30px;
+  bottom: 30px;
+  right: 0;
+  width: 16px;
+  transform-origin: right center;
+  transform: rotateY(-90deg);
+}
+
+.phone3d-edge-l {
+  top: 30px;
+  bottom: 30px;
+  left: 0;
+  width: 16px;
+  transform-origin: left center;
+  transform: rotateY(90deg);
+}
+
+.phone3d-edge-t {
+  left: 30px;
+  right: 30px;
+  top: 0;
+  height: 16px;
+  transform-origin: center top;
+  transform: rotateX(-90deg);
+  background: linear-gradient(90deg, #c0d0de, #b0c2d2, #c4d4e2);
+}
+
+.phone3d-edge-b {
+  left: 30px;
+  right: 30px;
+  bottom: 0;
+  height: 16px;
+  transform-origin: center bottom;
+  transform: rotateX(90deg);
+  background: linear-gradient(90deg, #b0c0d0, #a0b0c2, #b8c8d6);
+}
+
+/* Side buttons */
+.phone3d-edge-r::before {
+  content: "";
+  position: absolute;
+  top: 110px;
+  left: 2px;
+  right: 2px;
+  height: 36px;
+  background: #cdd8e4;
+  border-radius: 2px;
+  transform: translateZ(1px);
+  box-shadow: 0 0 0 1px #90a1b3;
+}
+
+.phone3d-edge-l::before {
+  content: "";
+  position: absolute;
+  top: 90px;
+  left: 2px;
+  right: 2px;
+  height: 26px;
+  background: #cdd8e4;
+  border-radius: 2px;
+  transform: translateZ(1px);
+  box-shadow: 0 0 0 1px #90a1b3;
+}
+
+.phone3d-edge-l::after {
+  content: "";
+  position: absolute;
+  top: 126px;
+  left: 2px;
+  right: 2px;
+  height: 26px;
+  background: #cdd8e4;
+  border-radius: 2px;
+  transform: translateZ(1px);
+  box-shadow: 0 0 0 1px #90a1b3;
+}
+
+/* Bottom connector port */
+.phone3d-edge-b::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateZ(-1px);
+  width: 20px;
+  height: 7px;
+  background: #3a4650;
+  border-radius: 3.5px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 -0.5px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Corner pieces */
+.phone3d-corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  transform-style: preserve-3d;
+}
+
+.phone3d-corner-tl {
+  top: 0;
+  left: 0;
+}
+
+.phone3d-corner-tr {
+  top: 0;
+  right: 0;
+}
+
+.phone3d-corner-bl {
+  bottom: 0;
+  left: 0;
+}
+
+.phone3d-corner-br {
+  bottom: 0;
+  right: 0;
+}
+
+.phone3d-clayer {
+  position: absolute;
+  inset: 0;
+}
+
+.phone3d-corner-tl .phone3d-clayer {
+  border-top: 2px solid #b3c3d3;
+  border-left: 2px solid #b3c3d3;
+  border-radius: 30px 0 0 0;
+}
+
+.phone3d-corner-tr .phone3d-clayer {
+  border-top: 2px solid #b3c3d3;
+  border-right: 2px solid #b3c3d3;
+  border-radius: 0 30px 0 0;
+}
+
+.phone3d-corner-bl .phone3d-clayer {
+  border-bottom: 2px solid #b3c3d3;
+  border-left: 2px solid #b3c3d3;
+  border-radius: 0 0 0 30px;
+}
+
+.phone3d-corner-br .phone3d-clayer {
+  border-bottom: 2px solid #b3c3d3;
+  border-right: 2px solid #b3c3d3;
+  border-radius: 0 0 30px 0;
+}
+
+.phone3d-bezel {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #d0dde8, #b8cad8, #c4d4e2);
+  border-radius: 30px;
+  padding: 3px;
+  position: relative;
+  transform: translateZ(1px);
+}
+
+.phone3d-inner-shell {
+  width: 100%;
+  height: 100%;
+  background: #080808;
+  border-radius: 27px;
+  padding: 3px;
+}
+
+.phone3d-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+}
+
+/* Camera dot */
+.phone3d-screen::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #060606;
+  z-index: 30;
+  box-shadow: inset 0 0 2px rgba(30, 30, 60, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+}
+
+.phone3d-home-bar {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 88px;
+  height: 3.5px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.glow-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  color: #fff;
+  background: linear-gradient(45deg, #04084d, #007f7f, #0983fc);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: 1.5rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.glow-button:hover {
+  transform: scale(1.04);
+}
+
+.glow-button>* {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-button::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: #0b0d1f;
+  border-radius: 11px;
+  transition: opacity 0.5s;
+  z-index: 0;
+}
+
+.glow-button:hover::before {
+  opacity: 0.75;
+}
+
+.glow-button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc);
+  border-radius: 11px;
+  transition: opacity 0.5s;
+  opacity: 0;
+  filter: blur(20px);
+  z-index: -1;
+}
+
+.glow-button:hover::after {
+  opacity: 1;
+}

@@ -1,0 +1,25 @@
+/* =============================================
+   Silk Background — static diagonal sheen only
+   ============================================= */
+
+.silk-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Diagonal light sheen — static */
+.silk-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    108deg,
+    transparent 35%,
+    rgba(100, 140, 255, 0.04) 48%,
+    rgba(150, 180, 255, 0.07) 50%,
+    rgba(100, 140, 255, 0.04) 52%,
+    transparent 65%
+  );
+}
