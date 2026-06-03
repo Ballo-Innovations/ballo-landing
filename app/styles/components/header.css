@@ -136,8 +136,7 @@
 .header__dropdown-menu {
   position: absolute;
   left: 50%;
-  top: 100%;
-  padding-top: 0.5rem;
+  top: calc(100% + 0.5rem);
   width: 15rem;
   transform: translateX(-50%);
   border-radius: 1rem;
@@ -145,6 +144,7 @@
   padding: 1rem;
   color: var(--dark-blue);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 200;
 }
 
 .header__dropdown-list {

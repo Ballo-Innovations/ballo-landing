@@ -118,10 +118,11 @@ const Header = () => {
           duration: 0.3,
           ease: [0.4, 0, 0.2, 1],
         }}
-        className="header__nav bg-[#010128] fixed w-[95vw] min-w-[380px] max-w-[1440px] h-16 md:flex mx-0 ring ring-[#446dd334] mt-2 top-4 left-1/2 data-text-bright:**:text-white shadow rounded-full p-4 overflow-hidden"
+        className="header__nav bg-[#010128] fixed w-[95vw] min-w-[380px] max-w-[1440px] h-16 md:flex mx-0 ring ring-[#446dd334] mt-2 top-4 left-1/2 data-text-bright:**:text-white shadow rounded-full p-4"
         style={{ zIndex: 100 }}
       >
-        {/* ── Ribbon background layers ── */}
+        {/* ── Ribbon background layers (clipped to pill shape) ── */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none" aria-hidden="true">
         {/* Main ribbon — right end (mirrors left) */}
         <motion.div
           aria-hidden="true"
@@ -320,6 +321,7 @@ const Header = () => {
             borderRadius: "50%", filter: "blur(2.5px)",
           }}
         />
+        </div>{/* end decorative clip wrapper */}
 
         {/* Logo */}
         <Link href="/" className="header__logo relative z-10">
