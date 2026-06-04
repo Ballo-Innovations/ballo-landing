@@ -82,6 +82,20 @@ const Header = () => {
   const { scrollY } = useScroll();
   const [isHidden, setIsHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openDropdown = (label: string) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setActiveDropdown(label);
+  };
+
+  const scheduleClose = () => {
+    closeTimer.current = setTimeout(() => setActiveDropdown(null), 200);
+  };
+
+  const cancelClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = lastScrollY.current;
@@ -349,8 +363,6 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <div className="header__nav-desktop relative z-10">
-          {/*Inside your Header component, within the desktop navigation map:*/}
-
           {navItems.map((item) => {
             const hasDropdown = item.links && item.links.length > 0;
             const isDropdownOpen = activeDropdown === item.label;
@@ -367,8 +379,8 @@ const Header = () => {
               <div
                 key={item.label}
                 className="header__nav-dropdown group"
-                onMouseEnter={() => setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
+                onMouseEnter={() => openDropdown(item.label)}
+                onMouseLeave={scheduleClose}
               >
                 <Link
                   href={item.href ?? "#"}
@@ -376,17 +388,20 @@ const Header = () => {
                     }`}
                 >
                   {item.label}
-                  {/* Your existing SVG arrow */}
                 </Link>
 
                 {isDropdownOpen && (
-                  <div style={{ width: 'auto' }} className={`header__dropdown-menu ${item.label === "Resources" ? "header__dropdown-menu--mega" : ""}`}>
+                  <div
+                    style={{ width: 'auto' }}
+                    className={`header__dropdown-menu ${item.label === "Resources" ? "header__dropdown-menu--mega" : ""}`}
+                    onMouseEnter={cancelClose}
+                    onMouseLeave={scheduleClose}
+                  >
                     <div className={`${item.label === "Resources" ? "flex w-[500px]" : "header__dropdown-list"}`}>
 
                       {/* Left Column: Primary Links */}
                       <div className={`${item.label === "Resources" ? "w-1/2 p-4 border-r border-[var(--dark-blue)]" : ""}`}>
                         {item.links?.map((link) => {
-                          // Check if this specific link (like "Developers") has its own sub-links
                           const hasSubLinks = link.label === "Developers";
 
                           return (
@@ -629,4 +644,3 @@ const Header = () => {
 };
 
 export default Header;
-

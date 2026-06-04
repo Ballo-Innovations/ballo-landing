@@ -24,7 +24,6 @@ import handshake from "@/public/elements small/handshake.png";
 import strategy from "@/public/BalloAds Assets 2/20.png";
 import marketAnalysis from "@/public/BalloAds Assets 2/1.png";
 import contentIcon from "@/public/elements small/content-icon.png";
-import ring from "@/public/Assets/8.png";
 
 
 export default function FeaturedCarousel() {
@@ -397,14 +396,7 @@ export default function FeaturedCarousel() {
       <section className="relative z-10 overflow-hidden bg-[#020A2A] text-white px-25 pb-28 pt-24">
           <div className="relative z-10 gap-8 lg:grid-cols-[1.3fr_1fr]">
             <div className="absolute inset-0">
-              <Image
-                src={ring}
-                alt="Circles Ring"
-                width={1600}
-                height={1900}
-                className="w-50px h-50px absolute left-0 -bottom-110 scale-[0.7] z-10"
-                priority
-              />
+              <img src="/Assets/8.svg" alt="Circles Ring" className="w-50px h-50px absolute left-0 -bottom-110 scale-[0.7] z-10" aria-hidden="true" />
             </div>
             <div className="relative z-10 overflow-hidden">
                 <h3 className="relative z-10 text-[38.4px] md:text-[40px] font-bold text-center">Learn more about how we can support your growth</h3>
