@@ -8,7 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 import phoneFrame from "@/public/Assets/phone-frame.png";
-import analyticsDashImg from "@/public/Assets/analytics-D8Ni1S4n.png";
+import BalloLoader from "@/app/components/ui/BalloLoader";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -54,14 +54,23 @@ export function WhyScrollSection() {
       );
     }
 
-    ScrollTrigger.create({
-      trigger: stickyEl,
-      start: "top top",
-      end: `+=${numItems * 100}vh`,
-      pin: true,
-      pinSpacing: true,
-      animation: tl,
-      scrub: 0.8,
+    const mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      ScrollTrigger.create({
+        trigger: stickyEl,
+        start: "top top",
+        end: `+=${numItems * 100}vh`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        animation: tl,
+        scrub: 0.5,
+      });
+    });
+
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(items, { opacity: 1 });
     });
   });
 
@@ -90,17 +99,8 @@ export function WhyScrollSection() {
           </div>
 
           <div className="why-right-area">
-            <div className="why-bg-images h-[60vh] mt-32 rounded-3xl overflow-hidden">
-              <Image
-                src={analyticsDashImg}
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="50vw"
-                loading="lazy"
-                className="why-bg-img"
-                style={{ objectFit: "cover", objectPosition: "center top" }}
-              />
+            <div className="why-bg-images" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <BalloLoader />
             </div>
             <div className="why-phone-wrapper">
               <ul className="why-scroll-items" style={{ "--count": 5 } as React.CSSProperties}>

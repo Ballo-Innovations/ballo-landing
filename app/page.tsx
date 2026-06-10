@@ -34,7 +34,8 @@ import woman1 from "@/public/Assets/12.png";
 import woman2 from "@/public/Assets/13.png";
 import woman3 from "@/public/Assets/10.png";
 import man from "@/public/Assets/14.png";
-import ring from "@/public/Assets/8.png";
+import ConcentricRings from "./components/ui/ConcentricRings";
+import { ParallaxSetup } from "./components/ui/ParallaxSetup";
 import bank from "@/public/Assets/19.png";
 import glowBg from "@/public/Assets/glow-bg.png";
 
@@ -276,15 +277,20 @@ export default function Home() {
     <main className="relative min-h-screen text-white pt-3 overflow-x-hidden"
       style={{ background: "linear-gradient(180deg, #070757 0%, #000000 100%)" }}>
       <SilkBackground />
+      <ParallaxSetup />
 
       {/* Hero Section */}
       <section
-        className="relative min-h-screen flex items-center justify-center px-4 md:px-8 py-20 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center px-4 md:px-8 py-20 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
+        {/* Parallax depth layers — behind all content */}
+        <div className="prlx-hero-1" aria-hidden="true" />
+        <div className="prlx-hero-2" aria-hidden="true" />
+
         {/* Background Pattern */}
         <div
           className="absolute inset-0 opacity-10"
@@ -356,14 +362,9 @@ export default function Home() {
             <div className="relative flex justify-center items-center">
               <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
                 <div className="relative w-full h-full">
-                  <Image
-                    src={ring}
-                    alt="Circles Ring"
-                    width={1600}
-                    height={1900}
-                    className="w-full h-auto absolute right-0 bottom-0 scale-[2]"
-                    priority
-                  />
+                  <div className="w-full h-auto absolute right-0 bottom-0 scale-[2]">
+                    <ConcentricRings />
+                  </div>
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={`hero-image-${currentSlide}`}
@@ -400,33 +401,23 @@ export default function Home() {
       {/* Powerful and Versatile Banner */}
       <section className="relative z-40 pb-16 px-4">
         <div className="container mx-auto flex justify-center relative z-40">
-          <div className="ring ring-[#446dd321] relative w-[92%] rounded-[3rem] text-center overflow-hidden bg-none">
-            <div className="pv-border-wrapper">
-              <div className="pv-blob1" />
-              <h2
-                className="pv-inner relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
-                style={{
-                  fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-                  letterSpacing: "0.005em",
-                  color: "#fff",
-                  display: "block",
-                }}
-              >
-                POWERFUL AND VERSATILE
-                <div className="home-banner__aurora-container">
-                  <div className="home-banner__aurora-item"></div>
-                  <div className="home-banner__aurora-item"></div>
-                  <div className="home-banner__aurora-item"></div>
-                  <div className="home-banner__aurora-item"></div>
-                </div>
-              </h2>
-            </div>
-          </div>
+          <h2
+            className="relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
+            style={{
+              fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+              letterSpacing: "0.005em",
+              color: "#fff",
+              display: "block",
+            }}
+          >
+            POWERFUL AND VERSATILE
+          </h2>
         </div>
       </section>
 
       {/* What We're About Section */}
-      <section className="py-20 px-4">
+      <section className="prlx-about-trigger relative overflow-hidden py-20 px-4">
+        <div className="prlx-about-1" aria-hidden="true" />
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}
           <div className="relative flex justify-center scale-[0.9] order-last md:order-first">
@@ -574,7 +565,8 @@ export default function Home() {
       <WhoScrollSection />
 
       {/* Testimonials Section */}
-      <section ref={testimonialsSectionRef} className="py-20 px-4">
+      <section ref={testimonialsSectionRef} className="prlx-testi-trigger relative overflow-hidden py-20 px-4">
+        <div className="prlx-testi-1" aria-hidden="true" />
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
             <span className="text-gradient-cyan block">
