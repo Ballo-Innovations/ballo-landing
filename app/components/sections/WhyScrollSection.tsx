@@ -87,10 +87,10 @@ export function WhyScrollSection() {
             </p>
             <Link
               href="#signup"
-              className="mt-8 inline-flex items-center gap-4 bg-white text-[#020055] px-8 py-2 rounded-full font-black text-lg hover:bg-white/90 transition-all group"
+              className="btn-primary group mt-8 inline-flex items-center gap-4 text-white px-8 py-2 rounded-full font-black text-lg"
             >
               Sign up for free today
-              <div className="w-8 h-8 rounded-full bg-[#020055] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                 </svg>

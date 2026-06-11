@@ -21,6 +21,8 @@ const WhoScrollSection = dynamic(
   { ssr: false }
 );
 
+import { HeroPinSetup } from "./components/ui/HeroPinSetup";
+
 import playStore from "@/public/elements small/19.png";
 import appleStore from "@/public/elements small/18.png";
 
@@ -278,6 +280,7 @@ export default function Home() {
       style={{ background: "linear-gradient(180deg, #070757 0%, #000000 100%)" }}>
       <SilkBackground />
       <ParallaxSetup />
+      <HeroPinSetup />
 
       {/* Hero Section */}
       <section
@@ -333,10 +336,10 @@ export default function Home() {
               </div>
               <Link
                 href="#learn-more"
-                className="inline-flex items-center gap-3 w-fit bg-white text-[var(--dark-blue-2)] px-5 py-2 rounded-full font-bold text-2xl md:text-3xl leading-none hover:bg-white/90 transition-all group shadow-sm"
+                className="btn-primary group inline-flex items-center gap-3 w-fit text-white px-5 py-2 rounded-full font-bold text-2xl md:text-3xl leading-none"
               >
                 Try it now
-                <div className="w-8 h-8 rounded-full bg-[var(--dark-blue-2)]/15 flex items-center justify-center group-hover:bg-[var(--dark-blue-2)]/25 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -398,8 +401,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Powerful and Versatile Banner */}
-      <section className="relative z-40 pb-16 px-4">
+      {/* What We're About — opaque (z-50) panel with the "Powerful and Versatile"
+          heading at its top. It scrolls up normally and covers the PINNED hero
+          (see HeroPinSetup); no pin/translate of its own. */}
+      <section
+        className="prlx-about-trigger about-cover relative overflow-hidden py-20 px-4 z-50"
+        style={{ backgroundColor: "#06064d" /* opaque page-navy */ }}
+      >
+        <div className="prlx-about-1" aria-hidden="true" />
+
+        {/* Relocated "POWERFUL AND VERSATILE" heading — styles kept identical */}
         <div className="container mx-auto flex justify-center relative z-40">
           <h2
             className="relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
@@ -413,11 +424,7 @@ export default function Home() {
             POWERFUL AND VERSATILE
           </h2>
         </div>
-      </section>
 
-      {/* What We're About Section */}
-      <section className="prlx-about-trigger relative overflow-hidden py-20 px-4">
-        <div className="prlx-about-1" aria-hidden="true" />
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}
           <div className="relative flex justify-center scale-[0.9] order-last md:order-first">
@@ -435,20 +442,20 @@ export default function Home() {
                   className="absolute hidden md:flex flex-col gap-2.5"
                   style={{ left: "-60px", top: "56%", transform: "translateZ(40px)" }}
                 >
-                  <button type="button" className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2">
-                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black shrink-0" aria-hidden="true">
+                  <button type="button" className="store-btn">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white shrink-0" aria-hidden="true">
                       <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.49 0-2.534-1.31-3.529-2.65-1.305-1.74-2.337-4.44-2.337-6.99 0-4.16 2.685-6.36 5.27-6.36 1.4 0 2.566.93 3.45.93.84 0 2.145-.98 3.81-.98.62 0 2.795.06 4.265 2.13-.13.08-2.508 1.46-2.483 4.37.03 3.4 2.965 4.53 3.002 4.55z" />
                     </svg>
-                    <div className="flex flex-col items-start leading-tight">
-                      <span className="text-[9px] text-zinc-600">Get it on the</span>
-                      <span className="text-[11px] font-bold text-zinc-900">App Store</span>
+                    <div className="flex flex-col items-start">
+                      <span className="s1">Get it on the</span>
+                      <span className="s2">App Store</span>
                     </div>
                   </button>
-                  <button type="button" className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2">
+                  <button type="button" className="store-btn">
                     <Image src={googlePlayIcon} alt="Google Play" width={20} height={20} className="w-5 h-5 shrink-0" />
-                    <div className="flex flex-col items-start leading-tight px-0.5">
-                      <span className="text-[9px] text-zinc-600">Get it on</span>
-                      <span className="text-[11px] font-bold text-zinc-900">Google Play</span>
+                    <div className="flex flex-col items-start">
+                      <span className="s1">Get it on</span>
+                      <span className="s2">Google Play</span>
                     </div>
                   </button>
                 </div>
@@ -468,7 +475,7 @@ export default function Home() {
                     <CloudUpload className="w-12 h-12 text-white mb-1.5" strokeWidth={1.5} />
                     <span className="text-white font-bold text-[11px] text-center leading-tight">Upload your<br />artwork here</span>
                   </div>
-                  <button className="w-fit bg-[#020055] text-white px-12 py-1.5 rounded-full font-bold text-base shadow-lg">Next</button>
+                  <button className="phone-next-btn w-fit px-12 py-1.5 rounded-full font-bold text-base">Next</button>
                 </div>
               </Phone3D>
             </div>

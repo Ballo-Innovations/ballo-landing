@@ -13,6 +13,13 @@
   --purple-light: #a855f7;
   --cyan: #3fdbff;
   --cyan-light: #67e8f9;
+
+  /* Reference pill-button system */
+  --blue: #1a3aff;
+  --blue2: #2d4dff;
+  --cyan-bright: #00d4ff;
+  --violet: #7c3aed;
+  --glow-blue: 0 0 40px rgba(26, 58, 255, 0.4);
 }
 
 @theme inline {
