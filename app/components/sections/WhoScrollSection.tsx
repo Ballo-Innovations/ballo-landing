@@ -139,6 +139,42 @@ export function WhoScrollSection() {
       gsap.set(listItems, { opacity: 1 });
     });
 
+    // Entrance reveals — fire once as the section scrolls in. The list items
+    // animate transform only (y), leaving opacity to the scroll-driven highlight
+    // above so the two never fight. The posters column fades opacity only (no
+    // transform/scale) to avoid blurring the WebGL canvas.
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const eyebrow = outer.querySelector<HTMLElement>(".who-eyebrow-tag");
+      const heading = outer.querySelector<HTMLElement>(".who-redesign-h2");
+      const rightCol = outer.querySelector<HTMLElement>(".who-redesign-right");
+
+      gsap.from([eyebrow, heading].filter(Boolean) as HTMLElement[], {
+        y: 50,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: { trigger: outer, start: "top 78%", once: true },
+      });
+
+      gsap.from(listItems, {
+        y: 36,
+        duration: 0.7,
+        ease: "power3.out",
+        stagger: 0.08,
+        scrollTrigger: { trigger: outer, start: "top 70%", once: true },
+      });
+
+      if (rightCol) {
+        gsap.from(rightCol, {
+          opacity: 0,
+          duration: 1,
+          ease: "power2.out",
+          scrollTrigger: { trigger: outer, start: "top 78%", once: true },
+        });
+      }
+    });
+
     // Refresh after one frame so WhyScrollSection's pin-spacer is in the DOM
     // before WhoScrollSection recalculates its trigger position.
     requestAnimationFrame(() => ScrollTrigger.refresh());

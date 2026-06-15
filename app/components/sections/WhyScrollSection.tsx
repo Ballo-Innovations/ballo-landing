@@ -72,6 +72,21 @@ export function WhyScrollSection() {
     mm.add("(prefers-reduced-motion: reduce)", () => {
       gsap.set(items, { opacity: 1 });
     });
+
+    // Entrance reveal for the heading block (heading, subtitle, CTA) — fires
+    // once as the section scrolls in, before the pin engages. Kept separate
+    // from the pinned timeline so it never fights GSAP's opacity scrubbing.
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const headingChildren = outer.querySelectorAll<HTMLElement>(".why-scroll-heading > *");
+      gsap.from(headingChildren, {
+        y: 60,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: { trigger: stickyEl, start: "top 80%", once: true },
+      });
+    });
   });
 
   return (
@@ -86,10 +101,10 @@ export function WhyScrollSection() {
               The digital marketing platform built for your growth.
             </p>
             <Link
-              href="#signup"
+              href="#waitlist"
               className="btn-primary group mt-8"
             >
-              Sign up for free today
+              Join Waitlist
             </Link>
           </div>
 

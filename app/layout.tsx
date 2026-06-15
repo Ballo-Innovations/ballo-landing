@@ -4,6 +4,7 @@ import "./styles/index.css";
 import "./globals.css";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
+import { SmoothScroll } from "./components/ui/SmoothScroll";
 
 const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
@@ -38,9 +39,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${ubuntu.variable} ${ubuntuMono.variable}`}>
       <body className="font-sans antialiased">
-        <Header />
-        {children}
-        <Footer />
+        <SmoothScroll>
+          <Header />
+          {children}
+          <Footer />
+        </SmoothScroll>
       </body>
     </html>
   );

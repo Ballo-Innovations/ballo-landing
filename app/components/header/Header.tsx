@@ -74,11 +74,8 @@ const Header = () => {
         </Link>
 
         <div className="header__actions" aria-label="Account actions">
-          <Link href="#signin" className="header__action-link header__action-link--signin">
-            Sign In
-          </Link>
-          <Link href="#signup" className="header__action-link header__action-link--signup">
-            Sign Up
+          <Link href="#waitlist" className="header__action-link header__action-link--signup">
+            Join Waitlist
           </Link>
         </div>
       </motion.nav>

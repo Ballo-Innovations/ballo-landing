@@ -13,9 +13,9 @@ export default function ConcentricRings() {
           x2="100%"
           y2="50%"
         >
-          <stop offset="0%" stopColor="#DDE7F0" />
-          <stop offset="55%" stopColor="#8B95C8" />
-          <stop offset="100%" stopColor="#0000A8" />
+          <stop offset="0%" stopColor="#DDE7F0" stopOpacity="1" />
+          <stop offset="55%" stopColor="#8B95C8" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#8B95C8" stopOpacity="0" />
         </linearGradient>
       </defs>
 

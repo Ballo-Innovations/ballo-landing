@@ -22,6 +22,7 @@ const WhoScrollSection = dynamic(
 );
 
 import { HeroPinSetup } from "./components/ui/HeroPinSetup";
+import { FadeUpReveal } from "./components/ui/FadeUpReveal";
 
 import playStore from "@/public/elements small/19.png";
 import appleStore from "@/public/elements small/18.png";
@@ -283,7 +284,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center px-4 md:px-8 py-20 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center px-6 sm:px-8 py-20 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -313,11 +314,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container mx-auto relative z-10">
+        {/* Frame matches the header pill (72rem) so the hero aligns with the nav above */}
+        <div className="mx-auto w-full max-w-[72rem] relative z-10">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
             {/* Left Side - Content */}
-            <div className="flex flex-col gap-6 md:gap-8">
-              <div className="relative min-h-[180px] md:min-h-[220px]">
+            <div className="relative z-1 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+              {/* Rotating headline */}
+              <div className="relative w-full min-h-[150px] sm:min-h-[200px] md:min-h-[250px] flex items-start justify-center md:justify-start">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`hero-text-${currentSlide}`}
@@ -327,22 +330,23 @@ export default function Home() {
                     transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
                     className="w-full"
                   >
-                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl font-extrabold leading-[0.95] tracking-tight uppercase max-w-[18ch] features-hero">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[0.95] tracking-tight uppercase text-balance max-w-[16ch] mx-auto md:mx-0">
                       {features[currentSlide].title}
                     </h1>
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="hero-actions">
-                <Link href="#learn-more" className="btn-primary group">
-                  Try it now
+
+              <div className="hero-actions justify-center md:justify-start">
+                <Link href="#waitlist" className="btn-primary group">
+                  Join Waitlist
                 </Link>
                 <Link href="/watch-demo" className="btn-secondary group">
-                  Watch Demo
+                  Book A Free Demo
                 </Link>
               </div>
               {/* Pagination Dots */}
-              <div className="flex items-center gap-3 mt-3">
+              <div className="flex items-center justify-center md:justify-start gap-3 mt-1">
                 {features.map((_, index) => (
                   <button
                     key={index}
@@ -361,7 +365,7 @@ export default function Home() {
             <div className="relative flex justify-center items-center">
               <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
                 <div className="relative w-full h-full">
-                  <div className="w-full h-auto absolute right-0 bottom-0 scale-[2]">
+                  <div className="w-full h-auto absolute right-0 bottom-0 scale-[2] z-0">
                     <ConcentricRings />
                   </div>
                   <AnimatePresence mode="wait" initial={false}>
@@ -408,22 +412,25 @@ export default function Home() {
 
         {/* Relocated "POWERFUL AND VERSATILE" heading — styles kept identical */}
         <div className="container mx-auto flex justify-center relative z-40">
-          <h2
-            className="relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
-            style={{
-              fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-              letterSpacing: "0.005em",
-              color: "#fff",
-              display: "block",
-            }}
-          >
-            POWERFUL AND VERSATILE
-          </h2>
+          <FadeUpReveal>
+            <h2
+              className="relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
+              style={{
+                fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+                letterSpacing: "0.005em",
+                color: "#fff",
+                display: "block",
+              }}
+            >
+              POWERFUL AND VERSATILE
+            </h2>
+          </FadeUpReveal>
         </div>
 
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}
-          <div className="relative flex justify-center scale-[0.9] order-last md:order-first">
+          <FadeUpReveal yOffset={50} className="relative flex justify-center order-last md:order-first">
+            <div className="relative flex justify-center scale-[0.9]">
             <Image
               src={glowBg}
               alt=""
@@ -471,7 +478,8 @@ export default function Home() {
                 </div>
               </Phone3D>
             </div>
-          </div>
+            </div>
+          </FadeUpReveal>
 
           {/* Right Side - Content Card */}
           <div
@@ -483,19 +491,23 @@ export default function Home() {
             onMouseLeave={handleCardMouseLeave}
           >
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-7xl font-bold mb-6 text-gradient-silver-2">
-                What We&apos;re About
-              </h2>
-              <p className="text-lg md:text-xl leading-relaxed text-white/90">
-                BalloAds is an AI-powered digital advertising platform
-                designed to help businesses and organisations
-                connect with the right audience through bulk SMS,
-                targeted message ads, and data-driven campaign
-                management. Whether you&apos;re a startup, an
-                enterprise, or a service provider, BalloAds gives you
-                the tools to launch impactful marketing campaigns
-                with ease
-              </p>
+              <FadeUpReveal>
+                <h2 className="text-4xl md:text-7xl font-bold mb-6 text-gradient-silver-2">
+                  What We&apos;re About
+                </h2>
+              </FadeUpReveal>
+              <FadeUpReveal delay={0.15}>
+                <p className="text-lg md:text-xl leading-relaxed text-white/90">
+                  BalloAds is an AI-powered digital advertising platform
+                  designed to help businesses and organisations
+                  connect with the right audience through bulk SMS,
+                  targeted message ads, and data-driven campaign
+                  management. Whether you&apos;re a startup, an
+                  enterprise, or a service provider, BalloAds gives you
+                  the tools to launch impactful marketing campaigns
+                  with ease
+                </p>
+              </FadeUpReveal>
             </div>
           </div>
         </div>
@@ -506,9 +518,10 @@ export default function Home() {
 
       {/* Trusted By Section */}
       <section className="py-16">
-        <div className="text-center mb-10">
+        <FadeUpReveal className="text-center mb-10">
           <p className="text-3xl text-shimmer">Trusted by the very best</p>
-        </div>
+        </FadeUpReveal>
+        <FadeUpReveal yOffset={50} delay={0.1}>
         <div className="logo-marquee">
           <div className="logo-marquee-track">
             {(
@@ -558,6 +571,7 @@ export default function Home() {
             ))}
           </div>
         </div>
+        </FadeUpReveal>
       </section>
 
       {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
@@ -567,11 +581,13 @@ export default function Home() {
       <section ref={testimonialsSectionRef} className="prlx-testi-trigger relative overflow-hidden py-20 px-4">
         <div className="prlx-testi-1" aria-hidden="true" />
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
-            <span className="text-gradient-cyan block">
-              HEAR FROM THOSE WHO HAVE<br />TRIED AND TESTED
-            </span>
-          </h2>
+          <FadeUpReveal>
+            <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
+              <span className="text-gradient-cyan block">
+                HEAR FROM THOSE WHO HAVE<br />TRIED AND TESTED
+              </span>
+            </h2>
+          </FadeUpReveal>
           <div className="max-w-4xl mx-auto">
             <div className="gradient-blue-grey rounded-3xl p-8 md:p-12 overflow-hidden flex flex-col">
               <div className="flex-1">

@@ -13,6 +13,20 @@
   /* Liquid UI — geometry & motion (colors: use --brand-color-1 … 5) */
   --radius-liquid: 24px;
   --liquid-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Standardized primary CTA gradient — sourced from the header "Sign Up"
+     button. Shared by .btn-primary, .glow-button and the header signup link
+     so every primary action across the landing page reads identically. */
+  --btn-cta-text: #061044;
+  --btn-cta-border: rgba(255, 255, 255, 0.56);
+  --btn-cta-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(159, 232, 255, 0.9));
+  --btn-cta-bg-hover: linear-gradient(135deg, rgba(139, 225, 255, 1), rgba(255, 255, 255, 0.95));
+  --btn-cta-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 28px rgba(42, 132, 255, 0.24);
+  --btn-cta-shadow-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 16px 36px rgba(42, 132, 255, 0.38);
 }
 
 @theme inline {

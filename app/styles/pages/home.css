@@ -191,6 +191,13 @@
   z-index: 0;
 }
 
+/* Ripple backdrop (BalloLoader) sits behind the phone inside an
+   overflow:hidden column. Size it to fit its container at every breakpoint
+   — including the 1.3x ripple peak — so the clip never shows a hard edge. */
+.why-bg-images .ballo-loader {
+  --size: 380px;
+}
+
 
 /* Static bg image behind the phone */
 .why-bg-img {
@@ -291,17 +298,30 @@
 
   .why-scroll-heading {
     width: 100%;
+    /* Stack as flex so the inline-flex CTA's top margin is fully counted in
+       the block height — otherwise the phone column below overlaps the button. */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .why-right-area {
     height: auto;
     min-height: 320px;
     width: 100%;
+    /* Guarantees the phone column clears the CTA button above it */
+    margin-top: 3rem;
   }
 
   .why-phone-wrapper {
     width: 220px;
     margin: 0 auto;
+  }
+
+  /* Shrink the ripple backdrop so it fits the narrow mobile column without
+     the overflow:hidden box clipping it into a hard rectangle. */
+  .why-bg-images .ballo-loader {
+    --size: 240px;
   }
 
   .why-scroll-item {
@@ -913,8 +933,34 @@
   }
 }
 
-@media (min-width: 768px) {
-  /* Tablet styles */
+/* ── Tablet (769–1024px) ──
+   These widths fall into the desktop *pinned* layouts for the Why/Who
+   sections, where the desktop column ratios and gutters get cramped.
+   Rebalance them without changing the layout structure. */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Who Can Use — give the left text column more room vs. the posters */
+  .who-redesign-inner {
+    grid-template-columns: 1fr 1.65fr;
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .who-redesign-h2 {
+    margin-bottom: 1.75rem;
+  }
+
+  .who-scroll-sticky {
+    padding: 0 clamp(1.5rem, 4vw, 3rem);
+  }
+
+  /* Why Choose — trim the oversized desktop gutter/gap so the phone fits */
+  .why-scroll-inner {
+    gap: 3rem;
+    padding-left: 2.5rem;
+  }
+
+  .why-phone-wrapper {
+    width: 260px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -1164,14 +1210,18 @@
 
 .glow-button {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0;
   height: 2.65rem;
   min-height: 2.65rem;
-  color: #fff;
-  background: linear-gradient(45deg, #04084d, #007f7f, #0983fc);
+  color: var(--btn-cta-text);
+  background: var(--btn-cta-bg);
+  border: 1px solid var(--btn-cta-border);
+  box-shadow: var(--btn-cta-shadow);
   padding: 0 1.15rem;
   border-radius: 999px;
   font-weight: 700;
@@ -1179,11 +1229,14 @@
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.3s ease;
 }
 
 .glow-button:hover {
   transform: translateY(-1px);
+  box-shadow: var(--btn-cta-shadow-hover);
 }
 
 .glow-button:active {
@@ -1195,33 +1248,19 @@
   z-index: 1;
 }
 
+/* Hover gradient overlay — matches the header "Sign Up" button */
 .glow-button::before {
   content: "";
   position: absolute;
-  inset: 1px;
-  background: #0b0d1f;
+  inset: 0;
+  z-index: -1;
   border-radius: inherit;
-  transition: opacity 0.5s;
-  z-index: 0;
+  background: var(--btn-cta-bg-hover);
+  opacity: 0;
+  transition: opacity 0.24s ease;
 }
 
 .glow-button:hover::before {
-  opacity: 0.75;
-}
-
-.glow-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc);
-  border-radius: inherit;
-  transition: opacity 0.5s;
-  opacity: 0;
-  filter: blur(20px);
-  z-index: -1;
-}
-
-.glow-button:hover::after {
   opacity: 1;
 }
 
