@@ -1,0 +1,173 @@
+/* =============================================================
+   Stacked / fanned blog-card carousel.
+   Geometry (size + position) is set inline per card; this file
+   handles the static card chrome, glow, gradient, text and button.
+   ============================================================= */
+
+.scc-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 1.5rem;
+}
+
+/* Faint radial circle glow behind the fan */
+.scc-glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: min(640px, 92%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(96, 124, 255, 0.2) 0%,
+    rgba(96, 124, 255, 0.07) 46%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.scc-stage {
+  position: relative;
+  width: 100%;
+}
+
+.scc-card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform-origin: top center;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #0b1230;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  user-select: none;
+  will-change: transform;
+  transition:
+    transform 0.34s cubic-bezier(0.25, 0.8, 0.3, 1),
+    opacity 0.34s ease;
+}
+
+.scc-card.is-center {
+  cursor: default;
+  box-shadow: 0 32px 64px -14px rgba(0, 0, 0, 0.7);
+}
+
+/* Readability gradient on the lower half */
+.scc-card__grad {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(5, 8, 28, 0.96) 0%,
+    rgba(5, 8, 28, 0.62) 26%,
+    rgba(5, 8, 28, 0.08) 50%,
+    transparent 64%
+  );
+}
+
+/* Distance-based dim tint for side cards */
+.scc-card__tint {
+  position: absolute;
+  inset: 0;
+  background: #050a24;
+  transition: opacity 0.34s ease;
+  pointer-events: none;
+}
+
+.scc-card__body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: calc(26px * var(--k, 1)) calc(24px * var(--k, 1));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(14px * var(--k, 1));
+}
+
+.scc-card__title {
+  margin: 0;
+  color: #fff;
+  text-align: left;
+  font-weight: 800;
+  font-size: calc(30px * var(--k, 1));
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  max-width: 92%;
+}
+
+.scc-card__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  color: #0b1230;
+  font-weight: 700;
+  font-size: calc(14px * var(--k, 1));
+  line-height: 1;
+  padding: calc(9px * var(--k, 1)) calc(17px * var(--k, 1));
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.scc-card__btn:hover {
+  background: #e6ebff;
+}
+
+.scc-card__btn svg {
+  width: calc(15px * var(--k, 1));
+  height: calc(15px * var(--k, 1));
+}
+
+/* Circular prev / next controls over the outermost cards */
+.scc-arrow {
+  position: absolute;
+  z-index: 60;
+  transform: translate(-50%, -50%);
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  color: #0b1230;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  transition: transform 0.2s ease;
+}
+
+.scc-arrow:hover {
+  transform: translate(-50%, -50%) scale(1.09);
+}
+
+.scc-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scc-card:focus-visible,
+.scc-arrow:focus-visible {
+  outline: 2px solid var(--cyan-bright, #00d4ff);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scc-card,
+  .scc-card__tint {
+    transition: none;
+  }
+}

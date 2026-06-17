@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
+import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-coverflow";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import { EffectCoverflow, Navigation, Autoplay } from "swiper/modules";
+import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCarousel";
+import { FadeUpReveal } from "../components/ui/FadeUpReveal";
 
 import article1 from "@/public/BalloAds Assets 2/19.png";
 import article2 from "@/public/BalloAds Assets 2/8.png";
@@ -28,6 +24,8 @@ import ring from "@/public/Assets/8.png";
 
 
 export default function FeaturedCarousel() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const featuredArticles = [
     {
@@ -60,7 +58,23 @@ export default function FeaturedCarousel() {
       image: article6,
       featured: false,
     },
+    {
+      title: "Growing your business online",
+      image: article7,
+      featured: false,
+    },
   ];
+
+  // Map to the stacked carousel's item shape (string image src + slug href).
+  const carouselItems: StackedCard[] = featuredArticles.map((a) => ({
+    title: a.title,
+    img: a.image.src,
+    href: `/blog/${a.title.toLowerCase().replace(/\s+/g, "-")}`,
+  }));
+  const carouselCenter = Math.max(
+    0,
+    featuredArticles.findIndex((a) => a.title === "Get to know about Insurance")
+  );
   
   const categories = [
     "Finance",
@@ -180,6 +194,58 @@ export default function FeaturedCarousel() {
     },
   ];
   
+  // Flatten + tag every article with a category so the tabs and search can filter.
+  const CATEGORY_CYCLE = ["AI", "Health", "Logistics", "Special Deals", "Finance", "Retail", "Popular"];
+  const taggedArticles = articleSections
+    .flatMap((s) => s.articles)
+    .map((a, i) => ({ ...a, category: CATEGORY_CYCLE[i % CATEGORY_CYCLE.length] }));
+
+  const query = searchQuery.trim().toLowerCase();
+  const isFiltering = selectedCategory !== null || query !== "";
+  const filteredArticles = taggedArticles.filter((a) => {
+    const catOk = !selectedCategory || a.category === selectedCategory;
+    const searchOk =
+      !query || `${a.title} ${a.description} ${a.category}`.toLowerCase().includes(query);
+    return catOk && searchOk;
+  });
+
+  type ArticleCardData = {
+    title: string;
+    description: string;
+    image: StaticImageData;
+    hasVideo?: boolean;
+  };
+
+  const renderArticleCard = (article: ArticleCardData, key: React.Key, index = 0) => (
+    <FadeUpReveal key={key} yOffset={40} duration={0.7} delay={(index % 4) * 0.08}>
+      <Link
+        href={`/blog/${article.title.toLowerCase().replace(/\s+/g, "-")}`}
+        className="group relative flex h-64 md:h-72 flex-col justify-end overflow-hidden rounded-2xl"
+      >
+        <Image
+          src={article.image}
+          alt={article.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+        <div className="relative p-5 pr-12">
+          <h3 className="text-base md:text-lg font-bold leading-snug line-clamp-2">
+            {article.title}
+          </h3>
+          <p className="mt-1.5 text-[11px] md:text-xs text-white/70 line-clamp-2">
+            {article.description}
+          </p>
+        </div>
+        <span className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition group-hover:border-white group-hover:bg-white/20">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </Link>
+    </FadeUpReveal>
+  );
+
   const supportHighlights = [
     {
       title: "24/7 Support",
@@ -210,104 +276,18 @@ export default function FeaturedCarousel() {
 
   return (
     <main className="min-h-screen bg-[var(--dark-blue)] text-white">
-      <section className="relative overflow-hidden px-4 py-12 md:px-8">
-      {/* Glow background */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-[500px] w-[500px] rounded-full bg-blue-600/20 blur-[100px]" />
-      </div>
-
-      {/* Container */}
-      <div className="relative w-full max-w-[1200px] h-[450px] mt-24 perspective mx-auto">
-        <Swiper
-          effect="coverflow"
-          grabCursor
-          centeredSlides
-          loop
-          slidesPerView="auto"
-          autoplay={{
-            delay: 3000,
-            disableOnInteraction: false,
-          }}
-          coverflowEffect={{
-            rotate: 0,
-            stretch: 0,
-            depth: 300,
-            modifier: 1.5,
-            slideShadows: false,
-          }}
-          navigation
-          modules={[EffectCoverflow, Navigation, Autoplay]}
-          className="swiper_container py-8"
-        >
-          {featuredArticles.map((article, index) => (
-            <SwiperSlide
-              key={index}
-              className="w-[280px] md:w-[350px] max-w-[280px] md:max-w-[350px] h-[380px] overflow-visible flex justify-center"
-            >
-              <div
-                className={`custom-card relative min-w-[280px] md:min-w-[350px] h-[420px] rounded-3xl overflow-hidden shadow-xl bg-white transition-all duration-1000`}
-              >
-                {/* Image */}
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover transition-transform duration-700"
-                />
-
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-
-                {/* Bottom Content */}
-                <div className="absolute bottom-0 left-0 right-0 flex flex-col p-6">
-                  <h3 className="mb-4 text-2xl md:text-3xl font-bold leading-tight text-white">
-                    {article.title}
-                  </h3>
-
-                  {article.featured && (
-                    <Link
-                      href={`/blog/${article.title
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="inline-flex items-center rounded-full bg-white px-6 py-2.5 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-200"
-                    >
-                      Read Article
-                      <svg
-                        className="w-4 h-4 ml-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-    </section>
+      <section className="relative overflow-hidden px-4 pt-32 pb-8 md:px-8">
+        <div className="relative w-full max-w-[1200px] mx-auto">
+          <StackedCardCarousel items={carouselItems} initialCenter={carouselCenter} />
+        </div>
+      </section>
 
       {/* Search and Categories */}
-      <section className="px-4 py-8 md:px-8">
-        <div className="container mx-auto flex flex-col gap-6">
-          <div className="relative max-w-2xl mx-auto w-full">
-            {/*<input
-              type="text"
-              placeholder="Search articles..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full bg-white/10 border border-white/20 px-6 py-4 pl-12 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
-            />*/}
+      <section className="px-4 pb-4 md:px-8">
+        <FadeUpReveal yOffset={40} duration={0.7} className="container mx-auto flex flex-col items-center gap-7">
+          <div className="relative w-full max-w-md">
             <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60"
+              className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--dark-blue)]/60"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -319,79 +299,101 @@ export default function FeaturedCarousel() {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
+            <input
+              type="text"
+              placeholder="Search articles..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search articles"
+              className="w-full rounded-full bg-white/90 py-3 pl-12 pr-5 text-sm text-[var(--dark-blue)] placeholder-[var(--dark-blue)]/50 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--cyan-bright)]"
+            />
           </div>
 
-          {/*<div className="flex flex-wrap items-center justify-center gap-3">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() =>
-                  setSelectedCategory(selectedCategory === category ? null : category)
-                }
-                className={`rounded-full px-6 py-2 text-sm font-semibold transition ${
-                  selectedCategory === category
-                    ? "bg-white text-[var(--brand-color-1)]"
-                    : "bg-white text-[var(--brand-color-1)] hover:bg-white"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div> */}
-        </div>
+          <div className="blog-categories">
+            {categories.map((category) => {
+              const active = selectedCategory === category;
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() =>
+                    setSelectedCategory(active ? null : category)
+                  }
+                  className={`blog-category-pill ${active ? "blog-category-pill--active" : ""}`}
+                >
+                  {category}
+                </button>
+              );
+            })}
+          </div>
+        </FadeUpReveal>
       </section>
 
-      {/* Main Article Sections */}
-      {articleSections.map((section, sectionIndex) => (
-        <section key={sectionIndex} className="px-4 py-16 md:px-8">
-          <div className="container mx-auto flex flex-col gap-8">
-            <div className="flex flex-col gap-4 max-w-4xl">
-              <div className="glitch-text">
-                <h2 className="text-4xl md:text-5xl font-bold">
-                  {section.title}
+      {/* Filtered results (tabs / search) OR the curated sections */}
+      {isFiltering ? (
+        <section className="px-4 py-12 md:px-8">
+          <div className="container mx-auto flex flex-col gap-7">
+            <FadeUpReveal yOffset={40} duration={0.7}>
+              <div className="flex flex-col gap-2 max-w-4xl">
+                <h2 className="text-3xl md:text-5xl font-bold">
+                  {selectedCategory ? `${selectedCategory} articles` : "Search results"}
                 </h2>
+                <p className="text-sm md:text-base text-white/70">
+                  {filteredArticles.length} article{filteredArticles.length === 1 ? "" : "s"}
+                  {selectedCategory ? ` in ${selectedCategory}` : ""}
+                  {query ? ` matching “${searchQuery.trim()}”` : ""}
+                </p>
               </div>
-              <p className="text-base md:text-lg text-white/80 leading-relaxed">
-                {section.description}
-              </p>
-            </div>
+            </FadeUpReveal>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {section.articles.map((article, articleIndex) => (
-                <Link
-                  key={articleIndex}
-                  href={`/blog/${article.title.toLowerCase().replace(/\s+/g, "-")}`}
-                  className="group relative flex flex-col rounded-2xl bg-white/5 overflow-hidden transition hover:bg-white/10"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={article.image}
-                      alt={article.title}
-                      fill
-                      className="object-cover"
-                    />
-                    {article.hasVideo && (
-                      <div className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[var(--dark-blue)] shadow-lg">
-                        <svg
-                          className="ml-1 h-6 w-6"
-                          fill="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col gap-2 p-4">
-                    <h3 className="text-lg font-semibold line-clamp-2">{article.title}</h3>
-                    <p className="text-sm text-white/70 line-clamp-3">{article.description}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {filteredArticles.length > 0 ? (
+              <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+                {filteredArticles.map((article, i) =>
+                  renderArticleCard(article, `${article.title}-${i}`, i)
+                )}
+              </div>
+            ) : (
+              <FadeUpReveal yOffset={30} duration={0.6}>
+                <div className="flex flex-col items-center gap-3 py-16 text-center">
+                  <p className="text-lg font-semibold text-white">No articles found</p>
+                  <p className="text-sm text-white/70">Try a different category or search term.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setSearchQuery("");
+                    }}
+                    className="blog-category-pill blog-category-pill--active mt-2"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              </FadeUpReveal>
+            )}
           </div>
         </section>
-      ))}
+      ) : (
+        articleSections.map((section, sectionIndex) => (
+          <section key={sectionIndex} className="px-4 py-12 md:px-8">
+            <div className="container mx-auto flex flex-col gap-7">
+              <FadeUpReveal yOffset={40} duration={0.7}>
+                <div className="flex flex-col gap-3 max-w-4xl">
+                  <h2 className="text-3xl md:text-5xl font-bold">{section.title}</h2>
+                  <p className="text-sm md:text-base text-white/75 leading-relaxed">
+                    {section.description}
+                  </p>
+                </div>
+              </FadeUpReveal>
+
+              <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
+                {section.articles.map((article, articleIndex) =>
+                  renderArticleCard(article, articleIndex, articleIndex)
+                )}
+              </div>
+            </div>
+          </section>
+        ))
+      )}
 
       {/* Subscribe Section */}
       <section className="relative z-10 overflow-hidden bg-[#020A2A] text-white px-25 pb-28 pt-24">
@@ -407,8 +409,10 @@ export default function FeaturedCarousel() {
               />
             </div>
             <div className="relative z-10 overflow-hidden">
-                <h3 className="relative z-10 text-[38.4px] md:text-[40px] font-bold text-center">Learn more about how we can support your growth</h3>
-                <div className="mt-10 grid gap-6 sm:grid-cols-2">
+                <FadeUpReveal yOffset={40} duration={0.7}>
+                  <h3 className="relative z-10 text-[38.4px] md:text-[40px] font-bold text-center">Learn more about how we can support your growth</h3>
+                </FadeUpReveal>
+                <FadeUpReveal yOffset={40} duration={0.7} delay={0.1} className="mt-10 grid gap-6 sm:grid-cols-2">
                   {supportHighlights.map((highlight) => (
                     <div key={highlight.title} className="flex gap-3">
                       <span className="relative z-10 mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/60">
@@ -432,8 +436,8 @@ export default function FeaturedCarousel() {
                       </div>
                     </div>
                   ))}
-                </div>
-              
+                </FadeUpReveal>
+
               <div className="relative z-10 flex flex-col items-center gap-5 px-4 pb-28 pt-24 md:px-8 md:flex-row md:justify-center">
                 <Link
                   href="/signup"
