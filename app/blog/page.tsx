@@ -20,7 +20,7 @@ import handshake from "@/public/elements small/handshake.png";
 import strategy from "@/public/BalloAds Assets 2/20.png";
 import marketAnalysis from "@/public/BalloAds Assets 2/1.png";
 import contentIcon from "@/public/elements small/content-icon.png";
-import ring from "@/public/Assets/8.png";
+import ConcentricRings from "../components/ui/ConcentricRings";
 
 
 export default function FeaturedCarousel() {
@@ -275,7 +275,7 @@ export default function FeaturedCarousel() {
   
 
   return (
-    <main className="min-h-screen bg-[var(--dark-blue)] text-white">
+    <main className="min-h-screen text-white" style={{ background: "linear-gradient(180deg, #070858 0%, #000000 100%)" }}>
       <section className="relative overflow-hidden px-4 pt-32 pb-8 md:px-8">
         <div className="relative w-full max-w-[1200px] mx-auto">
           <StackedCardCarousel items={carouselItems} initialCenter={carouselCenter} />
@@ -396,64 +396,60 @@ export default function FeaturedCarousel() {
       )}
 
       {/* Subscribe Section */}
-      <section className="relative z-10 overflow-hidden bg-[#020A2A] text-white px-25 pb-28 pt-24">
-          <div className="relative z-10 gap-8 lg:grid-cols-[1.3fr_1fr]">
-            <div className="absolute inset-0">
-              <Image
-                src={ring}
-                alt="Circles Ring"
-                width={1600}
-                height={1900}
-                className="w-50px h-50px absolute left-0 -bottom-110 scale-[0.7] z-10"
-                priority
-              />
-            </div>
-            <div className="relative z-10 overflow-hidden">
-                <FadeUpReveal yOffset={40} duration={0.7}>
-                  <h3 className="relative z-10 text-[38.4px] md:text-[40px] font-bold text-center">Learn more about how we can support your growth</h3>
-                </FadeUpReveal>
-                <FadeUpReveal yOffset={40} duration={0.7} delay={0.1} className="mt-10 grid gap-6 sm:grid-cols-2">
-                  {supportHighlights.map((highlight) => (
-                    <div key={highlight.title} className="flex gap-3">
-                      <span className="relative z-10 mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/60">
-                        <svg
-                          className="h-3 w-3"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M5 12l4 4L19 6" />
-                        </svg>
-                      </span>
-                      <div className="relative z-10 flex flex-1 flex-col gap-4">
-                        <div className="relative z-10">
-                          <h3 className="relative z-10 text-[23px] md:text-[25px] font-semibold">{highlight.title}</h3>
-                          <p className="relative z-10 mt-2 text-sm text-white/70">{highlight.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </FadeUpReveal>
-
-              <div className="relative z-10 flex flex-col items-center gap-5 px-4 pb-28 pt-24 md:px-8 md:flex-row md:justify-center">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-color-2)]"
-                >
-                  Get Started
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 rounded-full border bg-white px-6 py-3 text-2remm font-semibold text-[var(--brand-color-1)] transition hover:border-white hover:bg-white/10"
-                >
-                  Contact us
-                </Link>
-              </div>  
-            </div>          
+      <section className="relative z-10 overflow-hidden text-white px-4 sm:px-8 md:px-16 lg:px-24 pt-16 pb-20 md:pt-24 md:pb-28">
+        {/* Centered background rings */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-full max-w-2xl opacity-20">
+            <ConcentricRings />
           </div>
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-4xl">
+          <FadeUpReveal yOffset={40} duration={0.7}>
+            <h3 className="text-2xl sm:text-3xl md:text-[40px] font-bold text-center leading-tight">
+              Learn more about how we can support your growth
+            </h3>
+          </FadeUpReveal>
+
+          <FadeUpReveal yOffset={40} duration={0.7} delay={0.1} className="mt-8 md:mt-10 grid gap-6 sm:grid-cols-2">
+            {supportHighlights.map((highlight) => (
+              <div key={highlight.title} className="flex gap-3">
+                <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/60">
+                  <svg
+                    className="h-3 w-3"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 12l4 4L19 6" />
+                  </svg>
+                </span>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-lg md:text-xl font-semibold">{highlight.title}</h3>
+                  <p className="mt-1 text-sm text-white/70">{highlight.description}</p>
+                </div>
+              </div>
+            ))}
+          </FadeUpReveal>
+
+          <div className="mt-12 md:mt-16 flex flex-col items-center gap-4 md:flex-row md:justify-center">
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-2 rounded-full bg-(--brand-color-1) px-6 py-3 text-sm font-semibold text-white transition hover:bg-(--brand-color-2)"
+            >
+              Get Started
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 rounded-full border bg-white px-6 py-3 text-sm font-semibold text-(--brand-color-1) transition hover:border-white hover:bg-white/10"
+            >
+              Contact us
+            </Link>
+          </div>
+        </div>
       </section>
     </main>
   );

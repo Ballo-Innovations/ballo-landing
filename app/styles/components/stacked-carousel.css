@@ -165,6 +165,12 @@
   outline-offset: 3px;
 }
 
+@media (max-width: 559px) {
+  .scc-arrow {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scc-card,
   .scc-card__tint {

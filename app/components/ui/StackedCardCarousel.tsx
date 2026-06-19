@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export type StackedCard = {
   title: string;
@@ -54,6 +54,7 @@ export function StackedCardCarousel({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [containerW, setContainerW] = useState(1280);
   const [center, setCenter] = useState(initialCenter);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -83,8 +84,27 @@ export function StackedCardCarousel({
   const nextX = xc[outerTier];
   const nextY = drops[outerTier] + heroH * SCALES[outerTier] * 0.42;
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dist = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(dist) > 50) {
+      if (dist > 0) setCenter((c) => (c + 1) % N);
+      else setCenter((c) => (c - 1 + N) % N);
+    }
+    touchStartX.current = null;
+  };
+
   return (
-    <div className="scc-wrap" ref={wrapRef}>
+    <div
+      className="scc-wrap"
+      ref={wrapRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="scc-glow" aria-hidden="true" />
       <div
         className="scc-stage"
