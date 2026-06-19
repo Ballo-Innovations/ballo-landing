@@ -136,15 +136,19 @@
 .header__dropdown-menu {
   position: absolute;
   left: 50%;
+  /* top: 100% with padding-top keeps the visual gap but fills the mouse dead-zone */
   top: 100%;
-  padding-top: 0.5rem;
   width: 15rem;
   transform: translateX(-50%);
   border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 1rem;
+  /* padding-top creates the visual offset; no physical gap between trigger and panel */
+  padding: 0.5rem 1rem 1rem;
   color: var(--dark-blue);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 200;
+  /* White bg starts after the transparent padding area */
+  background-clip: padding-box;
+  background-color: rgba(255, 255, 255, 0.95);
 }
 
 .header__dropdown-list {
@@ -161,11 +165,18 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+  cursor: pointer;
 }
 
 .header__dropdown-link:hover {
-  background-color: rgba(63, 219, 255, 0.1);
+  background-color: rgba(63, 219, 255, 0.12);
+  color: var(--dark-blue);
+}
+
+.header__dropdown-link:active {
+  background-color: rgba(63, 219, 255, 0.25);
+  transform: scale(0.98);
 }
 
 .header__search-icon {

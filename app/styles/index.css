@@ -2,6 +2,7 @@
 
 /* Core styles */
 @import "./variables.css";
+@import "./design-system.css";
 
 /* Utilities */
 @import "./utilities.css";

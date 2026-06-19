@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import ring from "@/public/Assets/8.png";
 import phoneAnalytics from "@/public/Assets/37.png";
 import statsBoard from "@/public/elements small/stats-chart.PNG";
 import marketAnalysis from "@/public/Assets/38.png";
@@ -67,14 +66,7 @@ export default function HowItWorksPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden px-4 pb-24 pt-28 md:px-8">
         <div className="absolute inset-0">
-          <Image
-            src={ring}
-            alt="Circles Ring"
-            width={1600}
-            height={1900}
-            className="w-full h-auto absolute right-0 -top-150 scale-[0.5]"
-            priority
-          />
+          <img src="/Assets/8.svg" alt="Circles Ring" className="w-full h-auto absolute right-0 -top-150 scale-[0.5]" aria-hidden="true" />
         </div>
 
         <div className="relative container mx-auto flex flex-col items-center gap-10 text-center max-w-4xl z-10">

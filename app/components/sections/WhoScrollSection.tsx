@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useRef } from "react";
-import { StaticImageData } from "next/image";
-import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -15,18 +13,6 @@ import {
   GraduationCap,
 } from "lucide-react";
 
-import building from "@/public/Assets/46.png";
-import buildingFinance from "@/public/Assets/48.png";
-import buildingNonprofit from "@/public/Assets/49.png";
-import buildingRetail from "@/public/Assets/51.png";
-import buildingHealthcare from "@/public/Assets/53.png";
-import buildingEducation from "@/public/Assets/57.png";
-
-const SpiralGallery = dynamic(
-  () => import("../ui/SpiralGallery").then(m => m.SpiralGallery),
-  { ssr: false }
-);
-
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 interface UseCase {
@@ -34,57 +20,19 @@ interface UseCase {
   icon: React.ReactNode;
   text: string;
   subtext: string;
-  image: StaticImageData;
 }
 
 const useCases: UseCase[] = [
-  {
-    id: "sme",
-    icon: <Building className="w-6 h-6" />,
-    text: "SMEs & Corporations",
-    subtext: "Promote products, services, and offers.",
-    image: building,
-  },
-  {
-    id: "finance",
-    icon: <Landmark className="w-6 h-6" />,
-    text: "Financial Institutions",
-    subtext: "Send loan approvals, transaction updates, and offers.",
-    image: buildingFinance,
-  },
-  {
-    id: "nonprofit",
-    icon: <Globe className="w-6 h-6" />,
-    text: "Nonprofits & Government Initiatives",
-    subtext: "Spread awareness with mass communication.",
-    image: buildingNonprofit,
-  },
-  {
-    id: "retail",
-    icon: <ShoppingCart className="w-6 h-6" />,
-    text: "Retail & E-commerce",
-    subtext: "Drive sales and customer engagement.",
-    image: buildingRetail,
-  },
-  {
-    id: "healthcare",
-    icon: <Heart className="w-6 h-6" />,
-    text: "Healthcare & Clinics",
-    subtext: "Send appointment reminders and health campaigns.",
-    image: buildingHealthcare,
-  },
-  {
-    id: "education",
-    icon: <GraduationCap className="w-6 h-6" />,
-    text: "Education Institutions",
-    subtext: "Notify students, parents, and staff with updates.",
-    image: buildingEducation,
-  },
+  { id: "sme", icon: <Building className="w-6 h-6" />, text: "SMEs & Corporations", subtext: "Promote products, services, and offers." },
+  { id: "finance", icon: <Landmark className="w-6 h-6" />, text: "Financial Institutions", subtext: "Send loan approvals, transaction updates, and offers." },
+  { id: "nonprofit", icon: <Globe className="w-6 h-6" />, text: "Nonprofits & Government Initiatives", subtext: "Spread awareness with mass communication." },
+  { id: "retail", icon: <ShoppingCart className="w-6 h-6" />, text: "Retail & E-commerce", subtext: "Drive sales and customer engagement." },
+  { id: "healthcare", icon: <Heart className="w-6 h-6" />, text: "Healthcare & Clinics", subtext: "Send appointment reminders and health campaigns." },
+  { id: "education", icon: <GraduationCap className="w-6 h-6" />, text: "Education Institutions", subtext: "Notify students, parents, and staff with updates." },
 ];
 
 export function WhoScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
-  const whoProgressRef = useRef(0);
 
   useGSAP(() => {
     const outer = containerRef.current;
@@ -112,9 +60,6 @@ export function WhoScrollSection() {
       pinSpacing: true,
       animation: tl,
       scrub: 0.8,
-      onUpdate: (self) => {
-        whoProgressRef.current = self.progress;
-      },
     });
   });
 
@@ -142,7 +87,7 @@ export function WhoScrollSection() {
                 </div>
               ))}
             </div>
-            <SpiralGallery progressRef={whoProgressRef} />
+
           </div>
         </div>
       </div>

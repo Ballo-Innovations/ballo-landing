@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-
-import phoneFrame from "@/public/Assets/phone-frame.png";
-import analyticsDashImg from "@/public/Assets/analytics-D8Ni1S4n.png";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -90,18 +86,7 @@ export function WhyScrollSection() {
           </div>
 
           <div className="why-right-area">
-            <div className="why-bg-images h-[60vh] mt-32 rounded-3xl overflow-hidden">
-              <Image
-                src={analyticsDashImg}
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="50vw"
-                loading="lazy"
-                className="why-bg-img"
-                style={{ objectFit: "cover", objectPosition: "center top" }}
-              />
-            </div>
+            <div className="why-bg-images h-[60vh] mt-32 rounded-3xl overflow-hidden" />
             <div className="why-phone-wrapper">
               <ul className="why-scroll-items" style={{ "--count": 5 } as React.CSSProperties}>
                 {features.map((feature, i) => (
@@ -112,12 +97,6 @@ export function WhyScrollSection() {
                   </li>
                 ))}
               </ul>
-              <Image
-                src={phoneFrame}
-                alt=""
-                aria-hidden="true"
-                className="why-phone-frame-img"
-              />
             </div>
           </div>
         </div>
