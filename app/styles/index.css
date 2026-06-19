@@ -12,6 +12,8 @@
 @import "./components/header.css";
 @import "./components/footer.css";
 @import "./components/coming-soon.css";
+@import "./components/buttons.css";
+@import "./components/stacked-carousel.css";
 
 /* Pages */
 @import "./pages/home.css";

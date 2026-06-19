@@ -115,43 +115,89 @@
 }
 
 
+/* Category filter pills */
+.blog-categories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+
+.blog-category-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.4rem 1.05rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.blog-category-pill:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.blog-category-pill--active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.blog-category-pill:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 2px;
+}
+
 /* Custom Swiper Card Effects */
 .swiper-slide {
   transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* Center slide */
+/* Center slide — straight, raised, full colour */
 .swiper-slide-active .custom-card {
-  transform: scale(1.1) translateZ(0) !important;
+  transform: scale(1.08) translateY(-28px) translateZ(0) !important;
   opacity: 1 !important;
-  filter: grayscale(0) !important;
+  filter: none !important;
+  z-index: 5;
 }
 
-/* Next slides */
+/* Next slide (one to the right) — fans outward, tilts clockwise */
 .swiper-slide-next .custom-card {
-  transform: translateX(200px) scale(0.9) translateZ(-100px);
-  opacity: 0.9;
-  filter: grayscale(100%);
+  transform: translateX(-70px) translateY(14px) rotate(7deg) scale(0.9);
+  opacity: 0.97;
+  filter: brightness(0.82);
 }
 
 /* Next + 1 (far right) */
 .swiper-slide-next + .swiper-slide .custom-card {
-  transform: translateX(400px) scale(0.8) translateZ(-300px);
-  opacity: 0.7;
-  filter: grayscale(100%);
+  transform: translateX(-130px) translateY(54px) rotate(14deg) scale(0.8);
+  opacity: 0.92;
+  filter: brightness(0.64);
 }
 
-/* Previous slides */
+/* Previous slide (one to the left) — fans outward, tilts anti-clockwise */
 .swiper-slide-prev .custom-card {
-  transform: translateX(-200px) scale(0.9) translateZ(-100px);
-  opacity: 0.9;
-  filter: grayscale(100%);
+  transform: translateX(70px) translateY(14px) rotate(-7deg) scale(0.9);
+  opacity: 0.97;
+  filter: brightness(0.82);
 }
 
-/* Previous -1 (far left) */
+/* Previous - 1 (far left) */
 .swiper-slide-prev + .swiper-slide .custom-card {
-  transform: translateX(-400px) scale(0.8) translateZ(-300px);
-  opacity: 0.7;
-  filter: grayscale(100%);
+  transform: translateX(130px) translateY(54px) rotate(-14deg) scale(0.8);
+  opacity: 0.92;
+  filter: brightness(0.64);
 }
 

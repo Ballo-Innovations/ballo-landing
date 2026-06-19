@@ -3,6 +3,20 @@
    File: app/page.tsx
    ============================================ */
 
+/*
+   Shared layout container — apply .page-inner to every section's inner wrapper.
+   Provides consistent max-width, horizontal gutter, and vertical rhythm.
+*/
+.page-inner {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 2rem);
+}
+
+.page-section {
+  padding-block: clamp(4rem, 8vw, 6rem);
+}
+
 /* Hero marquee — CSS-driven, zero JS */
 @keyframes marquee-scroll {
   from {
@@ -177,6 +191,13 @@
   z-index: 0;
 }
 
+/* Ripple backdrop (BalloLoader) sits behind the phone inside an
+   overflow:hidden column. Size it to fit its container at every breakpoint
+   — including the 1.3x ripple peak — so the clip never shows a hard edge. */
+.why-bg-images .ballo-loader {
+  --size: 380px;
+}
+
 
 /* Static bg image behind the phone */
 .why-bg-img {
@@ -277,17 +298,30 @@
 
   .why-scroll-heading {
     width: 100%;
+    /* Stack as flex so the inline-flex CTA's top margin is fully counted in
+       the block height — otherwise the phone column below overlaps the button. */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .why-right-area {
     height: auto;
     min-height: 320px;
     width: 100%;
+    /* Guarantees the phone column clears the CTA button above it */
+    margin-top: 3rem;
   }
 
   .why-phone-wrapper {
     width: 220px;
     margin: 0 auto;
+  }
+
+  /* Shrink the ripple backdrop so it fits the narrow mobile column without
+     the overflow:hidden box clipping it into a hard rectangle. */
+  .why-bg-images .ballo-loader {
+    --size: 240px;
   }
 
   .why-scroll-item {
@@ -296,113 +330,217 @@
 }
 
 /* =============================================
-   Who Can Use — scroll-pinned section
+   Who Can Use — scroll-pinned section (redesigned)
    ============================================= */
 
 .who-scroll-sticky {
   height: 100vh;
   display: flex;
   align-items: center;
-  padding: 0 4rem;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
 }
 
-.who-scroll-inner {
-  max-width: 1300px;
+/* Two-column layout */
+.who-redesign-inner {
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 2.2fr;
+  gap: clamp(2.5rem, 5vw, 5rem);
+  align-items: center;
 }
 
-.who-scroll-heading-text {
-  font-size: clamp(2rem, 5vw, 3.75rem);
-  font-weight: 700;
-  text-align: center;
-  color: white;
-  letter-spacing: -0.02em;
-  margin-bottom: 3rem;
-}
-
-.who-content-grid {
-  position: relative;
-  width: 100%;
-}
-
-.who-left-list {
+/* ── Left column ── */
+.who-redesign-left {
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
 }
 
-/* Items dim by default; GSAP sets active to opacity 1 */
-.who-list-item {
+.who-eyebrow-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  margin-bottom: 1.5rem;
+  width: fit-content;
+}
+
+.who-redesign-h2 {
+  font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+  font-weight: 800;
+  color: white;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin-bottom: 2.5rem;
+}
+
+.who-redesign-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-  opacity: 0.25;
+  flex-direction: column;
 }
 
-.who-list-icon {
+/* Each item */
+.who-redesign-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  opacity: 0.2;
+  transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: default;
+}
+
+.who-redesign-item:first-child {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.who-item-num {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.3);
+  min-width: 1.75rem;
   flex-shrink: 0;
-  margin-top: 0.2rem;
-  color: white;
 }
 
-.who-list-text {
+/* Bare icon — no box, no border */
+.who-item-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.65);
+}
+
+.who-item-body {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
-.who-list-title {
-  font-size: clamp(1rem, 2.2vw, 1.75rem);
+.who-item-title {
+  font-size: 1.125rem;
   font-weight: 700;
   color: white;
-  line-height: 1.2;
+  line-height: 1.3;
+  margin: 0;
 }
 
-.who-list-subtext {
-  font-size: clamp(0.75rem, 1.3vw, 1.1rem);
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 0.25rem;
+.who-item-subtext {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  margin: 0;
 }
 
-/* Right — image panel (lightweight CSS crossfade, replaces Three.js spiral) */
-.who-image-panel {
+/* ── Right column — FlyingPosters container ── */
+.who-redesign-right {
   position: relative;
-  width: 420px;
-  height: 520px;
-  border-radius: 2rem;
+  height: 74vh;
+  max-height: 720px;
   overflow: hidden;
-  margin-left: 20rem;
-  flex-shrink: 0;
-  box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.5);
+  border-radius: 1.5rem;
 }
 
-.who-image-panel__slide {
+/* Reduced-motion fallback image (hidden by default) */
+.who-rmo-fallback {
+  display: none;
   position: absolute;
   inset: 0;
-  opacity: 0;
-  transition: opacity 0.6s ease;
 }
 
-.who-image-panel__slide--active {
-  opacity: 1;
+/* FlyingPosters wrapper fills the container */
+.who-flying-wrap {
+  width: 100%;
+  height: 100%;
 }
 
+/* Show static image, hide WebGL when motion is reduced */
+@media (prefers-reduced-motion: reduce) {
+  .who-rmo-fallback { display: block; }
+  .who-flying-wrap  { display: none;  }
+}
+
+/* ── Mobile ── */
 @media (max-width: 768px) {
   .who-scroll-sticky {
     height: auto;
-    padding: 3rem 1.5rem;
+    min-height: 100dvh;
+    padding: 2.5rem 1.25rem 3rem;
+    align-items: flex-start;
   }
 
-  .who-content-grid {
+  .who-redesign-inner {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
+    width: 100%;
   }
 
-  .who-image-panel {
-    width: 100%;
-    height: 280px;
-    margin-left: 0;
-    margin-top: 2rem;
+  /* Image above the list on mobile */
+  .who-redesign-right {
+    order: -1;
+    height: 52vw;
+    min-height: 220px;
+    max-height: 340px;
+    border-radius: 1rem;
+  }
+
+  .who-redesign-left {
+    order: 0;
+  }
+
+  .who-eyebrow-tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    padding: 0.3rem 0.75rem;
+  }
+
+  .who-redesign-h2 {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+    line-height: 1.15;
+    margin: 0.5rem 0 1rem;
+  }
+
+  .who-redesign-item {
+    padding: 0.65rem 0;
+    gap: 0.65rem;
+  }
+
+  .who-item-num {
+    font-size: 0.65rem;
+    min-width: 1.4rem;
+  }
+
+  .who-item-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .who-item-title {
+    font-size: 1rem;
+  }
+
+  .who-item-subtext {
+    display: none;
+  }
+}
+
+@media (min-width: 420px) and (max-width: 768px) {
+  .who-item-subtext {
+    display: block;
+    font-size: 0.8rem;
   }
 }
 
@@ -438,6 +576,73 @@
 
 .home-who__list {
   /* Add who list styles here */
+}
+
+/* =============================================
+   Parallax background layers
+   Oversized vertically (top: -25%, height: 150%) so the GSAP yPercent
+   translation never exposes edges. z-index:0 keeps layers behind content
+   that uses z-10 and above. pointer-events: none so nothing is blocked.
+   ============================================= */
+
+.prlx-hero-1,
+.prlx-hero-2,
+.prlx-about-1,
+.prlx-testi-1 {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -25%;
+  height: 150%;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Hero depth layer 1 — large indigo-blue bloom, lower-left */
+.prlx-hero-1 {
+  background: radial-gradient(
+    ellipse 65% 52% at 14% 72%,
+    rgba(11, 77, 140, 0.48) 0%,
+    transparent 65%
+  );
+}
+
+/* Hero depth layer 2 — sharp cyan accent, upper-right (moves faster) */
+.prlx-hero-2 {
+  background: radial-gradient(
+    ellipse 44% 36% at 87% 16%,
+    rgba(63, 219, 255, 0.09) 0%,
+    transparent 65%
+  );
+}
+
+/* What We're About — soft blue wash, off-center */
+.prlx-about-1 {
+  background: radial-gradient(
+    ellipse 80% 58% at 58% 48%,
+    rgba(34, 115, 175, 0.14) 0%,
+    transparent 70%
+  );
+}
+
+/* Testimonials — deep indigo glow pooled at the top */
+.prlx-testi-1 {
+  background: radial-gradient(
+    ellipse 62% 54% at 50% 8%,
+    rgba(7, 7, 87, 0.55) 0%,
+    transparent 70%
+  );
+}
+
+/* Disable parallax layers when motion is reduced */
+@media (prefers-reduced-motion: reduce) {
+  .prlx-hero-1,
+  .prlx-hero-2,
+  .prlx-about-1,
+  .prlx-testi-1 {
+    display: none;
+  }
 }
 
 .home-who__list-item {
@@ -728,8 +933,34 @@
   }
 }
 
-@media (min-width: 768px) {
-  /* Tablet styles */
+/* ── Tablet (769–1024px) ──
+   These widths fall into the desktop *pinned* layouts for the Why/Who
+   sections, where the desktop column ratios and gutters get cramped.
+   Rebalance them without changing the layout structure. */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Who Can Use — give the left text column more room vs. the posters */
+  .who-redesign-inner {
+    grid-template-columns: 1fr 1.65fr;
+    gap: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .who-redesign-h2 {
+    margin-bottom: 1.75rem;
+  }
+
+  .who-scroll-sticky {
+    padding: 0 clamp(1.5rem, 4vw, 3rem);
+  }
+
+  /* Why Choose — trim the oversized desktop gutter/gap so the phone fits */
+  .why-scroll-inner {
+    gap: 3rem;
+    padding-left: 2.5rem;
+  }
+
+  .why-phone-wrapper {
+    width: 260px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -979,22 +1210,37 @@
 
 .glow-button {
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 1rem;
-  color: #fff;
-  background: linear-gradient(45deg, #04084d, #007f7f, #0983fc);
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-weight: 900;
-  font-size: 1.5rem;
+  justify-content: center;
+  gap: 0;
+  height: 2.65rem;
+  min-height: 2.65rem;
+  color: var(--btn-cta-text);
+  background: var(--btn-cta-bg);
+  border: 1px solid var(--btn-cta-border);
+  box-shadow: var(--btn-cta-shadow);
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.3s ease;
 }
 
 .glow-button:hover {
-  transform: scale(1.04);
+  transform: translateY(-1px);
+  box-shadow: var(--btn-cta-shadow-hover);
+}
+
+.glow-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .glow-button>* {
@@ -1002,32 +1248,27 @@
   z-index: 1;
 }
 
+/* Hover gradient overlay — matches the header "Sign Up" button */
 .glow-button::before {
   content: "";
   position: absolute;
-  inset: 1px;
-  background: #0b0d1f;
-  border-radius: 11px;
-  transition: opacity 0.5s;
-  z-index: 0;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--btn-cta-bg-hover);
+  opacity: 0;
+  transition: opacity 0.24s ease;
 }
 
 .glow-button:hover::before {
-  opacity: 0.75;
-}
-
-.glow-button::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc);
-  border-radius: 11px;
-  transition: opacity 0.5s;
-  opacity: 0;
-  filter: blur(20px);
-  z-index: -1;
-}
-
-.glow-button:hover::after {
   opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .glow-button {
+    height: 2.35rem;
+    min-height: 2.35rem;
+    padding: 0 0.72rem;
+    font-size: clamp(0.78rem, 3.3vw, 0.88rem);
+  }
 }

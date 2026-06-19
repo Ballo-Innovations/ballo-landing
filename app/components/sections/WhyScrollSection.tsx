@@ -1,10 +1,14 @@
 "use client";
 
 import React, { useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+
+import phoneFrame from "@/public/Assets/phone-frame.png";
+import BalloLoader from "@/app/components/ui/BalloLoader";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -50,14 +54,38 @@ export function WhyScrollSection() {
       );
     }
 
-    ScrollTrigger.create({
-      trigger: stickyEl,
-      start: "top top",
-      end: `+=${numItems * 100}vh`,
-      pin: true,
-      pinSpacing: true,
-      animation: tl,
-      scrub: 0.8,
+    const mm = gsap.matchMedia();
+
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      ScrollTrigger.create({
+        trigger: stickyEl,
+        start: "top top",
+        end: `+=${numItems * 100}vh`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        animation: tl,
+        scrub: 0.5,
+      });
+    });
+
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(items, { opacity: 1 });
+    });
+
+    // Entrance reveal for the heading block (heading, subtitle, CTA) — fires
+    // once as the section scrolls in, before the pin engages. Kept separate
+    // from the pinned timeline so it never fights GSAP's opacity scrubbing.
+    mm.add("(prefers-reduced-motion: no-preference)", () => {
+      const headingChildren = outer.querySelectorAll<HTMLElement>(".why-scroll-heading > *");
+      gsap.from(headingChildren, {
+        y: 60,
+        opacity: 0,
+        duration: 0.9,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: { trigger: stickyEl, start: "top 80%", once: true },
+      });
     });
   });
 
@@ -73,20 +101,17 @@ export function WhyScrollSection() {
               The digital marketing platform built for your growth.
             </p>
             <Link
-              href="#signup"
-              className="mt-8 inline-flex items-center gap-4 bg-white text-[#020055] px-8 py-2 rounded-full font-black text-lg hover:bg-white/90 transition-all group"
+              href="#waitlist"
+              className="btn-primary group mt-8"
             >
-              Sign up for free today
-              <div className="w-8 h-8 rounded-full bg-[#020055] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
+              Join Waitlist
             </Link>
           </div>
 
           <div className="why-right-area">
-            <div className="why-bg-images h-[60vh] mt-32 rounded-3xl overflow-hidden" />
+            <div className="why-bg-images" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <BalloLoader />
+            </div>
             <div className="why-phone-wrapper">
               <ul className="why-scroll-items" style={{ "--count": 5 } as React.CSSProperties}>
                 {features.map((feature, i) => (
@@ -97,6 +122,12 @@ export function WhyScrollSection() {
                   </li>
                 ))}
               </ul>
+              <Image
+                src={phoneFrame}
+                alt=""
+                aria-hidden="true"
+                className="why-phone-frame-img"
+              />
             </div>
           </div>
         </div>

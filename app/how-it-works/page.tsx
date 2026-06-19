@@ -105,7 +105,7 @@ export default function HowItWorksPage() {
               href="/watch-demo"
               className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold text-[var(--brand-color-1)] transition bg-white"
             >
-              Watch Demo
+              Book A Free Demo
               <svg
                 className="h-5 w-5"
                 viewBox="0 0 24 24"
