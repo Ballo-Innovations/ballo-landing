@@ -19,7 +19,7 @@ interface CanvasParams {
   container: HTMLElement; canvas: HTMLCanvasElement; items: string[];
   planeWidth: number; planeHeight: number; distortion: number;
   scrollEase: number; cameraFov: number; cameraZ: number;
-  disableWheel?: boolean;
+  disableWheel?: boolean; initialIndex?: number;
 }
 
 // ─── Shaders ─────────────────────────────────────────────────────────────────
@@ -198,6 +198,7 @@ class Canvas {
   planeGeometry!: Plane; medias!: Media[]; screen!: ScreenSize; viewport!: ViewportSize;
   isDown = false; start = 0;
   rafId = 0; // stop condition for rAF loop
+  ro: ResizeObserver | null = null;
 
   constructor(p: CanvasParams) {
     this.container    = p.container;  this.canvas      = p.canvas;
@@ -209,18 +210,35 @@ class Canvas {
     AutoBind(this);
     this.createRenderer(); this.createCamera(); this.createScene();
     this.onResize(); this.createGeometry(); this.createMedias();
+    // Snap (no fly) so the FIRST poster shown is items[initialIndex] — the planes
+    // are stacked vertically, so a raw scroll=0 would centre the MIDDLE plane and
+    // desync from the caller's active item (and the mobile carousel).
+    const startOffset = this.offsetForIndex(p.initialIndex ?? 0);
+    this.scroll.current = startOffset;
+    this.scroll.target  = startOffset;
     this.rafId = requestAnimationFrame(this.update);
+    // Resize must always be observed (even when wheel is driven externally) so the
+    // WebGL planes re-measure on viewport/orientation/layout changes — otherwise a
+    // poster created at the wrong container size stays mis-scaled (e.g. on mobile).
+    window.addEventListener('resize', this.onResize);
+    this.ro = new ResizeObserver(() => this.onResize());
+    this.ro.observe(this.container);
     if (!this.disableWheel) this.addEventListeners();
   }
 
   // ── public API ──
 
+  /** Scroll offset that centres the plane at `index`. */
+  offsetForIndex(index: number) {
+    if (!this.medias?.length) return 0;
+    const { height, heightTotal } = this.medias[0];
+    // plane.position.y = y - scroll.current = 0  →  offset = y_for_index
+    return -heightTotal / 2 + (index + 0.5) * height;
+  }
+
   /** Drive scroll to centre item at `index` — called from GSAP onUpdate */
   scrollToIndex(index: number) {
-    if (!this.medias?.length) return;
-    const { height, heightTotal } = this.medias[0];
-    // plane.position.y = y - scroll.current = 0  →  scroll.target = y_for_index
-    this.scroll.target = -heightTotal / 2 + (index + 0.5) * height;
+    this.scroll.target = this.offsetForIndex(index);
   }
 
   // ── setup ──
@@ -295,7 +313,8 @@ class Canvas {
   }
 
   addEventListeners() {
-    window.addEventListener('resize',     this.onResize);
+    // 'resize' is bound in the constructor (always-on); only interaction
+    // listeners are added here when the caller isn't driving scroll.
     window.addEventListener('wheel',      this.onWheel);
     window.addEventListener('mousedown',  this.onTouchDown);
     window.addEventListener('mousemove',  this.onTouchMove);
@@ -307,6 +326,7 @@ class Canvas {
 
   destroy() {
     cancelAnimationFrame(this.rafId); // stop condition — terminates the rAF loop
+    this.ro?.disconnect();
     window.removeEventListener('resize',     this.onResize);
     window.removeEventListener('wheel',      this.onWheel);
     window.removeEventListener('mousedown',  this.onTouchDown);
@@ -334,13 +354,15 @@ interface FlyingPostersProps extends React.HTMLAttributes<HTMLDivElement> {
   cameraZ?: number;
   /** When true, wheel/touch/mouse listeners are suppressed so the caller drives scroll */
   disableWheel?: boolean;
+  /** Plane to centre on first paint (keeps it in sync with the caller's active item) */
+  initialIndex?: number;
 }
 
 const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(function FlyingPosters(
   {
     items = [], planeWidth = 320, planeHeight = 320, distortion = 3,
     scrollEase = 0.05, cameraFov = 45, cameraZ = 20,
-    disableWheel = false, className, ...props
+    disableWheel = false, initialIndex = 0, className, ...props
   },
   ref
 ) {
@@ -357,10 +379,10 @@ const FlyingPosters = forwardRef<FlyingPostersHandle, FlyingPostersProps>(functi
     if (!containerRef.current || !canvasRef.current) return;
     instanceRef.current = new Canvas({
       container: containerRef.current, canvas: canvasRef.current, items,
-      planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ, disableWheel,
+      planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ, disableWheel, initialIndex,
     });
     return () => { instanceRef.current?.destroy(); instanceRef.current = null; };
-  }, [items, planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ, disableWheel]);
+  }, [items, planeWidth, planeHeight, distortion, scrollEase, cameraFov, cameraZ, disableWheel, initialIndex]);
 
   // Canvas-level passive:false wheel handler (needed for preventDefault when not in GSAP mode)
   useEffect(() => {

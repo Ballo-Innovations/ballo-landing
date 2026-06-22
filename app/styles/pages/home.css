@@ -475,9 +475,10 @@
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
+  /* No pin on mobile — section is normal flow, sized to its content. */
   .who-scroll-sticky {
     height: auto;
-    min-height: 100dvh;
+    min-height: 0;
     padding: 2.5rem 1.25rem 3rem;
     align-items: flex-start;
   }
@@ -488,17 +489,62 @@
     width: 100%;
   }
 
-  /* Image above the list on mobile */
-  .who-redesign-right {
+  /* Horizontal thumb-scroll carousel — one image per view, snap, no scrollbar */
+  .who-mobile-photos {
     order: -1;
-    height: 52vw;
-    min-height: 220px;
-    max-height: 340px;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     border-radius: 1rem;
+    touch-action: pan-x;
+  }
+
+  .who-mobile-photos::-webkit-scrollbar {
+    display: none;
+  }
+
+  .who-mphoto {
+    position: relative;
+    flex: 0 0 100%;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    scroll-snap-align: center;
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: #0b1230;
+  }
+
+  /* Index badge on each slide */
+  .who-mphoto-num {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.8rem;
+    z-index: 2;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(6px);
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
   }
 
   .who-redesign-left {
     order: 0;
+  }
+
+  /* Mobile highlight is React-driven (.is-active) from the carousel position */
+  .who-redesign-item {
+    opacity: 0.35;
+    cursor: pointer;
+  }
+
+  .who-redesign-item.is-active {
+    opacity: 1;
   }
 
   .who-eyebrow-tag {

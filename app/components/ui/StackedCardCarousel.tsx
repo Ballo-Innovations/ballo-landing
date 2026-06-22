@@ -31,7 +31,9 @@ function pickConfig(w: number) {
   if (w >= 1024) return { heroW: 320, ov: 0.34, maxTier: 3 };
   if (w >= 768) return { heroW: 264, ov: 0.4, maxTier: 3 };
   if (w >= 560) return { heroW: 234, ov: 0.46, maxTier: 2 };
-  return { heroW: Math.max(180, Math.min(210, w * 0.52)), ov: 0.56, maxTier: 1 };
+  // Phones: let the hero card fill far more of the column so the side cards
+  // just peek and the empty space around the stack is evened out.
+  return { heroW: Math.max(230, Math.min(290, w * 0.72)), ov: 0.62, maxTier: 1 };
 }
 
 const Chevron = ({ dir = "right" }: { dir?: "left" | "right" }) => (
