@@ -31,7 +31,8 @@ export function ParallaxSetup() {
             trigger: section,
             start: "top bottom",
             end: "bottom top",
-            scrub: true,
+            scrub: 0.5,
+            invalidateOnRefresh: true,
           },
         });
       });
