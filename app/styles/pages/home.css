@@ -398,7 +398,6 @@
   padding: 1rem 0;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   opacity: 0.2;
-  transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1);
   cursor: default;
 }
 
@@ -537,10 +536,14 @@
     order: 0;
   }
 
-  /* Mobile highlight is React-driven (.is-active) from the carousel position */
+  /* Mobile highlight is React-driven (.is-active) from the carousel position.
+     The opacity transition lives here (mobile only) so it smooths the
+     class-driven .is-active toggle — on desktop GSAP scrubs opacity inline
+     every frame, where a CSS transition would lag the highlight behind scroll. */
   .who-redesign-item {
     opacity: 0.35;
     cursor: pointer;
+    transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1);
   }
 
   .who-redesign-item.is-active {

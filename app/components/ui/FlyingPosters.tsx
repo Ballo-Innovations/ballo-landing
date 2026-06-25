@@ -7,7 +7,7 @@ type GL = OGLRenderingContext;
 
 interface ScreenSize   { width: number; height: number; }
 interface ViewportSize { width: number; height: number; }
-interface ScrollState  { position?: number; ease: number; current: number; target: number; last: number; }
+interface ScrollState  { position?: number; ease: number; current: number; target: number; last: number; activity: number; }
 interface AutoBindOptions { include?: Array<string | RegExp>; exclude?: Array<string | RegExp>; }
 
 interface MediaParams {
@@ -38,6 +38,7 @@ uniform float uSpeed;
 uniform vec3 distortionAxis;
 uniform vec3 rotationAxis;
 uniform float uDistortion;
+uniform float uActive;
 varying vec2 vUv;
 varying vec3 vNormal;
 float PI = 3.141592653589793238;
@@ -65,7 +66,9 @@ void main() {
     (fract(uPosition*5.0*0.01) - 0.01*uDistortion*offset) / (1. - 0.01*uDistortion), 0., 2.
   );
   localprogress = qinticInOut(localprogress) * PI;
-  newpos = rotate(newpos, rotationAxis, localprogress);
+  // uActive (0 at rest → 1 mid-transition) scales the twist amplitude, so a
+  // settled poster sits fully flat and the hourglass only appears while scrolling.
+  newpos = rotate(newpos, rotationAxis, localprogress * uActive);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newpos, 1.0);
 }`;
 
@@ -137,7 +140,7 @@ class Media {
         tMap: { value: texture }, uPosition: { value: 0 }, uPlaneSize: { value: [0, 0] },
         uImageSize: { value: [0, 0] }, uSpeed: { value: 0 },
         rotationAxis: { value: [0, 1, 0] }, distortionAxis: { value: [1, 1, 0] },
-        uDistortion: { value: this.distortion },
+        uDistortion: { value: this.distortion }, uActive: { value: 0 },
         uViewportSize: { value: [this.viewport.width, this.viewport.height] }, uTime: { value: 0 },
       },
       cullFace: false,
@@ -182,6 +185,10 @@ class Media {
     this.program.uniforms.uPosition.value  = pos;
     this.program.uniforms.uTime.value     += 0.04;
     this.program.uniforms.uSpeed.value     = scroll.current;
+    // Distortion amplitude follows live scroll motion (Canvas computes it once a
+    // frame): 0 while settled → flat full image; ramps up while scrolling → the
+    // hourglass twist, then eases back to flat when the scroll stops.
+    this.program.uniforms.uActive.value = scroll.activity;
     const ph = this.plane.scale.y, vh = this.viewport.height;
     if (this.plane.position.y + ph / 2 < -vh / 2) this.extra -= this.heightTotal;
     else if (this.plane.position.y - ph / 2 >  vh / 2) this.extra += this.heightTotal;
@@ -206,7 +213,7 @@ class Canvas {
     this.planeHeight  = p.planeHeight; this.distortion = p.distortion;
     this.cameraFov    = p.cameraFov;  this.cameraZ     = p.cameraZ;
     this.disableWheel = p.disableWheel ?? false;
-    this.scroll = { ease: p.scrollEase, current: 0, target: 0, last: 0 };
+    this.scroll = { ease: p.scrollEase, current: 0, target: 0, last: 0, activity: 0 };
     AutoBind(this);
     this.createRenderer(); this.createCamera(); this.createScene();
     this.onResize(); this.createGeometry(); this.createMedias();
@@ -306,6 +313,14 @@ class Canvas {
 
   update() {
     this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
+    // Smoothed scroll-motion → distortion gate. speed is this frame's travel;
+    // normalised against one item's height so it's resolution-independent (moving
+    // ~1% of an item per frame saturates to a full twist). Ease in/out so the
+    // hourglass fades in as scrolling starts and back to flat as it stops.
+    const ref      = this.medias?.[0]?.height || 1;
+    const speed    = Math.abs(this.scroll.current - this.scroll.last);
+    const activity = Math.min(speed / (ref * 0.01), 1);
+    this.scroll.activity = lerp(this.scroll.activity, activity, 0.18);
     this.medias?.forEach(m => m.update(this.scroll));
     this.renderer.render({ scene: this.scene, camera: this.camera });
     this.scroll.last = this.scroll.current;

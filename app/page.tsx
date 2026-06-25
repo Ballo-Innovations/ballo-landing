@@ -119,7 +119,7 @@ const testimonials = [
     quote: "The targeted messaging feature is unlike anything we've used before. We saw a measurable uplift in foot traffic after our very first campaign.",
     name: "James Okafor",
     title: "CEO",
-    company: "Mudenda Capital",
+    company: "Horizon Capital",
   },
   {
     quote: "From setup to launch took less than an afternoon. The dashboard is intuitive and the results speak for themselves.",
@@ -300,20 +300,6 @@ export default function Home() {
           style={{ backgroundSize: "cover" }}
         />
 
-        {/* Large Faded Text — pure CSS marquee */}
-        <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none">
-          <div className="marquee-track flex whitespace-nowrap">
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-            <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-          </div>
-        </div>
-
         {/* Frame matches the header pill (72rem) so the hero aligns with the nav above */}
         <div className="mx-auto w-full max-w-[72rem] relative z-10">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
@@ -345,6 +331,21 @@ export default function Home() {
                   Book A Free Demo
                 </Link>
               </div>
+
+              {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
+              <div className="relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none">
+                <div className="marquee-track flex whitespace-nowrap">
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                </div>
+              </div>
+
               {/* Pagination Dots */}
               <div className="flex items-center justify-center md:justify-start gap-3 mt-1">
                 {features.map((_, index) => (
@@ -365,7 +366,7 @@ export default function Home() {
             <div className="relative flex justify-center items-center">
               <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
                 <div className="relative w-full h-full">
-                  <div className="w-full h-auto absolute right-0 bottom-0 scale-[2] z-0">
+                  <div className="w-full h-auto absolute left-[60%] top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.5] opacity-60 z-0">
                     <ConcentricRings />
                   </div>
                   <AnimatePresence mode="wait" initial={false}>
@@ -382,9 +383,9 @@ export default function Home() {
                         alt={features[currentSlide].title}
                         fill
                         sizes="(max-width: 768px) 85vw, 40vw"
-                        className={`object-contain object-bottom ${features[currentSlide].title === "EMAIL MARKETING AT YOUR FINGERTIPS"
-                          ? "scale-[1.42] mt-5 -ml-2"
-                          : "scale-[1.35] mt-8 -ml-4"
+                        className={`object-contain object-center ${features[currentSlide].title === "EMAIL MARKETING AT YOUR FINGERTIPS"
+                          ? "scale-[1.42] -ml-2"
+                          : "scale-[1.35] -ml-4"
                           }`}
                         priority={currentSlide === 0}
                       />
