@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 import { SmoothScroll } from "./components/ui/SmoothScroll";
+import { WaitlistModal } from "./components/ui/WaitlistModal";
 
 const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
@@ -43,6 +44,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <WaitlistModal />
         </SmoothScroll>
       </body>
     </html>

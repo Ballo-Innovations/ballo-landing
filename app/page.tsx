@@ -338,9 +338,12 @@ export default function Home() {
               </div>
 
               <div className="hero-actions justify-center md:justify-start">
-                <Link href="#waitlist" className="btn-primary group">
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+                  className="btn-primary group"
+                >
                   Join Waitlist
-                </Link>
+                </button>
                 <Link href="/watch-demo" className="btn-secondary group">
                   Book A Free Demo
                 </Link>
@@ -626,10 +629,13 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center mt-12">
-            <Link href="#signup" className="glow-button group">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+              className="glow-button group"
+            >
               <span className="glow-button__text">Join waitlist</span>
               <div className="glow-button__glow-core" />
-            </Link>
+            </button>
           </div>
         </div>
       </section>

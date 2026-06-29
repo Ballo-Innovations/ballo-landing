@@ -74,9 +74,12 @@ const Header = () => {
         </Link>
 
         <div className="header__actions" aria-label="Account actions">
-          <Link href="#waitlist" className="header__action-link header__action-link--signup">
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+            className="header__action-link header__action-link--signup"
+          >
             Join Waitlist
-          </Link>
+          </button>
         </div>
       </motion.nav>
     </header>

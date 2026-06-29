@@ -59,6 +59,7 @@ const Footer = () => {
               <li><Link href="/knowledge-base">Knowledge Base</Link></li>
               <li><Link href="/live-chat">Live Chat</Link></li>
               <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service">Terms of Service</Link></li>
               <li><Link href="/resources">Resources</Link></li>
               <li><Link href="/whats-new">What&apos;s New</Link></li>
             </ul>
