@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 
 import personSmile from "@/public/Assets/12.png";
 import pushNotifications from "@/public/Assets/10.png";
@@ -254,14 +255,11 @@ export default function ProfessionalServicesPage() {
                 </div>
               
               <div className="relative z-10 flex flex-col items-center gap-5 px-4 pb-28 pt-24 md:px-8 md:flex-row md:justify-center">
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-color-2)]"
-                >
+                <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[var(--brand-color-2)]">
                   Get Started
-                </Link>
+                </WaitlistButton>
                 <Link
-                  href="/contact"
+                  href="/live-chat"
                   className="inline-flex items-center gap-2 rounded-full border bg-white px-6 py-3 text-2remm font-semibold text-[var(--brand-color-1)] transition hover:border-white hover:bg-white/10"
                 >
                   Contact us

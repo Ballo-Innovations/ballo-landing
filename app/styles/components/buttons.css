@@ -19,6 +19,7 @@
   min-height: 2.65rem;
   padding: 0 1.15rem;
   border-radius: 999px;
+  font-family: inherit; /* keep <button> usages in Ubuntu, matching <a>/<Link> */
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1;

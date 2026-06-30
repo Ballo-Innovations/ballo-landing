@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 
 import laptopImage from "@/public/BalloAds Assets 2/19.png";
 import article1 from "@/public/BalloAds Assets 2/1.png";
@@ -449,10 +450,7 @@ export default function BlogPostContent({ slug: _slug }: { slug: string }) {
 
         {/* Bottom CTA */}
         <div className="mt-16 flex flex-col items-center gap-4 md:flex-row md:justify-center">
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-[var(--brand-color-2)]"
-          >
+          <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-[var(--brand-color-2)]">
             Get Started
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -462,9 +460,9 @@ export default function BlogPostContent({ slug: _slug }: { slug: string }) {
                 d="M9 5l7 7-7 7"
               />
             </svg>
-          </Link>
+          </WaitlistButton>
           <Link
-            href="/subscribe"
+            href="/subscription"
             className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 bg-transparent px-8 py-4 text-base font-semibold text-white transition hover:border-white hover:bg-white/10"
           >
             Subscribe

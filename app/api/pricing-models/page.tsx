@@ -75,7 +75,7 @@ const Sidebar = () => {
       
       <div className="p-6 mt-auto">
         <a 
-          href="/public/Assets/BalloAPI.docx" // 1. Path to your file in the 'public' folder
+          href="/Assets/BalloAPI.docx" // served from /public at the site root
           download="BalloAPI.docx" // 2. The name the user sees when saving
           className="group flex items-center gap-3 bg-blue-900/20 hover:bg-blue-600/20 p-4 rounded-2xl border border-white/5 hover:border-blue-400/30 transition-all duration-300 w-full cursor-pointer"
         >

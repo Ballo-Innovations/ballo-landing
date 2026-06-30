@@ -1273,6 +1273,7 @@
   box-shadow: var(--btn-cta-shadow);
   padding: 0 1.15rem;
   border-radius: 999px;
+  font-family: inherit; /* keep <button> usage in Ubuntu, matching <a>/<Link> */
   font-weight: 700;
   font-size: 0.95rem;
   line-height: 1;
@@ -1290,6 +1291,11 @@
 
 .glow-button:active {
   transform: translateY(0) scale(0.98);
+}
+
+.glow-button:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
 }
 
 .glow-button>* {
@@ -1320,4 +1326,22 @@
     padding: 0 0.72rem;
     font-size: clamp(0.78rem, 3.3vw, 0.88rem);
   }
+}
+/* Hero */
+.hero-kicker {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 0.5rem 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: clamp(0.72rem, 1.8vw, 0.86rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
 }

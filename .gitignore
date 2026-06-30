@@ -43,3 +43,6 @@ next-env.d.ts
 public/BalloAds Assets 2.zip
 public/*.zip
 .env*.local
+
+# internal reference assets (brief, Canva exports, brand board) — not for the repo
+Reference folder/

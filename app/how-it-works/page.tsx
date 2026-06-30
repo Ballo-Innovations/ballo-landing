@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 import ring from "@/public/Assets/8.png";
 import phoneAnalytics from "@/public/Assets/37.png";
 import statsBoard from "@/public/elements small/stats-chart.PNG";
@@ -91,10 +92,7 @@ export default function HowItWorksPage() {
             workflows, boost conversions, and drive business growth.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-8 py-4 text-base font-semibold text-white shadow-lg transition]"
-            >
+            <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-8 py-4 text-base font-semibold text-white shadow-lg transition">
               Get Started
               <svg
                 className="h-5 w-5"
@@ -108,9 +106,9 @@ export default function HowItWorksPage() {
                 <path d="M5 12h14" />
                 <path d="M13 5l7 7-7 7" />
               </svg>
-            </Link>
+            </WaitlistButton>
             <Link
-              href="/watch-demo"
+              href="/features"
               className="inline-flex items-center gap-2 rounded-full px-8 py-4 text-base font-semibold text-[var(--brand-color-1)] transition bg-white"
             >
               Book A Free Demo

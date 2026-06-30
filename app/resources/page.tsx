@@ -137,7 +137,7 @@ export default function ResourcesPage() {
                     Explore in-depth walkthroughs and video tutorials designed to help you launch campaigns in minutes.
                   </p>
                   <Link
-                    href="/watch-demo"
+                    href="/features"
                     className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-[var(--brand-color-2)]"
                   >
                     {heroCards.main.cta}
@@ -183,9 +183,9 @@ export default function ResourcesPage() {
                   />
                   <div className="text-sm font-semibold text-[var(--dark-blue)] z-[1] relative">{card.title}</div>
                   <Link
-                    href="/watch-demo"
+                    href="/features"
                     className="ml-auto inline-flex h-9 w-9 items-center justify-center z-[1] relative rounded-full bg-[var(--brand-color-1)] text-white"
-                    aria-label={`Watch demo for ${card.title}`}
+                    aria-label={`Learn more about ${card.title}`}
                   >
                     <svg
                       className="h-4 w-4"
@@ -307,7 +307,7 @@ export default function ResourcesPage() {
                     possible.
                   </p>
                   <Link
-                    href="/contact"
+                    href="/live-chat"
                     className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[var(--brand-color-2)]"
                   >
                     Contact us

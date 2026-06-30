@@ -6,6 +6,7 @@ import Link from "next/link";
 import React from "react";
 import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCarousel";
 import { FadeUpReveal } from "../components/ui/FadeUpReveal";
+import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 
 import article1 from "@/public/BalloAds Assets 2/19.png";
 import article2 from "@/public/BalloAds Assets 2/8.png";
@@ -436,14 +437,11 @@ export default function FeaturedCarousel() {
           </FadeUpReveal>
 
           <div className="mt-12 md:mt-16 flex flex-col items-center gap-4 md:flex-row md:justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-2 rounded-full bg-(--brand-color-1) px-6 py-3 text-sm font-semibold text-white transition hover:bg-(--brand-color-2)"
-            >
+            <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-(--brand-color-1) px-6 py-3 text-sm font-semibold text-white transition hover:bg-(--brand-color-2)">
               Get Started
-            </Link>
+            </WaitlistButton>
             <Link
-              href="/contact"
+              href="/live-chat"
               className="inline-flex items-center gap-2 rounded-full border bg-white px-6 py-3 text-sm font-semibold text-(--brand-color-1) transition hover:border-white hover:bg-white/10"
             >
               Contact us

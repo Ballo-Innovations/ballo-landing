@@ -2,13 +2,13 @@
 
 import React, { useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 import phoneFrame from "@/public/Assets/phone-frame.png";
 import BalloLoader from "@/app/components/ui/BalloLoader";
+import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -22,6 +22,7 @@ const features = [
 
 export function WhyScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
+  const { openWaitlist } = useWaitlist();
 
   useGSAP(() => {
     const outer = containerRef.current;
@@ -100,12 +101,13 @@ export function WhyScrollSection() {
             <p className="mt-4 text-white text-base leading-relaxed" style={{ maxWidth: "22rem" }}>
               The digital marketing platform built for your growth.
             </p>
-            <Link
-              href="#waitlist"
+            <button
+              type="button"
+              onClick={openWaitlist}
               className="btn-primary group mt-8"
             >
               Join Waitlist
-            </Link>
+            </button>
           </div>
 
           <div className="why-right-area">

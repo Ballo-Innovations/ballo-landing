@@ -23,6 +23,7 @@ const WhoScrollSection = dynamic(
 
 import { HeroPinSetup } from "./components/ui/HeroPinSetup";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
+import { useWaitlist } from "./components/waitlist/WaitlistProvider";
 
 import playStore from "@/public/elements small/19.png";
 import appleStore from "@/public/elements small/18.png";
@@ -37,7 +38,6 @@ import woman2 from "@/public/Assets/13.png";
 import woman3 from "@/public/Assets/10.png";
 import man from "@/public/Assets/14.png";
 import ConcentricRings from "./components/ui/ConcentricRings";
-import { ParallaxSetup } from "./components/ui/ParallaxSetup";
 import bank from "@/public/Assets/19.png";
 import glowBg from "@/public/Assets/glow-bg.png";
 
@@ -81,24 +81,28 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman3,
+    href: "/whatsapp-marketing",
   },
   {
     title: "TARGETED BULK MESSAGING SOLUTIONS",
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: man,
+    href: "/sms-marketing",
   },
   {
     title: "INITIATE WEB POP UPS AND PUSH NOTIFICATIONS",
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman2,
+    href: "/features",
   },
   {
     title: "EMAIL MARKETING AT YOUR FINGERTIPS",
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman,
+    href: "/email-marketing",
   },
 ];
 
@@ -143,6 +147,8 @@ export default function Home() {
     phone: "",
     message: "",
   });
+
+  const { openWaitlist } = useWaitlist();
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const nextSlide = (currentSlide + 1) % features.length;
@@ -279,7 +285,6 @@ export default function Home() {
     <main className="relative min-h-screen text-white pt-3 overflow-x-hidden"
       style={{ background: "linear-gradient(180deg, #070757 0%, #000000 100%)" }}>
       <SilkBackground />
-      <ParallaxSetup />
       <HeroPinSetup />
 
       {/* Hero Section */}
@@ -304,7 +309,9 @@ export default function Home() {
         <div className="mx-auto w-full max-w-[72rem] relative z-10">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
             {/* Left Side - Content */}
-            <div className="relative z-1 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+            <div className="relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+              <p className="hero-kicker">AI-Powered Performance Marketing</p>
+
               {/* Rotating headline */}
               <div className="relative w-full min-h-[150px] sm:min-h-[200px] md:min-h-[250px] flex items-start justify-center md:justify-start">
                 <AnimatePresence mode="wait" initial={false}>
@@ -324,11 +331,11 @@ export default function Home() {
               </div>
 
               <div className="hero-actions justify-center md:justify-start">
-                <Link href="#waitlist" className="btn-primary group">
-                  Join Waitlist
-                </Link>
-                <Link href="/watch-demo" className="btn-secondary group">
-                  Book A Free Demo
+                <button type="button" onClick={openWaitlist} className="btn-primary group">
+                  Sign Up
+                </button>
+                <Link href={features[currentSlide].href} className="btn-secondary group">
+                  Learn More
                 </Link>
               </div>
 
@@ -627,10 +634,10 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center mt-12">
-            <Link href="#signup" className="glow-button group">
+            <button type="button" onClick={openWaitlist} className="glow-button group">
               <span className="glow-button__text">Join waitlist</span>
               <div className="glow-button__glow-core" />
-            </Link>
+            </button>
           </div>
         </div>
       </section>

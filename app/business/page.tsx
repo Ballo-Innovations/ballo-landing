@@ -198,7 +198,7 @@ const HeroSection: React.FC = () => {
               unlock new revenue, accelerate growth and engage your audience in real time.
             </p>
             <Link
-              href="/book-demo"
+              href="/features"
               className="inline-flex items-center gap-3 w-fit px-8 py-4 rounded-full bg-white text-[var(--dark-blue)] font-semibold text-lg shadow-lg hover:bg-[var(--brand-color-2)] transition-colors"
             >
               Book a free demo
