@@ -72,7 +72,7 @@
   justify-content: space-between;
   width: min(calc(100vw - 1.5rem), 84rem);
   min-height: 3.05rem;
-  padding: 0.4rem 0.85rem 0.4rem 1.15rem;
+  padding: 0.4rem 1.15rem 0.4rem 1.45rem;
   overflow: hidden;
   border-radius: 999px;
 }
@@ -159,27 +159,33 @@
 .header__logo-icon {
   display: flex;
   align-items: center;
-  width: clamp(9.75rem, 20vw, 12rem);
+  width: auto;
   min-width: 0;
 }
 
 .header__logo-image {
   display: block;
-  /* Cap the logo height so it sets the (now slimmer) nav bar height. */
+  /* Height caps the logo so it — not padding — drives the nav bar height. */
   height: 2.5rem;
   width: auto;
+  object-fit: contain;
   filter: brightness(0) invert(1);
 }
 
 .header__logo-mark {
+  height: 2.5rem;
   width: auto;
-  height: 2.4rem;
   flex: 0 0 auto;
 }
 
 .header__logo-wordmark {
-  width: 100%;
-  margin-left: -1.5rem;
+  /* width:auto preserves the wordmark's natural ~2.84:1 ratio (no stretch);
+     the negative margin tucks it against the icon, closing the inner
+     whitespace baked into both PNGs. */
+  height: 2.5rem;
+  width: auto;
+  flex: 0 0 auto;
+  margin-left: -0.75rem;
 }
 
 /* Header Actions */
@@ -290,7 +296,7 @@
   }
 
   .header__logo-icon {
-    width: clamp(7.25rem, 36vw, 9rem);
+    width: auto;
   }
 
   .header__logo-mark {
@@ -298,7 +304,8 @@
   }
 
   .header__logo-wordmark {
-    margin-left: -1.1rem;
+    height: 2.35rem;
+    margin-left: -0.65rem;
   }
 
   .header__actions {

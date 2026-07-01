@@ -330,31 +330,42 @@
 }
 
 /* =============================================
-   Who Can Use — scroll-pinned section (redesigned)
+   Who Can Use — rising-image pinned stage (redesigned)
+   Heading on top; a single image frame whose filmstrip rises through
+   all industries on scroll, each captioned above a GradualBlur band.
    ============================================= */
 
 .who-scroll-sticky {
+  position: relative;
   height: 100vh;
   display: flex;
   align-items: center;
   padding: 0 clamp(1.5rem, 5vw, 5rem);
 }
 
-/* Two-column layout */
-.who-redesign-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 2.2fr;
-  gap: clamp(2.5rem, 5vw, 5rem);
-  align-items: center;
+/* Entrance blur mask — spans the section's full width/bottom, above the
+   card in stacking order, so the rising card visibly blurs where it still
+   overlaps this zone and clears to sharp once it rises above it. */
+.who-reveal-blur {
+  pointer-events: none;
 }
 
-/* ── Left column ── */
-.who-redesign-left {
+.who-redesign-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(1.25rem, 2.6vw, 1.9rem);
+}
+
+/* ── Heading ── */
+.who-stage-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .who-eyebrow-tag {
@@ -369,227 +380,210 @@
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 999px;
   padding: 0.35rem 0.9rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   width: fit-content;
 }
 
 .who-redesign-h2 {
-  font-size: clamp(2.2rem, 3.8vw, 3.5rem);
+  font-size: clamp(2rem, 3.6vw, 3.25rem);
   font-weight: 800;
   color: white;
   letter-spacing: -0.03em;
-  line-height: 1.06;
-  margin-bottom: 2.5rem;
-}
-
-.who-redesign-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Each item */
-.who-redesign-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  opacity: 0.2;
-  cursor: default;
-}
-
-.who-redesign-item:first-child {
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
-
-.who-item-num {
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.3);
-  min-width: 1.75rem;
-  flex-shrink: 0;
-}
-
-/* Bare icon — no box, no border */
-.who-item-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  flex-shrink: 0;
-  color: rgba(255,255,255,0.65);
-}
-
-.who-item-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.who-item-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: white;
-  line-height: 1.3;
+  line-height: 1.05;
   margin: 0;
 }
 
-.who-item-subtext {
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ── Right column — FlyingPosters container ── */
-.who-redesign-right {
+/* ── Rising-image stage — portrait, centered focal card ── */
+.who-stage {
   position: relative;
-  height: 74vh;
-  max-height: 720px;
+  margin: 0 auto;
+  width: min(60vw, 440px);
+  height: min(72vh, 640px);
   overflow: hidden;
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
+  background: #0b1230;
+  box-shadow:
+    0 30px 80px rgba(1,1,40,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.06);
 }
 
-/* Reduced-motion fallback image (hidden by default) */
-.who-rmo-fallback {
-  display: none;
+/* Vertical filmstrip — height equals the stage; GSAP scrubs yPercent so
+   each 100%-tall slide rises one frame at a time. */
+.who-strip {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
 }
 
-/* FlyingPosters wrapper fills the container */
-.who-flying-wrap {
+.who-slide {
+  position: relative;
+  flex: 0 0 100%;
   width: 100%;
   height: 100%;
 }
 
-/* Show static image, hide WebGL when motion is reduced */
-@media (prefers-reduced-motion: reduce) {
-  .who-rmo-fallback { display: block; }
-  .who-flying-wrap  { display: none;  }
+/* Caption footer — crisp (above the blur); swaps with the active image */
+.who-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.75rem 1.5rem 2rem;
+  display: flex;
+  align-items: flex-end;
+  background: linear-gradient(to top, rgba(2,0,40,0.9) 8%, rgba(2,0,40,0) 100%);
+  pointer-events: none;
 }
 
-/* ── Mobile ── */
+.who-caption-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  animation: whoCaptionIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes whoCaptionIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.who-caption-num {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--cyan-bright, #5dd7ff);
+}
+
+.who-caption-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0.15rem 0 0.3rem;
+}
+
+.who-caption-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--cyan-bright, #5dd7ff);
+  flex-shrink: 0;
+}
+
+.who-caption-sub {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.72);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 34ch;
+}
+
+/* Progress dots — current image within the set */
+.who-progress {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  display: flex;
+  gap: 0.4rem;
+  z-index: 6;
+}
+
+.who-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.3);
+  transition: width 0.35s ease, background 0.35s ease;
+}
+
+.who-dot.is-active {
+  width: 1.5rem;
+  background: #fff;
+}
+
+/* ── Static fallback (mobile + reduced-motion): stacked cards, no pin ── */
+.who-scroll-sticky.is-static {
+  height: auto;
+  min-height: 0;
+  align-items: flex-start;
+  padding: 2.5rem clamp(1.25rem, 4vw, 3rem) 3rem;
+}
+
+.who-mobile-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.who-mcard {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.who-mcard-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #0b1230;
+}
+
+.who-mphoto-num {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 2;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+}
+
+.who-mcard-body {
+  padding: 1rem 1.15rem 1.25rem;
+}
+
+.who-mcard-body .who-item-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.3rem;
+}
+
+.who-mcard-body .who-item-subtext {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Mobile heading tweaks (stacked cards handled by .is-static above) ── */
 @media (max-width: 768px) {
-  /* No pin on mobile — section is normal flow, sized to its content. */
-  .who-scroll-sticky {
-    height: auto;
-    min-height: 0;
-    padding: 2.5rem 1.25rem 3rem;
-    align-items: flex-start;
-  }
-
-  .who-redesign-inner {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  /* Horizontal thumb-scroll carousel — one image per view, snap, no scrollbar */
-  .who-mobile-photos {
-    order: -1;
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    border-radius: 1rem;
-    touch-action: pan-x;
-  }
-
-  .who-mobile-photos::-webkit-scrollbar {
-    display: none;
-  }
-
-  .who-mphoto {
-    position: relative;
-    flex: 0 0 100%;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    scroll-snap-align: center;
-    border-radius: 1rem;
-    overflow: hidden;
-    background-color: #0b1230;
-  }
-
-  /* Index badge on each slide */
-  .who-mphoto-num {
-    position: absolute;
-    top: 0.7rem;
-    left: 0.8rem;
-    z-index: 2;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
-    padding: 0.25rem 0.55rem;
-    border-radius: 999px;
-  }
-
-  .who-redesign-left {
-    order: 0;
-  }
-
-  /* Mobile highlight is React-driven (.is-active) from the carousel position.
-     The opacity transition lives here (mobile only) so it smooths the
-     class-driven .is-active toggle — on desktop GSAP scrubs opacity inline
-     every frame, where a CSS transition would lag the highlight behind scroll. */
-  .who-redesign-item {
-    opacity: 0.35;
-    cursor: pointer;
-    transition: opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1);
-  }
-
-  .who-redesign-item.is-active {
-    opacity: 1;
-  }
-
   .who-eyebrow-tag {
-    font-size: 0.6rem;
-    letter-spacing: 0.18em;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
     padding: 0.3rem 0.75rem;
   }
 
   .who-redesign-h2 {
-    font-size: clamp(1.5rem, 7vw, 2rem);
-    line-height: 1.15;
-    margin: 0.5rem 0 1rem;
-  }
-
-  .who-redesign-item {
-    padding: 0.65rem 0;
-    gap: 0.65rem;
-  }
-
-  .who-item-num {
-    font-size: 0.65rem;
-    min-width: 1.4rem;
-  }
-
-  .who-item-icon {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .who-item-title {
-    font-size: 1rem;
-  }
-
-  .who-item-subtext {
-    display: none;
-  }
-}
-
-@media (min-width: 420px) and (max-width: 768px) {
-  .who-item-subtext {
-    display: block;
-    font-size: 0.8rem;
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+    line-height: 1.12;
   }
 }
 

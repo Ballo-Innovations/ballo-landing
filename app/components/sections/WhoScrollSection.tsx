@@ -2,15 +2,11 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { Building, Landmark, Globe, ShoppingCart, Heart, GraduationCap } from "lucide-react";
-import type { FlyingPostersHandle } from "../ui/FlyingPosters";
-
-// OGL canvas — browser only
-const FlyingPosters = dynamic(() => import("../ui/FlyingPosters"), { ssr: false });
+import GradualBlur from "../ui/GradualBlur";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -66,238 +62,265 @@ const useCases = [
   },
 ];
 
-// Stable reference — prevents FlyingPosters from remounting on every render
-const IMAGE_SRCS = useCases.map((c) => c.src);
+const N = useCases.length;
 
 export function WhoScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
-  const flyingRef    = useRef<FlyingPostersHandle>(null);
   const activeIdxRef = useRef(0);
-
-  // Desktop = WebGL pinned fan. Mobile = horizontal swipe carousel.
-  const [isMobile, setIsMobile]   = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  const mobileScrollRef = useRef<HTMLDivElement>(null);
-  const scrollRafRef    = useRef(0);
+
+  // Static layout = mobile OR reduced-motion → accessible stacked cards
+  // (no pin, no scroll-jacking). Desktop with motion gets the rising stage.
+  const [isStatic, setIsStatic] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    const update = () => setIsMobile(mq.matches);
+    const mqSmall = window.matchMedia("(max-width: 768px)");
+    const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setIsStatic(mqSmall.matches || mqReduce.matches);
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    mqSmall.addEventListener("change", update);
+    mqReduce.addEventListener("change", update);
+    return () => {
+      mqSmall.removeEventListener("change", update);
+      mqReduce.removeEventListener("change", update);
+    };
   }, []);
-
-  // Mobile: derive the active item from the carousel's horizontal scroll offset.
-  const handleMobileScroll = () => {
-    if (scrollRafRef.current) return;
-    scrollRafRef.current = requestAnimationFrame(() => {
-      scrollRafRef.current = 0;
-      const el = mobileScrollRef.current;
-      if (!el) return;
-      const idx = Math.round(el.scrollLeft / el.clientWidth);
-      const clamped = Math.max(0, Math.min(idx, useCases.length - 1));
-      setActiveIdx((prev) => (prev === clamped ? prev : clamped));
-    });
-  };
-
-  // Mobile: tapping a list item snaps the carousel to that image.
-  const scrollToImage = (i: number) => {
-    const el = mobileScrollRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
 
   useGSAP(() => {
     const outer = containerRef.current;
     if (!outer) return;
 
-    const stickyEl  = outer.querySelector<HTMLElement>(".who-scroll-sticky");
-    const listItems = Array.from(outer.querySelectorAll<HTMLElement>(".who-redesign-item"));
-    if (!stickyEl || listItems.length === 0) return;
-
-    const n = listItems.length;
-
     const mm = gsap.matchMedia();
 
-    // ── Desktop only: pinned WebGL fan, scroll-driven highlight ──
-    // The opacity highlight + pin live inside the desktop branch so the mobile
-    // layout (where the highlight is React-driven from the carousel) is never
-    // touched by GSAP inline styles.
-    const onUpdate = (self: ScrollTrigger) => {
-      const newIdx = Math.min(Math.floor(self.progress * n), n - 1);
-      if (newIdx === activeIdxRef.current) return;
-      activeIdxRef.current = newIdx;
-      flyingRef.current?.scrollToIndex(newIdx);
-    };
-
-    mm.add("(prefers-reduced-motion: no-preference) and (min-width: 769px)", () => {
-      gsap.set(listItems,    { opacity: 0.2 });
-      gsap.set(listItems[0], { opacity: 1   });
-
-      const tl = gsap.timeline();
-      for (let i = 1; i < n; i++) {
-        tl.to(listItems[i - 1], { opacity: 0.2, duration: 0.4, ease: "none" });
-        tl.to(listItems[i],     { opacity: 1,   duration: 0.4, ease: "none" }, "<");
-      }
-
-      ScrollTrigger.create({
-        trigger: outer,         // outer <section> — position unaffected by pin-spacer
-        pin: stickyEl,          // pin the inner sticky div, not the trigger itself
-        start: "top top",
-        // ~half a viewport of scroll per item — ScrollTrigger ignores "vh"/"%"
-        // units in "+=" strings (it would treat "+=600vh" as 600px), so use the
-        // function form for real pixels, recomputed on resize/refresh.
-        end: () => `+=${n * window.innerHeight * 0.5}`,
-        pinSpacing: true,
-        // No anticipatePin — it pre-engages the pin a few frames early, snapping
-        // the content up while the previous section is still leaving. Engaging
-        // exactly at "top top" keeps the hand-off clean with no jump.
-        // Lower than the hero/why pins above so this section measures AFTER them.
-        refreshPriority: -1,
-        animation: tl,
-        scrub: 0.5,
-        onUpdate,
-      });
-
-      return () => gsap.set(listItems, { clearProps: "opacity" });
-    });
-
-    // Entrance reveals — text + list slide up once as the section scrolls in.
-    // No opacity tween on the list so it never fights the highlight (desktop:
-    // GSAP-driven, mobile: CSS .is-active).
+    // ── Heading entrance (all breakpoints) ──
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const eyebrow = outer.querySelector<HTMLElement>(".who-eyebrow-tag");
       const heading = outer.querySelector<HTMLElement>(".who-redesign-h2");
-
       gsap.from([eyebrow, heading].filter(Boolean) as HTMLElement[], {
-        y: 50,
+        y: 40,
         opacity: 0,
         duration: 0.9,
         ease: "power3.out",
         stagger: 0.12,
-        scrollTrigger: { trigger: outer, start: "top 78%", once: true },
-      });
-
-      gsap.from(listItems, {
-        y: 36,
-        duration: 0.7,
-        ease: "power3.out",
-        stagger: 0.08,
-        scrollTrigger: { trigger: outer, start: "top 70%", once: true },
+        scrollTrigger: { trigger: outer, start: "top 80%", once: true },
       });
     });
 
-    // The pin start depends on the hero (pinSpacing:false) and Why pins above,
-    // plus async image/font heights. A single rAF refresh runs before that has
-    // settled, leaving a stale start — which makes the FIRST scroll-through jump
-    // erratically (it self-corrects only after a later refresh). So refresh after
-    // the next frame AND on window load, once everything is measured.
+    // ── Desktop only: pin the stage and scrub the filmstrip up through
+    //    every image; each rises into view as the previous exits the top. ──
+    mm.add("(min-width: 769px) and (prefers-reduced-motion: no-preference)", () => {
+      const sticky = outer.querySelector<HTMLElement>(".who-scroll-sticky");
+      const strip = outer.querySelector<HTMLElement>(".who-strip");
+      const stageEl = outer.querySelector<HTMLElement>(".who-stage");
+      const revealMask = outer.querySelector<HTMLElement>(".who-reveal-blur");
+      if (!sticky || !strip || !stageEl) return;
+
+      // Card reveal: starts a full card-height below rest (yPercent:100 —
+      // entirely below the fold, so the section reads as empty at first),
+      // then rises as the section scrolls into view, reaching rest exactly
+      // when the section's top hits the viewport top — the same instant the
+      // pin below engages, so the rise hands off into the "stick" with no
+      // gap. It passes up through the entrance blur zone on the way, so it
+      // reads as emerging out of the blur rather than just sliding in.
+      gsap.fromTo(
+        stageEl,
+        { yPercent: 100 },
+        {
+          yPercent: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: outer,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            refreshPriority: -1,
+          },
+        }
+      );
+
+      // The entrance mask's geometry overlaps the card's own resting bottom
+      // (where the caption lives) since it's tall enough to mask the card
+      // during transit — so it must fade out in the same window the card
+      // rises, reaching 0 opacity exactly when the card settles. Otherwise
+      // it would permanently blur the caption after the section sticks.
+      if (revealMask) {
+        gsap.fromTo(
+          revealMask,
+          { opacity: 1 },
+          {
+            opacity: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: outer,
+              start: "top bottom",
+              end: "top top",
+              scrub: true,
+              refreshPriority: -1,
+            },
+          }
+        );
+      }
+
+      // Once stuck, each slide steps in with its own eased tween — not a
+      // continuous scrub tied to scroll speed. The pin's onUpdate only
+      // detects which discrete index we've crossed into.
+      const animateToIndex = (idx: number) => {
+        gsap.to(strip, {
+          yPercent: -100 * idx,
+          duration: 0.6,
+          ease: "power2.in",
+          overwrite: true,
+        });
+      };
+
+      ScrollTrigger.create({
+        trigger: outer,
+        pin: sticky,
+        start: "top top",
+        // Function form → real pixels (ScrollTrigger ignores "vh" in "+=").
+        // ~0.6 viewport of scroll per image, recomputed on resize/refresh.
+        end: () => `+=${N * window.innerHeight * 0.6}`,
+        pinSpacing: true,
+        refreshPriority: -1,
+        onUpdate: (self) => {
+          const idx = Math.max(0, Math.min(Math.round(self.progress * (N - 1)), N - 1));
+          if (idx === activeIdxRef.current) return;
+          activeIdxRef.current = idx;
+          setActiveIdx(idx);
+          animateToIndex(idx);
+        },
+      });
+
+      return () => {
+        gsap.set(strip, { clearProps: "transform" });
+        gsap.set(stageEl, { clearProps: "transform" });
+        if (revealMask) gsap.set(revealMask, { clearProps: "opacity" });
+      };
+    });
+
+    // The pin start depends on the hero + Why pins above, plus async image/font
+    // heights. Refresh after the next frame AND on window load so the first
+    // scroll-through measures against a settled layout (no erratic jump).
     requestAnimationFrame(() => ScrollTrigger.refresh());
     if (document.readyState !== "complete") {
       window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
     }
-    // Run once on mount — desktop/mobile reactivity is handled by gsap.matchMedia
-    // above, so we must NOT re-run (and revert mid-flight) when isMobile flips.
   }, { scope: containerRef });
+
+  const active = useCases[activeIdx];
 
   return (
     <section ref={containerRef} className="who-scroll-outer">
-      <div className="who-scroll-sticky">
+      <div className={`who-scroll-sticky${isStatic ? " is-static" : ""}`}>
         <div className="who-redesign-inner">
 
-          {/* ── Mobile-only: horizontal thumb-scroll carousel (one image at a time,
-               swipe left→right cycles 1–6, drives the list highlight) ── */}
-          {isMobile && (
-            <div
-              className="who-mobile-photos"
-              ref={mobileScrollRef}
-              onScroll={handleMobileScroll}
-            >
+          {/* ── Heading ── */}
+          <div className="who-stage-head">
+            <span className="who-eyebrow-tag">Industries We Serve</span>
+            <h2 className="who-redesign-h2">Who can use BalloAds?</h2>
+          </div>
+
+          {/* ── Desktop: rising-image stage ── */}
+          {!isStatic && (
+            <div className="who-stage">
+              <div className="who-strip">
+                {useCases.map((item, i) => (
+                  <div className="who-slide" key={item.id}>
+                    <Image
+                      src={item.src}
+                      alt={item.text}
+                      fill
+                      sizes="(max-width: 1200px) 92vw, 1100px"
+                      className="object-cover"
+                      priority={i === 0}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Progress dots — current image within the set */}
+              <div className="who-progress" aria-hidden="true">
+                {useCases.map((item, i) => (
+                  <span key={item.id} className={`who-dot${i === activeIdx ? " is-active" : ""}`} />
+                ))}
+              </div>
+
+              {/* GradualBlur — softens the image where it meets the caption */}
+              <GradualBlur
+                target="parent"
+                position="bottom"
+                height="9rem"
+                strength={2.5}
+                divCount={6}
+                curve="bezier"
+                exponential
+                opacity={1}
+                zIndex={5}
+              />
+
+              {/* Caption — crisp, above the blur; swaps with the active image */}
+              <div className="who-caption" style={{ zIndex: 6 }}>
+                <div className="who-caption-inner" key={active.id}>
+                  <span className="who-caption-num">{active.num}</span>
+                  <div className="who-caption-text">
+                    <p className="who-caption-title">
+                      {React.cloneElement(
+                        active.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>,
+                        { className: "who-caption-icon", strokeWidth: 1.75 }
+                      )}
+                      {active.text}
+                    </p>
+                    <p className="who-caption-sub">{active.subtext}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Mobile / reduced-motion: stacked cards ── */}
+          {isStatic && (
+            <div className="who-mobile-stack">
               {useCases.map((item, i) => (
-                <div className="who-mphoto" key={item.id}>
-                  <Image
-                    src={item.src}
-                    alt={item.text}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority={i === 0}
-                  />
-                  <span className="who-mphoto-num">{item.num}</span>
+                <div className="who-mcard" key={item.id}>
+                  <div className="who-mcard-photo">
+                    <Image
+                      src={item.src}
+                      alt={item.text}
+                      fill
+                      sizes="100vw"
+                      className="object-cover"
+                      priority={i === 0}
+                    />
+                    <span className="who-mphoto-num">{item.num}</span>
+                  </div>
+                  <div className="who-mcard-body">
+                    <p className="who-item-title">{item.text}</p>
+                    <p className="who-item-subtext">{item.subtext}</p>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* ── Left column ── */}
-          <div className="who-redesign-left">
-            <span className="who-eyebrow-tag">Industries We Serve</span>
-
-            <h2 className="who-redesign-h2">
-              Who can use<br />BalloAds?
-            </h2>
-
-            <ul className="who-redesign-list">
-              {useCases.map((item, i) => (
-                <li
-                  key={item.id}
-                  className={`who-redesign-item${isMobile && i === activeIdx ? " is-active" : ""}`}
-                  onClick={isMobile ? () => scrollToImage(i) : undefined}
-                >
-                  <span className="who-item-num">{item.num}</span>
-
-                  {/* Bare icon — no wrapper box */}
-                  {React.cloneElement(
-                    item.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>,
-                    { className: "who-item-icon", strokeWidth: 1.5 }
-                  )}
-
-                  <div className="who-item-body">
-                    <p className="who-item-title">{item.text}</p>
-                    <p className="who-item-subtext">{item.subtext}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* ── Desktop-only right column — pinned WebGL fan ── */}
-          {!isMobile && (
-            <div className="who-redesign-right">
-
-              {/* Reduced-motion fallback: static photo of first use case */}
-              <div className="who-rmo-fallback" aria-hidden="true">
-                <Image
-                  src={useCases[0].src}
-                  alt={useCases[0].text}
-                  fill
-                  sizes="55vw"
-                  className="object-cover"
-                  loading="lazy"
-                />
-              </div>
-
-              {/* FlyingPosters — GSAP-driven via scrollToIndex, wheel disabled */}
-              <div className="who-flying-wrap">
-                <FlyingPosters
-                  ref={flyingRef}
-                  items={IMAGE_SRCS}
-                  initialIndex={0}
-                  planeWidth={712}
-                  planeHeight={506}
-                  distortion={3}
-                  scrollEase={0.12}
-                  cameraFov={45}
-                  cameraZ={20}
-                  disableWheel={true}
-                />
-              </div>
-
-            </div>
-          )}
-
         </div>
+
+        {/* Entrance blur — full-width, anchored to the section's bottom edge.
+            The card rises up through this fixed zone from below the fold, so
+            it reads as emerging out of the blur rather than just sliding in. */}
+        {!isStatic && (
+          <GradualBlur
+            className="who-reveal-blur"
+            target="parent"
+            position="bottom"
+            height="26rem"
+            strength={3}
+            divCount={7}
+            curve="bezier"
+            exponential
+            opacity={1}
+            zIndex={15}
+          />
+        )}
       </div>
     </section>
   );
