@@ -250,10 +250,17 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  /* More pronounced CTA — wider + capped at the logo height (2.5rem) so the
+     nav bar height is unchanged. */
+  min-height: 2.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
   color: var(--btn-cta-text);
   border: 1px solid var(--btn-cta-border);
   background: var(--btn-cta-bg);
-  box-shadow: var(--btn-cta-shadow);
+  box-shadow:
+    var(--btn-cta-shadow),
+    0 6px 20px -6px rgba(93, 215, 255, 0.6);
 }
 
 .header__action-link--signup::before {

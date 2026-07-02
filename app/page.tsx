@@ -289,7 +289,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center px-6 sm:px-8 py-20 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center py-20 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -305,11 +305,12 @@ export default function Home() {
           style={{ backgroundSize: "cover" }}
         />
 
-        {/* Frame matches the header pill (72rem) so the hero aligns with the nav above */}
-        <div className="mx-auto w-full max-w-[72rem] relative z-10">
+        {/* Frame uses the EXACT header-pill width formula so the hero's left
+            edge tracks the nav's at every viewport (text aligns with the logo) */}
+        <div className="hero-frame relative z-10">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
             {/* Left Side - Content */}
-            <div className="relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+            <div className="hero-copy relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
               <p className="hero-kicker">AI-Powered Performance Marketing</p>
 
               {/* Rotating headline */}
@@ -323,7 +324,7 @@ export default function Home() {
                     transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
                     className="w-full"
                   >
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[0.95] tracking-tight uppercase text-balance max-w-[16ch] mx-auto md:mx-0">
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[0.98] tracking-tight uppercase text-balance max-w-[22ch] mx-auto md:mx-0">
                       {features[currentSlide].title}
                     </h1>
                   </motion.div>
@@ -342,14 +343,14 @@ export default function Home() {
               {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
               <div className="relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none">
                 <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
                 </div>
               </div>
 
@@ -418,20 +419,22 @@ export default function Home() {
       >
         <div className="prlx-about-1" aria-hidden="true" />
 
-        {/* Relocated "POWERFUL AND VERSATILE" heading — styles kept identical */}
-        <div className="container mx-auto flex justify-center relative z-40">
+        {/* "POWERFUL AND VERSATILE" heading — now seated on a glass card panel */}
+        <div className="container mx-auto flex justify-center relative z-40 px-4">
           <FadeUpReveal>
-            <h2
-              className="relative py-20 px-4 z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)] overflow-hidden"
-              style={{
-                fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-                letterSpacing: "0.005em",
-                color: "#fff",
-                display: "block",
-              }}
-            >
-              POWERFUL AND VERSATILE
-            </h2>
+            <div className="pv-title-card">
+              <h2
+                className="relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
+                style={{
+                  fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+                  letterSpacing: "0.005em",
+                  color: "#fff",
+                  display: "block",
+                }}
+              >
+                POWERFUL AND VERSATILE
+              </h2>
+            </div>
           </FadeUpReveal>
         </div>
 

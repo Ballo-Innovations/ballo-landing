@@ -5,7 +5,6 @@ import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { Building, Landmark, Globe, ShoppingCart, Heart, GraduationCap } from "lucide-react";
 import GradualBlur from "../ui/GradualBlur";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -15,7 +14,6 @@ const useCases = [
   {
     id: "sme",
     num: "01",
-    icon: <Building />,
     text: "SMEs & Corporations",
     subtext: "Promote products, services, and offers to your ideal customers.",
     src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80",
@@ -23,7 +21,6 @@ const useCases = [
   {
     id: "finance",
     num: "02",
-    icon: <Landmark />,
     text: "Financial Institutions",
     subtext: "Send loan approvals, transaction updates, and targeted offers.",
     src: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&auto=format&fit=crop&q=80",
@@ -31,7 +28,6 @@ const useCases = [
   {
     id: "nonprofit",
     num: "03",
-    icon: <Globe />,
     text: "Nonprofits & Government",
     subtext: "Spread awareness and reach communities with mass communication.",
     src: "https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=1200&auto=format&fit=crop&q=80",
@@ -39,7 +35,6 @@ const useCases = [
   {
     id: "retail",
     num: "04",
-    icon: <ShoppingCart />,
     text: "Retail & E-commerce",
     subtext: "Drive sales, customer loyalty, and engagement at scale.",
     src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80",
@@ -47,7 +42,6 @@ const useCases = [
   {
     id: "healthcare",
     num: "05",
-    icon: <Heart />,
     text: "Healthcare & Clinics",
     subtext: "Send appointment reminders and targeted health campaigns.",
     src: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&auto=format&fit=crop&q=80",
@@ -55,7 +49,6 @@ const useCases = [
   {
     id: "education",
     num: "06",
-    icon: <GraduationCap />,
     text: "Education Institutions",
     subtext: "Notify students, parents, and staff with timely updates.",
     src: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&auto=format&fit=crop&q=80",
@@ -63,6 +56,11 @@ const useCases = [
 ];
 
 const N = useCases.length;
+
+// Fraction of the pinned scroll spent on the card's rise before the slides
+// begin stepping. Below this the card is emerging out of the liquid blur;
+// above it the card is stuck and each slide steps in.
+const RISE = 0.26;
 
 export function WhoScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
@@ -106,71 +104,36 @@ export function WhoScrollSection() {
       });
     });
 
-    // ── Desktop only: pin the stage and scrub the filmstrip up through
-    //    every image; each rises into view as the previous exits the top. ──
+    // ── Desktop only: pin the section; the card rises out of the fixed
+    //    liquid-blur band at the bottom, then (once stuck) each industry
+    //    slide steps in one at a time. ──
     mm.add("(min-width: 769px) and (prefers-reduced-motion: no-preference)", () => {
       const sticky = outer.querySelector<HTMLElement>(".who-scroll-sticky");
       const strip = outer.querySelector<HTMLElement>(".who-strip");
       const stageEl = outer.querySelector<HTMLElement>(".who-stage");
-      const revealMask = outer.querySelector<HTMLElement>(".who-reveal-blur");
       if (!sticky || !strip || !stageEl) return;
 
-      // Card reveal: starts a full card-height below rest (yPercent:100 —
-      // entirely below the fold, so the section reads as empty at first),
-      // then rises as the section scrolls into view, reaching rest exactly
-      // when the section's top hits the viewport top — the same instant the
-      // pin below engages, so the rise hands off into the "stick" with no
-      // gap. It passes up through the entrance blur zone on the way, so it
-      // reads as emerging out of the blur rather than just sliding in.
-      gsap.fromTo(
-        stageEl,
-        { yPercent: 100 },
-        {
-          yPercent: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: outer,
-            start: "top bottom",
-            end: "top top",
-            scrub: true,
-            refreshPriority: -1,
-          },
-        }
-      );
+      // Card starts a full height below rest — hidden below the fold / down in
+      // the blur — so the section reads as empty at the bottom while you
+      // approach it (nothing rises until you've scrolled into the section).
+      gsap.set(stageEl, { yPercent: 100 });
+      gsap.set(strip, { yPercent: 0 });
 
-      // The entrance mask's geometry overlaps the card's own resting bottom
-      // (where the caption lives) since it's tall enough to mask the card
-      // during transit — so it must fade out in the same window the card
-      // rises, reaching 0 opacity exactly when the card settles. Otherwise
-      // it would permanently blur the caption after the section sticks.
-      if (revealMask) {
-        gsap.fromTo(
-          revealMask,
-          { opacity: 1 },
-          {
-            opacity: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: outer,
-              start: "top bottom",
-              end: "top top",
-              scrub: true,
-              refreshPriority: -1,
-            },
-          }
-        );
-      }
-
-      // Once stuck, each slide steps in with its own eased tween — not a
-      // continuous scrub tied to scroll speed. The pin's onUpdate only
-      // detects which discrete index we've crossed into.
+      // Slides step in with their own eased tween once stuck — NOT a
+      // continuous scrub tied to scroll speed.
       const animateToIndex = (idx: number) => {
         gsap.to(strip, {
           yPercent: -100 * idx,
           duration: 0.6,
-          ease: "power2.in",
+          ease: "power2.inOut",
           overwrite: true,
         });
+      };
+      const setActive = (idx: number) => {
+        if (idx === activeIdxRef.current) return;
+        activeIdxRef.current = idx;
+        setActiveIdx(idx);
+        animateToIndex(idx);
       };
 
       ScrollTrigger.create({
@@ -178,23 +141,28 @@ export function WhoScrollSection() {
         pin: sticky,
         start: "top top",
         // Function form → real pixels (ScrollTrigger ignores "vh" in "+=").
-        // ~0.6 viewport of scroll per image, recomputed on resize/refresh.
-        end: () => `+=${N * window.innerHeight * 0.6}`,
+        // Recomputed on resize/refresh: enough scroll for the rise + N slides.
+        end: () => `+=${(N + 1) * window.innerHeight * 0.55}`,
         pinSpacing: true,
         refreshPriority: -1,
         onUpdate: (self) => {
-          const idx = Math.max(0, Math.min(Math.round(self.progress * (N - 1)), N - 1));
-          if (idx === activeIdxRef.current) return;
-          activeIdxRef.current = idx;
-          setActiveIdx(idx);
-          animateToIndex(idx);
+          const p = self.progress;
+          if (p <= RISE) {
+            // Phase 1 — scrubbed rise: the card climbs out of the blur band,
+            // scroll-linked so it tracks the wheel 1:1.
+            gsap.set(stageEl, { yPercent: 100 * (1 - p / RISE) });
+            setActive(0);
+          } else {
+            // Phase 2 — stuck: discrete, eased slide steps.
+            gsap.set(stageEl, { yPercent: 0 });
+            const sp = (p - RISE) / (1 - RISE);
+            setActive(Math.max(0, Math.min(Math.round(sp * (N - 1)), N - 1)));
+          }
         },
       });
 
       return () => {
-        gsap.set(strip, { clearProps: "transform" });
-        gsap.set(stageEl, { clearProps: "transform" });
-        if (revealMask) gsap.set(revealMask, { clearProps: "opacity" });
+        gsap.set([strip, stageEl], { clearProps: "transform" });
       };
     });
 
@@ -220,17 +188,17 @@ export function WhoScrollSection() {
             <h2 className="who-redesign-h2">Who can use BalloAds?</h2>
           </div>
 
-          {/* ── Desktop: rising-image stage ── */}
+          {/* ── Desktop: rising-image card (left) ── */}
           {!isStatic && (
             <div className="who-stage">
               <div className="who-strip">
                 {useCases.map((item, i) => (
-                  <div className="who-slide" key={item.id}>
+                  <div className={`who-slide${i === activeIdx ? " is-active" : ""}`} key={item.id}>
                     <Image
                       src={item.src}
                       alt={item.text}
                       fill
-                      sizes="(max-width: 1200px) 92vw, 1100px"
+                      sizes="(max-width: 1200px) 45vw, 430px"
                       className="object-cover"
                       priority={i === 0}
                     />
@@ -244,36 +212,16 @@ export function WhoScrollSection() {
                   <span key={item.id} className={`who-dot${i === activeIdx ? " is-active" : ""}`} />
                 ))}
               </div>
+            </div>
+          )}
 
-              {/* GradualBlur — softens the image where it meets the caption */}
-              <GradualBlur
-                target="parent"
-                position="bottom"
-                height="9rem"
-                strength={2.5}
-                divCount={6}
-                curve="bezier"
-                exponential
-                opacity={1}
-                zIndex={5}
-              />
-
-              {/* Caption — crisp, above the blur; swaps with the active image */}
-              <div className="who-caption" style={{ zIndex: 6 }}>
-                <div className="who-caption-inner" key={active.id}>
-                  <span className="who-caption-num">{active.num}</span>
-                  <div className="who-caption-text">
-                    <p className="who-caption-title">
-                      {React.cloneElement(
-                        active.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>,
-                        { className: "who-caption-icon", strokeWidth: 1.75 }
-                      )}
-                      {active.text}
-                    </p>
-                    <p className="who-caption-sub">{active.subtext}</p>
-                  </div>
-                </div>
-              </div>
+          {/* ── Synced industry caption (right) — remounts per slide so its
+               staggered "focus-in" reveal replays with each change ── */}
+          {!isStatic && (
+            <div className="who-headline-caption" key={active.id}>
+              <span className="who-caption-num">{active.num}</span>
+              <p className="who-caption-title">{active.text}</p>
+              <p className="who-caption-sub">{active.subtext}</p>
             </div>
           )}
 
@@ -304,22 +252,27 @@ export function WhoScrollSection() {
 
         </div>
 
-        {/* Entrance blur — full-width, anchored to the section's bottom edge.
-            The card rises up through this fixed zone from below the fold, so
-            it reads as emerging out of the blur rather than just sliding in. */}
+        {/* Persistent "liquid surface" — a fixed gradual-blur band at the
+            section's bottom edge (reactbits mechanic). The card rises up
+            THROUGH it: its lower portion stays blurred (submerged) while the
+            top emerges sharp. It never fades — it's the water line. */}
         {!isStatic && (
-          <GradualBlur
-            className="who-reveal-blur"
-            target="parent"
-            position="bottom"
-            height="26rem"
-            strength={3}
-            divCount={7}
-            curve="bezier"
-            exponential
-            opacity={1}
-            zIndex={15}
-          />
+          <>
+            {/* Crisp water-line where the card breaks the surface. */}
+            <div className="who-surface-glow" aria-hidden="true" />
+            <GradualBlur
+              className="who-reveal-blur"
+              target="parent"
+              position="bottom"
+              height="11rem"
+              strength={2.5}
+              divCount={6}
+              curve="bezier"
+              exponential
+              opacity={1}
+              zIndex={15}
+            />
+          </>
         )}
       </div>
     </section>
