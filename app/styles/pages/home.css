@@ -716,12 +716,16 @@
   will-change: transform;
 }
 
-/* Hero depth layer 1 — large indigo-blue bloom, lower-left */
+/* Hero depth layer 1 — large indigo-blue bloom, mid-left.
+   Centered high enough (42%) and tapered (transparent by 58%) that its
+   brightness dissolves well before the hero's clipped bottom edge, so the
+   overflow-hidden boundary never leaves a hard horizontal colour line where
+   the hero meets the next section — the page reads as one seamless gradient. */
 .prlx-hero-1 {
   background: radial-gradient(
-    ellipse 65% 52% at 14% 72%,
-    rgba(11, 77, 140, 0.48) 0%,
-    transparent 65%
+    ellipse 62% 46% at 12% 42%,
+    rgba(11, 77, 140, 0.4) 0%,
+    transparent 58%
   );
 }
 
@@ -1396,6 +1400,13 @@
   }
 }
 /* Hero */
+/* Hero person cutout — fade the bottom so it dissolves into the page
+   gradient instead of hard-clipping at the hero's edge. */
+.hero-person-img {
+  -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 92%);
+  mask-image: linear-gradient(to bottom, #000 68%, transparent 92%);
+}
+
 /* Hero content frame — identical width/centering to the header nav pill
    (see header.css .header__nav) so the hero's left edge tracks the nav's at
    every viewport, letting the kicker/headline align under the logo. */

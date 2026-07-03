@@ -21,7 +21,6 @@ const WhoScrollSection = dynamic(
   { ssr: false }
 );
 
-import { HeroPinSetup } from "./components/ui/HeroPinSetup";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
 import { useWaitlist } from "./components/waitlist/WaitlistProvider";
 
@@ -283,9 +282,8 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen text-white pt-3 overflow-x-hidden"
-      style={{ background: "linear-gradient(180deg, #070757 0%, #000000 100%)" }}>
+      style={{ background: "linear-gradient(180deg, #153D87 0%, #070756 12%, #05043A 34%, #030227 56%, #010113 78%, #000000 100%)" }}>
       <SilkBackground />
-      <HeroPinSetup />
 
       {/* Hero Section */}
       <section
@@ -391,7 +389,7 @@ export default function Home() {
                         alt={features[currentSlide].title}
                         fill
                         sizes="(max-width: 768px) 85vw, 40vw"
-                        className={`object-contain object-center ${features[currentSlide].title === "EMAIL MARKETING AT YOUR FINGERTIPS"
+                        className={`hero-person-img object-contain object-center ${features[currentSlide].title === "EMAIL MARKETING AT YOUR FINGERTIPS"
                           ? "scale-[1.42] -ml-2"
                           : "scale-[1.35] -ml-4"
                           }`}
@@ -410,12 +408,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What We're About — opaque (z-50) panel with the "Powerful and Versatile"
-          heading at its top. It scrolls up normally and covers the PINNED hero
-          (see HeroPinSetup); no pin/translate of its own. */}
+      {/* What We're About — normal-flow, transparent panel (page gradient shows
+          through). It's pulled up to overlap the hero's bottom so the
+          "POWERFUL AND VERSATILE" card masks the clipped hero image; z-50 keeps
+          it above the hero's z-10 content. */}
       <section
-        className="prlx-about-trigger about-cover relative overflow-hidden py-20 px-4 z-50"
-        style={{ backgroundColor: "#06064d" /* opaque page-navy */ }}
+        className="prlx-about-trigger about-cover relative overflow-hidden pb-20 px-4 z-50"
       >
         <div className="prlx-about-1" aria-hidden="true" />
 

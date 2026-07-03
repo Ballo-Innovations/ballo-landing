@@ -33,14 +33,10 @@ export function WhyScrollSection() {
     if (!stickyEl || items.length === 0) return;
 
     const numItems = items.length;
-    const WHY_START = 190;
-    const WHY_END = 340;
-    const hues = items.map((_, i) =>
-      WHY_START + ((WHY_END - WHY_START) / (numItems - 1)) * i
-    );
-    const alphas = items.map((_, i) => (i === 0 || i === numItems - 1 ? 0 : 1));
-
-    gsap.set(stickyEl, { "--bg-hue": hues[0], "--bg-alpha": alphas[0] });
+    // Section background stays transparent (page gradient shows through) and the
+    // phone-screen hue stays fixed — no colour-change-on-scroll effect. Only the
+    // feature cards crossfade as the user scrolls, then flow to the next section.
+    gsap.set(stickyEl, { "--bg-hue": 190, "--bg-alpha": 0 });
     gsap.set(items, { opacity: 0 });
     gsap.set(items[0], { opacity: 1 });
 
@@ -48,11 +44,6 @@ export function WhyScrollSection() {
     for (let i = 1; i < numItems; i++) {
       tl.to(items[i - 1], { opacity: 0, duration: 0.7 });
       tl.to(items[i], { opacity: 1, duration: 0.7 }, "<");
-      tl.to(
-        stickyEl,
-        { "--bg-hue": hues[i], "--bg-alpha": alphas[i], ease: "none", duration: 1 },
-        "<"
-      );
     }
 
     const mm = gsap.matchMedia();
