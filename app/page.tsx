@@ -308,7 +308,7 @@ export default function Home() {
         <div className="hero-frame relative z-10">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
             {/* Left Side - Content */}
-            <div className="hero-copy relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+            <div className="hero-copy min-w-0 relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
               <p className="hero-kicker">AI-Powered Performance Marketing</p>
 
               {/* Rotating headline */}
@@ -369,7 +369,7 @@ export default function Home() {
             </div>
 
             {/* Right Side - Image */}
-            <div className="relative flex justify-center items-center">
+            <div className="relative min-w-0 flex justify-center items-center">
               <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
                 <div className="relative w-full h-full">
                   <div className="w-full h-auto absolute left-[60%] top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.5] opacity-60 z-0">
