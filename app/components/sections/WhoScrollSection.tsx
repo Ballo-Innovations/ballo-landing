@@ -57,6 +57,9 @@ const useCases = [
 
 const N = useCases.length;
 
+// Mobile carousel auto-advance interval.
+const AUTO_MS = 4500;
+
 // Fraction of the pinned scroll spent on the card's rise before the slides
 // begin stepping. Below this the card is emerging out of the liquid blur;
 // above it the card is stuck and each slide steps in.
@@ -67,14 +70,24 @@ export function WhoScrollSection() {
   const activeIdxRef = useRef(0);
   const [activeIdx, setActiveIdx] = useState(0);
 
-  // Static layout = mobile OR reduced-motion → accessible stacked cards
-  // (no pin, no scroll-jacking). Desktop with motion gets the rising stage.
+  // Static layout = mobile OR reduced-motion → a swipe/auto carousel (no pin,
+  // no scroll-jacking) that mirrors the desktop one-at-a-time presentation.
+  // Desktop with motion gets the scroll-driven rising stage.
   const [isStatic, setIsStatic] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  // Wall-clock origin for the auto-advance. The active index is DERIVED from
+  // elapsed time, so extra timers (StrictMode dev double-invoke) just recompute
+  // the same index — a harmless no-op — instead of racing each other.
+  const autoStartRef = useRef(0);
 
   useEffect(() => {
     const mqSmall = window.matchMedia("(max-width: 768px)");
     const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setIsStatic(mqSmall.matches || mqReduce.matches);
+    const update = () => {
+      setIsStatic(mqSmall.matches || mqReduce.matches);
+      setReduceMotion(mqReduce.matches);
+    };
     update();
     mqSmall.addEventListener("change", update);
     mqReduce.addEventListener("change", update);
@@ -83,6 +96,40 @@ export function WhoScrollSection() {
       mqReduce.removeEventListener("change", update);
     };
   }, []);
+
+  // Mobile carousel: gentle auto-advance (paused for reduced-motion). One stable
+  // interval — activeIdx is intentionally NOT a dep, so it isn't torn down and
+  // recreated on every tick (that stacked timers and interrupted the caption
+  // fade-in). The functional update reads the latest index.
+  useEffect(() => {
+    if (!isStatic || reduceMotion) return;
+    autoStartRef.current = performance.now();
+    const id = setInterval(() => {
+      const idx = Math.floor((performance.now() - autoStartRef.current) / AUTO_MS) % N;
+      setActiveIdx(idx); // derived from elapsed time → idempotent under duplicate timers
+    }, 500);
+    return () => clearInterval(id);
+  }, [isStatic, reduceMotion]);
+
+  // Jump to a slide and re-anchor the clock so it shows now and advances in a
+  // full AUTO_MS (used by dots + swipe).
+  const jumpTo = (i: number) => {
+    autoStartRef.current = performance.now() - i * AUTO_MS;
+    setActiveIdx(i);
+  };
+
+  const onCarouselTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const onCarouselTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (start == null) return;
+    const dx = e.changedTouches[0].clientX - start;
+    if (Math.abs(dx) < 40) return;
+    jumpTo(dx < 0 ? (activeIdx + 1) % N : (activeIdx - 1 + N) % N);
+  };
 
   useGSAP(() => {
     const outer = containerRef.current;
@@ -225,28 +272,53 @@ export function WhoScrollSection() {
             </div>
           )}
 
-          {/* ── Mobile / reduced-motion: stacked cards ── */}
+          {/* ── Mobile / reduced-motion: swipe + auto carousel (mirrors the
+               desktop one-at-a-time presentation) ── */}
           {isStatic && (
-            <div className="who-mobile-stack">
-              {useCases.map((item, i) => (
-                <div className="who-mcard" key={item.id}>
-                  <div className="who-mcard-photo">
-                    <Image
-                      src={item.src}
-                      alt={item.text}
-                      fill
-                      sizes="100vw"
-                      className="object-cover"
-                      priority={i === 0}
-                    />
-                    <span className="who-mphoto-num">{item.num}</span>
-                  </div>
-                  <div className="who-mcard-body">
-                    <p className="who-item-title">{item.text}</p>
-                    <p className="who-item-subtext">{item.subtext}</p>
-                  </div>
+            <div className="who-mcarousel">
+              <div
+                className="who-mstage"
+                onTouchStart={onCarouselTouchStart}
+                onTouchEnd={onCarouselTouchEnd}
+              >
+                <div
+                  className="who-mstrip"
+                  style={{ transform: `translateX(-${activeIdx * 100}%)` }}
+                >
+                  {useCases.map((item, i) => (
+                    <div className="who-mslide" key={item.id}>
+                      <Image
+                        src={item.src}
+                        alt={item.text}
+                        fill
+                        sizes="100vw"
+                        className="object-cover"
+                        priority={i === 0}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Synced caption — remounts per slide so the focus-in reveal replays */}
+              <div className="who-mcaption" key={active.id}>
+                <span className="who-caption-num">{active.num}</span>
+                <p className="who-caption-title">{active.text}</p>
+                <p className="who-caption-sub">{active.subtext}</p>
+              </div>
+
+              {/* Tappable progress dots */}
+              <div className="who-mdots">
+                {useCases.map((item, i) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={i === activeIdx ? "is-active" : ""}
+                    onClick={() => jumpTo(i)}
+                    aria-label={`Show ${item.text}`}
+                  />
+                ))}
+              </div>
             </div>
           )}
 

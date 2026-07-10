@@ -1,0 +1,396 @@
+/* =============================================================
+   Guides page (/guides).
+   Light hero (demo card + feature tiles + step breadcrumb), a dark
+   FAQ band, a two-column FAQ accordion, and a "still have questions"
+   contact card. Brand tokens from styles/variables.css; mobile-first.
+   ============================================================= */
+
+.guides-page {
+  min-height: 100vh;
+  background: #fff;
+  color: var(--dark-blue);
+}
+
+/* ---- Hero ---- */
+.guides-hero {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: clamp(6.5rem, 12vw, 8.5rem) 1.25rem clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.guides-hero__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.guides-hero__main {
+  position: relative;
+  border-radius: 1.75rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #eef1f6 0%, #d8dee9 100%);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.guides-hero__photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: #cfd6e2;
+}
+
+.guides-hero__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.guides-hero__headline {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--dark-blue);
+}
+
+.guides-watch-btn {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 2.85rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background: var(--dark-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.24s ease;
+}
+
+.guides-watch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -16px rgba(2, 0, 85, 0.7);
+}
+
+.guides-watch-btn__icon {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Feature tiles */
+.guides-hero__tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.guides-tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--dark-blue-2, #0e0e39);
+}
+
+.guides-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guides-tile__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  padding: 0.6rem 0.7rem;
+  background: linear-gradient(180deg, rgba(2, 0, 85, 0.55) 0%, transparent 55%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+}
+
+.guides-tile--video {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #14143a, #05052a);
+}
+
+.guides-tile--video .guides-tile__play {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dark-blue);
+}
+
+/* Step breadcrumb */
+.guides-steps {
+  margin: clamp(1.25rem, 3vw, 1.75rem) 0 0;
+  text-align: center;
+  font-size: clamp(0.7rem, 1.6vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--dark-blue) 70%, transparent);
+}
+
+@media (min-width: 560px) {
+  .guides-hero__main {
+    grid-template-columns: 0.85fr 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .guides-hero__grid {
+    grid-template-columns: 1.5fr 1fr;
+  }
+}
+
+/* ---- FAQ dark band ---- */
+.guides-faq-band {
+  background:
+    radial-gradient(120% 130% at 50% 0%, rgba(63, 219, 255, 0.12), transparent 60%),
+    linear-gradient(180deg, var(--dark-blue) 0%, var(--dark-blue-2) 100%);
+  padding: clamp(2.5rem, 6vw, 4rem) 1.5rem;
+  text-align: center;
+}
+
+.guides-faq-band__title {
+  margin: 0;
+  font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+  font-weight: 800;
+  color: #fff;
+}
+
+.guides-category {
+  margin-top: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 2.35rem;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dark-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---- FAQ accordion ---- */
+.guides-faq {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) 1.5rem;
+}
+
+.guides-faq__title {
+  margin: 0 0 clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: var(--dark-blue);
+}
+
+.guides-faq__title span {
+  color: color-mix(in srgb, var(--dark-blue) 32%, transparent);
+}
+
+.guides-faq__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem 1.5rem;
+  align-items: start;
+}
+
+.guides-faq__col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.guides-faq__item {
+  border: 1px solid color-mix(in srgb, var(--dark-blue) 12%, transparent);
+  border-radius: 1.1rem;
+  background: #fff;
+  box-shadow: 0 12px 30px -28px rgba(2, 0, 85, 0.5);
+  transition: border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.guides-faq__item.is-open {
+  border-color: color-mix(in srgb, var(--brand-color-3) 55%, transparent);
+  box-shadow: 0 18px 40px -28px rgba(2, 0, 85, 0.35);
+}
+
+.guides-faq__q {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--dark-blue);
+  font-family: inherit;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 700;
+}
+
+.guides-faq__q:focus-visible {
+  outline: 2px solid var(--brand-color-3);
+  outline-offset: 3px;
+  border-radius: 1.1rem;
+}
+
+.guides-faq__q-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.guides-faq__toggle {
+  flex-shrink: 0;
+  position: relative;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--brand-color-3);
+}
+
+.guides-faq__toggle::before,
+.guides-faq__toggle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  background: currentColor;
+  border-radius: 2px;
+}
+
+.guides-faq__toggle::before {
+  width: 1.05rem;
+  height: 2px;
+}
+
+.guides-faq__toggle::after {
+  width: 2px;
+  height: 1.05rem;
+  transition: transform 0.3s ease;
+}
+
+.is-open .guides-faq__toggle::after {
+  transform: scaleY(0);
+}
+
+.guides-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.is-open .guides-faq__panel {
+  grid-template-rows: 1fr;
+}
+
+.guides-faq__panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.guides-faq__a {
+  margin: 0;
+  padding: 0 1.25rem 1.15rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--dark-blue) 70%, transparent);
+}
+
+@media (min-width: 768px) {
+  .guides-faq__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Still have questions ---- */
+.guides-contact {
+  padding: 0 1.5rem clamp(3rem, 7vw, 5rem);
+}
+
+.guides-contact__card {
+  max-width: 48rem;
+  margin: 0 auto;
+  border-radius: 1.5rem;
+  padding: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+  background: linear-gradient(135deg, #c7cde3 0%, #aab2d4 100%);
+  color: var(--dark-blue);
+}
+
+.guides-contact__title {
+  margin: 0;
+  font-size: clamp(1.4rem, 3.5vw, 2.1rem);
+  font-weight: 800;
+}
+
+.guides-contact__text {
+  margin: 0.85rem auto 0;
+  max-width: 34rem;
+  font-size: clamp(0.9rem, 2vw, 1.02rem);
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--dark-blue) 78%, transparent);
+}
+
+.guides-contact__text a {
+  color: var(--brand-color-1);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.guides-contact__btn {
+  margin-top: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.85rem;
+  padding: 0 1.9rem;
+  border-radius: 999px;
+  background: var(--dark-blue);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: transform 0.2s ease, box-shadow 0.24s ease;
+}
+
+.guides-contact__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px -16px rgba(2, 0, 85, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guides-watch-btn:hover,
+  .guides-contact__btn:hover {
+    transform: none;
+  }
+  .guides-faq__panel,
+  .guides-faq__toggle::after {
+    transition: none;
+  }
+}

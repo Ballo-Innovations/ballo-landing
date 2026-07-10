@@ -38,7 +38,6 @@ import woman3 from "@/public/Assets/10.png";
 import man from "@/public/Assets/14.png";
 import ConcentricRings from "./components/ui/ConcentricRings";
 import bank from "@/public/Assets/19.png";
-import glowBg from "@/public/Assets/glow-bg.png";
 
 import logoMakhulu from "@/public/Client Logos/Makhulu High Res Logo white.png";
 import logoParamount from "@/public/Client Logos/paramount-1 white.png";
@@ -287,7 +286,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="prlx-hero-trigger relative min-h-screen flex items-center justify-center py-20 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen flex items-start justify-center pt-28 md:pt-36 pb-20 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -304,15 +303,18 @@ export default function Home() {
         />
 
         {/* Frame uses the EXACT header-pill width formula so the hero's left
-            edge tracks the nav's at every viewport (text aligns with the logo) */}
+            edge tracks the nav's at every viewport. Two-column carousel: the
+            rotating text (left) and person (right) change together as one slide;
+            the person stands on the full-width "POWERFUL AND VERSATILE" card,
+            which is pulled up to mask the cutout's clipped bottom edge. */}
         <div className="hero-frame relative z-10">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
-            {/* Left Side - Content */}
-            <div className="hero-copy min-w-0 relative z-1 mt-8 md:mt-20 flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
+            {/* Left — rotating copy (text half of the carousel slide) */}
+            <div className="hero-copy min-w-0 relative z-10 mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
               <p className="hero-kicker">AI-Powered Performance Marketing</p>
 
               {/* Rotating headline */}
-              <div className="relative w-full min-h-[150px] sm:min-h-[200px] md:min-h-[250px] flex items-start justify-center md:justify-start">
+              <div className="relative w-full min-h-[130px] sm:min-h-[170px] md:min-h-[210px] flex items-start justify-center md:justify-start">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={`hero-text-${currentSlide}`}
@@ -329,31 +331,8 @@ export default function Home() {
                 </AnimatePresence>
               </div>
 
-              <div className="hero-actions justify-center md:justify-start">
-                <button type="button" onClick={openWaitlist} className="btn-primary group">
-                  Sign Up
-                </button>
-                <Link href={features[currentSlide].href} className="btn-secondary group">
-                  Learn More
-                </Link>
-              </div>
-
-              {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
-              <div className="relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none">
-                <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                </div>
-              </div>
-
-              {/* Pagination Dots */}
-              <div className="flex items-center justify-center md:justify-start gap-3 mt-1">
+              {/* Pagination Dots — above the CTAs */}
+              <div className="flex items-center justify-center md:justify-start gap-3">
                 {features.map((_, index) => (
                   <button
                     key={index}
@@ -366,60 +345,67 @@ export default function Home() {
                   />
                 ))}
               </div>
+
+              <div className="hero-actions justify-center md:justify-start">
+                <button type="button" onClick={openWaitlist} className="btn-primary group">
+                  Sign Up
+                </button>
+                <Link href={features[currentSlide].href} className="btn-secondary group">
+                  Learn More
+                </Link>
+              </div>
+
+              {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
+              <div className="relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
+                <div className="marquee-track flex whitespace-nowrap">
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                </div>
+              </div>
             </div>
 
-            {/* Right Side - Image */}
-            <div className="relative min-w-0 flex justify-center items-center">
-              <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
-                <div className="relative w-full h-full">
-                  <div className="w-full h-auto absolute left-[60%] top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.5] opacity-60 z-0">
-                    <ConcentricRings />
-                  </div>
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.div
-                      key={`hero-image-${currentSlide}`}
-                      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 24, scale: 0.98 }}
-                      animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, scale: 1 }}
-                      exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -24, scale: 1.02 }}
-                      transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: "easeOut" }}
-                      className="z-10 relative w-full h-full will-change-transform"
-                    >
-                      <Image
-                        src={features[currentSlide].image}
-                        alt={features[currentSlide].title}
-                        fill
-                        sizes="(max-width: 768px) 85vw, 40vw"
-                        className={`hero-person-img object-contain object-center ${features[currentSlide].title === "EMAIL MARKETING AT YOUR FINGERTIPS"
-                          ? "scale-[1.42] -ml-2"
-                          : "scale-[1.35] -ml-4"
-                          }`}
-                        priority={currentSlide === 0}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
-                  {/* Preload upcoming slide image */}
-                  <div className="hidden" aria-hidden="true">
-                    <Image src={features[nextSlide].image} alt="" width={400} height={600} priority />
-                  </div>
+            {/* Right — rotating person (image half of the carousel slide) */}
+            <div className="relative min-w-0 flex justify-center items-end">
+              <div className="hero-person-stage relative w-full max-w-md h-[300px] sm:h-[420px] md:h-[540px]">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.2] opacity-60 z-0 w-full h-auto">
+                  <ConcentricRings />
+                </div>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={`hero-image-${currentSlide}`}
+                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 24, scale: 0.98 }}
+                    animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, scale: 1 }}
+                    exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -24, scale: 1.02 }}
+                    transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: "easeOut" }}
+                    className="z-10 relative w-full h-full will-change-transform"
+                  >
+                    <Image
+                      src={features[currentSlide].image}
+                      alt={features[currentSlide].title}
+                      fill
+                      sizes="(max-width: 768px) 85vw, 40vw"
+                      className="hero-person-img object-contain object-bottom scale-[1.1]"
+                      priority={currentSlide === 0}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+                {/* Preload upcoming slide image */}
+                <div className="hidden" aria-hidden="true">
+                  <Image src={features[nextSlide].image} alt="" width={400} height={600} priority />
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* What We're About — normal-flow, transparent panel (page gradient shows
-          through). It's pulled up to overlap the hero's bottom so the
-          "POWERFUL AND VERSATILE" card masks the clipped hero image; z-50 keeps
-          it above the hero's z-10 content. */}
-      <section
-        className="prlx-about-trigger about-cover relative overflow-hidden pb-20 px-4 z-50"
-      >
-        <div className="prlx-about-1" aria-hidden="true" />
-
-        {/* "POWERFUL AND VERSATILE" heading — now seated on a glass card panel */}
-        <div className="container mx-auto flex justify-center relative z-40 px-4">
-          <FadeUpReveal>
+          {/* "POWERFUL AND VERSATILE" card — full-width, pulled up so the
+              rotating person rests on it (masks the cutout's clipped bottom). */}
+          <FadeUpReveal className="hero-pv relative w-full flex justify-center">
             <div className="pv-title-card">
               <h2
                 className="relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
@@ -435,17 +421,26 @@ export default function Home() {
             </div>
           </FadeUpReveal>
         </div>
+      </section>
+
+      {/* What We're About — normal-flow, transparent panel (page gradient shows
+          through). The "POWERFUL AND VERSATILE" card now lives in the hero, so
+          this section leads straight into the phone mockup + copy. */}
+      <section
+        className="prlx-about-trigger about-cover relative overflow-hidden pb-20 pt-16 px-4 z-50"
+      >
+        <div className="prlx-about-1" aria-hidden="true" />
 
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}
           <FadeUpReveal yOffset={50} className="relative flex justify-center order-last md:order-first">
             <div className="relative flex justify-center scale-[0.9]">
             <Image
-              src={glowBg}
+              src={bglight}
               alt=""
               loading="lazy"
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-              style={{ width: "500px", height: "500px", objectFit: "contain" }}
+              style={{ width: "560px", height: "560px", maxWidth: "none", maxHeight: "none", objectFit: "contain" }}
               aria-hidden="true"
             />
             <div className="relative">

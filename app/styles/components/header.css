@@ -335,3 +335,13 @@
     width: 3rem;
   }
 }
+
+/* Pricing page: social icons readable against light #DFE0E1 background */
+.header__top-socials--light .header__social-link {
+  color: rgba(10, 31, 110, 0.62);
+}
+
+.header__top-socials--light .header__social-link:hover {
+  color: #0a1f6e;
+  opacity: 1;
+}

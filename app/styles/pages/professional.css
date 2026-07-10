@@ -1,0 +1,351 @@
+/* =============================================================
+   Professional Services page (/professional).
+   Dark UI matching the approved screenshot: a centred hero, a
+   divider-separated accordion list (thumbnail + title + subtitle +
+   chevron), and a support grid over concentric rings with CTAs.
+   Brand tokens from styles/variables.css.
+   ============================================================= */
+
+.professional-page {
+  min-height: 100vh;
+  /* Explicitly dark + theme-independent (must not follow OS light mode).
+     Vertical gradient per design spec: #070858 (top) → #000000 (bottom). */
+  background: linear-gradient(180deg, #070858 0%, #000000 100%);
+  color: #fff;
+}
+
+/* ---- Hero ---- */
+.prof-hero {
+  position: relative;
+  overflow: hidden;
+  /* Transparent base so the page gradient shows through; soft glow on top. */
+  background: radial-gradient(120% 90% at 50% -10%, rgba(34, 115, 175, 0.22), transparent 60%);
+  padding: clamp(7.5rem, 13vw, 9.5rem) 1.5rem clamp(2.5rem, 6vw, 4rem);
+  text-align: center;
+}
+
+.prof-hero__inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.prof-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 1.5rem;
+}
+
+.prof-hero__headline {
+  margin: 0;
+  font-size: clamp(2rem, 6.5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.prof-hero__intro {
+  margin: 0.9rem 0 0;
+  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---- Accordion list ---- */
+.prof-accordion-section {
+  padding: clamp(1rem, 3vw, 2rem) 1.5rem clamp(3rem, 7vw, 5rem);
+}
+
+.prof-accordion {
+  max-width: 60rem;
+  margin: 0 auto;
+  /* Divider lines per design spec (#2373af): a line above the first row and
+     below every row. */
+  border-top: 1px solid #2373af;
+}
+
+.prof-accordion__item {
+  border-bottom: 1px solid #2373af;
+}
+
+.prof-accordion__heading {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.prof-accordion__trigger {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 2.5vw, 1.4rem);
+  width: 100%;
+  padding: 1.15rem 0.25rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+}
+
+.prof-accordion__trigger:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+  border-radius: 0.75rem;
+}
+
+.prof-accordion__thumb {
+  flex-shrink: 0;
+  /* Design spec: 340 × 135 (aspect ~2.52:1) on desktop; scales down on mobile. */
+  width: clamp(6.5rem, 27vw, 340px);
+  aspect-ratio: 340 / 135;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.prof-accordion__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prof-accordion__titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.prof-accordion__title {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 2.6vw, 1.2rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.prof-accordion__subtitle {
+  font-size: clamp(0.78rem, 2vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.35;
+}
+
+.prof-accordion__chevron {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+  transition: transform 0.3s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+}
+
+.is-open .prof-accordion__chevron {
+  transform: rotate(180deg);
+  background: #fff;
+  color: #020a2a;
+  border-color: #fff;
+}
+
+/* CSS grid-rows trick: smooth, clip-free expand (no hardcoded max-height). */
+.prof-accordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s ease;
+}
+
+.is-open .prof-accordion__panel {
+  grid-template-rows: 1fr;
+}
+
+.prof-accordion__panel-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.prof-accordion__desc {
+  margin: 0;
+  padding: 0 0.25rem 1.5rem 0.25rem;
+  font-size: clamp(0.92rem, 2vw, 1rem);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ---- Support ---- */
+.prof-support {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.5rem, 6vw, 4rem) 1.5rem clamp(3.5rem, 8vw, 6rem);
+}
+
+.prof-support__rings {
+  position: absolute;
+  left: 50%;
+  bottom: -6%;
+  translate: -50% 0;
+  width: min(120%, 46rem);
+  aspect-ratio: 1 / 1;
+  z-index: 0;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.prof-support__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.prof-support__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+.prof-support__title {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(1.35rem, 3.4vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.prof-support__head-btn {
+  flex-shrink: 0;
+}
+
+.prof-support__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 1.25rem;
+}
+
+.prof-support__item {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.prof-support__check {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--cyan-bright, #5dd7ff);
+}
+
+.prof-support__item-title {
+  margin: 0;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.prof-support__item-desc {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.prof-support__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+@media (min-width: 640px) {
+  .prof-support__grid {
+    gap: 1.75rem 2.5rem;
+  }
+}
+
+/* ---- Buttons (light pill + outline, on the dark surface) ---- */
+.prof-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.85rem;
+  padding: 0 1.75rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.24s ease, background 0.22s ease, border-color 0.22s ease;
+}
+
+.prof-btn--light {
+  background: #fff;
+  color: var(--dark-blue-2, #0e0e39);
+  border: 1px solid #fff;
+  box-shadow: 0 12px 30px -14px rgba(255, 255, 255, 0.5);
+}
+
+.prof-btn--light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px -14px rgba(255, 255, 255, 0.65);
+}
+
+.prof-support__head-btn {
+  height: 2.35rem;
+  padding: 0 1.35rem;
+  font-size: 0.85rem;
+}
+
+.prof-btn--outline {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.prof-btn--outline:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.prof-btn:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prof-btn:hover {
+    transform: none;
+  }
+  .prof-accordion__panel,
+  .prof-accordion__chevron {
+    transition: none;
+  }
+}

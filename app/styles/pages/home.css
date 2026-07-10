@@ -588,63 +588,109 @@
   margin-bottom: 0.5rem;
 }
 
-.who-mobile-stack {
+/* ── Mobile swipe/auto carousel — one industry at a time, mirroring the
+      desktop rising-card presentation (image + outlined number + caption). ── */
+.who-mcarousel {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
+  align-items: center;
 }
 
-.who-mcard {
-  width: 100%;
-  max-width: 340px;
-  margin: 0 auto;
-  border-radius: 1.25rem;
-  overflow: hidden;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.who-mcard-photo {
+.who-mstage {
   position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 1.5rem;
   background: #0b1230;
+  box-shadow:
+    0 20px 60px -30px rgba(1, 1, 40, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  /* Let the page scroll vertically while horizontal drags become swipes. */
+  touch-action: pan-y;
 }
 
-.who-mphoto-num {
+.who-mstrip {
   position: absolute;
-  top: 0.7rem;
-  left: 0.8rem;
-  z-index: 2;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
-  padding: 0.25rem 0.55rem;
+  inset: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.who-mslide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.who-mslide img {
+  object-fit: cover;
+}
+
+/* Caption below the card — reuses the desktop caption typography
+   (.who-caption-num / -title / -sub), centred, with the focus-in replay. */
+.who-mcaption {
+  margin-top: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.who-mcaption > * {
+  animation: whoLineIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.who-mcaption > .who-caption-num { animation-delay: 0.04s; margin-bottom: 0.5rem; }
+.who-mcaption > .who-caption-title { animation-delay: 0.12s; }
+.who-mcaption > .who-caption-sub { animation-delay: 0.22s; }
+
+/* Tappable progress dots (generous hit area, small visual dot). */
+.who-mdots {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 1.35rem;
+}
+
+.who-mdots button {
+  border: none;
+  background: none;
+  padding: 0.4rem;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.who-mdots button::before {
+  content: "";
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: width 0.35s ease, background 0.35s ease;
+}
+
+.who-mdots button.is-active::before {
+  width: 1.5rem;
+  background: #fff;
+}
+
+.who-mdots button:focus-visible {
+  outline: 2px solid var(--cyan-bright, #5dd7ff);
+  outline-offset: 2px;
   border-radius: 999px;
 }
 
-.who-mcard-body {
-  padding: 1rem 1.15rem 1.25rem;
-}
-
-.who-mcard-body .who-item-title {
-  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 0.3rem;
-}
-
-.who-mcard-body .who-item-subtext {
-  font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.65);
-  line-height: 1.5;
-  margin: 0;
+@media (prefers-reduced-motion: reduce) {
+  .who-mstrip { transition: none; }
+  .who-mcaption > * { animation: none; }
 }
 
 /* ── Mobile heading tweaks (stacked cards handled by .is-static above) ── */
@@ -1403,8 +1449,20 @@
 /* Hero person cutout — fade the bottom so it dissolves into the page
    gradient instead of hard-clipping at the hero's edge. */
 .hero-person-img {
-  -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 92%);
-  mask-image: linear-gradient(to bottom, #000 68%, transparent 92%);
+  /* Mostly solid: the person stays crisp down to the PV card, which overlaps
+     and masks the cutout's clipped bottom edge (see .hero-stage below). */
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+}
+
+/* Hero "person standing on the card" composition: two-column carousel (text +
+   person) with the full-width PV card pulled up under the grid so the rotating
+   person rests on it and its clipped bottom is masked. z-20 keeps the card
+   above the person (z-10); the person's lower body tucks behind the card top. */
+.hero-pv {
+  position: relative;
+  z-index: 20;
+  margin-top: clamp(-6rem, -7vw, -4.5rem);
 }
 
 /* Hero content frame — identical width/centering to the header nav pill

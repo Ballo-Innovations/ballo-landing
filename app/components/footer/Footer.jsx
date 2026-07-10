@@ -2,7 +2,7 @@ import "./footer.css";
 import Link from "next/link";
 import { Phone, Mail } from "lucide-react";
 import Image from "next/image";
-import logo from "@/public/BalloAds Logo New/BalloAds-logo.png";
+import logo from "@/public/Assets/1.png";
 
 const Footer = () => {
   return (
