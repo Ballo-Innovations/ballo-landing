@@ -1451,8 +1451,221 @@
 .hero-person-img {
   /* Mostly solid: the person stays crisp down to the PV card, which overlaps
      and masks the cutout's clipped bottom edge (see .hero-stage below). */
+  transform: translate3d(var(--person-x, 0), var(--person-y, 0), 0) scale(var(--person-scale, 1));
+  transform-origin: 50% 100%;
   -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+}
+
+.hero-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  color: #fff;
+  font-size: clamp(2rem, 8.8vw, 4.75rem);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.96;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.hero-headline span {
+  display: block;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .hero-headline {
+    align-items: flex-start;
+    margin-inline: 0;
+    font-size: clamp(3rem, 5vw, 4.75rem);
+    text-align: left;
+  }
+}
+
+@media (max-width: 900px) {
+  .prlx-hero-trigger {
+    min-height: auto !important;
+    padding-top: clamp(7.25rem, 18vw, 8.75rem) !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .prlx-hero-trigger .hero-frame > .grid,
+  .about-cover > .container {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1.75rem !important;
+  }
+
+  .hero-copy {
+    align-items: flex-start !important;
+    max-width: min(100%, 28rem);
+    padding-left: 0.25rem;
+    text-align: left !important;
+  }
+
+  .hero-kicker {
+    font-size: clamp(0.56rem, 2.4vw, 0.72rem);
+    letter-spacing: 0.08em;
+    padding: 0.42rem 0.62rem;
+  }
+
+  .hero-headline {
+    align-items: flex-start;
+    margin-inline: 0;
+    font-size: clamp(2.15rem, 8.6vw, 3.45rem);
+    line-height: 0.94;
+    text-align: left;
+  }
+
+  .hero-actions {
+    justify-content: flex-start !important;
+  }
+
+  .hero-marquee {
+    position: absolute !important;
+    top: 14rem;
+    left: 50% !important;
+    z-index: -1;
+    margin-top: 0 !important;
+    opacity: 0.55;
+  }
+
+  .hero-marquee span {
+    font-size: clamp(4.5rem, 18vw, 7rem) !important;
+  }
+
+  .hero-person-stage {
+    width: min(72vw, 18rem) !important;
+    height: clamp(17rem, 70vw, 25rem) !important;
+    margin-inline: auto;
+    margin-top: -1.5rem;
+  }
+
+  .hero-person-stage > div:first-child {
+    scale: 1.45;
+  }
+
+  .hero-pv {
+    margin-top: -2.25rem;
+  }
+
+  .pv-title-card {
+    width: min(100%, 30rem);
+    margin: 0.75rem auto 1.5rem;
+    padding: clamp(1rem, 4.5vw, 1.45rem) clamp(1.1rem, 5vw, 2rem);
+  }
+
+  .pv-title-card h2 {
+    white-space: normal !important;
+    font-size: clamp(1.55rem, 8vw, 3rem) !important;
+    line-height: 0.9 !important;
+  }
+
+  .about-cover {
+    padding-top: 2.75rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .about-cover .container {
+    max-width: 34rem;
+  }
+
+  .about-cover [style*="scale"] {
+    transform: none !important;
+  }
+
+  .about-phone-glow {
+    width: min(118vw, 28rem) !important;
+    height: min(118vw, 28rem) !important;
+  }
+
+  .phone3d {
+    width: min(58vw, 13.5rem);
+    height: min(121.8vw, 28.35rem);
+  }
+
+  .why-scroll-sticky {
+    height: auto;
+    min-height: 0;
+    padding: 3.5rem 0;
+  }
+
+  .why-scroll-inner {
+    width: min(100%, 34rem);
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0 1.25rem;
+    text-align: left;
+  }
+
+  .why-scroll-heading {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .why-scroll-heading h2 {
+    font-size: clamp(2.6rem, 13vw, 4.25rem) !important;
+    line-height: 0.98 !important;
+  }
+
+  .why-right-area {
+    width: 100%;
+    height: auto;
+    min-height: 25rem;
+    margin-top: 1rem;
+    overflow: visible;
+  }
+
+  .why-bg-images .ballo-loader {
+    --size: min(70vw, 17rem);
+  }
+
+  .why-phone-wrapper {
+    width: min(58vw, 14rem);
+    margin: 0 auto;
+  }
+
+  .why-scroll-items {
+    top: 8%;
+    left: 5.5%;
+    right: 5.5%;
+    bottom: 3.5%;
+    margin-top: -1.35rem;
+    height: 96%;
+  }
+
+  .why-scroll-item {
+    padding: 1.45rem 1.15rem;
+  }
+
+  .why-scroll-item-title {
+    font-size: clamp(1.05rem, 5vw, 1.35rem);
+  }
+
+  .why-scroll-item-desc {
+    font-size: clamp(0.82rem, 3.5vw, 0.95rem);
+    line-height: 1.45;
+  }
+
+  .who-scroll-sticky {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 3rem 1.25rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero-headline {
+    font-size: clamp(1.72rem, 8.3vw, 2.25rem);
+  }
 }
 
 /* Hero "person standing on the card" composition: two-column carousel (text +

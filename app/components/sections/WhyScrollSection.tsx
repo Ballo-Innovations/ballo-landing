@@ -48,7 +48,7 @@ export function WhyScrollSection() {
 
     const mm = gsap.matchMedia();
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
+    mm.add("(min-width: 901px) and (prefers-reduced-motion: no-preference)", () => {
       ScrollTrigger.create({
         trigger: stickyEl,
         start: "top top",
@@ -61,8 +61,8 @@ export function WhyScrollSection() {
       });
     });
 
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-      gsap.set(items, { opacity: 1 });
+    mm.add("(max-width: 900px), (prefers-reduced-motion: reduce)", () => {
+      gsap.set(items, { opacity: (i) => (i === 0 ? 1 : 0) });
     });
 
     // Entrance reveal for the heading block (heading, subtitle, CTA) — fires

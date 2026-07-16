@@ -76,31 +76,39 @@ function FeatureLabel({
 const features = [
   {
     title: "WHATSAPP MARKETING WITH PRECISION",
+    titleLines: ["WHATSAPP", "MARKETING", "WITH PRECISION"],
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman3,
+    imageFrame: { scale: 1.16, x: "0%", y: "0%" },
     href: "/whatsapp-marketing",
   },
   {
-    title: "TARGETED BULK MESSAGING SOLUTIONS",
+    title: "TARGETED BULK SMS SOLUTIONS",
+    titleLines: ["TARGETED", "BULK SMS", "SOLUTIONS"],
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: man,
+    imageFrame: { scale: 0.98, x: "0%", y: "0%" },
     href: "/sms-marketing",
   },
   {
-    title: "INITIATE WEB POP UPS AND PUSH NOTIFICATIONS",
-    description:
-      "Experience automated email marketing for higher conversions. BalloAds gives you....",
-    image: woman2,
-    href: "/features",
-  },
-  {
     title: "EMAIL MARKETING AT YOUR FINGERTIPS",
+    titleLines: ["EMAIL MARKETING", "AT YOUR", "FINGERTIPS"],
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman,
+    imageFrame: { scale: 1.28, x: "-7%", y: "3%" },
     href: "/email-marketing",
+  },
+  {
+    title: "INITIATE POP UP AND WEB PUSH NOTIFICATIONS",
+    titleLines: ["INITIATE POP UP", "AND WEB PUSH", "NOTIFICATIONS"],
+    description:
+      "Experience automated email marketing for higher conversions. BalloAds gives you....",
+    image: woman2,
+    imageFrame: { scale: 1.02, x: "0%", y: "0%" },
+    href: "/features",
   },
 ];
 
@@ -324,8 +332,10 @@ export default function Home() {
                     transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
                     className="w-full"
                   >
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-[0.98] tracking-tight uppercase text-balance max-w-[22ch] mx-auto md:mx-0">
-                      {features[currentSlide].title}
+                    <h1 className="hero-headline">
+                      {features[currentSlide].titleLines.map((line) => (
+                        <span key={line}>{line}</span>
+                      ))}
                     </h1>
                   </motion.div>
                 </AnimatePresence>
@@ -356,7 +366,7 @@ export default function Home() {
               </div>
 
               {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
-              <div className="relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
+              <div className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
                 <div className="marquee-track flex whitespace-nowrap">
                   <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
                   <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
@@ -390,7 +400,12 @@ export default function Home() {
                       alt={features[currentSlide].title}
                       fill
                       sizes="(max-width: 768px) 85vw, 40vw"
-                      className="hero-person-img object-contain object-bottom scale-[1.1]"
+                      className="hero-person-img object-contain object-bottom"
+                      style={{
+                        ["--person-scale" as string]: features[currentSlide].imageFrame.scale,
+                        ["--person-x" as string]: features[currentSlide].imageFrame.x,
+                        ["--person-y" as string]: features[currentSlide].imageFrame.y,
+                      } as React.CSSProperties}
                       priority={currentSlide === 0}
                     />
                   </motion.div>
@@ -439,7 +454,7 @@ export default function Home() {
               src={bglight}
               alt=""
               loading="lazy"
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+              className="about-phone-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
               style={{ width: "560px", height: "560px", maxWidth: "none", maxHeight: "none", objectFit: "contain" }}
               aria-hidden="true"
             />

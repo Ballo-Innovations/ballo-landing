@@ -1,8 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  MessageSquare,
+  MessageCircle,
+  Mail,
+  Bell,
+  Compass,
+  LayoutGrid,
+  Cpu,
+  BarChart3,
+} from "lucide-react";
 //import background from "@/public/Backgrounds/hero-bg.png";
 //import pattern from "@/public/Backgrounds/pattern.png";
 import woman from "@/public/Assets/11.png";
@@ -15,23 +25,28 @@ import circle from "@/public/Assets/9.png"
 import phone from "@/public/Assets/38.png"
 import circles from "@/public/Assets/9.png"
 
-function FeatureLabel({
-  text,
-  icon,
-  position,
-}: {
-  text: string;
-  icon: React.ReactNode;
-  position: string;
-}) {
-  return (
-    <div
-      className={`absolute ${position} flex items-center gap-3 bg-white shadow-lg px-4 py-2 rounded-full text-[var(--dark-blue)] text-sm md:text-base font-semibold z-20`}
-    >
-      <span>{icon}</span>
-      {text}
-    </div>
-  );
+// Radial-diagram feature labels. `ax`/`ay` are the label's inner-edge anchor in
+// the SVG's 1000×640 space; the same values position the HTML label and the end
+// of its connector line, so they always align. `side` picks which edge anchors.
+const featureLabels = [
+  { text: "Bulk SMS & Targeted Message Ads", Icon: MessageSquare, side: "left", ax: 300, ay: 150 },
+  { text: "WhatsApp Marketing with Precision", Icon: MessageCircle, side: "left", ax: 268, ay: 262 },
+  { text: "Email marketing at your fingertips", Icon: Mail, side: "left", ax: 268, ay: 378 },
+  { text: "Pop-ups and Web Push Notifications", Icon: Bell, side: "left", ax: 300, ay: 490 },
+  { text: "User-Friendly Interface for Easy Navigation", Icon: Compass, side: "right", ax: 700, ay: 150 },
+  { text: "Comprehensive Campaign Management Tools", Icon: LayoutGrid, side: "right", ax: 732, ay: 262 },
+  { text: "AI-Powered Integration for Smart Campaigns", Icon: Cpu, side: "right", ax: 732, ay: 378 },
+  { text: "Real-Time Analytics & Performance Tracking", Icon: BarChart3, side: "right", ax: 700, ay: 490 },
+] as const;
+
+// Point on the ring perimeter in the direction of an anchor (ring centred at
+// 500,320 with radius 205 in the 1000×640 viewBox).
+const RING = { cx: 500, cy: 320, r: 205 };
+function ringPoint(ax: number, ay: number) {
+  const dx = ax - RING.cx;
+  const dy = ay - RING.cy;
+  const len = Math.hypot(dx, dy) || 1;
+  return { x: RING.cx + (dx / len) * RING.r, y: RING.cy + (dy / len) * RING.r };
 }
 
 
@@ -90,6 +105,34 @@ const chartXAxisLabels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Wee
 export default function FeaturesPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Trigger the connector-line draw-in when the diagram is on screen. It's the
+  // hero (above the fold), so if it's already in view on mount we play after a
+  // beat — letting the hidden state paint first — and otherwise fall back to an
+  // observer for when the user scrolls down to it.
+  const radialRef = useRef<HTMLDivElement>(null);
+  const [radialInView, setRadialInView] = useState(false);
+  useEffect(() => {
+    const el = radialRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+      const t = setTimeout(() => setRadialInView(true), 350);
+      return () => clearTimeout(t);
+    }
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setRadialInView(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const maxChartValue = Math.max(
     ...chartSeries.flatMap((series) => series.values)
   );
@@ -126,87 +169,102 @@ export default function FeaturesPage() {
       {/* Hero Section with Carousel */}
     
 
-  <section className="relative px-4 pb-24 md:px-8 bg-white">
-  <div className="relative flex justify-center items-center">
+  <section className="features-radial-section relative px-4 py-14 md:px-8 md:py-20">
+    {/* Desktop radial diagram: SVG ring + animated connector lines */}
+    <div
+      ref={radialRef}
+      className={`features-radial${radialInView ? " is-visible" : ""}`}
+    >
+      <svg
+        className="features-radial__svg"
+        viewBox="0 0 1000 640"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="features-ring-grad" x1="0%" y1="12%" x2="100%" y2="88%">
+            <stop offset="0%" stopColor="#c2ccd8" />
+            <stop offset="52%" stopColor="#4f57a0" />
+            <stop offset="100%" stopColor="#1e1f6b" />
+          </linearGradient>
+        </defs>
 
-    <div className="relative w-full max-w-5xl">
+        <circle
+          className="features-ring-circle"
+          cx={RING.cx}
+          cy={RING.cy}
+          r={RING.r}
+          stroke="url(#features-ring-grad)"
+        />
 
-      {/* Circle Background */}
+        {featureLabels.map((f, i) => {
+          const p = ringPoint(f.ax, f.ay);
+          return (
+            <line
+              key={f.text}
+              className="features-line"
+              x1={p.x}
+              y1={p.y}
+              x2={f.ax}
+              y2={f.ay}
+              pathLength={1}
+              style={{ animationDelay: `${i * 0.1}s` }}
+            />
+          );
+        })}
+      </svg>
+
       <Image
-        src={circles}
-        alt="Circle"
-        width={1600}
-        height={1600}
-        className="w-full h-auto absolute inset-0 -top-60 scale-[0.75]  pointer-events-none"
+        src={phone}
+        alt="BalloAds analytics dashboard on a phone"
+        width={450}
+        height={700}
+        className="features-radial__phone"
         priority
       />
 
-      {/* Phone */}
-      <div className="relative flex justify-center">
-        <Image
-          src={phone}
-          alt="Analytics Phone"
-          width={450}
-          height={700}
-          className="relative z-10 scale-[1.25] md:scale-[1] top-18"
-          priority={currentSlide === 0}
-        />
-      </div>
-
-      {/* LEFT SIDE FEATURES */}
-      <FeatureLabel
-        text="Bulk SMS & Targeted Message Ads"
-        icon={<span className="text-lg">💬</span>}
-        position="absolute left-0 top-1/3 md:left-10"
-      />
-
-      <FeatureLabel
-        text="WhatsApp Marketing with Precision"
-        icon={<span className="text-lg">📲</span>}
-        position="absolute left-0 top-1/2 md:left-5"
-      />
-
-      <FeatureLabel
-        text="Email marketing at your fingertips"
-        icon={<span className="text-lg">📧</span>}
-        position="absolute left-0 top-2/3 md:-left-3"
-      />
-
-      {/* RIGHT SIDE FEATURES */}
-      <FeatureLabel
-        text="User-Friendly Interface for Easy Navigation"
-        icon={<span className="text-lg">🧭</span>}
-        position="absolute right-0 top-1/3 md:-right-8"
-      />
-
-      <FeatureLabel
-        text="Comprehensive Campaign Management Tools"
-        icon={<span className="text-lg">📊</span>}
-        position="absolute right-0 top-1/2 md:-right-10"
-      />
-
-      <FeatureLabel
-        text="AI-Powered Integration for Smart Campaigns"
-        icon={<span className="text-lg">🤖</span>}
-        position="absolute right-0 top-2/3 md:-right-10"
-      />
-
-      <FeatureLabel
-        text="Real-Time Analytics & Performance Tracking"
-        icon={<span className="text-lg">📈</span>}
-        position="absolute right-0 bottom-10 md:-right-5"
-      />
-
-      {/* BOTTOM LEFT */}
-      <FeatureLabel
-        text="Pop-ups and Web Push Notifications"
-        icon={<span className="text-lg">🔔</span>}
-        position="absolute -left-10 bottom-10 md:left-5"
-      />
-
+      {featureLabels.map((f, i) => {
+        const Icon = f.Icon;
+        const style: React.CSSProperties = {
+          top: `${(f.ay / 640) * 100}%`,
+          animationDelay: `${0.25 + i * 0.1}s`,
+          ...(f.side === "left"
+            ? { right: `${100 - (f.ax / 1000) * 100}%` }
+            : { left: `${(f.ax / 1000) * 100}%` }),
+        };
+        return (
+          <div key={f.text} className="features-label" style={style}>
+            <span className="features-label__icon">
+              <Icon strokeWidth={2} aria-hidden="true" />
+            </span>
+            <span>{f.text}</span>
+          </div>
+        );
+      })}
     </div>
-  </div>
-</section>
+
+    {/* Mobile: simple stacked list (no diagram) */}
+    <div className="features-stack">
+      <Image
+        src={phone}
+        alt="BalloAds analytics dashboard on a phone"
+        width={220}
+        height={340}
+        className="features-stack__phone"
+      />
+      {featureLabels.map((f) => {
+        const Icon = f.Icon;
+        return (
+          <div key={f.text} className="features-label">
+            <span className="features-label__icon">
+              <Icon strokeWidth={2} aria-hidden="true" />
+            </span>
+            <span>{f.text}</span>
+          </div>
+        );
+      })}
+    </div>
+  </section>
 
       {/* Audience Growth Section */}
       <section className="relative bg-white text-[var(--dark-blue)] px-4 md:px-8 py-24">

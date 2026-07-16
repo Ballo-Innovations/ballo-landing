@@ -1,0 +1,327 @@
+/* =============================================================
+   Waitlist — liquid-glass card.
+   A dark, blue-tinted glass panel with an aurora corner glow, a
+   bright top rim, pill inputs, and a gradient cyan "send" arrow.
+   Styled to match the reference sign-in card, re-themed to the
+   BalloAds brand blues/cyan. Always dark (theme-independent).
+   Brand tokens from styles/variables.css.
+   ============================================================= */
+
+/* Backdrop — dark blue wash so the glass "takes up" the brand blue. */
+.wl-backdrop {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(60% 55% at 50% 28%, rgba(11, 77, 140, 0.4), transparent 65%),
+    rgba(2, 2, 22, 0.72);
+  backdrop-filter: blur(7px) saturate(120%);
+  -webkit-backdrop-filter: blur(7px) saturate(120%);
+}
+
+/* Card */
+.wl-card {
+  position: relative;
+  width: 100%;
+  max-width: 27rem;
+  border-radius: 1.85rem;
+  padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.35rem, 3.5vw, 1.9rem) clamp(1.5rem, 3.5vw, 1.9rem);
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(157deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 34%, transparent 62%),
+    linear-gradient(180deg, rgba(11, 15, 62, 0.72), rgba(2, 2, 28, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 34px rgba(255, 255, 255, 0.05),
+    0 44px 100px -34px rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+}
+
+/* Aurora glow bleeding from the top-left corner (blue → cyan → violet). */
+.wl-card__aurora {
+  position: absolute;
+  z-index: -1;
+  top: -34%;
+  left: -26%;
+  width: 82%;
+  height: 78%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 32% 34%,
+    rgba(63, 219, 255, 0.62) 0%,
+    rgba(34, 115, 175, 0.42) 26%,
+    rgba(124, 58, 237, 0.34) 50%,
+    transparent 72%
+  );
+  filter: blur(26px);
+  opacity: 0.9;
+}
+
+/* Bright rim catching light along the top edge. */
+.wl-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 16%);
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.wl-card__inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* Close button */
+.wl-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.wl-close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Header */
+.wl-title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.9rem, 6vw, 2.55rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: #fff;
+}
+
+.wl-subtitle {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Form */
+.wl-form {
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Pill field */
+.wl-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 1.15rem;
+  border-radius: 1.2rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.wl-field:focus-within {
+  border-color: rgba(63, 219, 255, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 3px rgba(63, 219, 255, 0.16);
+}
+
+.wl-field__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.15rem 0;
+}
+
+.wl-field__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.wl-field__input {
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  padding: 0;
+}
+
+.wl-field__input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Gradient "send" arrow (submit) */
+.wl-arrow {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #04263a;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+  box-shadow: 0 8px 22px -8px rgba(0, 212, 255, 0.8);
+  transition: transform 0.2s ease, box-shadow 0.24s ease, opacity 0.2s ease;
+}
+
+.wl-arrow:hover:not(:disabled) {
+  transform: translateX(2px);
+  box-shadow: 0 10px 28px -8px rgba(0, 212, 255, 0.95);
+}
+
+.wl-arrow:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* OR divider */
+.wl-or {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.15rem 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.wl-or::before,
+.wl-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Social (scaffold — coming soon) */
+.wl-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.wl-social {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  color: rgba(255, 255, 255, 0.78);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: not-allowed;
+}
+
+.wl-social__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.wl-social__soon {
+  margin-left: auto;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Footer */
+.wl-footer {
+  margin: 1.4rem 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.wl-footer a {
+  color: var(--cyan, #3fdbff);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.wl-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Status messages */
+.wl-error {
+  margin: 0.2rem 0.4rem 0;
+  font-size: 0.82rem;
+  color: #ff9d9d;
+}
+
+.wl-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: clamp(1.5rem, 4vw, 2rem);
+  padding: 1.75rem 1.25rem;
+  border-radius: 1.2rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(63, 219, 255, 0.12), rgba(63, 219, 255, 0.04));
+  border: 1px solid rgba(63, 219, 255, 0.28);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.wl-success__check {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  color: #04263a;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl-arrow:hover:not(:disabled) {
+    transform: none;
+  }
+}

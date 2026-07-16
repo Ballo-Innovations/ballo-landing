@@ -1,0 +1,493 @@
+/* =============================================================
+   Brutus page (/brutus) — the AI assistant.
+   Full-bleed looping video hero (headline + prompt bar over it),
+   a WhatsApp integration block (frosted white card + phone with a
+   glow shape), and a capabilities grid over concentric rings.
+   Brand tokens from styles/variables.css; mobile-first.
+   ============================================================= */
+
+.brutus-page {
+  min-height: 100vh;
+  /* Explicitly black + theme-independent (must not follow OS light mode). */
+  background: #000000;
+  color: #fff;
+  overflow-x: clip;
+}
+
+/* ---------- Hero (full-bleed looping video) ---------- */
+.brutus-hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  display: flex;
+  background: #02030f;
+}
+
+.brutus-hero__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Dark wash so the headline + prompt bar stay legible over any frame,
+   deepening toward the bottom for a seamless hand-off to the dark page. */
+.brutus-hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(2, 3, 20, 0.55) 0%,
+    rgba(2, 3, 20, 0.25) 35%,
+    rgba(2, 3, 20, 0.55) 72%,
+    #000000 100%
+  );
+}
+
+.brutus-hero__inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 62rem;
+  margin: 0 auto;
+  min-height: 100svh;
+  padding: clamp(9rem, 24vh, 15rem) 1.5rem clamp(2.5rem, 8vh, 5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  text-align: center;
+}
+
+.brutus-hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brutus-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  background: rgba(63, 219, 255, 0.12);
+  border: 1px solid rgba(63, 219, 255, 0.3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cyan, #3fdbff);
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(4px);
+}
+
+.brutus-hero__headline {
+  margin: 0;
+  font-size: clamp(2.4rem, 7.5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.55);
+}
+
+.brutus-hero__headline-accent {
+  background: linear-gradient(90deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Prompt bar */
+.brutus-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(100%, 36rem);
+  padding: 0.45rem 0.45rem 0.45rem 1.25rem;
+  border-radius: 999px;
+  background: rgba(10, 12, 30, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.8);
+  transition: border-color 0.22s ease, box-shadow 0.24s ease;
+}
+
+.brutus-prompt:focus-within {
+  border-color: rgba(63, 219, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(63, 219, 255, 0.18);
+}
+
+.brutus-prompt__input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.brutus-prompt__input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.brutus-prompt__send {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  color: var(--dark-blue, #020055);
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+  transition: transform 0.2s ease, box-shadow 0.24s ease;
+}
+
+.brutus-prompt__send:hover {
+  transform: translateX(2px);
+  box-shadow: 0 10px 26px -10px rgba(63, 219, 255, 0.9);
+}
+
+/* ---------- WhatsApp integration ---------- */
+.brutus-whatsapp {
+  position: relative;
+  /* Clip the neon ring at the bottom edge so only its top half rises above
+     the boundary with the next (capabilities) section. */
+  overflow: hidden;
+  background: #000002;
+  padding: clamp(2.5rem, 7vw, 5rem) 1.5rem clamp(3rem, 8vw, 6rem);
+}
+
+.brutus-wa {
+  position: relative;
+  z-index: 1;
+  max-width: 75rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 3rem);
+  align-items: center;
+  justify-items: center;
+}
+
+/* Dark translucent rectangle (design spec: ~1050 × 489). */
+.brutus-wa-card {
+  width: 100%;
+  max-width: 1050px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: clamp(1.75rem, 4vw, 3rem);
+  border-radius: 1.5rem;
+  background: rgba(18, 20, 28, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+  color: #fff;
+}
+
+.brutus-wa-card__title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.8vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.12;
+  color: #fff;
+}
+
+.brutus-wa-card__text {
+  margin: 1rem 0 0;
+  max-width: 30rem;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.brutus-wa-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+  height: 2.85rem;
+  padding: 0 1.6rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--dark-blue-2, #0e0e39);
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: transform 0.2s ease, box-shadow 0.24s ease;
+}
+
+.brutus-wa-card__link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px -16px rgba(255, 255, 255, 0.5);
+}
+
+/* Phone + glow cluster (right-aligned on desktop) */
+.brutus-wa-phone {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: clamp(13rem, 60vw, 17rem);
+}
+
+.brutus-wa-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 150%;
+  height: auto;
+  z-index: 0;
+  opacity: 0.9;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Phone mockup */
+.brutus-phone {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 1218 / 2457;
+}
+
+.brutus-phone__frame {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+/* The screen sits inside the frame's transparent window. */
+.brutus-phone__screen {
+  position: absolute;
+  z-index: 1;
+  top: 2.2%;
+  left: 6%;
+  right: 6%;
+  bottom: 2.2%;
+  border-radius: 12% / 6%;
+  padding: 14% 8% 8%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background: linear-gradient(180deg, #0b1f14 0%, #05130d 100%);
+  overflow: hidden;
+}
+
+.brutus-chat {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  max-width: 92%;
+}
+
+.brutus-chat p {
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.75rem;
+  font-size: clamp(0.5rem, 2.3vw, 0.62rem);
+  line-height: 1.35;
+}
+
+.brutus-chat__avatar {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--brand-color-2, #0b4d8c));
+}
+
+.brutus-chat--in p {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-bottom-left-radius: 0.2rem;
+}
+
+.brutus-chat--out {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.brutus-chat--out p {
+  background: #25d366;
+  color: #04240f;
+  font-weight: 600;
+  border-bottom-right-radius: 0.2rem;
+}
+
+.brutus-phone__cta {
+  margin-top: auto;
+  align-self: center;
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+  color: var(--dark-blue, #020055);
+  font-size: clamp(0.55rem, 2.4vw, 0.68rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+/* Neon ring: a full circle, bright #3af3f7 stroke with a white core and a
+   layered cyan glow, sitting behind the card/phone. */
+.brutus-arc {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  /* Centre the circle on the section's bottom edge so its top half rises and
+     the bottom half is clipped away (overflow: hidden on .brutus-whatsapp). */
+  translate: -50% 50%;
+  width: min(82%, 52rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  border: 5px solid #3af3f7;
+  box-shadow:
+    0 0 2px 0 #ffffff,
+    0 0 3px 1px #ffffff inset,
+    0 0 16px 2px #3af3f7,
+    0 0 40px 8px rgba(58, 243, 247, 0.6),
+    0 0 80px 20px rgba(58, 243, 247, 0.3),
+    inset 0 0 30px 4px rgba(58, 243, 247, 0.35);
+}
+
+/* Desktop: card + overlapping phone centred as one cluster, so neither hugs
+   the viewport edge and the glow always stays fully on-screen. */
+@media (min-width: 900px) {
+  .brutus-wa {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+  }
+  .brutus-wa-card {
+    flex: 0 1 auto;
+    width: min(52rem, 100%);
+    min-height: clamp(24rem, 34vw, 30.5rem);
+    justify-content: center;
+    padding-right: clamp(3rem, 8vw, 6rem);
+  }
+  .brutus-wa-phone {
+    flex: 0 0 auto;
+    width: clamp(13rem, 20vw, 16rem);
+    margin-left: -3.5rem;
+  }
+}
+
+/* ---------- Capabilities ---------- */
+.brutus-capabilities {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 7vw, 5rem) 1.5rem clamp(4rem, 9vw, 6.5rem);
+}
+
+.brutus-capabilities__rings {
+  position: absolute;
+  left: 50%;
+  bottom: -12%;
+  translate: -50% 0;
+  width: min(130%, 50rem);
+  aspect-ratio: 1 / 1;
+  z-index: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.brutus-capabilities__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
+.brutus-capabilities__title {
+  margin: 0 0 clamp(2rem, 5vw, 3rem);
+  text-align: center;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.brutus-capabilities__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.75rem 2.5rem;
+}
+
+.brutus-cap {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.brutus-cap__check {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(63, 219, 255, 0.4);
+  background: rgba(63, 219, 255, 0.08);
+  color: var(--cyan-bright, #00d4ff);
+}
+
+.brutus-cap__title {
+  margin: 0;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.brutus-cap__desc {
+  margin: 0.3rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.brutus-capabilities__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(2.5rem, 6vw, 4rem);
+}
+
+@media (min-width: 640px) {
+  .brutus-capabilities__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .brutus-prompt__send:hover,
+  .brutus-wa-card__link:hover {
+    transform: none;
+  }
+}

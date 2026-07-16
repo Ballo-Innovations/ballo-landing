@@ -82,7 +82,7 @@ export function WhoScrollSection() {
   const autoStartRef = useRef(0);
 
   useEffect(() => {
-    const mqSmall = window.matchMedia("(max-width: 768px)");
+    const mqSmall = window.matchMedia("(max-width: 900px)");
     const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => {
       setIsStatic(mqSmall.matches || mqReduce.matches);
@@ -154,7 +154,7 @@ export function WhoScrollSection() {
     // ── Desktop only: pin the section; the card rises out of the fixed
     //    liquid-blur band at the bottom, then (once stuck) each industry
     //    slide steps in one at a time. ──
-    mm.add("(min-width: 769px) and (prefers-reduced-motion: no-preference)", () => {
+    mm.add("(min-width: 901px) and (prefers-reduced-motion: no-preference)", () => {
       const sticky = outer.querySelector<HTMLElement>(".who-scroll-sticky");
       const strip = outer.querySelector<HTMLElement>(".who-strip");
       const stageEl = outer.querySelector<HTMLElement>(".who-stage");

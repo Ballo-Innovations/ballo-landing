@@ -1,15 +1,36 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
+import "@/app/styles/components/waitlist.css";
+
+/** Multicolour Google "G". */
+const GoogleIcon = (
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <path fill="#4285F4" d="M23.06 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h6.2a5.3 5.3 0 0 1-2.3 3.48v2.89h3.72c2.18-2 3.44-4.96 3.44-8.38z" />
+    <path fill="#34A853" d="M12 24c3.1 0 5.7-1.03 7.6-2.78l-3.72-2.89c-1.03.69-2.35 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.98A11.5 11.5 0 0 0 12 24z" />
+    <path fill="#FBBC05" d="M5.6 14.71a6.9 6.9 0 0 1 0-4.42V7.31H1.76a11.5 11.5 0 0 0 0 9.38l3.84-2.98z" />
+    <path fill="#EA4335" d="M12 4.75c1.68 0 3.19.58 4.38 1.72l3.28-3.28C17.7 1.2 15.1 0 12 0 7.42 0 3.46 2.62 1.76 6.62l3.84 2.98C6.5 6.76 9.02 4.75 12 4.75z" />
+  </svg>
+);
+
+/** X (Twitter) logo. */
+const XIcon = (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+    <path d="M18.9 1.5h3.5l-7.63 8.72L23.75 22.5h-7.03l-5.5-7.2-6.3 7.2H1.4l8.16-9.33L.75 1.5h7.2l4.98 6.58L18.9 1.5zm-1.23 18.9h1.94L6.4 3.5H4.32l13.35 16.9z" />
+  </svg>
+);
 
 /**
- * WaitlistModal — the single, reusable "Join the Waitlist" form modal.
+ * WaitlistModal — the single, reusable "Join BalloAds" waitlist modal.
  *
- * Extracted from the original (orphaned) `coming soon/BalloAdsDemo` component so
- * every waitlist CTA across the site shares one implementation. The visual form
- * markup/styles are kept identical to the original; focus management, Esc-to-close,
- * aria-modal semantics and inline status (replacing the previous `alert()`) were
- * added for accessibility.
+ * Liquid-glass card (see styles/components/waitlist.css) re-themed to the brand
+ * blues/cyan. The email pill + gradient arrow is the primary submit; Name and
+ * Phone are collected too because the waitlist backend requires all three. The
+ * "Continue with Google/X" buttons are disabled scaffolds (no auth backend yet).
+ * Focus management, Esc-to-close, aria-modal semantics and inline status are
+ * preserved from the previous implementation.
  *
  * ── Backend integration boundary ──────────────────────────────────────────────
  *  Endpoint : POST /api/waitlist  (already implemented — proxies to backend /v1/waitlist)
@@ -144,7 +165,7 @@ export default function WaitlistModal({
     <div className="fixed inset-0 z-[9999]">
       <div
         onClick={onClose}
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+        className={`wl-backdrop transition-opacity duration-300 ease-out ${
           animateIn ? "opacity-100" : "opacity-0"
         }`}
         aria-hidden="true"
@@ -163,105 +184,141 @@ export default function WaitlistModal({
           aria-modal="true"
           aria-labelledby="waitlist-title"
           aria-describedby="waitlist-desc"
-          className="bg-white text-black rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto pointer-events-auto"
+          className="wl-card pointer-events-auto"
         >
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 text-2xl sm:text-3xl font-bold w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors cursor-pointer z-10"
-            aria-label="Close waitlist form"
-          >
+          <div className="wl-card__aurora" aria-hidden="true" />
+          <button onClick={onClose} className="wl-close" aria-label="Close waitlist form">
             ×
           </button>
-          <h2
-            id="waitlist-title"
-            className="text-2xl sm:text-3xl font-bold text-[var(--brand-color-1)] mb-2 pr-8"
-          >
-            Join the Waitlist
-          </h2>
-          <p id="waitlist-desc" className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">
-            Be the first to know when we launch!
-          </p>
 
-          {status.type === "success" ? (
-            <div
-              role="status"
-              className="rounded-lg bg-green-50 border border-green-200 text-green-800 px-4 py-6 text-center text-sm sm:text-base"
-            >
-              {status.message}
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              <div>
-                <label
-                  htmlFor="waitlist-name"
-                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                >
-                  Name
-                </label>
-                <input
-                  ref={firstFieldRef}
-                  type="text"
-                  id="waitlist-name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-color-4)] focus:border-transparent outline-none transition-all text-black placeholder:text-gray-500"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="waitlist-email"
-                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="waitlist-email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-color-4)] focus:border-transparent outline-none transition-all text-black placeholder:text-gray-500"
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="waitlist-phone"
-                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2"
-                >
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  id="waitlist-phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-color-4)] focus:border-transparent outline-none transition-all text-black placeholder:text-gray-500"
-                  placeholder="Enter your phone number"
-                />
-              </div>
+          <div className="wl-card__inner">
+            <h2 id="waitlist-title" className="wl-title">
+              Join BalloAds
+            </h2>
+            <p id="waitlist-desc" className="wl-subtitle">
+              Be the first to know when we launch.
+            </p>
 
-              {status.type === "error" && (
-                <p role="alert" className="text-sm text-red-600">
-                  {status.message}
+            {status.type === "success" ? (
+              <div role="status" className="wl-success">
+                <span className="wl-success__check" aria-hidden="true">
+                  <Check size={22} strokeWidth={3} />
+                </span>
+                {status.message}
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="wl-form">
+                  {/* Email + gradient arrow — the primary submit. */}
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-email" className="wl-field__label">
+                        Email
+                      </label>
+                      <input
+                        ref={firstFieldRef}
+                        type="email"
+                        id="waitlist-email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="email"
+                        className="wl-field__input"
+                        placeholder="you@company.com"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="wl-arrow"
+                      aria-label={isSubmitting ? "Joining…" : "Join the waitlist"}
+                    >
+                      <ArrowRight size={18} aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-name" className="wl-field__label">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        id="waitlist-name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="name"
+                        className="wl-field__input"
+                        placeholder="Your name"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-phone" className="wl-field__label">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        id="waitlist-phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="tel"
+                        className="wl-field__input"
+                        placeholder="+260 …"
+                      />
+                    </div>
+                  </div>
+
+                  {status.type === "error" && (
+                    <p role="alert" className="wl-error">
+                      {status.message}
+                    </p>
+                  )}
+                </form>
+
+                <div className="wl-or">OR</div>
+
+                <div className="wl-socials">
+                  <button
+                    type="button"
+                    className="wl-social"
+                    disabled
+                    aria-disabled="true"
+                    title="Social sign-in is coming soon"
+                  >
+                    <span className="wl-social__icon">{GoogleIcon}</span>
+                    Continue with Google
+                    <span className="wl-social__soon">Soon</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="wl-social"
+                    disabled
+                    aria-disabled="true"
+                    title="Social sign-in is coming soon"
+                  >
+                    <span className="wl-social__icon">{XIcon}</span>
+                    Continue with X
+                    <span className="wl-social__soon">Soon</span>
+                  </button>
+                </div>
+
+                <p className="wl-footer">
+                  Have questions?{" "}
+                  <Link href="/live-chat" onClick={onClose}>
+                    Talk to us
+                  </Link>
                 </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[var(--brand-color-4)] text-[var(--brand-color-1)] font-semibold text-base sm:text-lg hover:bg-[var(--brand-color-3)] hover:text-white transition-colors duration-200 mt-4 sm:mt-6 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Submitting..." : "Submit"}
-              </button>
-            </form>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

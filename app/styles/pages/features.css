@@ -184,3 +184,154 @@
   /* Large desktop styles */
 }
 
+
+/* ============================================================
+   Features radial diagram (hero) — SVG ring + animated
+   connector lines drawing out from the phone to each label.
+   All geometry lives in one 1000×640 viewBox so the ring, the
+   lines, and the label anchors align by construction.
+   ============================================================ */
+.features-radial-section {
+  background: #dfe0e1;
+}
+
+.features-radial {
+  position: relative;
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  aspect-ratio: 1000 / 640;
+}
+
+.features-radial__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.features-ring-circle {
+  fill: none;
+  stroke-width: 15;
+}
+
+/* Connector lines. Resting state is DRAWN (visible) so the diagram never
+   depends on JS/animation to be seen; the draw-in is layered on top as a
+   keyframe that runs once when the diagram enters view (staggered via an
+   inline animation-delay per line). */
+.features-line {
+  fill: none;
+  stroke: #8b93a8;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.features-radial.is-visible .features-line {
+  animation: features-draw 0.9s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+@keyframes features-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.features-radial__phone {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 96%;
+  width: auto;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+}
+.features-radial.is-visible .features-radial__phone {
+  animation: features-phone 0.7s ease backwards;
+}
+@keyframes features-phone {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%);
+  }
+}
+
+.features-label {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.45rem;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--dark-blue, #020055);
+  font-size: clamp(0.66rem, 1.15vw, 0.82rem);
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+  box-shadow: 0 12px 28px -14px rgba(2, 0, 85, 0.4);
+  transform: translateY(-50%);
+}
+.features-radial.is-visible .features-label {
+  animation: features-fade 0.55s ease backwards;
+}
+@keyframes features-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.features-label__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 0.55rem;
+  background: var(--brand-color-1, #020055);
+  color: #fff;
+}
+.features-label__icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* Mobile: drop the radial diagram for a simple stacked list. */
+.features-stack {
+  display: none;
+}
+@media (max-width: 900px) {
+  .features-radial {
+    display: none;
+  }
+  .features-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    max-width: 27rem;
+    margin: 1.5rem auto 0;
+  }
+  .features-stack__phone {
+    display: block;
+    width: min(58%, 14rem);
+    height: auto;
+    margin: 0 auto 0.75rem;
+  }
+  .features-stack .features-label {
+    position: static;
+    transform: none;
+    opacity: 1;
+    white-space: normal;
+    box-shadow: 0 8px 20px -12px rgba(2, 0, 85, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .features-radial.is-visible .features-line,
+  .features-radial.is-visible .features-radial__phone,
+  .features-radial.is-visible .features-label {
+    animation: none;
+  }
+}
