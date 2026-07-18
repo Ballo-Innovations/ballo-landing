@@ -1,33 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
+import HowItWorksStage from "@/app/components/sections/HowItWorksStage";
+import { howItWorksSteps as steps } from "./steps";
 import ring from "@/public/Assets/8.png";
-import phoneAnalytics from "@/public/Assets/37.png";
 import statsBoard from "@/public/elements small/stats-chart.PNG";
-import marketAnalysis from "@/public/Assets/38.png";
-
-const steps = [
-  {
-    number: "1",
-    title: "Sign Up & Get Verified",
-    description: "Create an account and complete the quick KYC process.",
-  },
-  {
-    number: "2",
-    title: "Select Your Audience",
-    description: "Choose from bulk messaging to precisely targeted ads.",
-  },
-  {
-    number: "3",
-    title: "Customise Your Campaign",
-    description: "Craft engaging messages, set preferences, and launch.",
-  },
-  {
-    number: "4",
-    title: "Monitor & Optimise",
-    description: "Use analytics to improve engagement and maximise conversions.",
-  },
-];
 
 const benefits = [
   {
@@ -129,75 +106,38 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Steps Section */}
+      {/* Steps — the phone switches screens on hover/click of each step tile */}
       <section className="relative px-4 pb-24 md:px-8">
-      <div className="container mx-auto">
-          <div className="relative mx-auto max-w-5xl">
-          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[2px] -translate-x-1/2 bg-[var(--brand-color-2)]/30" />
+        <div className="container mx-auto">
+          <HowItWorksStage />
 
-            <div className="grid gap-y-20 md:grid-cols-2 md:gap-x-20">
-              {steps.map((step, index) => {
-                const isLeft = index % 2 === 0;
-
-                return (
-                  <div
-                    key={step.number}
-                    className={`relative flex ${
-                      isLeft ? "md:justify-end md:text-right" : "md:justify-start"
-                    }`}
+          {/* Preview notes — each opens that step's detailed sub-page */}
+          <div className="hiw-notes">
+            {steps.map((step) => (
+              <article key={step.slug} className="hiw-note">
+                <div className="hiw-note__head">
+                  <span className="hiw-note__num">{step.number}</span>
+                  <h3 className="hiw-note__title">{step.title}</h3>
+                </div>
+                <p className="hiw-note__text">{step.note}</p>
+                <Link href={`/how-it-works/${step.slug}`} className="hiw-note__link">
+                  Read more
+                  <svg
+                    className="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
                   >
-                    <div
-                      className={`relative max-w-xs rounded-[28px] bg-white p-8 shadow-lx border border-[var(--brand-color-2)]/10 transition hover:-translate-y-1 hover:shadow-2xl  ${
-                        isLeft ? "md:ml-20" : "md:mr-20"
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-color-1)] text-4xl font-extrabold text-white shadow-lg">
-                          {step.number}
-                        </span>
-                        <div className="flex flex-col gap-2">
-                          <h3 className="text-xl font-semibold text-[var(--dark-blue)] leading-snug">
-                            {step.title}
-                          </h3>
-                          <p className="text-sm text-[var(--dark-blue)]/70">
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                      <span className={`pointer-events-none absolute top-1/2 hidden h-[1px] w-16 bg-[var(--brand-color-2)]/30 md:block ${
-                        isLeft ? "right-full" : "left-full"}`} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-24 flex flex-col items-center gap-12 md:flex-row md:justify-center">
-              <div className="relative">
-                <div className="absolute inset-8 rounded-[40px] bg-[var(--brand-color-1)]/10 blur-3xl"/>
-                <div className="relative rounded-[40px] bg-white p-6 shadow-xl">
-                  <Image
-                    src={phoneAnalytics}
-                    alt="BalloAds analytics app"
-                    width={220}
-                    height={440}
-                    className="mx-auto h-auto w-40 md:w-48"
-                  />
-                </div>
-              </div>
-              <div className="relative">
-              <div className="absolute inset-8 rounded-[40px] bg-[var(--brand-color-1)]/10 blur-3xl"/>
-                <div className="relative rounded-[40px] bg-white p-6 shadow-xl">
-                  <Image
-                    src={marketAnalysis}
-                    alt="Audience selection interface"
-                    width={220}
-                    height={440}
-                    className="mx-auto h-auto w-40 md:w-48"
-                  />
-                </div>
-              </div>
-            </div>
+                    <path d="M5 12h14" />
+                    <path d="M13 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </article>
+            ))}
           </div>
         </div>
       </section>
