@@ -46,3 +46,6 @@ public/*.zip
 
 # internal reference assets (brief, Canva exports, brand board) — not for the repo
 Reference folder/
+
+# agent handover notes — local only, not for the repo
+HANDOVER.md
