@@ -336,12 +336,23 @@
   }
 }
 
-/* Pricing page: social icons readable against light #DFE0E1 background */
+/* Light-page social icons (pricing, features — #DFE0E1 bg) */
+body:has(.features-page) .header__top-socials .header__social-link,
+body:has(.pricing-route) .header__top-socials .header__social-link,
 .header__top-socials--light .header__social-link {
-  color: rgba(10, 31, 110, 0.62);
+  color: #020055;
+  opacity: 0.72;
 }
 
+body:has(.features-page) .header__top-socials .header__social-link:hover,
+body:has(.pricing-route) .header__top-socials .header__social-link:hover,
 .header__top-socials--light .header__social-link:hover {
-  color: #0a1f6e;
+  color: #020055;
   opacity: 1;
+}
+
+body:has(.features-page) .header__top-socials .header__social-link[aria-disabled="true"],
+body:has(.pricing-route) .header__top-socials .header__social-link[aria-disabled="true"],
+.header__top-socials--light .header__social-link[aria-disabled="true"] {
+  opacity: 0.38;
 }

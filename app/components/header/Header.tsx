@@ -51,8 +51,6 @@ const Header = () => {
     lastScrollY.current = latest;
   });
 
-  const isPricing = pathname.startsWith("/pricing");
-
   if (pathname.startsWith("/admin")) {
     return null;
   }
@@ -70,7 +68,7 @@ const Header = () => {
           duration: 0.24,
           ease: [0.4, 0, 0.2, 1],
         }}
-        className={`header__top-socials${isPricing ? " header__top-socials--light" : ""}`}
+        className="header__top-socials"
         aria-label="BalloAds social media"
       >
         {socialLinks.map(({ key, label, url }) =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 interface FadeUpRevealProps {
@@ -11,6 +11,11 @@ interface FadeUpRevealProps {
   className?: string;
 }
 
+function isNodeInViewport(node: HTMLElement) {
+  const rect = node.getBoundingClientRect();
+  return rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
+}
+
 export function FadeUpReveal({
   children,
   delay = 0,
@@ -18,18 +23,29 @@ export function FadeUpReveal({
   duration = 1.05,
   className = "",
 }: FadeUpRevealProps) {
-  const [isInView, setIsInView] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+
+    if (isNodeInViewport(node)) {
+      setRevealed(true);
+    }
+  }, [className]);
+
   useEffect(() => {
+    if (revealed) return;
+
     const node = ref.current;
     if (!node) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.unobserve(node);
+          setRevealed(true);
+          observer.disconnect();
         }
       },
       {
@@ -39,21 +55,22 @@ export function FadeUpReveal({
     );
 
     observer.observe(node);
+    return () => observer.disconnect();
+  }, [revealed, className]);
 
-    return () => {
-      observer.unobserve(node);
-    };
-  }, []);
+  if (revealed) {
+    return (
+      <div ref={ref} className={className}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: yOffset, scale: 0.92 }}
-      animate={
-        isInView
-          ? { opacity: 1, y: 0, scale: 1 }
-          : { opacity: 0, y: yOffset, scale: 0.92 }
-      }
+      animate={{ opacity: 0, y: yOffset, scale: 0.92 }}
       transition={{
         duration,
         delay,
