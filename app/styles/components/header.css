@@ -338,6 +338,7 @@
 
 /* Light-page social icons (pricing, features — #DFE0E1 bg) */
 body:has(.features-page) .header__top-socials .header__social-link,
+body:has(.how-it-works-page) .header__top-socials .header__social-link,
 body:has(.pricing-route) .header__top-socials .header__social-link,
 .header__top-socials--light .header__social-link {
   color: #020055;
@@ -345,6 +346,7 @@ body:has(.pricing-route) .header__top-socials .header__social-link,
 }
 
 body:has(.features-page) .header__top-socials .header__social-link:hover,
+body:has(.how-it-works-page) .header__top-socials .header__social-link:hover,
 body:has(.pricing-route) .header__top-socials .header__social-link:hover,
 .header__top-socials--light .header__social-link:hover {
   color: #020055;
@@ -352,6 +354,7 @@ body:has(.pricing-route) .header__top-socials .header__social-link:hover,
 }
 
 body:has(.features-page) .header__top-socials .header__social-link[aria-disabled="true"],
+body:has(.how-it-works-page) .header__top-socials .header__social-link[aria-disabled="true"],
 body:has(.pricing-route) .header__top-socials .header__social-link[aria-disabled="true"],
 .header__top-socials--light .header__social-link[aria-disabled="true"] {
   opacity: 0.38;

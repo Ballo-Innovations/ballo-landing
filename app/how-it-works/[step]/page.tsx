@@ -54,7 +54,7 @@ export default async function HowItWorksStepPage({
   const Icon = step.Icon;
 
   return (
-    <main className="bg-[#EEF2FF] text-[var(--dark-blue)]">
+    <main className="how-it-works-page">
       <section className="relative px-4 pb-24 pt-28 md:px-8">
         <div className="container mx-auto">
           <div className="hiw-detail">

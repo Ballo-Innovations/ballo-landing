@@ -1,484 +1,392 @@
 /* ============================================
-   How It Works Page Styles
-   File: app/how-it-works/page.tsx
+   How It Works — mockup-aligned design
+   File: app/how-it-works/page.tsx (+ [step]/page.tsx)
    ============================================ */
 
-/* How It Works Page Container */
 .how-it-works-page {
-  /* Add main page container styles here */
+  min-height: 100vh;
+  background: #dfe0e1;
+  color: var(--dark-blue, #020055);
+  overflow-x: hidden;
 }
 
-.how-it-works-page__container {
-  /* Add page container styles here */
+.how-it-works-page section {
+  scroll-margin-top: 5rem;
 }
 
-/* Page Header */
-.how-it-works-page__header {
-  /* Add header section styles here */
-}
-
-.how-it-works-page__title {
-  /* Add title styles here */
-}
-
-.how-it-works-page__description {
-  /* Add description styles here */
-}
-
-/* Platform Overview Section */
-.how-it-works-page__overview {
-  /* Add overview section styles here */
-}
-
-.how-it-works-page__overview-title {
-  /* Add overview section title styles here */
-}
-
-.how-it-works-page__overview-content {
-  /* Add overview content styles here */
-}
-
-.how-it-works-page__overview-image {
-  /* Add overview image styles here */
-}
-
-.how-it-works-page__overview-description {
-  /* Add overview description styles here */
-}
-
-/* Onboarding Steps Section */
-.how-it-works-page__steps {
-  /* Add steps section styles here */
-}
-
-.how-it-works-page__steps-title {
-  /* Add steps section title styles here */
-}
-
-.how-it-works-page__steps-list {
-  /* Add steps list container styles here */
-}
-
-.how-it-works-page__step {
-  /* Add individual step styles here */
-}
-
-.how-it-works-page__step-number {
-  /* Add step number styles here */
-}
-
-.how-it-works-page__step-content {
-  /* Add step content container styles here */
-}
-
-.how-it-works-page__step-title {
-  /* Add step title styles here */
-}
-
-.how-it-works-page__step-description {
-  /* Add step description styles here */
-}
-
-.how-it-works-page__step-image {
-  /* Add step image styles here */
-}
-
-/* AI Insights Section */
-.how-it-works-page__ai {
-  /* Add AI insights section styles here */
-}
-
-.how-it-works-page__ai-title {
-  /* Add AI section title styles here */
-}
-
-.how-it-works-page__ai-content {
-  /* Add AI content styles here */
-}
-
-.how-it-works-page__ai-feature {
-  /* Add individual AI feature styles here */
-}
-
-.how-it-works-page__ai-feature-icon {
-  /* Add AI feature icon styles here */
-}
-
-.how-it-works-page__ai-feature-title {
-  /* Add AI feature title styles here */
-}
-
-.how-it-works-page__ai-feature-description {
-  /* Add AI feature description styles here */
-}
-
-/* Video/Demo Section */
-.how-it-works-page__demo {
-  /* Add demo section styles here */
-}
-
-.how-it-works-page__demo-title {
-  /* Add demo section title styles here */
-}
-
-.how-it-works-page__demo-video {
-  /* Add demo video container styles here */
-}
-
-.how-it-works-page__demo-button {
-  /* Add demo play button styles here */
-}
-
-/* CTA Section */
-.how-it-works-page__cta {
-  /* Add CTA section styles here */
-}
-
-.how-it-works-page__cta-title {
-  /* Add CTA title styles here */
-}
-
-.how-it-works-page__cta-description {
-  /* Add CTA description styles here */
-}
-
-.how-it-works-page__cta-button {
-  /* Add CTA button styles here */
-}
-
-/* Responsive Breakpoints */
-@media (min-width: 768px) {
-  /* Tablet styles */
-}
-
-@media (min-width: 1024px) {
-  /* Desktop styles */
-}
-
-@media (min-width: 1280px) {
-  /* Large desktop styles */
-}
-
-/* ============================================================
-   How It Works — interactive step stage.
-   The phone sits centre-stage with a tile per step orbiting it;
-   hover/focus/click switches the phone to that step's screen.
-   Follows the existing light (#EEF2FF) page design.
-   ============================================================ */
-.hiw-stage {
-  max-width: 68rem;
-  margin: 0 auto;
-}
-
-.hiw-stage__panel {
-  position: relative;
-  border-radius: 2.5rem;
-  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2.5rem) clamp(2rem, 4vw, 2.75rem);
-  background: linear-gradient(160deg, #ffffff 0%, #f4f7ff 55%, #e7ecfb 100%);
-  border: 1px solid rgba(2, 0, 85, 0.06);
-  box-shadow: 0 40px 90px -50px rgba(2, 0, 85, 0.45);
-}
-
-.hiw-stage__cols {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+/* ---- Shared CTA ---- */
+.hiw-btn {
+  display: inline-flex;
   align-items: center;
-  gap: clamp(0.75rem, 2vw, 2rem);
+  gap: 0.6rem;
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* ---- Tiles ---- */
-.hiw-tiles {
+.hiw-btn--primary {
+  background: var(--brand-color-1, #020055);
+  color: #fff;
+  box-shadow: 0 14px 30px -16px rgba(2, 0, 85, 0.55);
+}
+
+.hiw-btn--primary:hover {
+  background: var(--brand-color-2, #0b4d8c);
+  transform: translateY(-1px);
+}
+
+.hiw-btn--secondary {
+  background: #fff;
+  color: var(--dark-blue, #020055);
+  border: 1px solid rgba(2, 0, 85, 0.1);
+  box-shadow: 0 10px 24px -16px rgba(2, 0, 85, 0.25);
+}
+
+.hiw-btn--secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* ---- Hero ---- */
+.hiw-hero {
+  background: #dfe0e1;
+}
+
+.hiw-hero__title {
+  margin: 0;
+  max-width: 20ch;
+  font-size: clamp(2.1rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--dark-blue, #020055);
+  /* Faint chromatic offset, as in the mockup. */
+  text-shadow:
+    2px 2px 0 rgba(214, 31, 122, 0.22),
+    -1px -1px 0 rgba(120, 84, 205, 0.16);
+}
+
+.hiw-hero__desc {
+  margin: 0;
+  max-width: 38rem;
+  font-size: clamp(0.9rem, 1.9vw, 1rem);
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--dark-blue, #020055) 62%, transparent);
+}
+
+/* ---- Zig-zag step flow ---- */
+.hiw-flow-section {
+  background: #dfe0e1;
+}
+
+.hiw-flow {
+  position: relative;
+  max-width: 64rem;
+  margin: 0 auto;
+  min-height: clamp(38rem, 78vw, 46rem);
+}
+
+.hiw-flow__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hiw-flow__line {
+  fill: none;
+  stroke: rgba(2, 0, 85, 0.2);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Keeps the stroke an even 2px despite the non-uniform viewBox scaling. */
+  vector-effect: non-scaling-stroke;
+  transition: stroke 0.35s ease;
+}
+
+.hiw-flow__line.is-current {
+  stroke: rgba(34, 115, 175, 0.6);
+}
+
+.hiw-flow__line.is-done {
+  stroke: #6bdfff;
+}
+
+/* Step cards */
+.hiw-step {
+  position: absolute;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: clamp(1.25rem, 3vw, 2.5rem);
-}
-.hiw-tiles--left {
-  align-items: flex-end;
-}
-.hiw-tiles--right {
-  align-items: flex-start;
-}
-/* Stagger outward so they read as floating around the phone. */
-.hiw-tiles--left .hiw-tile:nth-child(1) {
-  transform: translateX(-6%);
-}
-.hiw-tiles--right .hiw-tile:nth-child(1) {
-  transform: translateX(6%);
-}
-
-.hiw-tile {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  max-width: 15rem;
-  padding: 0.6rem 0.9rem 0.6rem 0.6rem;
-  border-radius: 1.15rem;
-  border: 1px solid rgba(2, 0, 85, 0.07);
-  background: #ffffff;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: 0 14px 30px -18px rgba(2, 0, 85, 0.5);
+  gap: 0.5rem;
+  padding: 1.05rem 1.3rem;
+  border-radius: 1.1rem;
+  text-decoration: none;
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.hiw-tile:hover,
-.hiw-tile:focus-visible {
-  box-shadow: 0 20px 40px -18px rgba(2, 0, 85, 0.55);
+.hiw-step:hover,
+.hiw-step:focus-visible {
+  transform: translateY(-3px);
 }
-.hiw-tile:focus-visible {
+
+.hiw-step:focus-visible {
   outline: 2px solid var(--brand-color-3, #2273af);
   outline-offset: 3px;
 }
 
-.hiw-tile.is-active {
-  box-shadow: 0 22px 46px -18px rgba(2, 0, 85, 0.6);
-}
-.hiw-tiles--left .hiw-tile.is-active {
-  transform: translateX(-6%) scale(1.04);
-}
-.hiw-tiles--right .hiw-tile.is-active {
-  transform: translateX(6%) scale(1.04);
-}
-.hiw-tiles--left .hiw-tile:nth-child(2).is-active,
-.hiw-tiles--right .hiw-tile:nth-child(2).is-active {
-  transform: scale(1.04);
-}
-
-.hiw-tile__icon {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  border-radius: 0.85rem;
-  background: #eef2ff;
-  color: var(--brand-color-1, #020055);
-  transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
-}
-.hiw-tile__icon svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-.hiw-tile.is-active .hiw-tile__icon {
-  background: linear-gradient(140deg, var(--brand-color-1, #020055), var(--brand-color-3, #2273af));
-  color: #fff;
-  box-shadow: 0 10px 22px -8px rgba(2, 0, 85, 0.8);
-}
-
-.hiw-tile__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
-}
-.hiw-tile__num {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--dark-blue, #020055) 45%, transparent);
-}
-.hiw-tile__title {
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--dark-blue, #020055);
-}
-
-/* ---- Phone ---- */
-.hiw-phone {
-  position: relative;
-  width: clamp(11rem, 24vw, 17rem);
-  aspect-ratio: 2160 / 2700;
-  justify-self: center;
-}
-
-.hiw-phone__glow {
-  position: absolute;
-  inset: 8% 2%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(34, 115, 175, 0.28), transparent 68%);
-  filter: blur(26px);
-  z-index: 0;
-}
-
-.hiw-phone__screen {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  opacity: 0;
-  transform: scale(0.97);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.hiw-phone__screen.is-active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* ---- Caption ---- */
-.hiw-caption {
-  margin-top: clamp(1.25rem, 3vw, 2rem);
-  text-align: center;
-  animation: hiw-caption-in 0.45s ease both;
-}
-@keyframes hiw-caption-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
-.hiw-caption__num {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--brand-color-3, #2273af);
-}
-.hiw-caption__title {
-  margin: 0.4rem 0 0;
-  font-size: clamp(1.25rem, 3vw, 1.75rem);
-  font-weight: 700;
-  color: var(--dark-blue, #020055);
-}
-.hiw-caption__desc {
-  margin: 0.4rem auto 0;
-  max-width: 30rem;
-  font-size: 0.95rem;
-  color: color-mix(in srgb, var(--dark-blue, #020055) 68%, transparent);
-}
-.hiw-caption__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--brand-color-1, #020055);
-}
-.hiw-caption__link:hover {
-  text-decoration: underline;
-}
-
-/* ---- Preview note cards ---- */
-.hiw-notes {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  max-width: 68rem;
-  margin: clamp(2.5rem, 6vw, 4rem) auto 0;
-}
-.hiw-note {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  border-radius: 1.75rem;
-  background: #ffffff;
-  border: 1px solid rgba(2, 0, 85, 0.07);
-  box-shadow: 0 18px 40px -30px rgba(2, 0, 85, 0.5);
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
-}
-.hiw-note:hover {
+.hiw-step.is-active {
   transform: translateY(-3px);
-  box-shadow: 0 26px 50px -28px rgba(2, 0, 85, 0.55);
+  box-shadow: 0 22px 46px -16px rgba(34, 115, 175, 0.5);
 }
-.hiw-note__head {
+
+.hiw-step__head {
   display: flex;
-  align-items: center;
-  gap: 0.7rem;
+  align-items: baseline;
+  gap: 0.55rem;
 }
-.hiw-note__num {
-  display: grid;
-  place-items: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 0.7rem;
+
+.hiw-step__num {
+  flex-shrink: 0;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+}
+
+.hiw-step__title {
+  font-size: clamp(0.7rem, 1.35vw, 0.84rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.hiw-step__desc {
+  font-size: clamp(0.68rem, 1.2vw, 0.78rem);
+  line-height: 1.45;
+  opacity: 0.85;
+}
+
+/* Surface variants */
+.hiw-step--navy {
   background: var(--brand-color-1, #020055);
   color: #fff;
-  font-size: 0.9rem;
-  font-weight: 800;
+  box-shadow: 0 16px 36px -18px rgba(2, 0, 85, 0.65);
 }
-.hiw-note__title {
+
+.hiw-step--outline {
+  background: #fff;
+  color: var(--dark-blue, #020055);
+  border: 2px solid #6bdfff;
+  box-shadow: 0 12px 28px -18px rgba(2, 0, 85, 0.25);
+}
+
+.hiw-step--soft {
+  background: linear-gradient(145deg, #d8e8f2, #c5d9ea);
+  color: var(--dark-blue, #020055);
+  box-shadow: 0 12px 28px -18px rgba(2, 0, 85, 0.2);
+}
+
+.hiw-step--blue {
+  background: linear-gradient(145deg, var(--brand-color-2, #0b4d8c), var(--brand-color-3, #2273af));
+  color: #fff;
+  box-shadow: 0 16px 36px -18px rgba(2, 0, 85, 0.5);
+}
+
+.hiw-step--outline.is-active {
+  border-color: var(--brand-color-3, #2273af);
+}
+
+/* Descending staircase — these percentages match the SVG connector waypoints. */
+/* Widths are pure percentages (no min() cap) so each card's centre stays at a
+   fixed percentage — that's what the SVG connector waypoints are drawn to. */
+.hiw-step--p1 {
+  top: 2%;
+  left: 4%;
+  width: 31%;
+}
+
+.hiw-step--p2 {
+  top: 26%;
+  left: 20%;
+  width: 31%;
+}
+
+.hiw-step--p3 {
+  top: 52%;
+  left: 37%;
+  width: 33%;
+}
+
+.hiw-step--p4 {
+  top: 78%;
+  left: 56%;
+  width: 31%;
+}
+
+/* Flanking phones */
+.hiw-flow__phone {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 24px 44px rgba(2, 0, 85, 0.22));
+}
+
+.hiw-flow__halo {
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 68%);
+}
+
+.hiw-flow__phone--top {
+  top: 1%;
+  left: 65%;
+  width: min(23%, 14rem);
+}
+
+.hiw-flow__phone--mid {
+  top: 46%;
+  left: 3%;
+  width: min(28%, 17rem);
+}
+
+.hiw-flow__phone-img {
+  width: 100%;
+  height: auto;
+}
+
+/* ---- Video spotlight ---- */
+.hiw-spotlight {
+  background: #dfe0e1;
+}
+
+.hiw-spotlight__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.hiw-spotlight__copy {
   margin: 0;
-  font-size: 1rem;
+  max-width: 34rem;
+  font-size: clamp(1rem, 2.1vw, 1.15rem);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.4;
   color: var(--dark-blue, #020055);
 }
-.hiw-note__text {
-  margin: 0.85rem 0 0;
-  font-size: 0.88rem;
-  line-height: 1.6;
-  color: color-mix(in srgb, var(--dark-blue, #020055) 65%, transparent);
+
+.hiw-video {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  box-shadow: 0 28px 60px -28px rgba(2, 0, 85, 0.45);
 }
-.hiw-note__link {
+
+.hiw-video__thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.hiw-video__play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 0, 85, 0.12);
+  transition: background 0.25s ease;
+}
+
+.hiw-video__play:hover {
+  background: rgba(2, 0, 85, 0.22);
+}
+
+.hiw-video__play::before {
+  content: "";
+  position: absolute;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(2, 0, 85, 0.3);
+}
+
+.hiw-video__play svg {
+  position: relative;
+  z-index: 1;
+  margin-left: 0.2rem;
+  color: var(--brand-color-1, #020055);
+}
+
+/* ---- Benefits ---- */
+.hiw-benefits {
+  background: #dfe0e1;
+}
+
+.hiw-benefits__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+}
+
+.hiw-benefit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.6rem 1.5rem;
+  border-radius: 1.4rem;
+  background: linear-gradient(150deg, #1c56b0 0%, #123f86 55%, #0a2a63 100%);
+  box-shadow: 0 22px 46px -26px rgba(2, 0, 85, 0.5);
+}
+
+.hiw-benefit__icon {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  margin-top: auto;
-  padding-top: 1.15rem;
-  font-size: 0.82rem;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  color: #fff;
+}
+
+.hiw-benefit__icon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.hiw-benefit__title {
+  margin: 0;
+  font-size: 1.05rem;
   font-weight: 700;
-  color: var(--brand-color-2, #0b4d8c);
-}
-.hiw-note__link:hover {
-  text-decoration: underline;
+  line-height: 1.25;
+  color: #fff;
 }
 
-@media (min-width: 640px) {
-  .hiw-notes {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (min-width: 1024px) {
-  .hiw-notes {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.hiw-benefit__text {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.86);
 }
 
-/* ---- Mobile: phone on top, tiles as a 2x2 grid beneath ---- */
-@media (max-width: 900px) {
-  .hiw-stage__cols {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-  }
-  .hiw-phone {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    width: min(58vw, 15rem);
-    margin: 0 auto 1.25rem;
-  }
-  .hiw-tiles {
-    gap: 0.75rem;
-  }
-  .hiw-tiles--left,
-  .hiw-tiles--right {
-    align-items: stretch;
-  }
-  .hiw-tile,
-  .hiw-tiles--left .hiw-tile:nth-child(1),
-  .hiw-tiles--right .hiw-tile:nth-child(1),
-  .hiw-tile.is-active,
-  .hiw-tiles--left .hiw-tile.is-active,
-  .hiw-tiles--right .hiw-tile.is-active,
-  .hiw-tiles--left .hiw-tile:nth-child(2).is-active,
-  .hiw-tiles--right .hiw-tile:nth-child(2).is-active {
-    transform: none;
-    max-width: none;
-  }
-  .hiw-tile.is-active {
-    border-color: color-mix(in srgb, var(--brand-color-3, #2273af) 45%, transparent);
-  }
-}
-
-/* ---- Step sub-page ---- */
+/* ---- Step sub-page (/how-it-works/[step]) ---- */
 .hiw-detail {
   max-width: 48rem;
   margin: 0 auto;
 }
+
 .hiw-detail__back {
   display: inline-flex;
   align-items: center;
@@ -487,30 +395,36 @@
   font-weight: 700;
   color: var(--brand-color-2, #0b4d8c);
 }
+
 .hiw-detail__back:hover {
   text-decoration: underline;
 }
+
 .hiw-detail__intro {
   margin: 1.25rem 0 0;
   font-size: clamp(1rem, 2vw, 1.15rem);
   line-height: 1.7;
   color: color-mix(in srgb, var(--dark-blue, #020055) 72%, transparent);
 }
+
 .hiw-detail__section {
   margin-top: clamp(1.75rem, 4vw, 2.5rem);
 }
+
 .hiw-detail__heading {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--dark-blue, #020055);
 }
+
 .hiw-detail__body {
   margin: 0.5rem 0 0;
   font-size: 0.95rem;
   line-height: 1.7;
   color: color-mix(in srgb, var(--dark-blue, #020055) 68%, transparent);
 }
+
 .hiw-detail__nav {
   display: flex;
   flex-wrap: wrap;
@@ -521,14 +435,67 @@
   border-top: 1px solid rgba(2, 0, 85, 0.1);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hiw-tile,
-  .hiw-phone__screen,
-  .hiw-note {
-    transition: none;
+/* ---- Breakpoints ---- */
+@media (min-width: 640px) {
+  /* Card shape per the design: 312.9 × 261.1. Columns cap at that width and
+     the aspect-ratio drives the height, so the shape holds once there's room
+     and scales down proportionally when there isn't. */
+  .hiw-benefits__grid {
+    grid-template-columns: repeat(2, minmax(0, 312.9px));
+    justify-content: center;
   }
-  .hiw-caption {
-    animation: none;
+  .hiw-benefit {
+    aspect-ratio: 312.9 / 261.1;
+  }
+  .hiw-spotlight__head {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
   }
 }
 
+@media (min-width: 1024px) {
+  .hiw-benefits__grid {
+    grid-template-columns: repeat(3, minmax(0, 312.9px));
+    gap: 1.25rem;
+  }
+}
+
+/* Mobile: the staircase can't hold its geometry — stack the cards and drop
+   the connectors and flanking phones. */
+@media (max-width: 899px) {
+  .hiw-flow {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  .hiw-flow__svg,
+  .hiw-flow__phone {
+    display: none;
+  }
+  .hiw-step,
+  .hiw-step--p1,
+  .hiw-step--p2,
+  .hiw-step--p3,
+  .hiw-step--p4 {
+    position: static;
+    top: auto;
+    left: auto;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-step,
+  .hiw-flow__line,
+  .hiw-btn,
+  .hiw-video__play {
+    transition: none;
+  }
+  .hiw-step:hover,
+  .hiw-step.is-active,
+  .hiw-btn:hover {
+    transform: none;
+  }
+}
