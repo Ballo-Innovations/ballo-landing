@@ -294,7 +294,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="prlx-hero-trigger relative min-h-screen flex items-start justify-center pt-28 md:pt-36 pb-20 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen flex items-start justify-center pt-24 pb-12 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",

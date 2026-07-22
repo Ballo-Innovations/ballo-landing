@@ -23,11 +23,11 @@ const XIcon = (
 );
 
 /**
- * WaitlistModal — the single, reusable "Join BalloAds" waitlist modal.
+ * WaitlistModal — the single, reusable "Join the Waitlist" modal.
  *
  * Liquid-glass card (see styles/components/waitlist.css) re-themed to the brand
- * blues/cyan. The email pill + gradient arrow is the primary submit; Name and
- * Phone are collected too because the waitlist backend requires all three. The
+ * blues/cyan. Email, Name and Phone are all collected because the waitlist
+ * backend requires all three, then submitted by the "Join the Waitlist" button. The
  * "Continue with Google/X" buttons are disabled scaffolds (no auth backend yet).
  * Focus management, Esc-to-close, aria-modal semantics and inline status are
  * preserved from the previous implementation.
@@ -193,7 +193,7 @@ export default function WaitlistModal({
 
           <div className="wl-card__inner">
             <h2 id="waitlist-title" className="wl-title">
-              Join BalloAds
+              Join the Waitlist
             </h2>
             <p id="waitlist-desc" className="wl-subtitle">
               Be the first to know when we launch.
@@ -209,7 +209,6 @@ export default function WaitlistModal({
             ) : (
               <>
                 <form onSubmit={handleSubmit} className="wl-form">
-                  {/* Email + gradient arrow — the primary submit. */}
                   <div className="wl-field">
                     <div className="wl-field__body">
                       <label htmlFor="waitlist-email" className="wl-field__label">
@@ -228,14 +227,6 @@ export default function WaitlistModal({
                         placeholder="you@company.com"
                       />
                     </div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="wl-arrow"
-                      aria-label={isSubmitting ? "Joining…" : "Join the waitlist"}
-                    >
-                      <ArrowRight size={18} aria-hidden="true" />
-                    </button>
                   </div>
 
                   <div className="wl-field">
@@ -281,6 +272,11 @@ export default function WaitlistModal({
                       {status.message}
                     </p>
                   )}
+
+                  <button type="submit" className="wl-submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Joining…" : "Join the Waitlist"}
+                    {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
+                  </button>
                 </form>
 
                 <div className="wl-or">OR</div>

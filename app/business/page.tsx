@@ -92,7 +92,7 @@ const HeroSection: React.FC = () => {
 
   return (
     <div className="bg-[var(--brand-color-1)]">
-      <section className="container mx-auto px-4 py-16 md:py-24 lg:py-16 bg-[var(--brand-color-1)]">
+      <section className="container mx-auto px-4 pt-16 md:pt-24 lg:pt-16 pb-6 bg-[var(--brand-color-1)]">
         <div className="relative overflow-hidden max-w-6xl mx-auto">
           <h3 className="text-xl md:text-2xl text-white/70 text-center mb-8 uppercase tracking-widest">
             HI! WONDERING WHICH PLAN BEST SUITS YOU? WE WILL MEET YOU WHERE YOU ARE.
@@ -146,20 +146,20 @@ const HeroSection: React.FC = () => {
           </div>
 
           {/* Optional: Add a 'Find My Plan' button */}
-          <div className="mt-12 text-center lg:text-right">
+          <div className="mt-6 text-center lg:text-right">
             <button className="bg-white text-[var(--brand-color-1)] font-bold py-4 px-10 rounded-full hover:bg-opacity-90 transition shadow-lg">
               GET RECOMMENDED PLAN
             </button>
           </div>
         </div>
       </section>
-      <section className="container mx-auto px-4 py-10 md:py-18 lg:py-8 bg-[var(--brand-color-1)]">
-        <div className="relative overflow-hidden rounded-[48px] bg-gradient-to-br from-[#0F1F4C] via-[#133A7C] to-[#0A4ACB] p-[2px] shadow-2xl">
-          <div className="flex h-full flex-col gap-8 rounded-[46px] gradient-blue-grey p-6 md:flex-row md:p-8">
+      <section className="px-4 pb-10 md:px-8 bg-[var(--brand-color-1)]">
+        <div className="biz-bulk-card relative overflow-hidden rounded-[48px] bg-gradient-to-br from-[#0F1F4C] via-[#133A7C] to-[#0A4ACB] p-[2px] shadow-2xl">
+          <div className="biz-bulk-card__inner flex flex-col gap-8 rounded-[46px] gradient-blue-grey p-6 md:flex-row md:p-8">
             <div className="flex flex-1 flex-col justify-center gap-4 text-white">
               <div className="glitch-text">
-                <h1 className="text-5xl font-bold md:text-8xl">
-                  BULK SMS
+                <h1 className="text-5xl font-bold md:text-7xl">
+                  Bulk SMS!
                 </h1>
               </div>
               <p className="text-base text-white">
@@ -168,15 +168,31 @@ const HeroSection: React.FC = () => {
                 clicks. The platform ensures fast delivery, detailed
                 analytics, and personalised messaging, helping......
               </p>
+              <Link href="/sms-marketing" className="biz-bulk-card__link">
+                read more
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M13 5l7 7-7 7" />
+                </svg>
+              </Link>
             </div>
-            <div className="relative flex flex-1 items-center justify-center">
+            <div className="biz-bulk-card__media flex-1">
               <div className="absolute -top-8 -right-6 h-48 w-48 rounded-full bg-[var(--brand-color-2)]/10 blur-2xl" />
               <Image
                 src={man}
                 alt="Smiling marketer"
                 width={360}
                 height={320}
-                className="relative h-auto w-full max-w-xs scale-[1.3] object-contain rounded-[46px]"
+                className="relative rounded-[46px]"
                 priority
               />
             </div>

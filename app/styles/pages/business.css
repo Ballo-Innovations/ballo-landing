@@ -1,0 +1,55 @@
+/* ============================================
+   For My Business Page Styles
+   File: app/business/page.tsx
+   ============================================ */
+
+/* Bulk SMS card — geometry taken from the Canva design.
+   Spec @ 1355px canvas: W 1196.1 · H 463.3 · X 79.5 · Y 591.9.
+   max-width 1196.1 centred in a 1355 canvas leaves exactly
+   (1355 - 1196.1) / 2 = 79.45px each side, so X lands on spec, and the
+   aspect-ratio reproduces the 463.3 height. Below the desktop breakpoint
+   the card drops the ratio and grows with its stacked content. */
+.biz-bulk-card {
+  width: 100%;
+  max-width: 1196.1px;
+  margin-inline: auto;
+}
+
+@media (min-width: 900px) {
+  .biz-bulk-card {
+    aspect-ratio: 1196.1 / 463.3;
+  }
+}
+
+/* Inner surface fills the card so the ratio governs the visible height. */
+.biz-bulk-card__inner {
+  height: 100%;
+}
+
+/* Keep the photo inside the card's height instead of driving it. */
+.biz-bulk-card__media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.biz-bulk-card__media img {
+  max-height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+.biz-bulk-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.biz-bulk-card__link:hover {
+  text-decoration: underline;
+}
