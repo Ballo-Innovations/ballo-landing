@@ -1,5 +1,5 @@
 "use client";
-import {useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Check, X, MessageSquare, Mail, Phone, MessageCircle } from "lucide-react";
 import { useRouter, usePathname } from 'next/navigation';
@@ -151,77 +151,78 @@ export default function PricingAndSteps() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Determine the active state based on the current URL path
-  const isMonthly = pathname === '/pricing/monthly' || pathname === '/pricing';
-  const isUnlimited = pathname === '/pricing/unlimited';
-  
+  const isUnlimited = pathname === "/pricing/unlimited";
+
+  // Force the body background to match the page so no dark bar shows behind the fixed nav.
+  useEffect(() => {
+    const prev = document.body.style.background;
+    document.body.style.background = "#DFE0E1";
+    return () => { document.body.style.background = prev; };
+  }, []);
+
   // Data for the Step Flow (matching the image sequence)
   const stepsFlow = [
-    { id: 1, title: '1. Easy Registration', image: step1, pos: 'top-left' },
-    { id: 2, title: '2. Purchase a package', image: step2, pos: 'top-right' },
-    { id: 4, title: '4. View Analytics', image: step3, pos: 'bottom-left' }, // Note the order for visual flow
-    { id: 3, title: '3. Run your campaign', image: step4, pos: 'bottom-right' },
+    { id: 1, title: "1. Easy Registration", image: step1, pos: "top-left" },
+    { id: 2, title: "2. Purchase a package", image: step2, pos: "top-right" },
+    { id: 4, title: "4. View Analytics", image: step3, pos: "bottom-left" },
+    { id: 3, title: "3. Run your campaign", image: step4, pos: "bottom-right" },
   ];
+
   return (
-    <main className="bg-slate-50 font-sans">
-      
-      {/* --- SECTION 1: DYNAMIC PRICING --- */}
-      <section className="relative w-full pb-20">
-        {/* Dark Background (Using a placeholder image) */}
-        <div className="absolute top-0 left-0 w-full h-[600px] bg-slate-900 overflow-hidden z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/90 z-10" />
-          {/* Replace this src with your stock market background image */}
+    <main className="font-sans" style={{ background: "#DFE0E1" }}>
+
+      {/* --- SECTION 1: DYNAMIC PRICING (contained hero card, matches /pricing) --- */}
+      <section className="relative w-full pb-10" style={{ background: "#DFE0E1" }}>
+
+        {/* Hero card — contained + rounded, with top margin below the nav */}
+        <div
+          className="mx-8 sm:mx-14 lg:mx-24 mt-24 md:mt-28 relative rounded-2xl overflow-hidden bg-[#0a1220]"
+          style={{ minHeight: 260 }}
+        >
           <Image
             src={bg}
-            alt="Circles Ring"
-            width={1600}
-            height={1900}
-            className="w-full h-auto absolute"
+            alt="Market background"
+            fill
+            className="object-cover object-center opacity-50"
             priority
           />
-        </div>
+          <div className="absolute inset-0 bg-linear-to-b from-[#0a1220]/15 via-[#0a1220]/50 to-[#0a1220]/92" />
 
-        <div className="relative z-10 container mx-auto px-4 pt-16">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-8">
+          <div className="relative z-10 px-6 sm:px-10 pt-10 md:pt-14 pb-32 sm:pb-36 md:pb-44 text-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">
               Dynamic, Transparent Pricing
             </h1>
-            
-            {/* Toggle Switch */}
-            <div className="flex justify-center my-8">
-              <div className="inline-flex bg-white/10 backdrop-blur-sm p-1 rounded-full border border-white/5">
-                <button 
-                  onClick={() => router.push('/pricing')}
-                  className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    isMonthly 
-                      ? 'bg-blue-900 text-white shadow-lg' 
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button 
-                  onClick={() => router.push('/pricing/unlimited')}
-                  className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    isUnlimited 
-                      ? 'bg-blue-900 text-white shadow-lg' 
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  Unlimited
-                </button>
-              </div>
+
+            <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
+              <button
+                onClick={() => router.push("/pricing")}
+                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  !isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
+                }`}
+              >
+                monthly
+              </button>
+              <button
+                onClick={() => router.push("/pricing/unlimited")}
+                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
+                }`}
+              >
+                unlimited
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Pricing Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-[16rem]">
+        {/* Cards overlap the bottom of the hero card */}
+        <div className="px-4 sm:px-8 lg:px-16 -mt-24 sm:-mt-28 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             {pricingData.map((tier) => (
-              <PricingCard 
-              key={tier.id} 
-              tier={tier} 
-              initialMessages={1250} 
-              maxMessages={10000} 
+              <PricingCard
+                key={tier.id}
+                tier={tier}
+                initialMessages={1250}
+                maxMessages={10000}
               />
             ))}
           </div>
