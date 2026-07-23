@@ -2,8 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { PricingStepsFlow, type PricingStep } from "@/app/components/pricing/PricingStepsFlow";
-import { PricingHeroToggle } from "@/app/components/pricing/PricingHeroToggle";
+import { useRouter, usePathname } from "next/navigation";
 
 import bg from "@/public/BalloAds Assets 2/1.png";
 import step1 from "@/public/Assets/45.png";
@@ -141,7 +140,7 @@ function PricingCard({ tier }: { tier: PricingTier }) {
           <button
             onClick={() => setMessages((m) => Math.max(MIN_MSGS, m - STEP))}
             aria-label="Decrease"
-            className="pricing-card__stepper-btn w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 font-bold text-sm transition-colors"
+            className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 font-bold text-sm transition-colors"
           >
             -
           </button>
@@ -149,7 +148,7 @@ function PricingCard({ tier }: { tier: PricingTier }) {
           <button
             onClick={() => setMessages((m) => Math.min(MAX_MSGS, m + STEP))}
             aria-label="Increase"
-            className="pricing-card__stepper-btn w-7 h-7 sm:w-6 sm:h-6 rounded bg-[#0a1f6e] hover:bg-[#0d2a8a] flex items-center justify-center text-white font-bold text-sm transition-colors"
+            className="w-6 h-6 rounded bg-[#0a1f6e] hover:bg-[#0d2a8a] flex items-center justify-center text-white font-bold text-sm transition-colors"
           >
             +
           </button>
@@ -177,7 +176,7 @@ function PricingCard({ tier }: { tier: PricingTier }) {
       <div className="px-5 pb-4">
         <Link
           href="#waitlist"
-          className="pricing-card__cta block w-full text-center bg-[#0a1f6e] hover:bg-[#0d2a8a] text-white py-2.5 rounded-full text-sm font-semibold transition-colors"
+          className="block w-full text-center bg-[#0a1f6e] hover:bg-[#0d2a8a] text-white py-2.5 rounded-full text-sm font-semibold transition-colors"
         >
           Sign Up
         </Link>
@@ -214,41 +213,73 @@ function PricingCard({ tier }: { tier: PricingTier }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const isUnlimited = pathname === "/pricing/unlimited";
+
+  // Force the body background to match the page so no dark bar shows behind the fixed nav.
   useEffect(() => {
     const prev = document.body.style.background;
     document.body.style.background = "#DFE0E1";
     return () => { document.body.style.background = prev; };
   }, []);
 
-  const stepsFlow: PricingStep[] = [
-    { id: 1, title: "1. Easy Registration", image: step1, imageAlt: "Easy Registration" },
-    { id: 2, title: "2. Purchase a package", image: step2, imageAlt: "Purchase a package" },
-    { id: 3, title: "3. Run your campaign", image: step4, imageAlt: "Run your campaign" },
-    { id: 4, title: "4. View Analytics", image: step3, imageAlt: "View Analytics" },
+  const stepsFlow = [
+    { id: 1, title: "1. Easy Registration", image: step1, labelSide: "left" },
+    { id: 2, title: "2. Purchase a package", image: step2, labelSide: "right" },
+    { id: 4, title: "4. View Analytics", image: step3, labelSide: "left" },
+    { id: 3, title: "3. Run your campaign", image: step4, labelSide: "right" },
   ];
 
   return (
-    <main className="pricing-page font-sans">
+    <main className="font-sans" style={{ background: "#DFE0E1" }}>
 
-      <section className="pricing-hero">
-        <div className="pricing-hero__card">
+      {/* ── Section 1: Hero card + Pricing cards ──────────────────────────── */}
+      <section className="relative w-full pb-10" style={{ background: "#DFE0E1" }}>
+
+        {/* Hero card — more margin, narrower, slightly taller */}
+        <div
+          className="mx-8 sm:mx-14 lg:mx-24 mt-24 md:mt-28 relative rounded-2xl overflow-hidden bg-[#0a1220]"
+          style={{ minHeight: 260 }}
+        >
           <Image
             src={bg}
-            alt=""
+            alt="Market background"
             fill
             className="object-cover object-center opacity-50"
             priority
           />
           <div className="absolute inset-0 bg-linear-to-b from-[#0a1220]/15 via-[#0a1220]/50 to-[#0a1220]/92" />
 
-          <div className="pricing-hero__card-inner">
-            <h1 className="pricing-hero__title">Dynamic, Transparent Pricing</h1>
-            <PricingHeroToggle />
+          <div className="relative z-10 px-6 sm:px-10 pt-10 md:pt-14 pb-32 sm:pb-36 md:pb-44 text-center">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">
+              Dynamic, Transparent Pricing
+            </h1>
+
+            <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
+              <button
+                onClick={() => router.push("/pricing")}
+                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  !isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
+                }`}
+              >
+                monthly
+              </button>
+              <button
+                onClick={() => router.push("/pricing/unlimited")}
+                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
+                }`}
+              >
+                unlimited
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="pricing-cards">
-          <div className="pricing-cards__grid">
+        {/* Cards overlap the bottom of the hero card */}
+        <div className="px-4 sm:px-8 lg:px-16 -mt-24 sm:-mt-28 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             {pricingData.map((tier) => (
               <PricingCard key={tier.id} tier={tier} />
             ))}
@@ -256,39 +287,161 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="pricing-steps">
+      {/* ── Section 2: 4 Easy Steps ───────────────────────────────────────── */}
+      <section className="py-14 md:py-20" style={{ background: "#DFE0E1" }}>
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="pricing-steps__heading">Drive more growth in just 4 easy steps</h2>
-          <PricingStepsFlow steps={stepsFlow} />
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#0a1f6e] leading-tight text-center mb-12 md:mb-16">
+            Drive more growth in just 4 easy steps
+          </h2>
+
+          {/*
+            Layout: 4-col grid  [label-left | phone-left | phone-right | label-right]
+            SVG arrows sit as an absolute overlay covering the two phone columns only.
+            No wrapper divs around the phone images — bare <Image> only.
+          */}
+          <div className="relative max-w-2xl mx-auto">
+
+            {/*
+              Single connected rectangle frame.
+              Left edge x=110, Right edge x=450, Top y=148, Bottom y=372, corner R=30.
+              The frame passes BEHIND the phone images — phones are raised to z-1.
+            */}
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 560 520"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <defs>
+                <marker id="pr-arrowR" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+                  <polygon points="0,0 9,4.5 0,9" fill="#22d3ee" />
+                </marker>
+                <marker id="pr-arrowL" markerWidth="9" markerHeight="9" refX="1" refY="4.5" orient="auto-start-reverse">
+                  <polygon points="0,4.5 9,0 9,9" fill="#22d3ee" />
+                </marker>
+              </defs>
+
+              {/*
+                One continuous rectangle path with R=30 corners.
+                Horizontal segments pass THROUGH the phone images (hidden behind them).
+                Only the inter-phone gap and the vertical sides are visible.
+              */}
+              <path
+                d="M 140 148 L 420 148 A 30 30 0 0 1 450 178 L 450 342 A 30 30 0 0 1 420 372 L 140 372 A 30 30 0 0 1 110 342 L 110 178 A 30 30 0 0 1 140 148 Z"
+                stroke="#22d3ee"
+                strokeWidth="2.2"
+              />
+
+              {/* Directional arrow at midpoint of top segment (→) */}
+              <line x1="240" y1="148" x2="318" y2="148" stroke="#22d3ee" strokeWidth="2.2" markerEnd="url(#pr-arrowR)" />
+              {/* Directional arrow at midpoint of bottom segment (←) */}
+              <line x1="320" y1="372" x2="242" y2="372" stroke="#22d3ee" strokeWidth="2.2" markerEnd="url(#pr-arrowL)" />
+            </svg>
+
+            {/* Phone grid — raised above the SVG frame so it paints on top */}
+            <div className="relative z-1 grid grid-cols-[1fr_auto_auto_1fr] gap-x-4 gap-y-8 items-center">
+
+              {/* ── Row 1 ── */}
+              {/* Label 1 — right-aligned in its column */}
+              <p className="text-xs sm:text-sm font-bold text-slate-700 text-right leading-tight">
+                1. Easy<br className="hidden sm:block" /> Registration
+              </p>
+              {/* Phone 1 */}
+              <Image
+                src={step1}
+                alt="Easy Registration"
+                width={140}
+                height={286}
+                className="object-contain"
+              />
+              {/* Phone 2 */}
+              <Image
+                src={step2}
+                alt="Purchase a package"
+                width={140}
+                height={286}
+                className="object-contain"
+              />
+              {/* Label 2 — left-aligned */}
+              <p className="text-xs sm:text-sm font-bold text-slate-700 text-left leading-tight">
+                2. Purchase<br className="hidden sm:block" /> a package
+              </p>
+
+              {/* ── Row 2 ── */}
+              {/* Label 4 */}
+              <p className="text-xs sm:text-sm font-bold text-slate-700 text-right leading-tight">
+                4. View<br className="hidden sm:block" /> Analytics
+              </p>
+              {/* Phone 4 */}
+              <Image
+                src={step3}
+                alt="View Analytics"
+                width={140}
+                height={286}
+                className="object-contain"
+              />
+              {/* Phone 3 */}
+              <Image
+                src={step4}
+                alt="Run your campaign"
+                width={140}
+                height={286}
+                className="object-contain"
+              />
+              {/* Label 3 */}
+              <p className="text-xs sm:text-sm font-bold text-slate-700 text-left leading-tight">
+                3. Run your<br className="hidden sm:block" /> campaign
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="pricing-cta">
-        <div className="pricing-cta__inner">
-          <div className="pricing-cta__copy">
-            <h2 className="pricing-cta__title">
-              Run your campaign
-              <br />
-              in just a few seconds
-            </h2>
-            <p className="pricing-cta__text">
-              After registration, utilise automations and run your dynamic campaigns in just a few clicks anywhere, anytime.
-            </p>
-            <button type="button" className="pricing-cta__btn">
-              Download now
-            </button>
-          </div>
+      {/* ── Section 3: CTA — light bg, text left, woman + ring right ────── */}
+      <section className="py-10 md:py-14" style={{ background: "#DFE0E1" }}>
+        <div className="container mx-auto px-4 sm:px-8 max-w-5xl">
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-0">
 
-          <div className="pricing-cta__visual">
-            <Image src={ring} alt="" aria-hidden="true" width={320} height={320} className="pricing-cta__ring" />
-            <Image
-              src={woman}
-              alt="BalloAds user on mobile"
-              width={280}
-              height={300}
-              className="pricing-cta__person"
-              priority
-            />
+            {/* Left: text block */}
+            <div className="md:w-1/2 text-left">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0a1f6e] leading-tight mb-4">
+                Run your campaign<br />in just a few seconds
+              </h2>
+              <p className="text-sm text-slate-500 mb-7 max-w-sm leading-relaxed">
+                After registration, utilise automations and run your dynamic campaigns in just a few clicks anywhere, anytime.
+              </p>
+              <button className="inline-flex items-center gap-2 bg-[#0a1f6e] text-white font-semibold px-7 py-3 rounded-full hover:bg-[#0d2a8a] transition-colors text-sm shadow-md">
+                Download now
+              </button>
+            </div>
+
+            {/* Right: woman image + decorative ring arc */}
+            <div className="md:w-1/2 relative flex justify-center items-end" style={{ minHeight: 220 }}>
+              {/* Ring arc — large circle, cropped by overflow-hidden on parent */}
+              <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                <Image
+                  src={ring}
+                  alt=""
+                  aria-hidden="true"
+                  width={320}
+                  height={320}
+                  className="opacity-90 object-contain"
+                />
+              </div>
+              {/* Woman image — in front of ring */}
+              <div className="relative z-10">
+                <Image
+                  src={woman}
+                  alt="BalloAds user on mobile"
+                  width={280}
+                  height={300}
+                  className="object-contain object-bottom"
+                  priority
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

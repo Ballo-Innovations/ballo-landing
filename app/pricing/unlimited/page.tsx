@@ -1,9 +1,8 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import {useState, useMemo } from "react";
 import Image from "next/image";
 import { Check, X, MessageSquare, Mail, Phone, MessageCircle } from "lucide-react";
-import { PricingStepsFlow, type PricingStep } from "@/app/components/pricing/PricingStepsFlow";
-import { PricingHeroToggle } from "@/app/components/pricing/PricingHeroToggle";
+import { useRouter, usePathname } from 'next/navigation';
 
 import bg from "@/public/BalloAds Assets 2/1.png";
 import step1 from "@/public/Assets/45.png";
@@ -12,6 +11,7 @@ import step3 from "@/public/Assets/38.png";
 import step4 from "@/public/Assets/40.png";
 import ring from "@/public/Assets/9.png";
 import woman from "@/public/BalloAds Assets 2/25.png"
+import bck from "@/public/BalloAds Assets 2/26.png"
 
 // --- TYPESCRIPT INTERFACES ---
 
@@ -127,7 +127,7 @@ interface PricingTier {
           </div>
         </div>
   
-        <button type="button" className="pricing-card__cta w-full bg-blue-900 text-white py-3 rounded-full font-semibold hover:bg-blue-800 transition-colors mb-8">
+        <button className="w-full bg-blue-900 text-white py-3 rounded-full font-semibold hover:bg-blue-800 transition-colors mb-8">
           Sign Up
         </button>
   
@@ -148,76 +148,178 @@ interface PricingTier {
   };
 // Assume you are defining this component in a file like PricingAndSteps.tsx
 export default function PricingAndSteps() {
-  useEffect(() => {
-    const prev = document.body.style.background;
-    document.body.style.background = "#DFE0E1";
-    return () => { document.body.style.background = prev; };
-  }, []);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const stepsFlow: PricingStep[] = [
-    { id: 1, title: "1. Easy Registration", image: step1, imageAlt: "Easy Registration" },
-    { id: 2, title: "2. Purchase a package", image: step2, imageAlt: "Purchase a package" },
-    { id: 3, title: "3. Run your campaign", image: step4, imageAlt: "Run your campaign" },
-    { id: 4, title: "4. View Analytics", image: step3, imageAlt: "View Analytics" },
+  // Determine the active state based on the current URL path
+  const isMonthly = pathname === '/pricing/monthly' || pathname === '/pricing';
+  const isUnlimited = pathname === '/pricing/unlimited';
+  
+  // Data for the Step Flow (matching the image sequence)
+  const stepsFlow = [
+    { id: 1, title: '1. Easy Registration', image: step1, pos: 'top-left' },
+    { id: 2, title: '2. Purchase a package', image: step2, pos: 'top-right' },
+    { id: 4, title: '4. View Analytics', image: step3, pos: 'bottom-left' }, // Note the order for visual flow
+    { id: 3, title: '3. Run your campaign', image: step4, pos: 'bottom-right' },
   ];
-
   return (
-    <main className="pricing-page font-sans">
-
-      <section className="pricing-hero">
-        <div className="pricing-hero__card">
-          <Image src={bg} alt="" fill className="object-cover object-center opacity-50" priority />
-          <div className="absolute inset-0 bg-linear-to-b from-[#0a1220]/15 via-[#0a1220]/50 to-[#0a1220]/92" />
-
-          <div className="pricing-hero__card-inner">
-            <h1 className="pricing-hero__title">Dynamic, Transparent Pricing</h1>
-            <PricingHeroToggle />
-          </div>
+    <main className="bg-slate-50 font-sans">
+      
+      {/* --- SECTION 1: DYNAMIC PRICING --- */}
+      <section className="relative w-full pb-20">
+        {/* Dark Background (Using a placeholder image) */}
+        <div className="absolute top-0 left-0 w-full h-[600px] bg-slate-900 overflow-hidden z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900/90 z-10" />
+          {/* Replace this src with your stock market background image */}
+          <Image
+            src={bg}
+            alt="Circles Ring"
+            width={1600}
+            height={1900}
+            className="w-full h-auto absolute"
+            priority
+          />
         </div>
 
-        <div className="pricing-cards">
-          <div className="pricing-cards__grid">
+        <div className="relative z-10 container mx-auto px-4 pt-16">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-8">
+              Dynamic, Transparent Pricing
+            </h1>
+            
+            {/* Toggle Switch */}
+            <div className="flex justify-center my-8">
+              <div className="inline-flex bg-white/10 backdrop-blur-sm p-1 rounded-full border border-white/5">
+                <button 
+                  onClick={() => router.push('/pricing')}
+                  className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    isMonthly 
+                      ? 'bg-blue-900 text-white shadow-lg' 
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button 
+                  onClick={() => router.push('/pricing/unlimited')}
+                  className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+                    isUnlimited 
+                      ? 'bg-blue-900 text-white shadow-lg' 
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  Unlimited
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Cards Grid */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-[16rem]">
             {pricingData.map((tier) => (
-              <PricingCard key={tier.id} tier={tier} initialMessages={1250} maxMessages={10000} />
+              <PricingCard 
+              key={tier.id} 
+              tier={tier} 
+              initialMessages={1250} 
+              maxMessages={10000} 
+              />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="pricing-steps">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="pricing-steps__heading">Drive more growth in just 4 easy steps</h2>
-          <PricingStepsFlow steps={stepsFlow} arrowIds={{ right: "pru-arrowR", left: "pru-arrowL" }} />
+      {/* --- SECTION 2: 4 EASY STEPS (Process Flow) --- */}
+      <section className="py-20 container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-blue-900">
+            Drive more growth in just 4 easy steps
+          </h2>
+        </div>
+
+        <div className="relative max-w-4xl mx-auto">
+            {/* This is the most complex part of the design (the circular line). 
+                It's best handled by an absolute SVG image that sits behind the phones. */}
+            <div className="absolute inset-0 z-0">
+                 {/* Replace this with your actual loop SVG/Image */}
+                 <div className="w-full h-full border-4 border-blue-200 rounded-2xl opacity-40"></div> 
+            </div>
+
+            <div className="grid grid-cols-2 gap-10 md:gap-y-20 relative z-10">
+                {stepsFlow.map((step) => (
+                    <div 
+                        key={step.id} 
+                        className={`flex flex-col items-center ${step.pos.includes('top') ? 'pt-10' : 'pb-10'}`}
+                    >
+                        <h3 className="text-lg font-bold text-slate-700 mb-6">{step.title}</h3>
+                        <div className="relative w-[180px] h-[360px] bg-white rounded-[30px] shadow-2xl border-4 border-slate-100 overflow-hidden">
+                            {/* Placeholder for phones */}
+                            <div className="absolute inset-0 bg-slate-50 flex items-center justify-center text-slate-300 text-xs">
+                                <Image 
+                                  src={step.image} // Replace with your actual image imports
+                                  alt={step.title} 
+                                  width={180} 
+                                  height={360} 
+                                  className="object-cover w-full h-full"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
       </section>
 
-      <section className="pricing-cta">
-        <div className="pricing-cta__inner">
-          <div className="pricing-cta__copy">
-            <h2 className="pricing-cta__title">
-              Run your campaign
-              <br />
-              in just a few seconds
-            </h2>
-            <p className="pricing-cta__text">
-              After registration, utilise our automations and run your dynamic campaigns in just a few clicks.
-            </p>
-            <button type="button" className="pricing-cta__btn">
-              Download now
-            </button>
-          </div>
+      {/* --- SECTION 3: CTA --- */}
+      <section className="py-20 container mx-auto px-4 relative">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12 max-w-6xl mx-auto">
+            <div className="md:w-1/2">
+                <h2 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
+                    Run your campaign <br />
+                    in just a few seconds
+                </h2>
+                <p className="text-lg text-slate-600 mb-8 max-w-md">
+                    After registration, utilise our automations and run your dynamic campaigns in just a few clicks
+                </p>
+                <button className="bg-blue-900 text-white px-8 py-4 rounded-full font-bold hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl">
+                    Download now
+                </button>
+            </div>
+            
+            <div className="md:w-1/2 relative h-[400px] w-full flex justify-center">
+                {/* Image Placeholder */}
+                <div className="absolute">
 
-          <div className="pricing-cta__visual">
-            <Image src={ring} alt="" aria-hidden="true" width={320} height={320} className="pricing-cta__ring" />
-            <Image
-              src={woman}
-              alt="BalloAds user on mobile"
-              width={280}
-              height={300}
-              className="pricing-cta__person"
-              priority
-            />
-          </div>
+                <Image
+                    src={bck}
+                    alt="Circles Ring"
+                    width={1600}
+                    height={1900}
+                    className="w-70 h-auto relative right-0 bottom-12 scale-[2.5]"
+                    priority
+                  />
+                  
+                </div>
+                <div className="relative ">
+                  {/* Replace with your image of the woman with the tablet */}
+                  
+                  <Image
+                    src={ring}
+                    alt="Circles Ring"
+                    width={1600}
+                    height={1900}
+                    className="w-full h-auto relative right-0 bottom-63 scale-[1.1]"
+                    priority
+                  />
+                  <Image
+                    src={woman}
+                    alt="woman"
+                    width={400}
+                    height={600}
+                    className="w-full h-auto absolute left-18 bottom-50 scale-[1.5]"
+                    priority
+                  />
+                </div>
+            </div>
         </div>
       </section>
     </main>
