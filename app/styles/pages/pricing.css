@@ -1,152 +1,358 @@
 /* ============================================
-   Pricing Page Styles
-   File: app/pricing/page.tsx
+   Pricing Pages — mobile-first translation
+   /pricing, /pricing/unlimited
    ============================================ */
 
-/* Pricing Page Container */
 .pricing-page {
-  /* Add main page container styles here */
+  background: #dfe0e1;
 }
 
-.pricing-page__container {
-  /* Add page container styles here */
+/* ── Hero ───────────────────────────────────── */
+.pricing-hero {
+  position: relative;
+  width: 100%;
+  padding-bottom: 2rem;
+  background: #dfe0e1;
 }
 
-/* Pricing Header */
-.pricing-page__header {
-  /* Add header section styles here */
+.pricing-hero__card {
+  position: relative;
+  margin: 5.5rem 1rem 0;
+  min-height: 13.5rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #0a1220;
 }
 
-.pricing-page__title {
-  /* Add title styles here */
+.pricing-hero__card-inner {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.25rem 7.5rem;
+  text-align: center;
 }
 
-.pricing-page__description {
-  /* Add description styles here */
+.pricing-hero__title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.65rem, 7vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #fff;
 }
 
-/* Pricing Plans Grid */
-.pricing-page__plans-grid {
-  /* Add plans grid container styles here */
+.pricing-hero__toggle {
+  display: flex;
+  width: 100%;
+  max-width: 18rem;
+  margin: 0 auto;
+  padding: 0.25rem;
+  gap: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
 }
 
-/* Pricing Plan Card */
-.pricing-plan {
-  /* Add individual plan card styles here */
+.pricing-hero__toggle-btn {
+  flex: 1;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pricing-plan__container {
-  /* Add plan container styles here */
+.pricing-hero__toggle-btn.is-active {
+  color: #fff;
+  background: #0a1f6e;
+  box-shadow: 0 4px 14px rgba(10, 31, 110, 0.35);
 }
 
-.pricing-plan__header {
-  /* Add plan header styles here */
+.pricing-hero__toggle-btn:not(.is-active):hover {
+  color: #fff;
 }
 
-.pricing-plan__name {
-  /* Add plan name styles here */
+/* ── Pricing cards stack ────────────────────── */
+.pricing-cards {
+  position: relative;
+  z-index: 2;
+  margin-top: -4.5rem;
+  padding: 0 1rem;
 }
 
-.pricing-plan__price {
-  /* Add plan price styles here */
+.pricing-cards__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 24rem;
+  margin: 0 auto;
 }
 
-.pricing-plan__price-amount {
-  /* Add price amount styles here */
+.pricing-card__stepper-btn {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
 }
 
-.pricing-plan__price-period {
-  /* Add price period styles here */
+.pricing-card__cta {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.pricing-plan__description {
-  /* Add plan description styles here */
+/* ── Steps: mobile vertical journey ─────────── */
+.pricing-steps {
+  padding: 2.5rem 0 3rem;
+  background: #dfe0e1;
 }
 
-.pricing-plan__features {
-  /* Add features list styles here */
+.pricing-steps__heading {
+  margin: 0 0 2rem;
+  padding: 0 1rem;
+  text-align: center;
+  font-size: clamp(1.5rem, 6.5vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: #0a1f6e;
 }
 
-.pricing-plan__feature {
-  /* Add individual feature item styles here */
+.pricing-steps-mobile {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0 1rem;
+  max-width: 22rem;
 }
 
-.pricing-plan__feature-icon {
-  /* Add feature icon styles here */
+.pricing-steps-mobile__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.pricing-plan__cta {
-  /* Add plan CTA button styles here */
+.pricing-steps-mobile__connector {
+  display: block;
+  width: 2px;
+  height: 1.75rem;
+  margin: 0.25rem 0;
+  background: linear-gradient(180deg, #22d3ee 0%, rgba(34, 211, 238, 0.25) 100%);
+  border-radius: 1px;
 }
 
-.pricing-plan__cta--primary {
-  /* Add primary CTA button styles here */
+.pricing-steps-mobile__card {
+  width: 100%;
+  padding: 1.25rem 1rem 1.5rem;
+  border-radius: 1.25rem;
+  background: #fff;
+  border: 1px solid rgba(10, 31, 110, 0.08);
+  box-shadow: 0 10px 28px -18px rgba(10, 31, 110, 0.28);
+  text-align: center;
 }
 
-.pricing-plan__cta--secondary {
-  /* Add secondary CTA button styles here */
+.pricing-steps-mobile__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #0a1f6e;
+  background: rgba(34, 211, 238, 0.18);
 }
 
-.pricing-plan__badge {
-  /* Add plan badge (e.g., "Popular") styles here */
+.pricing-steps-mobile__title {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0a1f6e;
 }
 
-/* Pricing Comparison Table */
-.pricing-comparison {
-  /* Add comparison table section styles here */
+.pricing-steps-mobile__phone {
+  display: flex;
+  justify-content: center;
 }
 
-.pricing-comparison__table {
-  /* Add comparison table styles here */
+.pricing-steps-mobile__screen {
+  width: min(52vw, 11.5rem);
+  height: auto;
+  object-fit: contain;
 }
 
-.pricing-comparison__header {
-  /* Add table header styles here */
+/* ── CTA ────────────────────────────────────── */
+.pricing-cta {
+  padding: 2rem 1rem 3rem;
+  background: #dfe0e1;
 }
 
-.pricing-comparison__row {
-  /* Add table row styles here */
+.pricing-cta__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 36rem;
+  margin: 0 auto;
 }
 
-.pricing-comparison__cell {
-  /* Add table cell styles here */
+.pricing-cta__copy {
+  text-align: center;
 }
 
-/* FAQ Section */
-.pricing-faq {
-  /* Add FAQ section styles here */
+.pricing-cta__title {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.65rem, 7vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: #0a1f6e;
 }
 
-.pricing-faq__title {
-  /* Add FAQ title styles here */
+.pricing-cta__text {
+  margin: 0 auto 1.25rem;
+  max-width: 22rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #64748b;
 }
 
-.pricing-faq__list {
-  /* Add FAQ list styles here */
+.pricing-cta__btn {
+  min-height: 2.875rem;
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: #0a1f6e;
+  box-shadow: 0 8px 20px -10px rgba(10, 31, 110, 0.55);
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.pricing-faq__item {
-  /* Add FAQ item styles here */
+.pricing-cta__btn:hover {
+  background: #0d2a8a;
 }
 
-.pricing-faq__question {
-  /* Add FAQ question styles here */
+.pricing-cta__visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 14rem;
 }
 
-.pricing-faq__answer {
-  /* Add FAQ answer styles here */
+.pricing-cta__ring {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(72vw, 16rem);
+  height: auto;
+  opacity: 0.9;
+  pointer-events: none;
 }
 
-/* Responsive Breakpoints */
+.pricing-cta__person {
+  position: relative;
+  z-index: 1;
+  width: min(68vw, 15rem);
+  height: auto;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+/* ── Tablet+ ────────────────────────────────── */
+@media (min-width: 640px) {
+  .pricing-hero__card {
+    margin: 6.5rem 2rem 0;
+    min-height: 15rem;
+  }
+
+  .pricing-hero__card-inner {
+    padding: 2.5rem 2rem 9rem;
+  }
+
+  .pricing-cards {
+    margin-top: -5.5rem;
+    padding: 0 1.5rem;
+  }
+
+  .pricing-cards__grid {
+    max-width: 40rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
 @media (min-width: 768px) {
-  /* Tablet styles */
+  .pricing-hero__card {
+    margin: 7rem 3.5rem 0;
+    border-radius: 1rem;
+  }
+
+  .pricing-hero__card-inner {
+    padding: 3rem 2.5rem 10rem;
+  }
+
+  .pricing-hero__toggle {
+    max-width: none;
+    width: auto;
+    display: inline-flex;
+  }
+
+  .pricing-hero__toggle-btn {
+    flex: none;
+    min-width: 7rem;
+  }
+
+  .pricing-cards {
+    margin-top: -6.5rem;
+    padding: 0 2rem;
+  }
+
+  .pricing-cta__inner {
+    flex-direction: row;
+    align-items: center;
+    max-width: 64rem;
+    gap: 2.5rem;
+  }
+
+  .pricing-cta__copy {
+    flex: 1;
+    text-align: left;
+  }
+
+  .pricing-cta__text {
+    margin-left: 0;
+    max-width: 20rem;
+  }
+
+  .pricing-cta__visual {
+    flex: 1;
+    min-height: 220px;
+  }
 }
 
 @media (min-width: 1024px) {
-  /* Desktop styles */
-}
+  .pricing-hero__card {
+    margin: 7rem 6rem 0;
+    min-height: 16.25rem;
+  }
 
-@media (min-width: 1280px) {
-  /* Large desktop styles */
-}
+  .pricing-cards {
+    padding: 0 4rem;
+  }
 
+  .pricing-cards__grid {
+    max-width: 64rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
