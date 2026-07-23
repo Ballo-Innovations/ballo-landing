@@ -136,19 +136,19 @@ function PricingCard({ tier }: { tier: PricingTier }) {
         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">
           Number of Messages
         </p>
-        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
           <button
             onClick={() => setMessages((m) => Math.max(MIN_MSGS, m - STEP))}
-            aria-label="Decrease"
-            className="w-6 h-6 rounded bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600 font-bold text-sm transition-colors"
+            aria-label="Decrease message count"
+            className="w-11 h-11 rounded-lg bg-slate-200 hover:bg-slate-300 active:bg-slate-300 flex items-center justify-center text-slate-600 font-bold text-lg transition-colors"
           >
             -
           </button>
           <span className="text-sm font-bold text-slate-800 tabular-nums">{messages.toLocaleString()}</span>
           <button
             onClick={() => setMessages((m) => Math.min(MAX_MSGS, m + STEP))}
-            aria-label="Increase"
-            className="w-6 h-6 rounded bg-[#0a1f6e] hover:bg-[#0d2a8a] flex items-center justify-center text-white font-bold text-sm transition-colors"
+            aria-label="Increase message count"
+            className="w-11 h-11 rounded-lg bg-[#0a1f6e] hover:bg-[#0d2a8a] active:bg-[#0d2a8a] flex items-center justify-center text-white font-bold text-lg transition-colors"
           >
             +
           </button>
@@ -176,7 +176,7 @@ function PricingCard({ tier }: { tier: PricingTier }) {
       <div className="px-5 pb-4">
         <Link
           href="#waitlist"
-          className="block w-full text-center bg-[#0a1f6e] hover:bg-[#0d2a8a] text-white py-2.5 rounded-full text-sm font-semibold transition-colors"
+          className="flex items-center justify-center w-full text-center bg-[#0a1f6e] hover:bg-[#0d2a8a] text-white min-h-11 rounded-full text-sm font-semibold transition-colors"
         >
           Sign Up
         </Link>
@@ -256,10 +256,10 @@ export default function PricingPage() {
               Dynamic, Transparent Pricing
             </h1>
 
-            <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
+            <div className="flex w-full max-w-xs mx-auto sm:inline-flex sm:w-auto sm:max-w-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
               <button
                 onClick={() => router.push("/pricing")}
-                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`flex-1 sm:flex-none min-h-11 px-7 rounded-full text-sm font-semibold transition-all duration-200 ${
                   !isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -267,7 +267,7 @@ export default function PricingPage() {
               </button>
               <button
                 onClick={() => router.push("/pricing/unlimited")}
-                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`flex-1 sm:flex-none min-h-11 px-7 rounded-full text-sm font-semibold transition-all duration-200 ${
                   isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -294,12 +294,46 @@ export default function PricingPage() {
             Drive more growth in just 4 easy steps
           </h2>
 
+          {/* ── Mobile: native vertical step timeline (single column) ── */}
+          <ol className="md:hidden relative mx-auto max-w-sm pl-14">
+            {/* Continuous vertical connector line */}
+            <span
+              aria-hidden="true"
+              className="absolute left-[22px] top-3 bottom-3 w-0.5 bg-[#0a1f6e]/20"
+            />
+            {stepsFlow
+              .slice()
+              .sort((a, b) => a.id - b.id)
+              .map((step) => (
+                <li key={step.id} className="relative pb-10 last:pb-0">
+                  {/* Numbered node on the line */}
+                  <span className="absolute -left-14 top-1 flex items-center justify-center w-11 h-11 rounded-full bg-[#0a1f6e] text-white font-bold text-base shadow-md ring-4 ring-[#DFE0E1]">
+                    {step.id}
+                  </span>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-base font-bold text-slate-800 leading-snug">
+                        {step.title.replace(/^\d+\.\s*/, "")}
+                      </h3>
+                    </div>
+                    <Image
+                      src={step.image}
+                      alt={step.title.replace(/^\d+\.\s*/, "")}
+                      width={96}
+                      height={196}
+                      className="object-contain shrink-0"
+                    />
+                  </div>
+                </li>
+              ))}
+          </ol>
+
           {/*
-            Layout: 4-col grid  [label-left | phone-left | phone-right | label-right]
+            Desktop layout: 4-col grid  [label-left | phone-left | phone-right | label-right]
             SVG arrows sit as an absolute overlay covering the two phone columns only.
             No wrapper divs around the phone images — bare <Image> only.
           */}
-          <div className="relative max-w-2xl mx-auto">
+          <div className="hidden md:block relative max-w-2xl mx-auto">
 
             {/*
               Single connected rectangle frame.
@@ -417,16 +451,16 @@ export default function PricingPage() {
             </div>
 
             {/* Right: woman image + decorative ring arc */}
-            <div className="md:w-1/2 relative flex justify-center items-end" style={{ minHeight: 220 }}>
+            <div className="w-full md:w-1/2 relative flex justify-center items-end overflow-hidden" style={{ minHeight: 220 }}>
               {/* Ring arc — large circle, cropped by overflow-hidden on parent */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-1/2 -translate-y-1/2 pointer-events-none">
                 <Image
                   src={ring}
                   alt=""
                   aria-hidden="true"
                   width={320}
                   height={320}
-                  className="opacity-90 object-contain"
+                  className="w-56 sm:w-72 md:w-80 h-auto opacity-90 object-contain"
                 />
               </div>
               {/* Woman image — in front of ring */}

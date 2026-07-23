@@ -11,7 +11,6 @@ import step3 from "@/public/Assets/38.png";
 import step4 from "@/public/Assets/40.png";
 import ring from "@/public/Assets/9.png";
 import woman from "@/public/BalloAds Assets 2/25.png"
-import bck from "@/public/BalloAds Assets 2/26.png"
 
 // --- TYPESCRIPT INTERFACES ---
 
@@ -118,7 +117,7 @@ interface PricingTier {
                   step={250}
                   value={selectedMessages}
                   onChange={handleSliderChange}
-                  className="w-full h-2 appearance-none bg-transparent cursor-pointer range-lg [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-slate-200 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-900 [&::-webkit-slider-thumb]:shadow-lg"
+                  className="w-full h-6 appearance-none bg-transparent cursor-pointer touch-pan-y [&::-webkit-slider-runnable-track]:h-2 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-slate-200 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:-mt-2 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-900 [&::-webkit-slider-thumb]:shadow-lg"
               />
           </div>
   
@@ -193,10 +192,10 @@ export default function PricingAndSteps() {
               Dynamic, Transparent Pricing
             </h1>
 
-            <div className="inline-flex bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
+            <div className="flex w-full max-w-xs mx-auto sm:inline-flex sm:w-auto sm:max-w-none bg-white/10 backdrop-blur-sm border border-white/10 rounded-full p-1 gap-1">
               <button
                 onClick={() => router.push("/pricing")}
-                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`flex-1 sm:flex-none min-h-11 px-7 rounded-full text-sm font-semibold transition-all duration-200 ${
                   !isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -204,7 +203,7 @@ export default function PricingAndSteps() {
               </button>
               <button
                 onClick={() => router.push("/pricing/unlimited")}
-                className={`px-7 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                className={`flex-1 sm:flex-none min-h-11 px-7 rounded-full text-sm font-semibold transition-all duration-200 ${
                   isUnlimited ? "bg-[#0a1f6e] text-white shadow" : "text-white/60 hover:text-white"
                 }`}
               >
@@ -237,35 +236,96 @@ export default function PricingAndSteps() {
           </h2>
         </div>
 
-        <div className="relative max-w-4xl mx-auto">
-            {/* This is the most complex part of the design (the circular line). 
-                It's best handled by an absolute SVG image that sits behind the phones. */}
-            <div className="absolute inset-0 z-0">
-                 {/* Replace this with your actual loop SVG/Image */}
-                 <div className="w-full h-full border-4 border-blue-200 rounded-2xl opacity-40"></div> 
-            </div>
+        {/* ── Mobile: native vertical step timeline (single column) ── */}
+        <ol className="md:hidden relative mx-auto max-w-sm pl-14">
+          <span
+            aria-hidden="true"
+            className="absolute left-[22px] top-3 bottom-3 w-0.5 bg-blue-900/20"
+          />
+          {stepsFlow
+            .slice()
+            .sort((a, b) => a.id - b.id)
+            .map((step) => (
+              <li key={step.id} className="relative pb-10 last:pb-0">
+                <span className="absolute -left-14 top-1 flex items-center justify-center w-11 h-11 rounded-full bg-blue-900 text-white font-bold text-base shadow-md ring-4 ring-[#DFE0E1]">
+                  {step.id}
+                </span>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-base font-bold text-slate-800 leading-snug">
+                      {step.title.replace(/^\d+\.\s*/, "")}
+                    </h3>
+                  </div>
+                  <Image
+                    src={step.image}
+                    alt={step.title.replace(/^\d+\.\s*/, "")}
+                    width={96}
+                    height={196}
+                    className="object-contain shrink-0"
+                  />
+                </div>
+              </li>
+            ))}
+        </ol>
 
-            <div className="grid grid-cols-2 gap-10 md:gap-y-20 relative z-10">
-                {stepsFlow.map((step) => (
-                    <div 
-                        key={step.id} 
-                        className={`flex flex-col items-center ${step.pos.includes('top') ? 'pt-10' : 'pb-10'}`}
-                    >
-                        <h3 className="text-lg font-bold text-slate-700 mb-6">{step.title}</h3>
-                        <div className="relative w-[180px] h-[360px] bg-white rounded-[30px] shadow-2xl border-4 border-slate-100 overflow-hidden">
-                            {/* Placeholder for phones */}
-                            <div className="absolute inset-0 bg-slate-50 flex items-center justify-center text-slate-300 text-xs">
-                                <Image 
-                                  src={step.image} // Replace with your actual image imports
-                                  alt={step.title} 
-                                  width={180} 
-                                  height={360} 
-                                  className="object-cover w-full h-full"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                ))}
+        {/*
+          ── Desktop: connected loop diagram (md+) ──
+          Sized to ~1016 x 740px. A single rounded-rectangle SVG loop passes
+          behind the four phones; visible only in the gaps + vertical sides,
+          with directional arrows on the top (→) and bottom (←) runs.
+        */}
+        <div className="hidden md:block relative w-full max-w-[1016px] mx-auto">
+            <svg
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              viewBox="0 0 1016 740"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <defs>
+                <marker id="pru-arrowR" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                  <polygon points="0,0 10,5 0,10" fill="#22d3ee" />
+                </marker>
+                <marker id="pru-arrowL" markerWidth="10" markerHeight="10" refX="1" refY="5" orient="auto-start-reverse">
+                  <polygon points="0,5 10,0 10,10" fill="#22d3ee" />
+                </marker>
+              </defs>
+
+              {/* Continuous rounded-rectangle loop (left=200, right=816, top=210, bottom=530, R=48) */}
+              <path
+                d="M 248 210 L 768 210 A 48 48 0 0 1 816 258 L 816 482 A 48 48 0 0 1 768 530 L 248 530 A 48 48 0 0 1 200 482 L 200 258 A 48 48 0 0 1 248 210 Z"
+                stroke="#22d3ee"
+                strokeWidth="2.6"
+              />
+
+              {/* Top run arrow (→) — long segment between the two top phones */}
+              <line x1="430" y1="210" x2="586" y2="210" stroke="#22d3ee" strokeWidth="2.6" markerEnd="url(#pru-arrowR)" />
+              {/* Bottom run arrow (←) */}
+              <line x1="586" y1="530" x2="430" y2="530" stroke="#22d3ee" strokeWidth="2.6" markerEnd="url(#pru-arrowL)" />
+            </svg>
+
+            {/* Phone grid — raised above the loop. [label | phone | phone | label] x 2 rows */}
+            <div className="relative z-1 grid grid-cols-[1fr_auto_auto_1fr] gap-x-16 lg:gap-x-24 gap-y-28 items-center py-8">
+
+              {/* ── Row 1 ── */}
+              <p className="text-base font-bold text-slate-700 text-right leading-tight">
+                1. Easy<br /> Registration
+              </p>
+              <Image src={step1} alt="Easy Registration" width={224} height={280} className="object-contain" />
+              <Image src={step2} alt="Purchase a package" width={224} height={280} className="object-contain" />
+              <p className="text-base font-bold text-slate-700 text-left leading-tight">
+                2. Purchase<br /> a package
+              </p>
+
+              {/* ── Row 2 ── */}
+              <p className="text-base font-bold text-slate-700 text-right leading-tight">
+                4. View<br /> Analytics
+              </p>
+              <Image src={step3} alt="View Analytics" width={224} height={280} className="object-contain" />
+              <Image src={step4} alt="Run your campaign" width={224} height={280} className="object-contain" />
+              <p className="text-base font-bold text-slate-700 text-left leading-tight">
+                3. Run your<br /> campaign
+              </p>
             </div>
         </div>
       </section>
@@ -286,37 +346,27 @@ export default function PricingAndSteps() {
                 </button>
             </div>
             
-            <div className="md:w-1/2 relative h-[400px] w-full flex justify-center">
-                {/* Image Placeholder */}
-                <div className="absolute">
-
-                <Image
-                    src={bck}
-                    alt="Circles Ring"
-                    width={1600}
-                    height={1900}
-                    className="w-70 h-auto relative right-0 bottom-12 scale-[2.5]"
-                    priority
-                  />
-                  
-                </div>
-                <div className="relative ">
-                  {/* Replace with your image of the woman with the tablet */}
-                  
+            {/* Right: woman image + decorative ring arc (contained, no overflow) */}
+            <div className="w-full md:w-1/2 relative flex justify-center items-end overflow-hidden" style={{ minHeight: 260 }}>
+                {/* Ring arc — centered on mobile, right-anchored on desktop */}
+                <div className="absolute right-1/2 translate-x-1/2 md:right-0 md:translate-x-0 top-1/2 -translate-y-1/2 pointer-events-none">
                   <Image
                     src={ring}
-                    alt="Circles Ring"
-                    width={1600}
-                    height={1900}
-                    className="w-full h-auto relative right-0 bottom-63 scale-[1.1]"
-                    priority
+                    alt=""
+                    aria-hidden="true"
+                    width={320}
+                    height={320}
+                    className="w-56 sm:w-72 md:w-80 h-auto opacity-90 object-contain"
                   />
+                </div>
+                {/* Woman image — in front of ring */}
+                <div className="relative z-10">
                   <Image
                     src={woman}
-                    alt="woman"
-                    width={400}
-                    height={600}
-                    className="w-full h-auto absolute left-18 bottom-50 scale-[1.5]"
+                    alt="BalloAds user on mobile"
+                    width={300}
+                    height={320}
+                    className="w-56 sm:w-72 h-auto object-contain object-bottom"
                     priority
                   />
                 </div>
