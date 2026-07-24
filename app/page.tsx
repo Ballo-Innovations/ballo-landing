@@ -98,7 +98,7 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman,
-    imageFrame: { scale: 1.28, x: "-7%", y: "3%" },
+    imageFrame: { scale: 1.28, x: "0%", y: "0%" },
     href: "/email-marketing",
   },
   {

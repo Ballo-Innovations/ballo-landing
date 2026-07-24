@@ -1700,8 +1700,13 @@
    The person and card both hang off the grid's bottom edge, so they move up
    together and their contact at the card's top edge is preserved exactly. */
 @media (min-width: 901px) and (max-height: 860px) {
+  /* Shrink the stage but KEEP ITS ASPECT (448/540 ≈ 0.83). object-contain
+     switches between height- and width-limited fitting depending on the box
+     aspect, so changing height alone made the four cutouts diverge in size
+     (44% → 69% spread). Scaling both axes keeps their relative sizes as tuned. */
   .hero-person-stage {
     height: 460px !important;
+    max-width: 382px !important;
   }
 
   .hero-copy {
