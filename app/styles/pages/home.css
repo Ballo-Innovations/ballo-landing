@@ -1672,11 +1672,45 @@
 .hero-pv {
   position: relative;
   z-index: 20;
-  /* Pulled up so the card rides just under the person, masking the cutout's
-     clipped bottom without covering the figure. */
-  /* Upper bound keeps small screens at the original -4.5rem; the -10vw term
-     only bites on wide viewports, where the extra lift is needed. */
-  margin-top: clamp(-9rem, -10vw, -4.5rem);
+  /* Mobile lift. */
+  margin-top: -4.5rem;
+}
+
+/* Desktop: a FIXED lift, deliberately not viewport-width based. A vw value here
+   made the person/card contact drift with screen width (feet touched the card at
+   1440 but floated ~16px above it at 1280), so the composition shifted between
+   desktop sizes. -9rem keeps the figure resting on the card at every width. */
+@media (min-width: 901px) {
+  .hero-pv {
+    margin-top: -9rem;
+  }
+}
+
+/* Short desktop viewports (laptops ~700–860px tall).
+   The composition is content-driven (~831px), so on these screens the PV card
+   fell below the fold — and being a scroll-reveal, its observer never fired,
+   leaving it invisible until you scrolled.
+
+   Levers, in order of what actually moves the card:
+   - the grid is bottom-aligned, so its height is set by the TALLER column;
+     once the copy column is trimmed, the person stage (height + 7rem lift)
+     becomes the driver — so the stage height is the real lever here;
+   - the top padding is deliberately left at its default, because reducing it
+     slides the person up behind the nav.
+   The person and card both hang off the grid's bottom edge, so they move up
+   together and their contact at the card's top edge is preserved exactly. */
+@media (min-width: 901px) and (max-height: 860px) {
+  .hero-person-stage {
+    height: 460px !important;
+  }
+
+  .hero-copy {
+    gap: 1.5rem !important;
+  }
+
+  .hero-marquee span {
+    font-size: 92px !important;
+  }
 }
 
 /* Hero content frame — identical width/centering to the header nav pill

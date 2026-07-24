@@ -80,10 +80,12 @@ const HeroSection: React.FC = () => {
   // State to capture the user's business needs
   const [formData, setFormData] = useState({
     businessType: '',
-    messageCount: '',
-    audience: '',
-    recipient: '',
-    frequency: '',
+    location: '',
+    businessName: '',
+    offering: '',
+    customerIssue: '',
+    ourStruggle: '',
+    reachCount: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,9 +94,13 @@ const HeroSection: React.FC = () => {
 
   return (
     <div className="bg-[var(--brand-color-1)]">
-      <section className="container mx-auto px-4 pt-16 md:pt-24 lg:pt-16 pb-6 bg-[var(--brand-color-1)]">
-        <div className="relative overflow-hidden max-w-6xl mx-auto">
-          <h3 className="text-xl md:text-2xl text-white/70 text-center mb-8 uppercase tracking-widest">
+      <section className="min-h-screen flex flex-col justify-center pt-24 pb-12 bg-[var(--brand-color-1)]">
+        {/* Content box matches the nav bar bounds. Nav = 100vw-1rem under 640px, else min(100vw-1.5rem, 84rem). */}
+        <div className="relative overflow-hidden w-[calc(100%-1rem)] sm:w-[calc(100%-1.5rem)] max-w-[84rem] mx-auto">
+          <h3
+            className="text-xl md:text-2xl text-center mb-8 uppercase tracking-widest bg-clip-text text-transparent"
+            style={{ backgroundImage: "radial-gradient(circle at 50% 50%, #d0e4e4, #020055)" }}
+          >
             HI! WONDERING WHICH PLAN BEST SUITS YOU? WE WILL MEET YOU WHERE YOU ARE.
           </h3>
 
@@ -110,39 +116,55 @@ const HeroSection: React.FC = () => {
               className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
               onChange={handleChange}
             />
-            business and want to send
+            business in
             <input
               type="text"
-              name="messageCount"
+              name="location"
+              placeholder="Lusaka"
+              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-40 md:w-60 transition-colors"
+              onChange={handleChange}
+            />
+            called
+            <input
+              type="text"
+              name="businessName"
+              placeholder="my brand"
+              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              onChange={handleChange}
+            />
+            and what we do is
+            <input
+              type="text"
+              name="offering"
+              placeholder="sell online"
+              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              onChange={handleChange}
+            />
+            . Right now, customers
+            <input
+              type="text"
+              name="customerIssue"
+              placeholder="not replying"
+              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              onChange={handleChange}
+            />
+            is costing us money/sales, and we
+            <input
+              type="text"
+              name="ourStruggle"
+              placeholder="lose track"
+              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              onChange={handleChange}
+            />
+            i need to reach
+            <input
+              type="text"
+              name="reachCount"
               placeholder="50,000"
               className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-40 md:w-60 transition-colors"
               onChange={handleChange}
             />
-            messages to
-            <input
-              type="text"
-              name="audience"
-              placeholder="active"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-40 md:w-60 transition-colors"
-              onChange={handleChange}
-            />
-            people quickly and efficiently. I want to ensure
-            <input
-              type="text"
-              name="recipient"
-              placeholder="everyone"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
-              onChange={handleChange}
-            />
-            receives messages
-            <input
-              type="text"
-              name="frequency"
-              placeholder="instantly"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
-              onChange={handleChange}
-            />
-            .
+            people without turning it into a full time job.
           </div>
 
           {/* Optional: Add a 'Find My Plan' button */}
