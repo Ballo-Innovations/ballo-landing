@@ -1,8 +1,9 @@
 "use client";
 // components/marketing/HeroSection.tsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 import clsx from 'clsx'; // Utility for conditionally joining class names
@@ -74,10 +75,117 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+// --- Typewriter blank for the fill-in-the-blank hero ---
+
+// A real text input whose placeholder is an animated typewriter cycling
+// example words. The animation only runs while the field is empty and
+// unfocused, so it never fights with what the user types. Adapted from the
+// KokonutUI Typewriter reference, using the project's framer-motion for the
+// blinking caret instead of the "motion/react" package.
+const GapTypewriter: React.FC<{
+  name: string;
+  words: string[];
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+  startDelay?: number;
+}> = ({ name, words, value, onChange, className = '', startDelay = 200 }) => {
+  const [display, setDisplay] = useState('');
+  const [focused, setFocused] = useState(false);
+  const wordIndex = useRef(0);
+  const charIndex = useRef(0);
+  const deleting = useRef(false);
+  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wordsRef = useRef(words);
+  wordsRef.current = words;
+
+  // The animated placeholder is only visible while the blank is untouched.
+  const showPlaceholder = value.length === 0 && !focused;
+
+  useEffect(() => {
+    if (!showPlaceholder) {
+      if (timeout.current) clearTimeout(timeout.current);
+      return;
+    }
+
+    const typingSpeed = 90;
+    const deleteSpeed = 45;
+    const holdAfterType = 1600;
+    const holdAfterDelete = 350;
+
+    // +/- variance so each keystroke feels hand-typed rather than metronomic.
+    const jitter = (base: number) => base * (0.7 + Math.random() * 0.6);
+
+    const tick = () => {
+      const current = wordsRef.current[wordIndex.current] ?? '';
+
+      if (deleting.current) {
+        charIndex.current -= 1;
+        setDisplay(current.slice(0, Math.max(0, charIndex.current)));
+        if (charIndex.current <= 0) {
+          deleting.current = false;
+          wordIndex.current = (wordIndex.current + 1) % wordsRef.current.length;
+          timeout.current = setTimeout(tick, holdAfterDelete);
+        } else {
+          timeout.current = setTimeout(tick, jitter(deleteSpeed));
+        }
+      } else {
+        charIndex.current += 1;
+        setDisplay(current.slice(0, charIndex.current));
+        if (charIndex.current >= current.length) {
+          deleting.current = true;
+          timeout.current = setTimeout(tick, holdAfterType);
+        } else {
+          timeout.current = setTimeout(tick, jitter(typingSpeed));
+        }
+      }
+    };
+
+    timeout.current = setTimeout(tick, startDelay);
+    return () => {
+      if (timeout.current) clearTimeout(timeout.current);
+    };
+  }, [showPlaceholder, startDelay]);
+
+  return (
+    <span
+      className={`relative inline-block border-b-2 border-white/40 px-2 align-baseline ${className}`}
+    >
+      <input
+        type="text"
+        name={name}
+        value={value}
+        onChange={onChange}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        aria-label={name}
+        autoComplete="off"
+        className="w-full bg-transparent text-center text-white outline-none focus:border-white"
+      />
+      {showPlaceholder && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center whitespace-nowrap"
+          style={{ color: '#535A8D' }}
+        >
+          {display}
+          <motion.span
+            className="ml-[2px] inline-block w-[3px] align-middle bg-[var(--cyan-bright)]"
+            style={{ height: '0.9em' }}
+            animate={{ opacity: [1, 1, 0, 0] }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          />
+        </span>
+      )}
+    </span>
+  );
+};
+
 // --- Component Definition ---
 
 const HeroSection: React.FC = () => {
-  // State to capture the user's business needs
+  // Captures the user's business needs. Blanks show an animated placeholder
+  // until the user types their own answer.
   const [formData, setFormData] = useState({
     businessType: '',
     location: '',
@@ -104,67 +212,74 @@ const HeroSection: React.FC = () => {
             HI! WONDERING WHICH PLAN BEST SUITS YOU? WE WILL MEET YOU WHERE YOU ARE.
           </h3>
 
-          {/* The "Sentence" Input UI 
-          We use "inline-block" and "border-b-2" to keep the design looking like a fill-in-the-blank form.
-        */}
+          {/* The "Sentence" UI. Each blank types out example scenarios on a
+              loop, so the statement reads like a live-filling fill-in-the-blank
+              form. */}
           <div className="text-3xl md:text-5xl lg:text-6xl text-white leading-tight md:leading-relaxed text-center lg:text-left">
-            I have a
-            <input
-              type="text"
+            I have a{" "}
+            <GapTypewriter
               name="businessType"
-              placeholder="e-commerce"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              value={formData.businessType}
               onChange={handleChange}
-            />
-            business in
-            <input
-              type="text"
+              words={["e-commerce", "salon", "clinic", "restaurant"]}
+              className="min-w-[10rem] md:min-w-[15rem]"
+              startDelay={200}
+            />{" "}
+            business in{" "}
+            <GapTypewriter
               name="location"
-              placeholder="Lusaka"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-40 md:w-60 transition-colors"
+              value={formData.location}
               onChange={handleChange}
-            />
-            called
-            <input
-              type="text"
+              words={["Lusaka", "Kitwe", "Ndola", "Livingstone"]}
+              className="min-w-[8rem] md:min-w-[12rem]"
+              startDelay={500}
+            />{" "}
+            called{" "}
+            <GapTypewriter
               name="businessName"
-              placeholder="my brand"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              value={formData.businessName}
               onChange={handleChange}
+              words={["my brand", "Zamboutique", "Fresh Farms", "Copper Crafts"]}
+              className="min-w-[10rem] md:min-w-[15rem]"
+              startDelay={800}
             />
-            and what we do is
-            <input
-              type="text"
+            , and what we do is{" "}
+            <GapTypewriter
               name="offering"
-              placeholder="sell online"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              value={formData.offering}
               onChange={handleChange}
+              words={["sell online", "deliver food", "book clients", "run classes"]}
+              className="min-w-[10rem] md:min-w-[15rem]"
+              startDelay={1100}
             />
-            . Right now, customers
-            <input
-              type="text"
+            . Right now, customers{" "}
+            <GapTypewriter
               name="customerIssue"
-              placeholder="not replying"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              value={formData.customerIssue}
               onChange={handleChange}
-            />
-            is costing us money/sales, and we
-            <input
-              type="text"
+              words={["not replying", "going quiet", "missing offers", "forgetting us"]}
+              className="min-w-[10rem] md:min-w-[15rem]"
+              startDelay={1400}
+            />{" "}
+            is costing us money and sales, and we{" "}
+            <GapTypewriter
               name="ourStruggle"
-              placeholder="lose track"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-48 md:w-72 transition-colors"
+              value={formData.ourStruggle}
               onChange={handleChange}
+              words={["lose track", "waste ad spend", "chase leads by hand", "miss follow-ups"]}
+              className="min-w-[10rem] md:min-w-[15rem]"
+              startDelay={1700}
             />
-            i need to reach
-            <input
-              type="text"
+            . I need to reach{" "}
+            <GapTypewriter
               name="reachCount"
-              placeholder="50,000"
-              className="bg-transparent border-b-2 border-white/40 focus:border-white outline-none px-2 mx-2 placeholder:text-white/20 w-40 md:w-60 transition-colors"
+              value={formData.reachCount}
               onChange={handleChange}
-            />
-            people without turning it into a full time job.
+              words={["50,000", "10,000", "5,000", "everyone"]}
+              className="min-w-[8rem] md:min-w-[12rem]"
+              startDelay={2000}
+            />{" "}
+            people without turning it into a full-time job.
           </div>
 
           {/* Optional: Add a 'Find My Plan' button */}
