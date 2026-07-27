@@ -55,6 +55,10 @@ const Header = () => {
     return null;
   }
 
+  // Knowledge Base: keep the nav pinned (never hide on scroll-down) so the
+  // page's content scrolls up INTO the nav rather than into a bare strip.
+  const pinNav = pathname === "/knowledge-base";
+
   return (
     <header className="header header--sticky">
       <motion.div
@@ -102,7 +106,7 @@ const Header = () => {
           visible: { y: 0, x: "-50%" },
           hidden: { y: "-130%", x: "-50%" },
         }}
-        animate={isHidden ? "hidden" : "visible"}
+        animate={isHidden && !pinNav ? "hidden" : "visible"}
         initial="visible"
         transition={{
           duration: 0.3,

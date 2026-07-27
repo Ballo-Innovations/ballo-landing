@@ -1,0 +1,666 @@
+/* ============================================================
+   Knowledge Base hub (/knowledge-base)
+   Client's editorial structure (sticky index, grouped cards,
+   @ personalisation demo, search, helpful votes, academy band)
+   rendered in the BalloAds design system: light #DFE0E1 surface,
+   brand blue + cyan, Ubuntu headings / Calibri body, Ubuntu Mono
+   for the small labels. Prefix .kbh- (the old page keeps .kb-).
+   ============================================================ */
+
+.kbh-page {
+  min-height: 100vh;
+  background: #dfe0e1;
+  color: var(--dark-blue, #020055);
+  /* clip, NOT hidden: `overflow-x: hidden` forces overflow-y to `auto`, which
+     turns this element into a scroll container and silently breaks the sticky
+     index (it would stick to this box instead of the viewport). `clip` gives
+     the horizontal safety without establishing a scroll container. */
+  overflow-x: clip;
+  --kbh-wrap: 75rem;
+  --kbh-line: rgba(2, 0, 85, 0.12);
+  --kbh-soft: color-mix(in srgb, var(--dark-blue, #020055) 62%, transparent);
+}
+
+.kbh-mono {
+  font-family: var(--font-ubuntu-mono), ui-monospace, "Cascadia Mono", monospace;
+}
+
+.kbh-wrap {
+  max-width: var(--kbh-wrap);
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* ---------- Hero ---------- */
+.kbh-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: center;
+  padding-top: clamp(7rem, 12vw, 9rem);
+  padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.kbh-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-color-3, #2273af);
+  margin: 0 0 1.1rem;
+}
+
+.kbh-h1 {
+  margin: 0 0 1.1rem;
+  font-size: clamp(2.4rem, 6vw, 4.25rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--dark-blue, #020055);
+}
+
+.kbh-h1 em {
+  font-style: normal;
+  color: var(--brand-color-3, #2273af);
+}
+
+.kbh-lede {
+  margin: 0 0 1.6rem;
+  max-width: 46ch;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.55;
+  color: var(--kbh-soft);
+}
+
+.kbh-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px dashed var(--brand-color-3, #2273af);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--brand-color-2, #0b4d8c);
+}
+
+.kbh-pulse {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--cyan-bright, #00d4ff);
+  animation: kbh-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes kbh-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+/* ---------- @ personalisation demo ---------- */
+.kbh-demo {
+  border-radius: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  color: #eaf0ff;
+  background: linear-gradient(160deg, #0e1a52 0%, #05052a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 34px 70px -40px rgba(2, 0, 85, 0.85);
+}
+
+.kbh-demo__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(234, 240, 255, 0.5);
+}
+
+.kbh-demo__source {
+  padding: 0.9rem 1rem;
+  border-left: 2px solid var(--cyan, #3fdbff);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0 0.4rem 0.4rem 0;
+  font-size: 0.82rem;
+  line-height: 1.75;
+  color: rgba(234, 240, 255, 0.82);
+}
+
+.kbh-demo__source .tk {
+  color: var(--cyan, #3fdbff);
+}
+
+.kbh-demo__arrow {
+  padding: 0.65rem 0 0.65rem 1rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  color: rgba(234, 240, 255, 0.4);
+}
+
+.kbh-demo__out {
+  background: #ffffff;
+  color: var(--dark-blue, #020055);
+  border-radius: 0.6rem;
+  padding: 1rem 1.1rem;
+  min-height: 7.5rem;
+}
+
+.kbh-demo__to {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--kbh-soft);
+}
+
+.kbh-demo__to i {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--brand-color-3, #2273af);
+}
+
+.kbh-demo__msg {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.kbh-demo__msg .fill {
+  padding: 0 0.15rem;
+  background: rgba(34, 115, 175, 0.16);
+  box-shadow: 0 1px 0 var(--brand-color-3, #2273af);
+  transition: opacity 0.28s ease;
+}
+
+.kbh-demo__msg.is-swapping .fill {
+  opacity: 0;
+}
+
+.kbh-demo__stop {
+  font-size: 0.82rem;
+  color: var(--kbh-soft);
+}
+
+.kbh-demo__dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.kbh-demo__dots button {
+  width: 1.6rem;
+  height: 0.2rem;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  background: rgba(234, 240, 255, 0.22);
+  transition: background 0.2s ease;
+}
+
+.kbh-demo__dots button[aria-current="true"] {
+  background: var(--cyan, #3fdbff);
+}
+
+.kbh-demo__foot {
+  margin: 0.9rem 0 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: rgba(234, 240, 255, 0.42);
+}
+
+/* ---------- Top cover ---------- */
+/* Full-bleed, page-coloured, fixed strip. Content scrolls up and fades out
+   behind it so nothing shows above the pill nav (the reference used a solid
+   full-width topbar for this; our nav is a floating pill, so this invisible
+   cover reproduces the same "content disappears at the top" behaviour). It
+   sits below the nav (z-index 100) and above the cards. */
+.kbh-cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5.5rem;
+  z-index: 40;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #dfe0e1 0%,
+    #dfe0e1 62%,
+    color-mix(in srgb, #dfe0e1 85%, transparent) 82%,
+    transparent 100%
+  );
+}
+
+/* ---------- Shell (index + cards) ---------- */
+.kbh-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.5rem, 4vw, 3.25rem);
+  padding-block: clamp(2rem, 4vw, 3rem) clamp(3rem, 6vw, 5rem);
+  align-items: start;
+}
+
+.kbh-index {
+  position: static;
+}
+
+.kbh-index__title {
+  margin: 0 0 0.9rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--kbh-soft);
+}
+
+.kbh-index__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.kbh-index__group {
+  width: 100%;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--brand-color-3, #2273af);
+  padding-top: 0.5rem;
+}
+
+.kbh-index__group:first-child {
+  padding-top: 0;
+}
+
+.kbh-index__link {
+  display: block;
+  text-decoration: none;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--kbh-line);
+  color: var(--kbh-soft);
+}
+
+.kbh-index__link:hover {
+  color: var(--dark-blue, #020055);
+  border-color: rgba(34, 115, 175, 0.4);
+}
+
+.kbh-index__link.is-active {
+  color: #fff;
+  background: var(--brand-color-1, #020055);
+  border-color: var(--brand-color-1, #020055);
+}
+
+/* Cards column */
+.kbh-main {
+  min-width: 0;
+}
+
+.kbh-bandhead {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.5rem;
+  padding-top: 2rem;
+}
+
+.kbh-bandhead:first-of-type {
+  padding-top: 0;
+}
+
+.kbh-bandhead span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-color-3, #2273af);
+  white-space: nowrap;
+}
+
+.kbh-bandhead::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--kbh-line);
+}
+
+.kbh-card {
+  background: #fff;
+  border: 1px solid var(--kbh-line);
+  border-radius: 1.25rem;
+  padding: clamp(1.5rem, 3.5vw, 2.25rem) clamp(1.5rem, 3.5vw, 2.4rem);
+  margin-bottom: 1.1rem;
+  scroll-margin-top: 6.5rem;
+  box-shadow: 0 18px 40px -34px rgba(2, 0, 85, 0.4);
+}
+
+.kbh-card__num {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--kbh-soft);
+  margin-bottom: 0.5rem;
+}
+
+.kbh-card__title {
+  margin: 0 0 0.55rem;
+  font-size: clamp(1.5rem, 3vw, 1.95rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--dark-blue, #020055);
+}
+
+.kbh-card__claim {
+  margin: 0 0 1rem;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--brand-color-2, #0b4d8c);
+}
+
+.kbh-card__body {
+  margin: 0 0 0.9rem;
+  max-width: 66ch;
+  font-size: 1rem;
+  line-height: 1.62;
+  color: color-mix(in srgb, var(--dark-blue, #020055) 78%, transparent);
+}
+
+.kbh-card__body:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Field lists */
+.kbh-fields {
+  margin: 1.4rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--kbh-line);
+}
+
+.kbh-fields li {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--kbh-line);
+}
+
+.kbh-fields__k {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--brand-color-2, #0b4d8c);
+  line-height: 1.4;
+}
+
+.kbh-fields__k small {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kbh-soft);
+}
+
+.kbh-fields__v {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.58;
+  color: color-mix(in srgb, var(--dark-blue, #020055) 76%, transparent);
+}
+
+.kbh-fields__v .tag {
+  font-family: var(--font-ubuntu-mono), ui-monospace, monospace;
+  font-size: 0.9em;
+  color: var(--brand-color-3, #2273af);
+}
+
+/* Screenshot placeholder */
+.kbh-shot {
+  margin: 1.5rem 0 0;
+  border: 1px dashed var(--kbh-line);
+  border-radius: 0.75rem;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 9px,
+    rgba(34, 115, 175, 0.05) 9px,
+    rgba(34, 115, 175, 0.05) 18px
+  );
+}
+
+.kbh-shot span {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kbh-soft);
+}
+
+/* Sub-page link + helpful votes footer */
+.kbh-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--kbh-line);
+}
+
+.kbh-readmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand-color-2, #0b4d8c);
+  text-decoration: none;
+}
+
+.kbh-readmore:hover {
+  text-decoration: underline;
+}
+
+.kbh-helpful {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.kbh-helpful__label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kbh-soft);
+}
+
+.kbh-helpful button {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--kbh-line);
+  background: none;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--kbh-soft);
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.kbh-helpful button:hover {
+  border-color: var(--brand-color-3, #2273af);
+  color: var(--brand-color-2, #0b4d8c);
+}
+
+.kbh-helpful button.is-picked {
+  background: var(--brand-color-1, #020055);
+  border-color: var(--brand-color-1, #020055);
+  color: #fff;
+}
+
+/* ---------- Academy band ---------- */
+.kbh-academy {
+  background: linear-gradient(150deg, var(--brand-color-1, #020055), var(--brand-color-2, #0b4d8c));
+  color: #eaf0ff;
+}
+
+.kbh-academy__in {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: center;
+  padding-block: clamp(2.75rem, 6vw, 4rem);
+}
+
+.kbh-academy__title {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.kbh-academy__text {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(234, 240, 255, 0.72);
+}
+
+.kbh-academy__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.kbh-academy__form input {
+  flex: 1;
+  min-width: 12rem;
+  height: 2.85rem;
+  padding: 0 0.9rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgba(234, 240, 255, 0.3);
+  background: transparent;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+
+.kbh-academy__form input::placeholder {
+  color: rgba(234, 240, 255, 0.5);
+}
+
+.kbh-academy__form button {
+  height: 2.85rem;
+  padding: 0 1.4rem;
+  border: 0;
+  border-radius: 0.7rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--dark-blue, #020055);
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--cyan-bright, #00d4ff));
+}
+
+.kbh-academy__ok {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--cyan, #3fdbff);
+}
+
+/* ---------- Support strip ---------- */
+.kbh-support {
+  padding-block: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--kbh-soft);
+}
+
+.kbh-support a {
+  color: var(--brand-color-2, #0b4d8c);
+  font-weight: 700;
+}
+
+/* ---------- Breakpoints ---------- */
+@media (min-width: 768px) {
+  .kbh-fields li {
+    grid-template-columns: 12rem 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1000px) {
+  .kbh-hero {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+  .kbh-shell {
+    grid-template-columns: 13.5rem 1fr;
+  }
+  .kbh-index {
+    position: sticky;
+    /* Sits just below the pill nav; matches the cards' scroll-margin-top so
+       anchor jumps and the sticky column line up under the cover. */
+    top: 6.5rem;
+  }
+  .kbh-index__list {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+    border-left: 1px solid var(--kbh-line);
+  }
+  .kbh-index__link {
+    border: 0;
+    border-left: 1px solid transparent;
+    border-radius: 0;
+    margin-left: -1px;
+    padding: 0.45rem 0 0.45rem 0.9rem;
+  }
+  .kbh-index__link:hover {
+    border-color: transparent;
+    border-left-color: rgba(34, 115, 175, 0.4);
+  }
+  .kbh-index__link.is-active {
+    color: var(--brand-color-1, #020055);
+    background: none;
+    border-left-color: var(--brand-color-1, #020055);
+    font-weight: 700;
+  }
+  .kbh-index__group {
+    padding-left: 0.9rem;
+    padding-top: 1rem;
+  }
+  .kbh-academy__in {
+    grid-template-columns: 1fr auto;
+    gap: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kbh-pulse,
+  .kbh-demo__msg .fill {
+    animation: none;
+    transition: none;
+  }
+}
