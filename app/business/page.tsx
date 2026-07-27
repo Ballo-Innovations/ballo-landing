@@ -149,7 +149,7 @@ const GapTypewriter: React.FC<{
 
   return (
     <span
-      className={`relative inline-block border-b-2 border-white/40 px-2 align-baseline ${className}`}
+      className={`relative inline-block mx-2 border-b-2 border-white/40 align-baseline focus-within:border-white ${className}`}
     >
       <input
         type="text"
@@ -160,12 +160,12 @@ const GapTypewriter: React.FC<{
         onBlur={() => setFocused(false)}
         aria-label={name}
         autoComplete="off"
-        className="w-full bg-transparent text-center text-white outline-none focus:border-white"
+        className="w-full bg-transparent px-2 text-white outline-none"
       />
       {showPlaceholder && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex items-center justify-center whitespace-nowrap"
+          className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-2 whitespace-nowrap"
           style={{ color: '#535A8D' }}
         >
           {display}
@@ -216,69 +216,69 @@ const HeroSection: React.FC = () => {
               loop, so the statement reads like a live-filling fill-in-the-blank
               form. */}
           <div className="text-3xl md:text-5xl lg:text-6xl text-white leading-tight md:leading-relaxed text-center lg:text-left">
-            I have a{" "}
+            I have a
             <GapTypewriter
               name="businessType"
               value={formData.businessType}
               onChange={handleChange}
-              words={["e-commerce", "salon", "clinic", "restaurant"]}
-              className="min-w-[10rem] md:min-w-[15rem]"
+              words={["e-commerce", "salon", "boutique", "bakery"]}
+              className="w-48 md:w-72"
               startDelay={200}
-            />{" "}
-            business in{" "}
+            />
+            business in
             <GapTypewriter
               name="location"
               value={formData.location}
               onChange={handleChange}
-              words={["Lusaka", "Kitwe", "Ndola", "Livingstone"]}
-              className="min-w-[8rem] md:min-w-[12rem]"
+              words={["Lusaka", "Kitwe", "Ndola", "Kabwe"]}
+              className="w-40 md:w-60"
               startDelay={500}
-            />{" "}
-            called{" "}
+            />
+            called
             <GapTypewriter
               name="businessName"
               value={formData.businessName}
               onChange={handleChange}
-              words={["my brand", "Zamboutique", "Fresh Farms", "Copper Crafts"]}
-              className="min-w-[10rem] md:min-w-[15rem]"
+              words={["my brand", "my shop", "my store", "our team"]}
+              className="w-48 md:w-72"
               startDelay={800}
             />
-            , and what we do is{" "}
+            and what we do is
             <GapTypewriter
               name="offering"
               value={formData.offering}
               onChange={handleChange}
-              words={["sell online", "deliver food", "book clients", "run classes"]}
-              className="min-w-[10rem] md:min-w-[15rem]"
+              words={["sell online", "sell food", "book jobs", "run ads"]}
+              className="w-48 md:w-72"
               startDelay={1100}
             />
-            . Right now, customers{" "}
+            . Right now, customers
             <GapTypewriter
               name="customerIssue"
               value={formData.customerIssue}
               onChange={handleChange}
-              words={["not replying", "going quiet", "missing offers", "forgetting us"]}
-              className="min-w-[10rem] md:min-w-[15rem]"
+              words={["not replying", "going quiet", "not buying", "ghosting us"]}
+              className="w-48 md:w-72"
               startDelay={1400}
-            />{" "}
-            is costing us money and sales, and we{" "}
+            />
+            is costing us money and sales, and we
             <GapTypewriter
               name="ourStruggle"
               value={formData.ourStruggle}
               onChange={handleChange}
-              words={["lose track", "waste ad spend", "chase leads by hand", "miss follow-ups"]}
-              className="min-w-[10rem] md:min-w-[15rem]"
+              words={["lose track", "miss leads", "lose sales", "fall behind"]}
+              className="w-48 md:w-72"
               startDelay={1700}
             />
-            . I need to reach{" "}
+            . I need to reach
             <GapTypewriter
               name="reachCount"
               value={formData.reachCount}
               onChange={handleChange}
               words={["50,000", "10,000", "5,000", "everyone"]}
-              className="min-w-[8rem] md:min-w-[12rem]"
+              className="w-40 md:w-60"
               startDelay={2000}
-            />{" "}
+            />
             people without turning it into a full-time job.
           </div>
 
