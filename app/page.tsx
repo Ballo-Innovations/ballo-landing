@@ -294,7 +294,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="prlx-hero-trigger relative min-h-screen flex items-start justify-center pt-24 pb-12 overflow-hidden"
+        className="prlx-hero-trigger relative min-h-screen pt-24 pb-12 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -319,7 +319,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
             {/* Left — rotating copy (text half of the carousel slide) */}
             <div className="hero-copy min-w-0 relative z-10 mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
-              <p className="hero-kicker">AI-Powered Performance Marketing</p>
+              <p className="hero-kicker text-shimmer">AI-Powered Performance Marketing</p>
 
               {/* Rotating headline */}
               <div className="relative w-full min-h-[130px] sm:min-h-[170px] md:min-h-[210px] flex items-start justify-center md:justify-start">
@@ -380,71 +380,77 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right — rotating person (image half of the carousel slide) */}
-            <div className="relative min-w-0 flex justify-center items-end">
-              <div className="hero-person-stage relative w-full max-w-md h-[300px] sm:h-[420px] md:h-[540px]">
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-[2.2] opacity-60 z-0 w-full h-auto">
-                  <ConcentricRings />
-                </div>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={`hero-image-${currentSlide}`}
-                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 24, scale: 0.98 }}
-                    animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, scale: 1 }}
-                    exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -24, scale: 1.02 }}
-                    transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: "easeOut" }}
-                    className="z-10 relative w-full h-full will-change-transform"
-                  >
-                    <Image
-                      src={features[currentSlide].image}
-                      alt={features[currentSlide].title}
-                      fill
-                      sizes="(max-width: 768px) 85vw, 40vw"
-                      className="hero-person-img object-contain object-bottom"
-                      style={{
-                        ["--person-scale" as string]: features[currentSlide].imageFrame.scale,
-                        ["--person-x" as string]: features[currentSlide].imageFrame.x,
-                        ["--person-y" as string]: features[currentSlide].imageFrame.y,
-                      } as React.CSSProperties}
-                      priority={currentSlide === 0}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-                {/* Preload upcoming slide image */}
-                <div className="hidden" aria-hidden="true">
-                  <Image src={features[nextSlide].image} alt="" width={400} height={600} priority />
-                </div>
-              </div>
+          </div>
+        </div>
+
+        {/* Right-side visual. The concentric rings hold their position while the
+            rotating person rests on the bottom of the hero (desktop); on mobile
+            the whole block flows in below the copy. Anchored to the section (not
+            the grid) so the person can reach the viewport floor. */}
+        <div className="hero-visual">
+          <div className="hero-rings" aria-hidden="true">
+            <ConcentricRings />
+          </div>
+          <div className="hero-person-stage">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={`hero-image-${currentSlide}`}
+                initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 24, scale: 0.98 }}
+                animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, scale: 1 }}
+                exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -24, scale: 1.02 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: "easeOut" }}
+                className="hero-person-figure will-change-transform"
+              >
+                <Image
+                  src={features[currentSlide].image}
+                  alt={features[currentSlide].title}
+                  fill
+                  sizes="(max-width: 768px) 85vw, 40vw"
+                  className="hero-person-img object-contain object-bottom"
+                  style={{
+                    ["--person-scale" as string]: features[currentSlide].imageFrame.scale,
+                    ["--person-x" as string]: features[currentSlide].imageFrame.x,
+                    ["--person-y" as string]: features[currentSlide].imageFrame.y,
+                  } as React.CSSProperties}
+                  priority={currentSlide === 0}
+                />
+              </motion.div>
+            </AnimatePresence>
+            {/* Preload upcoming slide image */}
+            <div className="hidden" aria-hidden="true">
+              <Image src={features[nextSlide].image} alt="" width={400} height={600} priority />
             </div>
           </div>
-
-          {/* "POWERFUL AND VERSATILE" card — full-width, pulled up so the
-              rotating person rests on it (masks the cutout's clipped bottom). */}
-          <FadeUpReveal className="hero-pv relative w-full flex justify-center">
-            <div className="pv-title-card">
-              <h2
-                className="relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
-                style={{
-                  fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-                  letterSpacing: "0.005em",
-                  color: "#fff",
-                  display: "block",
-                }}
-              >
-                POWERFUL AND VERSATILE
-              </h2>
-            </div>
-          </FadeUpReveal>
         </div>
       </section>
 
       {/* What We're About — normal-flow, transparent panel (page gradient shows
-          through). The "POWERFUL AND VERSATILE" card now lives in the hero, so
-          this section leads straight into the phone mockup + copy. */}
+          through). Opens with the "POWERFUL AND VERSATILE" title card, then the
+          phone mockup + copy. */}
       <section
         className="prlx-about-trigger about-cover relative overflow-hidden pb-20 pt-16 px-4 z-50"
       >
         <div className="prlx-about-1" aria-hidden="true" />
+
+        {/* "POWERFUL AND VERSATILE" title card — heads the section and seats
+            directly against the hero's clipped person image, so it must sit at
+            its resting position (no scroll-reveal offset that would leave the
+            image floating above it). */}
+        <div className="pv-title-block flex w-full justify-center">
+          <div className="pv-title-card">
+            <h2
+              className="relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
+              style={{
+                fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+                letterSpacing: "0.005em",
+                color: "#fff",
+                display: "block",
+              }}
+            >
+              POWERFUL AND VERSATILE
+            </h2>
+          </div>
+        </div>
 
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}

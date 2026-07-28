@@ -1488,7 +1488,8 @@
   .prlx-hero-trigger {
     min-height: auto !important;
     padding-top: clamp(7.25rem, 18vw, 8.75rem) !important;
-    padding-bottom: 2.5rem !important;
+    /* No bottom padding: the person image should meet the section-2 card. */
+    padding-bottom: 0 !important;
   }
 
   .prlx-hero-trigger .hero-frame > .grid,
@@ -1508,7 +1509,6 @@
   .hero-kicker {
     font-size: clamp(0.56rem, 2.4vw, 0.72rem);
     letter-spacing: 0.08em;
-    padding: 0.42rem 0.62rem;
   }
 
   .hero-headline {
@@ -1536,17 +1536,6 @@
     font-size: clamp(4.5rem, 18vw, 7rem) !important;
   }
 
-  .hero-person-stage {
-    width: min(72vw, 18rem) !important;
-    height: clamp(17rem, 70vw, 25rem) !important;
-    margin-inline: auto;
-    margin-top: -1.5rem;
-  }
-
-  .hero-person-stage > div:first-child {
-    scale: 1.45;
-  }
-
   .hero-pv {
     margin-top: -2.25rem;
   }
@@ -1564,7 +1553,8 @@
   }
 
   .about-cover {
-    padding-top: 2.75rem !important;
+    /* No top padding: the title card must seat against the hero's person image. */
+    padding-top: 0 !important;
     padding-bottom: 3.5rem !important;
   }
 
@@ -1704,11 +1694,6 @@
      switches between height- and width-limited fitting depending on the box
      aspect, so changing height alone made the four cutouts diverge in size
      (44% → 69% spread). Scaling both axes keeps their relative sizes as tuned. */
-  .hero-person-stage {
-    height: 460px !important;
-    max-width: 382px !important;
-  }
-
   .hero-copy {
     gap: 1.5rem !important;
   }
@@ -1735,21 +1720,12 @@
 /* Desktop only: lift the "REBRANDING THE FUTURE" marquee a touch closer to the
    CTAs. Mobile keeps its own absolute placement (see the max-width: 900px
    block, which resets margin-top). */
-/* Desktop: lift the person + rings so the figure's feet land on the PV card's
-   top edge (instead of the card overlapping the legs), which also pulls the
-   rings up behind the nav and keeps the card fully above the fold. */
-@media (min-width: 901px) {
-  .hero-person-stage {
-    margin-bottom: 7rem;
-  }
-}
-
 @media (min-width: 901px) {
   .hero-marquee {
-    /* margin-bottom cancels the lift so the copy column keeps its height —
-       the marquee shifts up without dragging the person/rings/PV card with it. */
-    margin-top: -1.5rem;
-    margin-bottom: 2rem; /* 2rem = the 1.5rem lift + the 0.5rem mt-2 it replaces */
+    /* Even gap to the CTAs above — matches the rest of the copy stack (32px)
+       instead of the old tight lift. */
+    margin-top: 0;
+    margin-bottom: 2rem;
   }
 }
 
@@ -1785,20 +1761,122 @@
   }
 }
 
+/* Seat the section-2 title card right at the hero's bottom edge (desktop) / the
+   bottom of the person image (mobile), so the image reads as ending exactly
+   where the card begins. */
+.prlx-about-trigger.about-cover {
+  padding-top: 0;
+}
+
+.pv-title-block .pv-title-card {
+  margin-top: 0;
+}
+
 .hero-kicker {
   display: inline-flex;
   width: fit-content;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 999px;
-  padding: 0.5rem 0.85rem;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.92);
+  /* Negative margin tightens the gap to the rotating headline below so the
+     kicker reads as a lead-in to the carousel words. */
+  margin-bottom: -0.85rem;
+  color: rgba(255, 255, 255, 0.92); /* fallback if background-clip is unsupported */
   font-size: clamp(0.72rem, 1.8vw, 0.86rem);
   font-weight: 800;
   letter-spacing: 0.12em;
-  line-height: 1.1;
+  line-height: 1;
   text-transform: uppercase;
-  backdrop-filter: blur(12px);
+}
+
+/* ---- Hero right-side visual: concentric rings + rotating person ----
+   Mobile-first: the block flows in below the copy, person centered with the
+   rings behind it (mirrors the old in-grid stage). */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  margin-top: -1.5rem;
+  pointer-events: none;
+}
+
+.hero-rings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(72vw, 18rem);
+  height: auto;
+  transform: translate(-50%, -50%) scale(1.45);
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.hero-person-stage {
+  position: relative;
+  z-index: 1;
+  width: min(72vw, 18rem);
+  height: clamp(17rem, 70vw, 25rem);
+}
+
+.hero-person-figure {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Desktop: anchor the block to the hero SECTION so the rings can hold their
+   position near the top while the person rests on the hero floor. The block
+   tracks the hero frame's right half so the person sits where it used to. */
+@media (min-width: 901px) {
+  .hero-visual {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: calc((100vw - min(100vw - 1.5rem, 84rem)) / 2);
+    /* width:auto lets left + right define the box (the mobile rule sets 100%). */
+    width: auto;
+    margin: 0;
+    display: block;
+    z-index: 5;
+  }
+
+  .hero-rings {
+    top: 23rem; /* holds the rings roughly where they were (behind the upper body) */
+    width: min(28rem, 40vw);
+    transform: translate(-50%, -50%) scale(2.2);
+  }
+
+  .hero-person-stage {
+    position: absolute;
+    left: 50%;
+    bottom: -1.25rem; /* dip below the fold so the figure is clipped, not floating */
+    transform: translateX(-50%);
+    width: min(28rem, 34vw);
+    height: 34rem;
+  }
+
+  /* Lower the copy so it isn't hugging the nav — balances the empty space
+     below it on the left column. */
+  .hero-copy {
+    margin-top: 9rem;
+  }
+
+  /* Trim the dead space below the copy so the person + section-2 card (both
+     anchored to the hero's bottom edge) sit a little higher. */
+  .prlx-hero-trigger {
+    padding-bottom: 0.5rem !important;
+  }
+}
+
+/* Short desktop viewports: trim the person so it doesn't overshoot the floor. */
+@media (min-width: 901px) and (max-height: 860px) {
+  .hero-rings {
+    top: 19rem;
+  }
+
+  .hero-person-stage {
+    height: 27rem;
+  }
 }
