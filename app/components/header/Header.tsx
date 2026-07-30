@@ -28,6 +28,47 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+// Strategy 2 — "Chromium-optimized SVG compositor" (the production technique
+// for a global sticky nav over live scrolling DOM). This <filter> is applied
+// via CSS `filter: url(#glass-distortion)` on each pill's glass layer, which
+// ALSO carries `backdrop-filter: blur()`; that split-layer combo is what makes
+// Chromium actually displace the blurred backdrop (declaring the url() inside
+// backdrop-filter parses but does not render in Chromium 148 — verified).
+//
+// Graph: turbulence -> soften -> feDisplacementMap against the backdrop
+// (SourceGraphic here resolves to the element's backdrop-blurred sample), so
+// it bends whatever is really behind the nav at render time. Uniform SVG
+// displacement — no chromatic dispersion / lensing (that is WebGL/Strategy 1
+// territory, reserved for hero image elements).
+const GlassDistortionFilter = () => (
+  <svg aria-hidden="true" focusable="false" style={{ position: "absolute", width: 0, height: 0 }}>
+    <filter
+      id="glass-distortion"
+      x="-20%"
+      y="-20%"
+      width="140%"
+      height="140%"
+      filterUnits="objectBoundingBox"
+    >
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.012 0.004"
+        numOctaves="2"
+        seed="17"
+        result="noise"
+      />
+      <feGaussianBlur in="noise" stdDeviation="1.5" result="softNoise" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="softNoise"
+        scale="34"
+        xChannelSelector="R"
+        yChannelSelector="G"
+      />
+    </filter>
+  </svg>
+);
+
 const socialIconMap: Record<SocialKey, React.ReactNode> = {
   facebook: <Facebook className="header__social-svg" fill="currentColor" stroke="none" />,
   instagram: <Instagram className="header__social-svg" stroke="currentColor" strokeWidth={2} />,
@@ -166,6 +207,7 @@ const Header = () => {
 
   return (
     <header className="header header--sticky">
+      <GlassDistortionFilter />
       {/* Predictive loading bar — animates while a nav navigation is in flight. */}
       <div
         className="nav-progress"
@@ -222,7 +264,8 @@ const Header = () => {
         style={{ zIndex: 100 }}
       >
         {/* Pill 1 — Logo */}
-        <div className="header__pill header__pill--logo glass-surface-nav">
+        <div className="header__pill header__pill--logo glass-surface-nav liquid-glass">
+          <span className="liquid-glass-distort" aria-hidden="true" />
           <Link href="/" className="header__logo" aria-label="BalloAds home">
             <div className="header__logo-container">
               <div className="header__logo-icon">
@@ -341,16 +384,18 @@ const Header = () => {
           <button
             type="button"
             onClick={openWaitlist}
-            className="header__pill header__auth-pill header__auth-pill--signin glass-surface-nav"
+            className="header__pill header__auth-pill header__auth-pill--signin glass-surface-nav liquid-glass"
           >
-            Sign In
+            <span className="liquid-glass-distort" aria-hidden="true" />
+            <span className="header__auth-pill-label">Sign In</span>
           </button>
           <button
             type="button"
             onClick={openWaitlist}
-            className="header__pill header__auth-pill header__auth-pill--signup glass-surface-nav"
+            className="header__pill header__auth-pill header__auth-pill--signup glass-surface-nav liquid-glass"
           >
-            Sign Up
+            <span className="liquid-glass-distort" aria-hidden="true" />
+            <span className="header__auth-pill-label">Sign Up</span>
           </button>
         </div>
       </motion.div>

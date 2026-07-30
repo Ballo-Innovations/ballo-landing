@@ -6,8 +6,9 @@
 }
 
 .footer__container {
+  max-width: 84rem;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px;
 }
 
 .footer__grid {
@@ -16,10 +17,28 @@
   gap: 40px;
 }
 
+/* Desktop/tablet: wrappers are transparent to layout, children act as
+   direct grid items so the existing column tracks are untouched. */
+.footer__col {
+  display: contents;
+}
+
 /* Logo Section */
 .footer__logo-section {
   display: flex;
   justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.footer__logo-link {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.footer__logo-img {
+  width: auto;
+  height: 200px;
+  object-fit: contain;
 }
 
 .footer__stylized-logo {
@@ -116,19 +135,60 @@
 }
 
 @media (max-width: 1024px) {
+  .footer__container {
+    padding: 0 32px;
+  }
+
   .footer__grid {
     grid-template-columns: 1fr 1fr;
-    gap: 60px 40px;
+    gap: 48px 32px;
   }
 }
 
 @media (max-width: 640px) {
+  .footer {
+    padding: 56px 0;
+  }
+
+  .footer__container {
+    padding: 0 24px;
+  }
+
   .footer__grid {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    gap: 0 20px;
+  }
+
+  /* Each side is its own independent column (logo+Information on the
+     left, Help & Support+Contact us on the right) so one column's
+     height never delays the other's start — the two sides are only
+     tied together by the shared grid row height, which `space-between`
+     below uses to line up the last line of each side. */
+  .footer__col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     gap: 40px;
   }
 
-  .footer {
-    padding: 60px 0;
+  .footer__logo-img {
+    height: 130px;
+  }
+
+  .footer__logo-section,
+  .footer__column {
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+  }
+
+  .footer__contact-info {
+    align-items: flex-start;
+  }
+
+  .footer__contact-item {
+    justify-content: flex-start;
   }
 }

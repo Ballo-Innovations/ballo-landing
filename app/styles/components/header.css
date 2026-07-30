@@ -202,10 +202,71 @@
     inset -1px -1px 1px rgba(5, 14, 63, 0.55);
 }
 
+/* ===== Liquid glass (logo pill, sign-in/up, nav highlight) =====
+   Ported from the reference liquid-glass component's own layer recipe:
+   (1) a backdrop-filter + SVG-turbulence distortion layer — this alone is
+   what bends whatever is actually behind the pill, no painted-on gradient
+   pretending to be a highlight; (2) a flat translucent tint; (3) a simple
+   two-directional inset highlight. Deliberately simpler than the opaque,
+   heavily-tinted .glass-surface-nav used by the nav pill/dropdowns. */
+.liquid-glass.glass-surface-nav {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 6px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+}
+
+.liquid-glass.glass-surface-nav:hover {
+  transform: translateY(-1px) scale(1.015);
+}
+
+/* Layer 2 — flat translucent tint (reference: rgba(255,255,255,0.25)). */
+.liquid-glass.glass-surface-nav::before {
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.25);
+  opacity: 1;
+  mix-blend-mode: normal;
+}
+
+/* Layer 3 — simple two-directional inset highlight, straight from the
+   reference component's glassStyle. */
+.liquid-glass.glass-surface-nav::after {
+  z-index: 2;
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Layer 1 — the actual glass: backdrop blur + SVG turbulence displacement.
+   This is a real layered child (not a 3rd pseudo-element, since ::before/
+   ::after above are already spoken for) sitting under the tint/highlight,
+   with real content bumped above both via z-index. */
+.liquid-glass-distort {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  filter: url(#glass-distortion);
+}
+
+.header__auth-pill-label {
+  position: relative;
+  z-index: 3;
+}
+
 /* Header Logo */
 .header__logo {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   display: flex;
   align-items: center;
   min-width: 0;
@@ -310,14 +371,27 @@
 }
 
 /* The morphing active indicator (framer-motion layoutId slides it between
-   items). Sits behind the label, which is z-index:1. */
+   items). Sits behind the label, which is z-index:1.
+
+   IMPORTANT: this element is transform-animated by framer-motion as it moves
+   between items, so it deliberately does NOT carry the SVG url(#glass-
+   distortion) filter or a backdrop-filter. Both misbehave on a transform-
+   animated element in Chromium — the SVG filter re-tiles its turbulence every
+   frame (shimmer) and backdrop-filter smears/ghosts during the slide. The
+   displacement would be imperceptible on a pill this small and fast anyway.
+   It keeps the same reference glass LOOK (translucent tint + two-directional
+   inset highlight), just without the two properties that glitch in motion. */
 .header__nav-highlight {
   position: absolute;
   inset: 0;
+  z-index: 0;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(113, 206, 255, 0.14));
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
+  will-change: transform;
 }
 
 /* ===== Dropdown ===== */
