@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   AnimatePresence,
@@ -128,12 +128,15 @@ const Header = () => {
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [expandedMobile, setExpandedMobile] = useState<string | null>(null);
+  const [navHighlight, setNavHighlight] = useState({ x: 0, width: 0, opacity: 0 });
   // Optimistic target of an in-flight navigation: lets the active pill move the
   // instant a link is clicked (predictive UI) instead of waiting for the next
   // page to load, and drives the top loading bar.
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const lastScrollY = useRef(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navItemsRef = useRef<HTMLDivElement | null>(null);
+  const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = lastScrollY.current;
@@ -165,10 +168,6 @@ const Header = () => {
     return () => clearTimeout(t);
   }, [pendingPath]);
 
-  if (pathname.startsWith("/admin")) {
-    return null;
-  }
-
   // Knowledge Base: keep the nav pinned (never hide on scroll-down) so the
   // page's content scrolls up INTO the nav rather than into a bare strip.
   const pinNav = pathname === "/knowledge-base";
@@ -180,6 +179,35 @@ const Header = () => {
     href === "/" ? activePath === "/" : activePath.startsWith(href);
   const isEntryActive = (entry: NavEntry) =>
     isGroup(entry) ? entry.children.some((c) => isActive(c.href)) : isActive(entry.href);
+  const activeEntryName = NAV.find((entry) => isEntryActive(entry))?.name ?? null;
+
+  useLayoutEffect(() => {
+    const navItems = navItemsRef.current;
+    const target = activeEntryName ? navItemRefs.current[activeEntryName] : null;
+
+    if (!navItems || !target) {
+      setNavHighlight((current) => ({ ...current, opacity: 0 }));
+      return;
+    }
+
+    const updateHighlight = () => {
+      const navRect = navItems.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      setNavHighlight({
+        x: targetRect.left - navRect.left,
+        width: targetRect.width,
+        opacity: 1,
+      });
+    };
+
+    updateHighlight();
+    window.addEventListener("resize", updateHighlight);
+    return () => window.removeEventListener("resize", updateHighlight);
+  }, [activeEntryName, pathname, pendingPath]);
+
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   // Start the predictive move + loading bar the moment a nav link is clicked.
   const handleNavClick = (href: string) => {
@@ -196,14 +224,6 @@ const Header = () => {
     // dropdown doesn't flicker shut as the pointer crosses it.
     closeTimer.current = setTimeout(() => setOpenGroup(null), 160);
   };
-
-  const activeHighlight = (
-    <motion.span
-      layoutId="navActive"
-      className="header__nav-highlight"
-      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-    />
-  );
 
   return (
     <header className="header header--sticky">
@@ -295,7 +315,17 @@ const Header = () => {
           className="header__pill header__pill--nav glass-surface-nav"
           aria-label="Primary navigation"
         >
-          <div className="header__nav-items">
+          <div
+            ref={navItemsRef}
+            className="header__nav-items"
+          >
+            <motion.span
+              className="header__nav-highlight"
+              animate={navHighlight}
+              initial={false}
+              transition={{ type: "spring", stiffness: 520, damping: 42, mass: 0.65 }}
+              aria-hidden="true"
+            />
             {NAV.map((entry) => {
               const active = isEntryActive(entry);
 
@@ -303,12 +333,14 @@ const Header = () => {
                 return (
                   <Link
                     key={entry.name}
+                    ref={(node) => {
+                      navItemRefs.current[entry.name] = node;
+                    }}
                     href={entry.href}
                     onClick={() => handleNavClick(entry.href)}
                     className={`header__nav-item ${active ? "header__nav-item--active" : ""}`}
                     aria-current={active ? "page" : undefined}
                   >
-                    {active && activeHighlight}
                     <span className="header__nav-label">{entry.name}</span>
                   </Link>
                 );
@@ -323,13 +355,15 @@ const Header = () => {
                   onMouseLeave={scheduleClose}
                 >
                   <button
+                    ref={(node) => {
+                      navItemRefs.current[entry.name] = node;
+                    }}
                     type="button"
                     className={`header__nav-item ${active ? "header__nav-item--active" : ""}`}
                     aria-haspopup="true"
                     aria-expanded={open}
                     onClick={() => setOpenGroup(open ? null : entry.name)}
                   >
-                    {active && activeHighlight}
                     <span className="header__nav-label">{entry.name}</span>
                     <ChevronDown
                       className={`header__nav-chevron ${open ? "is-open" : ""}`}

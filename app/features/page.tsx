@@ -51,8 +51,6 @@ const featureLabels = [
 ];
 
 // One independent L-shaped path per feature: ring → label (no shared spine).
-const LINE = { color: "#020055" } as const;
-
 const RING = { cx: 500, cy: 320, r: 205 };
 
 function ringPoint(ax: number, ay: number) {

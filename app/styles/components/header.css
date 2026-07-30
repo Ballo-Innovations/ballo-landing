@@ -311,6 +311,7 @@
 
 /* ===== Nav items ===== */
 .header__nav-items {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.12rem;
@@ -370,8 +371,9 @@
   transform: rotate(180deg);
 }
 
-/* The morphing active indicator (framer-motion layoutId slides it between
-   items). Sits behind the label, which is z-index:1.
+/* The morphing active indicator is one persistent Framer element measured
+   against the clicked/active nav item. Keeping it outside the items avoids
+   shared-layout reparenting jumps when dropdown groups open or routes change.
 
    IMPORTANT: this element is transform-animated by framer-motion as it moves
    between items, so it deliberately does NOT carry the SVG url(#glass-
@@ -383,15 +385,19 @@
    inset highlight), just without the two properties that glitch in motion. */
 .header__nav-highlight {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
   z-index: 0;
+  width: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow:
     inset 2px 2px 1px 0 rgba(255, 255, 255, 0.5),
     inset -1px -1px 1px 1px rgba(255, 255, 255, 0.5);
-  will-change: transform;
+  pointer-events: none;
+  will-change: transform, width, opacity;
 }
 
 /* ===== Dropdown ===== */
