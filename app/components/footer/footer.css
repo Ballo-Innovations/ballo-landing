@@ -13,32 +13,34 @@
 
 .footer__grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr;
-  gap: 40px;
+  grid-template-columns: auto 1fr 1fr 1fr 1.1fr;
+  gap: 32px;
+  align-items: center;
 }
 
-/* Desktop/tablet: wrappers are transparent to layout, children act as
-   direct grid items so the existing column tracks are untouched. */
-.footer__col {
-  display: contents;
-}
-
-/* Logo Section */
+/* Logo Section — an oversized brand mark on the left (~2× the text-column
+   height); the text columns centre vertically against it. */
 .footer__logo-section {
   display: flex;
+  align-items: center;
   justify-content: flex-start;
-  align-items: flex-start;
+  align-self: center;
 }
 
 .footer__logo-link {
   display: inline-flex;
-  align-items: flex-start;
 }
 
 .footer__logo-img {
   width: auto;
-  height: 200px;
+  height: clamp(360px, 44vw, 612px);
   object-fit: contain;
+  object-position: left center;
+  /* Lift the mark off the black footer: a cyan halo so the teal body and the
+     neon ring both read clearly (body #005B87, ring #40D5FF). */
+  filter:
+    drop-shadow(0 0 24px rgba(64, 213, 255, 0.5))
+    drop-shadow(0 0 8px rgba(64, 213, 255, 0.35));
 }
 
 .footer__stylized-logo {
@@ -80,6 +82,7 @@
   font-weight: 700;
   margin-bottom: 24px;
   color: white;
+  white-space: nowrap;
 }
 
 .footer__link-list {
@@ -101,6 +104,29 @@
 
 .footer__link-list a:hover {
   color: white;
+}
+
+/* Socials */
+.footer__socials-grid {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer__social-icon {
+  display: inline-flex;
+  color: #ffffff;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.footer__social-icon:hover {
+  transform: scale(1.12);
+  color: var(--cyan, #3fdbff);
+}
+
+.footer__social-svg {
+  width: 22px;
+  height: 22px;
 }
 
 /* Contact Info */
@@ -134,6 +160,7 @@
   color: black;
 }
 
+/* Tablet: logo spans the top, the four columns fall into a 2×2 grid. */
 @media (max-width: 1024px) {
   .footer__container {
     padding: 0 32px;
@@ -141,7 +168,25 @@
 
   .footer__grid {
     grid-template-columns: 1fr 1fr;
-    gap: 48px 32px;
+    gap: 44px 32px;
+    align-items: start;
+  }
+
+  .footer__logo-section {
+    position: static;
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: center;
+    align-self: auto;
+  }
+
+  .footer__logo-link {
+    position: static;
+    inset: auto;
+  }
+
+  .footer__logo-img {
+    height: 160px;
   }
 }
 
@@ -155,33 +200,28 @@
   }
 
   .footer__grid {
-    display: grid;
     grid-template-columns: 1fr 1fr;
-    align-items: stretch;
-    gap: 0 20px;
+    gap: 32px 20px;
   }
 
-  /* Each side is its own independent column (logo+Information on the
-     left, Help & Support+Contact us on the right) so one column's
-     height never delays the other's start — the two sides are only
-     tied together by the shared grid row height, which `space-between`
-     below uses to line up the last line of each side. */
-  .footer__col {
+  .footer__logo-section {
+    position: static;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 40px;
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .footer__logo-link {
+    position: static;
+    inset: auto;
   }
 
   .footer__logo-img {
-    height: 130px;
+    height: 128px;
   }
 
-  .footer__logo-section,
   .footer__column {
-    justify-content: flex-start;
     text-align: left;
-    width: 100%;
   }
 
   .footer__contact-info {

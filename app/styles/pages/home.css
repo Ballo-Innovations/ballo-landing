@@ -1880,3 +1880,173 @@
     height: 27rem;
   }
 }
+
+/* ==========================================================================
+   Want a Feel of BalloAds? — app try-it CTA (reference brief)
+   Centered header above a branded device card; the whole card is the CTA and
+   opens the waitlist.
+   ========================================================================== */
+.try-section {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4rem, 9vw, 6.25rem) 1.5rem;
+}
+
+/* Device artwork (try.it.now.svg) seated over the cyan glow orb (2.png), with
+   the brand mark, headline and CTA overlaid on the screen. The whole visual is
+   the CTA and opens the waitlist.
+
+   The exported SVG carries a full-canvas grey scrim around the phone, so the
+   stage is sized to the phone BODY (viewBox 178.7–590.7 x, 14.3–903.5 y of
+   810×1012.5) and clips it: the art is scaled up and offset so the phone fills
+   the frame and the scrim margins fall outside the clip. */
+.try-phone-wrap {
+  position: relative;
+  width: min(320px, 78vw);
+  margin: 0 auto;
+}
+
+.try-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 168%;
+  height: auto;
+  max-width: none;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.try-visual {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  aspect-ratio: 456 / 919;
+  padding: 0;
+  border: none;
+  background: transparent;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  transition: transform 0.3s ease;
+}
+
+.try-visual:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+.try-visual:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 6px;
+}
+
+/* The art is the whole phone on a transparent canvas (viewBox 810×1012.5, phone
+   body x156–612, y45–964). Scale up (810/456 ≈ 177.6%) and offset so the phone
+   fills the stage edge-to-edge; the transparent margins fall outside the clip. */
+.try-art {
+  position: absolute;
+  left: -34.2%;
+  top: -4.9%;
+  width: 177.6%;
+  height: auto;
+  max-width: none;
+}
+
+/* On-screen content — centered on the phone, nudged just above the midline. */
+.try-overlay {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 82%;
+  transform: translate(-50%, -5%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.6rem, 3vw, 1.05rem);
+  text-align: center;
+  pointer-events: none;
+}
+
+.try-overlay-logo {
+  width: 40%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4));
+}
+
+.try-overlay-title {
+  font-family: var(--font-ubuntu), "Ubuntu", sans-serif;
+  font-weight: 700;
+  line-height: 1.22;
+  color: #fff;
+  font-size: clamp(0.8rem, 3.5vw, 1.18rem);
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+.try-overlay-btn {
+  color: #fff;
+  font-family: var(--font-ubuntu), "Ubuntu", sans-serif;
+  font-weight: 700;
+  font-size: clamp(0.62rem, 2.5vw, 0.82rem);
+  letter-spacing: 0.08em;
+  padding: 0.7em 1.9em;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan-bright));
+  box-shadow: var(--glow-blue), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+/* ==========================================================================
+   Testimonial card — liquid glass (same recipe as the nav pills)
+   A backdrop-blur + SVG turbulence displacement layer (.liquid-glass-distort,
+   #glass-distortion) that refracts the section behind it, a translucent tint
+   kept dark enough to preserve the white quote text, and an inset glass edge.
+   ========================================================================== */
+.testimonial-glass {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.32),
+    0 0 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Tint (layer 1) + inset highlight (layer 2) */
+.testimonial-glass::before,
+.testimonial-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.testimonial-glass::before {
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(120, 140, 220, 0.06) 55%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+}
+
+.testimonial-glass::after {
+  z-index: 2;
+  box-shadow:
+    inset 2px 2px 1px 0 rgba(255, 255, 255, 0.4),
+    inset -1px -1px 1px 1px rgba(255, 255, 255, 0.18);
+}
+
+/* Actual content sits above the glass layers. */
+.testimonial-glass > div {
+  position: relative;
+  z-index: 3;
+}

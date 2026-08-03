@@ -614,7 +614,11 @@ export default function Home() {
             </h2>
           </FadeUpReveal>
           <div className="max-w-4xl mx-auto">
-            <div className="gradient-blue-grey rounded-3xl p-8 md:p-12 overflow-hidden flex flex-col">
+            <div className="testimonial-glass rounded-3xl p-8 md:p-12 overflow-hidden flex flex-col">
+              {/* Liquid-glass refraction layer — same recipe as the nav pills:
+                  backdrop blur + SVG turbulence displacement (#glass-distortion,
+                  rendered globally by the header). */}
+              <span className="liquid-glass-distort" aria-hidden="true" />
               <div className="flex-1">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -657,6 +661,46 @@ export default function Home() {
             </button>
           </div>
         </div>
+      </section>
+
+      {/* Want a Feel of BalloAds? — app try-it CTA. A device mockup (SVG) rests
+          over the cyan glow orb; the brand mark, headline and "Try it now"
+          action sit on the screen. The whole visual opens the waitlist. */}
+      <section className="try-section">
+        <FadeUpReveal yOffset={50} className="try-phone-wrap">
+          {/* Cyan glow orb behind the device */}
+          <Image src={bglight} alt="" className="try-glow" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={openWaitlist}
+            className="try-visual"
+            aria-label="Try BalloAds now"
+          >
+            {/* Device artwork — scaled + clipped to the phone body */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/Assets/try.it.now.svg"
+              alt="Preview of the BalloAds app"
+              className="try-art"
+            />
+            {/* On-screen content */}
+            <span className="try-overlay">
+              <Image
+                src={logoIcon}
+                alt="BalloAds"
+                width={80}
+                height={80}
+                className="try-overlay-logo"
+              />
+              <span className="try-overlay-title">
+                WANT A FEEL OF
+                <br />
+                BALLOADS?
+              </span>
+              <span className="try-overlay-btn">TRY IT NOW</span>
+            </span>
+          </button>
+        </FadeUpReveal>
       </section>
     </main>
   );

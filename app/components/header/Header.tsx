@@ -66,7 +66,48 @@ const GlassDistortionFilter = () => (
         yChannelSelector="G"
       />
     </filter>
+    <filter id="header-pill-glass-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence
+        type="fractalNoise"
+        baseFrequency="0.012 0.004"
+        numOctaves="2"
+        result="noise"
+      />
+      <feGaussianBlur in="noise" stdDeviation="1.8" result="softNoise" />
+      <feDisplacementMap
+        in="SourceGraphic"
+        in2="softNoise"
+        scale="22"
+        xChannelSelector="R"
+        yChannelSelector="G"
+        result="displaced"
+      />
+    </filter>
   </svg>
+);
+
+type HeaderGlassPillProps = {
+  as?: React.ElementType;
+  className?: string;
+  contentClassName?: string;
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLElement> &
+  React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+const HeaderGlassPill = ({
+  as: Component = "div",
+  className = "",
+  contentClassName = "",
+  children,
+  ...props
+}: HeaderGlassPillProps) => (
+  <Component className={`header__pill header-glass-pill ${className}`} {...props}>
+    <span className="header-glass-pill__refract" aria-hidden="true" />
+    <span className="header-glass-pill__rim" aria-hidden="true" />
+    <span className={`header-glass-pill__content ${contentClassName}`}>
+      {children}
+    </span>
+  </Component>
 );
 
 const socialIconMap: Record<SocialKey, React.ReactNode> = {
@@ -284,8 +325,7 @@ const Header = () => {
         style={{ zIndex: 100 }}
       >
         {/* Pill 1 — Logo */}
-        <div className="header__pill header__pill--logo glass-surface-nav liquid-glass">
-          <span className="liquid-glass-distort" aria-hidden="true" />
+        <HeaderGlassPill className="header__pill--logo">
           <Link href="/" className="header__logo" aria-label="BalloAds home">
             <div className="header__logo-container">
               <div className="header__logo-icon">
@@ -308,7 +348,7 @@ const Header = () => {
               </div>
             </div>
           </Link>
-        </div>
+        </HeaderGlassPill>
 
         {/* Pill 2 — Navigation */}
         <nav
@@ -415,22 +455,24 @@ const Header = () => {
 
         {/* Pills 3 & 4 — Auth (Sign In and Sign Up as separate pills) */}
         <div className="header__auth">
-          <button
+          <HeaderGlassPill
+            as="button"
             type="button"
             onClick={openWaitlist}
-            className="header__pill header__auth-pill header__auth-pill--signin glass-surface-nav liquid-glass"
+            className="header__auth-pill header__auth-pill--signin"
+            contentClassName="header__auth-pill-label"
           >
-            <span className="liquid-glass-distort" aria-hidden="true" />
-            <span className="header__auth-pill-label">Sign In</span>
-          </button>
-          <button
+            Sign In
+          </HeaderGlassPill>
+          <HeaderGlassPill
+            as="button"
             type="button"
             onClick={openWaitlist}
-            className="header__pill header__auth-pill header__auth-pill--signup glass-surface-nav liquid-glass"
+            className="header__auth-pill header__auth-pill--signup"
+            contentClassName="header__auth-pill-label"
           >
-            <span className="liquid-glass-distort" aria-hidden="true" />
-            <span className="header__auth-pill-label">Sign Up</span>
-          </button>
+            Sign Up
+          </HeaderGlassPill>
         </div>
       </motion.div>
 
