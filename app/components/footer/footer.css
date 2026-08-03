@@ -160,33 +160,31 @@
   color: black;
 }
 
-/* Tablet: logo spans the top, the four columns fall into a 2×2 grid. */
+/* Tablet: keep the desktop 5-column layout, just tighten spacing. */
 @media (max-width: 1024px) {
   .footer__container {
-    padding: 0 32px;
+    padding: 0 24px;
   }
 
   .footer__grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 44px 32px;
-    align-items: start;
-  }
-
-  .footer__logo-section {
-    position: static;
-    display: flex;
-    grid-column: 1 / -1;
-    justify-content: center;
-    align-self: auto;
-  }
-
-  .footer__logo-link {
-    position: static;
-    inset: auto;
+    gap: 16px;
   }
 
   .footer__logo-img {
-    height: 160px;
+    height: clamp(140px, 22vw, 240px);
+  }
+
+  .footer__column-title {
+    font-size: 17px;
+    margin-bottom: 16px;
+  }
+
+  .footer__link-list a {
+    font-size: 14px;
+  }
+
+  .footer__contact-item {
+    font-size: 14px;
   }
 }
 
