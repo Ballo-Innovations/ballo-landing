@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import DOMPurify from "isomorphic-dompurify";
 
 import { isHtmlContent } from "@/lib/contentFormat";
 
@@ -60,40 +60,57 @@ const ALLOWED_ATTR = [
   "referrerpolicy",
 ];
 
-function sanitizeHtml(body: string): string {
-  try {
-    return DOMPurify.sanitize(body, {
-      USE_PROFILES: { html: true },
-      ADD_TAGS: ["iframe"],
-      ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
-      ALLOWED_TAGS,
-      ALLOWED_ATTR,
-      ALLOW_DATA_ATTR: false,
-    });
-  } catch {
-    return body
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
-}
+const proseClassName =
+  "prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-ol:text-white/90 prose-ul:text-white/90 prose-blockquote:text-white/80 prose-code:text-white prose-td:text-white/90 prose-th:text-white prose-a:text-[var(--brand-color-1)] prose-img:rounded-2xl";
 
 export function BlogBody({ body }: { body: string }) {
+  const [cleanHtml, setCleanHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!body?.trim() || !isHtmlContent(body)) {
+      setCleanHtml(null);
+      return;
+    }
+
+    let cancelled = false;
+    void import("isomorphic-dompurify")
+      .then((mod) => {
+        const DOMPurify = mod.default;
+        const clean = DOMPurify.sanitize(body, {
+          USE_PROFILES: { html: true },
+          ADD_TAGS: ["iframe"],
+          ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
+          ALLOWED_TAGS,
+          ALLOWED_ATTR,
+          ALLOW_DATA_ATTR: false,
+        });
+        if (!cancelled) setCleanHtml(clean);
+      })
+      .catch(() => {
+        if (!cancelled) setCleanHtml(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [body]);
+
   if (!body?.trim()) return null;
 
   if (isHtmlContent(body)) {
-    const clean = sanitizeHtml(body);
+    if (cleanHtml) {
+      return <div className={proseClassName} dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
+    }
+    // SSR / pre-hydration fallback: avoid jsdom on the server.
     return (
-      <div
-        className="prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-ol:text-white/90 prose-ul:text-white/90 prose-blockquote:text-white/80 prose-code:text-white prose-td:text-white/90 prose-th:text-white prose-a:text-[var(--brand-color-1)] prose-img:rounded-2xl"
-        dangerouslySetInnerHTML={{ __html: clean }}
-      />
+      <div className={proseClassName}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{body.replace(/<[^>]+>/g, "\n")}</ReactMarkdown>
+      </div>
     );
   }
 
   return (
-    <div className="prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-ol:text-white/90 prose-ul:text-white/90 prose-blockquote:text-white/80 prose-code:text-white prose-a:text-[var(--brand-color-1)]">
+    <div className={proseClassName}>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
     </div>
   );
