@@ -60,29 +60,30 @@ const ALLOWED_ATTR = [
   "referrerpolicy",
 ];
 
+function sanitizeHtml(body: string): string {
+  try {
+    return DOMPurify.sanitize(body, {
+      USE_PROFILES: { html: true },
+      ADD_TAGS: ["iframe"],
+      ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
+      ALLOWED_TAGS,
+      ALLOWED_ATTR,
+      ALLOW_DATA_ATTR: false,
+    });
+  } catch {
+    return body
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+}
+
 export function BlogBody({ body }: { body: string }) {
   if (!body?.trim()) return null;
 
   if (isHtmlContent(body)) {
-    let clean = body;
-    try {
-      clean = DOMPurify.sanitize(body, {
-        USE_PROFILES: { html: true },
-        ADD_TAGS: ["iframe"],
-        ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
-        ALLOWED_TAGS,
-        ALLOWED_ATTR,
-        ALLOW_DATA_ATTR: false,
-      });
-    } catch {
-      // isomorphic-dompurify/jsdom can fail in some serverless runtimes; fall back to Markdown.
-      return (
-        <div className="prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-a:text-[var(--brand-color-1)]">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
-        </div>
-      );
-    }
-
+    const clean = sanitizeHtml(body);
     return (
       <div
         className="prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-ol:text-white/90 prose-ul:text-white/90 prose-blockquote:text-white/80 prose-code:text-white prose-td:text-white/90 prose-th:text-white prose-a:text-[var(--brand-color-1)] prose-img:rounded-2xl"
