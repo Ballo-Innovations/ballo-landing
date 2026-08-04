@@ -1,19 +1,10 @@
 import { headers } from "next/headers";
 
-const DEV_API_BASE = process.env.NEXT_PUBLIC_DEV_API_URL ?? "https://dev-api.balloads.com";
-const PROD_API_BASE = process.env.NEXT_PUBLIC_PROD_API_URL ?? "https://api.balloads.com";
-
-function normalizeBase(url: string): string {
-  return url.replace(/\/+$/, "");
-}
+import { resolvePublicApiBase } from "@/lib/publicApiBase";
 
 async function getBackendBaseUrl(): Promise<string> {
   const headerList = await headers();
-  const host = headerList.get("host")?.toLowerCase() ?? "";
-  if (host.includes("localhost") || host.includes("127.0.0.1")) {
-    return normalizeBase(DEV_API_BASE);
-  }
-  return normalizeBase(PROD_API_BASE);
+  return resolvePublicApiBase(headerList.get("host"));
 }
 
 export type BlogPost = {
@@ -38,6 +29,10 @@ type BlogPostPage = {
 };
 
 const REVALIDATE_SECONDS = 300;
+const EMPTY_PAGE: BlogPostPage = {
+  data: [],
+  pagination: { total: 0, page: 1, limit: 0, totalPages: 1 },
+};
 
 export async function getPublishedPosts(params?: {
   page?: number;
@@ -52,20 +47,26 @@ export async function getPublishedPosts(params?: {
   if (params?.category) search.set("category", params.category);
   if (params?.tag) search.set("tag", params.tag);
 
-  const res = await fetch(`${base}/v1/blog-posts?${search.toString()}`, {
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
-  if (!res.ok) {
-    return { data: [], pagination: { total: 0, page: 1, limit: 0, totalPages: 1 } };
+  try {
+    const res = await fetch(`${base}/v1/blog-posts?${search.toString()}`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!res.ok) return EMPTY_PAGE;
+    return res.json();
+  } catch {
+    return EMPTY_PAGE;
   }
-  return res.json();
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const base = await getBackendBaseUrl();
-  const res = await fetch(`${base}/v1/blog-posts/${encodeURIComponent(slug)}`, {
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    const res = await fetch(`${base}/v1/blog-posts/${encodeURIComponent(slug)}`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }

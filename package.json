@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsx --test lib/**/*.test.ts"
   },
   "dependencies": {
     "@fontsource/carlito": "^5.2.8",
@@ -18,6 +19,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.38.0",
     "gsap": "^3.13.0",
+    "isomorphic-dompurify": "^3.19.0",
     "lucide-react": "^0.562.0",
     "next": "15.4.10",
     "ogl": "^1.0.11",

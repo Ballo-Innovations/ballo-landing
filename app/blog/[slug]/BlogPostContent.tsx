@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
+import { BlogBody } from "@/components/blog/BlogBody";
 
 import type { BlogPost } from "@/lib/blogApi";
 
@@ -66,9 +65,7 @@ export default function BlogPostContent({
         <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
           {/* Main Article Content */}
           <article className="flex flex-col gap-8">
-            <div className="prose prose-invert max-w-none text-white/90 leading-relaxed prose-headings:text-white prose-a:text-[var(--brand-color-1)]">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
-            </div>
+            <BlogBody body={post.body} />
 
             {/* Interaction Icons */}
             <div className="flex items-center gap-6 pt-4 border-t border-white/10">
