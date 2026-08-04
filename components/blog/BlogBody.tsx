@@ -60,7 +60,7 @@ const ALLOWED_ATTR = [
   "referrerpolicy",
 ];
 
-const proseClassName =
+const proseClass =
   "prose prose-invert max-w-none leading-relaxed text-white/90 prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-ol:text-white/90 prose-ul:text-white/90 prose-blockquote:text-white/80 prose-code:text-white prose-td:text-white/90 prose-th:text-white prose-a:text-[var(--brand-color-1)] prose-img:rounded-2xl";
 
 export function BlogBody({ body }: { body: string }) {
@@ -73,22 +73,24 @@ export function BlogBody({ body }: { body: string }) {
     }
 
     let cancelled = false;
-    void import("isomorphic-dompurify")
-      .then((mod) => {
+    void import("isomorphic-dompurify").then((mod) => {
+      if (cancelled) return;
+      try {
         const DOMPurify = mod.default;
-        const clean = DOMPurify.sanitize(body, {
-          USE_PROFILES: { html: true },
-          ADD_TAGS: ["iframe"],
-          ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
-          ALLOWED_TAGS,
-          ALLOWED_ATTR,
-          ALLOW_DATA_ATTR: false,
-        });
-        if (!cancelled) setCleanHtml(clean);
-      })
-      .catch(() => {
-        if (!cancelled) setCleanHtml(null);
-      });
+        setCleanHtml(
+          DOMPurify.sanitize(body, {
+            USE_PROFILES: { html: true },
+            ADD_TAGS: ["iframe"],
+            ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "referrerpolicy"],
+            ALLOWED_TAGS,
+            ALLOWED_ATTR,
+            ALLOW_DATA_ATTR: false,
+          }),
+        );
+      } catch {
+        setCleanHtml(null);
+      }
+    });
 
     return () => {
       cancelled = true;
@@ -98,19 +100,14 @@ export function BlogBody({ body }: { body: string }) {
   if (!body?.trim()) return null;
 
   if (isHtmlContent(body)) {
-    if (cleanHtml) {
-      return <div className={proseClassName} dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
+    if (!cleanHtml) {
+      return <div className={`${proseClass} animate-pulse text-white/50`}>Loading article…</div>;
     }
-    // SSR / pre-hydration fallback: avoid jsdom on the server.
-    return (
-      <div className={proseClassName}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{body.replace(/<[^>]+>/g, "\n")}</ReactMarkdown>
-      </div>
-    );
+    return <div className={proseClass} dangerouslySetInnerHTML={{ __html: cleanHtml }} />;
   }
 
   return (
-    <div className={proseClassName}>
+    <div className={proseClass}>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
     </div>
   );
