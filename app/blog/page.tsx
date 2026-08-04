@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getPublishedPosts } from "@/lib/blogApi";
 import BlogPageClient from "./BlogPageClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Blog",
   description: "Insights, updates, and stories from the Ballo team.",

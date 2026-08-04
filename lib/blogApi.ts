@@ -28,7 +28,6 @@ type BlogPostPage = {
   pagination: { total: number; page: number; limit: number; totalPages: number };
 };
 
-const REVALIDATE_SECONDS = 300;
 const EMPTY_PAGE: BlogPostPage = {
   data: [],
   pagination: { total: 0, page: 1, limit: 0, totalPages: 1 },
@@ -49,7 +48,8 @@ export async function getPublishedPosts(params?: {
 
   try {
     const res = await fetch(`${base}/v1/blog-posts?${search.toString()}`, {
-      next: { revalidate: REVALIDATE_SECONDS },
+      // Always refresh from app-api so newly published CMS posts appear promptly.
+      cache: "no-store",
     });
     if (!res.ok) return EMPTY_PAGE;
     return res.json();
@@ -62,7 +62,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   const base = await getBackendBaseUrl();
   try {
     const res = await fetch(`${base}/v1/blog-posts/${encodeURIComponent(slug)}`, {
-      next: { revalidate: REVALIDATE_SECONDS },
+      cache: "no-store",
     });
     if (!res.ok) return null;
     return res.json();

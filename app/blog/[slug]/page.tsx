@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getPublishedPosts } from "@/lib/blogApi";
 import BlogPostContent from "./BlogPostContent";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({
   params,
 }: {
