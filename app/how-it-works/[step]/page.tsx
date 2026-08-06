@@ -3,11 +3,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
-import { howItWorksSteps, getStep } from "../steps";
+import { getProcessStepBySlug, getProcessSteps } from "@/lib/processStepsApi";
+import { toHowItWorksStep } from "../steps";
 
-export function generateStaticParams() {
-  return howItWorksSteps.map((step) => ({ step: step.slug }));
-}
+// The CMS is the source of truth for which slugs exist, so this route is
+// dynamic (SSR'd per-request) rather than statically generated — matching
+// how `/blog/[slug]` already works.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -15,11 +17,11 @@ export async function generateMetadata({
   params: Promise<{ step: string }>;
 }): Promise<Metadata> {
   const { step: slug } = await params;
-  const step = getStep(slug);
-  if (!step) return { title: "How It Works | BalloAds" };
+  const raw = await getProcessStepBySlug(slug);
+  if (!raw) return { title: "How It Works | BalloAds" };
   return {
-    title: `${step.title} | How It Works | BalloAds`,
-    description: step.description,
+    title: `${raw.title} | How It Works | BalloAds`,
+    description: raw.description,
   };
 }
 
@@ -45,12 +47,20 @@ export default async function HowItWorksStepPage({
   params: Promise<{ step: string }>;
 }) {
   const { step: slug } = await params;
-  const step = getStep(slug);
-  if (!step) notFound();
 
-  const index = howItWorksSteps.findIndex((s) => s.slug === step.slug);
-  const prev = index > 0 ? howItWorksSteps[index - 1] : null;
-  const next = index < howItWorksSteps.length - 1 ? howItWorksSteps[index + 1] : null;
+  // The detail content comes from the single-step endpoint; the sibling
+  // list (already ordered by stepNumber) is only used to work out prev/next.
+  const [rawStep, rawSiblings] = await Promise.all([
+    getProcessStepBySlug(slug),
+    getProcessSteps("how-it-works"),
+  ]);
+  if (!rawStep) notFound();
+
+  const step = toHowItWorksStep(rawStep);
+  const siblings = rawSiblings.map(toHowItWorksStep);
+  const index = siblings.findIndex((s) => s.slug === step.slug);
+  const prev = index > 0 ? siblings[index - 1] : null;
+  const next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
   const Icon = step.Icon;
 
   return (
@@ -89,14 +99,22 @@ export default async function HowItWorksStepPage({
                 ))}
               </div>
 
-              {/* The in-app screen for this step */}
+              {/* The in-app screen for this step (falls back to the step icon if the CMS record has no screenshot) */}
               <div className="mx-auto w-48 md:w-56">
-                <Image
-                  src={step.screen}
-                  alt={step.screenAlt}
-                  sizes="14rem"
-                  className="h-auto w-full"
-                />
+                {step.screen ? (
+                  <Image
+                    src={step.screen}
+                    alt={step.screenAlt}
+                    width={360}
+                    height={450}
+                    sizes="14rem"
+                    className="h-auto w-full"
+                  />
+                ) : (
+                  <div className="flex aspect-[4/5] w-full items-center justify-center rounded-2xl bg-[var(--brand-color-1)]/10">
+                    <Icon className="h-16 w-16 text-[var(--brand-color-1)]" strokeWidth={1.6} aria-hidden="true" />
+                  </div>
+                )}
               </div>
             </div>
 

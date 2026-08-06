@@ -1,11 +1,10 @@
-"use client";
-
-import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 import ConcentricRings from "@/app/components/ui/ConcentricRings";
 import "@/app/styles/pages/professional.css";
+
+import { getProfessionalServiceCards } from "@/lib/professionalServicesApi";
+import { ProfessionalAccordion, type ProfessionalServiceItem } from "./ProfessionalAccordion";
 
 import bankingImage from "@/public/BalloAds Assets 2/1.png";
 import retailImage from "@/public/BalloAds Assets 2/4.png";
@@ -17,7 +16,13 @@ import restaurantImage from "@/public/BalloAds Assets 2/13.png";
 import educationImage from "@/public/BalloAds Assets 2/15.png";
 import entertainmentImage from "@/public/BalloAds Assets 2/17.png";
 
-const professionalServices = [
+export const dynamic = "force-dynamic";
+
+// Fallback content — shown until the CMS has professional-service rows
+// published. Keep this array (never delete it): getProfessionalServiceCards()
+// returns [] both on fetch failure and on a genuinely empty (unseeded) CMS
+// table, so this is what keeps the page from regressing to an empty accordion.
+const FALLBACK_PROFESSIONAL_SERVICES: ProfessionalServiceItem[] = [
   {
     title: "Banking & Financial Services",
     subtitle: "Reach customers instantly across every channel.",
@@ -110,12 +115,17 @@ const supportHighlights = [
   },
 ];
 
-export default function ProfessionalServicesPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggleService = (index: number) => {
-    setOpenIndex((current) => (current === index ? null : index));
-  };
+export default async function ProfessionalServicesPage() {
+  const cards = await getProfessionalServiceCards();
+  const services: ProfessionalServiceItem[] =
+    cards.length > 0
+      ? cards.map((card) => ({
+          title: card.title,
+          subtitle: card.subtitle,
+          description: card.body,
+          image: card.imageUrl,
+        }))
+      : FALLBACK_PROFESSIONAL_SERVICES;
 
   return (
     <main className="professional-page">
@@ -129,65 +139,7 @@ export default function ProfessionalServicesPage() {
       </section>
 
       {/* Industry accordions */}
-      <section className="prof-accordion-section">
-        <div className="prof-accordion">
-          {professionalServices.map((service, index) => {
-            const isOpen = openIndex === index;
-            const panelId = `prof-panel-${index}`;
-            const triggerId = `prof-trigger-${index}`;
-            return (
-              <div
-                key={service.title}
-                className={`prof-accordion__item${isOpen ? " is-open" : ""}`}
-              >
-                <h2 className="prof-accordion__heading">
-                  <button
-                    id={triggerId}
-                    type="button"
-                    className="prof-accordion__trigger"
-                    aria-expanded={isOpen}
-                    aria-controls={panelId}
-                    onClick={() => toggleService(index)}
-                  >
-                    <span className="prof-accordion__thumb" aria-hidden="true">
-                      <Image src={service.image} alt="" width={72} height={56} />
-                    </span>
-                    <span className="prof-accordion__titles">
-                      <span className="prof-accordion__title">{service.title}</span>
-                      <span className="prof-accordion__subtitle">{service.subtitle}</span>
-                    </span>
-                    <span className="prof-accordion__chevron" aria-hidden="true">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.4"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M6 9l6 6 6-6" />
-                      </svg>
-                    </span>
-                  </button>
-                </h2>
-
-                <div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={triggerId}
-                  className="prof-accordion__panel"
-                >
-                  <div className="prof-accordion__panel-inner" inert={!isOpen ? true : undefined}>
-                    <p className="prof-accordion__desc">{service.description}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <ProfessionalAccordion services={services} />
 
       {/* Support */}
       <section className="prof-support">

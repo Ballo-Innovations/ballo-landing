@@ -10,7 +10,11 @@ import {
 } from "lucide-react";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 import HowItWorksStage from "@/app/components/sections/HowItWorksStage";
+import { getProcessSteps } from "@/lib/processStepsApi";
+import { toHowItWorksStep } from "./steps";
 import circuit from "@/public/Assets/hiw-circuit.png";
+
+export const dynamic = "force-dynamic";
 
 const benefits = [
   {
@@ -68,7 +72,10 @@ const CircleArrow = ({ className = "h-5 w-5" }: { className?: string }) => (
   </svg>
 );
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const rawSteps = await getProcessSteps("how-it-works");
+  const steps = rawSteps.map(toHowItWorksStep);
+
   return (
     <main className="how-it-works-page">
       {/* ---- Hero ---- */}
@@ -97,7 +104,7 @@ export default function HowItWorksPage() {
       {/* ---- Zig-zag step flow ---- */}
       <section className="hiw-flow-section px-4 pb-10 md:px-8 md:pb-14">
         <div className="container mx-auto">
-          <HowItWorksStage />
+          <HowItWorksStage steps={steps} />
         </div>
       </section>
 

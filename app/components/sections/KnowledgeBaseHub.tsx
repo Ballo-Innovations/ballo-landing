@@ -1,22 +1,31 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+
+import type { KnowledgeBaseHubGroup } from "@/lib/knowledgeBaseApi";
 
 /**
  * KnowledgeBaseHub — the interactive Knowledge Base landing.
  *
- * Client's structure/copy (5-group index, grouped cards, @ personalisation
+ * Client's structure/copy (grouped index, grouped cards, @ personalisation
  * demo, client-side search, active-section highlight, helpful votes, Ballo
  * Academy band) rendered in the BalloAds design system. Styles: .kbh-* in
  * styles/pages/knowledge-base-hub.css.
+ *
+ * Content now comes from the CMS (`GET /v1/knowledge-base`, fetched server-side
+ * in app/knowledge-base/page.tsx and passed down as the `groups` prop). If the
+ * CMS has no published groups yet, this falls back to the original hardcoded
+ * copy below (`FALLBACK_GROUPS`) so the page never regresses to blank content.
  *
  * ── Content boundary ─────────────────────────────────────────────────────────
  *  Sections with `subpage` are the client's recommended deeper articles
  *  (/knowledge-base/[topic]). Those routes are NOT built yet — the links are
  *  scaffolded and currently point at the on-page anchor. TODO: build the
  *  high-priority sub-pages (at-function, scheduling, lead-generator) first.
+ *  The CMS has no field for `subpage`, so CMS-driven sections never render
+ *  this link — only the hardcoded fallback content still has it.
  *  Screenshots are placeholders pending the client's annotated captures.
  * ─────────────────────────────────────────────────────────────────────────────
  */
@@ -36,7 +45,39 @@ type Group = { label: string; sections: Section[] };
 
 const tag = (t: string) => <span className="tag">{t}</span>;
 
-const GROUPS: Group[] = [
+/**
+ * Maps the CMS response shape onto this component's internal Group/Section
+ * types. Notable mappings:
+ * - section `slug` → `id` (used as the anchor id, IntersectionObserver
+ *   target, and React key)
+ * - `sectionNumber` → `num`
+ * - `fields[].key/sub/value` → `Field.k/sub/v` (CMS `value` is always a plain
+ *   string; the one hardcoded field that embeds a JSX cross-reference to
+ *   `@interests` has no CMS equivalent, so CMS-driven fields render as plain
+ *   text — an accepted, minor fidelity loss)
+ * - `screenshotLabel` → `shot`, falling back to a placeholder when null
+ * - there is no CMS field for `subpage`, so it is always left undefined for
+ *   CMS-driven sections, which simply omits the "Read the full guide" link
+ */
+function mapBackendGroups(groups: KnowledgeBaseHubGroup[]): Group[] {
+  return groups.map((g) => ({
+    label: g.label,
+    sections: g.sections.map((s) => ({
+      id: s.slug,
+      num: s.sectionNumber,
+      title: s.title,
+      claim: s.claim,
+      body: s.body && s.body.length > 0 ? s.body : undefined,
+      fields:
+        s.fields && s.fields.length > 0
+          ? s.fields.map((f) => ({ k: f.key, sub: f.sub, v: f.value }))
+          : undefined,
+      shot: s.screenshotLabel ?? "Screenshot coming soon",
+    })),
+  }));
+}
+
+const FALLBACK_GROUPS: Group[] = [
   {
     label: "Getting started",
     sections: [
@@ -220,8 +261,6 @@ const GROUPS: Group[] = [
   },
 ];
 
-const ALL_SECTIONS = GROUPS.flatMap((g) => g.sections);
-
 const PEOPLE = [
   { who: "+260 97 •• 41 · Chanda Mwale", name: "Chanda", int: "running shoes" },
   { who: "+260 96 •• 08 · Mutinta Zulu", name: "Mutinta", int: "gym wear" },
@@ -293,8 +332,16 @@ function AtDemo() {
   );
 }
 
-export default function KnowledgeBaseHub() {
-  const [activeId, setActiveId] = useState(ALL_SECTIONS[0].id);
+export default function KnowledgeBaseHub({ groups }: { groups: KnowledgeBaseHubGroup[] }) {
+  // Fall back to the original hardcoded content whenever the CMS has no
+  // published groups yet (e.g. no seed data), so the page never renders blank.
+  const displayGroups = useMemo(
+    () => (groups.length > 0 ? mapBackendGroups(groups) : FALLBACK_GROUPS),
+    [groups]
+  );
+  const allSections = useMemo(() => displayGroups.flatMap((g) => g.sections), [displayGroups]);
+
+  const [activeId, setActiveId] = useState(allSections[0].id);
   const [votes, setVotes] = useState<Record<string, "yes" | "no">>({});
   const [joined, setJoined] = useState(false);
   const cardRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -309,12 +356,12 @@ export default function KnowledgeBaseHub() {
       },
       { rootMargin: "-30% 0px -65% 0px" }
     );
-    ALL_SECTIONS.forEach((s) => {
+    allSections.forEach((s) => {
       const el = cardRefs.current[s.id];
       if (el) obs.observe(el);
     });
     return () => obs.disconnect();
-  }, []);
+  }, [allSections]);
 
   return (
     <main className="kbh-page">
@@ -349,7 +396,7 @@ export default function KnowledgeBaseHub() {
         <nav className="kbh-index" aria-label="Sections">
           <h2 className="kbh-index__title kbh-mono">On this page</h2>
           <ul className="kbh-index__list">
-            {GROUPS.map((g) => (
+            {displayGroups.map((g) => (
               <Fragment key={g.label}>
                 <li className="kbh-index__group kbh-mono">{g.label}</li>
                 {g.sections.map((s) => (
@@ -368,7 +415,7 @@ export default function KnowledgeBaseHub() {
         </nav>
 
         <div className="kbh-main">
-          {GROUPS.map((group) => (
+          {displayGroups.map((group) => (
             <div key={group.label}>
               <div className="kbh-bandhead">
                 <span className="kbh-mono">{group.label}</span>

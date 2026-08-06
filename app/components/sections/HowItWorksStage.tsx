@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { howItWorksSteps } from "@/app/how-it-works/steps";
+import type { HowItWorksStep } from "@/app/how-it-works/steps";
 
 const AUTO_MS = 4200;
 
@@ -16,6 +16,12 @@ const VARIANTS = ["navy", "outline", "soft", "blue"] as const;
  * percentage grid the cards are positioned on. Each path starts and ends
  * *inside* the cards it joins — the cards sit above the SVG and hide the
  * ends, so the join stays clean even as card heights change with content.
+ *
+ * The staircase geometry (these paths, `.hiw-step--p1..p4`, and the two
+ * flanking phone slots below) is hand-fit to exactly 4 steps — that matches
+ * both the current design and the CMS seed data for the "how-it-works"
+ * group. If the CMS ever publishes a different count, indices are clamped
+ * defensively rather than crashing, but the layout will look off.
  */
 const CONNECTORS = [
   "M 19.5 10 V 20 H 35.5 V 30",
@@ -23,7 +29,7 @@ const CONNECTORS = [
   "M 53.5 62 V 72 H 71.5 V 82",
 ];
 
-export default function HowItWorksStage() {
+export default function HowItWorksStage({ steps }: { steps: HowItWorksStep[] }) {
   const [active, setActive] = useState(0);
   const [tookOver, setTookOver] = useState(false);
   const startRef = useRef(0);
@@ -33,20 +39,25 @@ export default function HowItWorksStage() {
   // invoke / Fast Refresh) recomputes the same value instead of double-stepping.
   useEffect(() => {
     if (tookOver) return;
+    if (steps.length === 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     startRef.current = performance.now();
     const id = setInterval(() => {
-      const i =
-        Math.floor((performance.now() - startRef.current) / AUTO_MS) % howItWorksSteps.length;
+      const i = Math.floor((performance.now() - startRef.current) / AUTO_MS) % steps.length;
       setActive(i);
     }, 250);
     return () => clearInterval(id);
-  }, [tookOver]);
+  }, [tookOver, steps.length]);
 
   const pick = (i: number) => {
     setTookOver(true);
     setActive(i);
   };
+
+  if (steps.length === 0) return null;
+
+  const topPhone = steps[0]?.screen ?? null;
+  const midPhone = steps[3]?.screen ?? steps[steps.length - 1]?.screen ?? null;
 
   return (
     <div className="hiw-flow">
@@ -68,34 +79,42 @@ export default function HowItWorksStage() {
       </svg>
 
       {/* Decorative app screens flanking the staircase */}
-      <div className="hiw-flow__phone hiw-flow__phone--top" aria-hidden="true">
-        <span className="hiw-flow__halo" />
-        <Image
-          src={howItWorksSteps[0].screen}
-          alt=""
-          priority
-          sizes="(max-width: 900px) 30vw, 11rem"
-          className="hiw-flow__phone-img"
-        />
-      </div>
-      <div className="hiw-flow__phone hiw-flow__phone--mid" aria-hidden="true">
-        <span className="hiw-flow__halo" />
-        <Image
-          src={howItWorksSteps[3].screen}
-          alt=""
-          priority
-          sizes="(max-width: 900px) 34vw, 13rem"
-          className="hiw-flow__phone-img"
-        />
-      </div>
+      {topPhone && (
+        <div className="hiw-flow__phone hiw-flow__phone--top" aria-hidden="true">
+          <span className="hiw-flow__halo" />
+          <Image
+            src={topPhone}
+            alt=""
+            priority
+            width={360}
+            height={450}
+            sizes="(max-width: 900px) 30vw, 11rem"
+            className="hiw-flow__phone-img"
+          />
+        </div>
+      )}
+      {midPhone && (
+        <div className="hiw-flow__phone hiw-flow__phone--mid" aria-hidden="true">
+          <span className="hiw-flow__halo" />
+          <Image
+            src={midPhone}
+            alt=""
+            priority
+            width={360}
+            height={450}
+            sizes="(max-width: 900px) 34vw, 13rem"
+            className="hiw-flow__phone-img"
+          />
+        </div>
+      )}
 
-      {howItWorksSteps.map((step, i) => (
+      {steps.map((step, i) => (
         <Link
           key={step.slug}
           href={`/how-it-works/${step.slug}`}
-          className={`hiw-step hiw-step--${VARIANTS[i]} hiw-step--p${i + 1}${
-            active === i ? " is-active" : ""
-          }`}
+          className={`hiw-step hiw-step--${VARIANTS[i % VARIANTS.length]} hiw-step--p${
+            (i % 4) + 1
+          }${active === i ? " is-active" : ""}`}
           onMouseEnter={() => pick(i)}
           onFocus={() => pick(i)}
           aria-current={active === i ? "step" : undefined}

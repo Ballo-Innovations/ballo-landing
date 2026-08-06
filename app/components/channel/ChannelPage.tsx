@@ -33,7 +33,8 @@ export interface ChannelPageProps {
   headline: string;
   /** Supporting hero paragraph. */
   intro: string;
-  heroImage: StaticImageData;
+  /** Local static import (hardcoded fallback) or a remote CMS image URL. */
+  heroImage: StaticImageData | string;
   heroImageAlt: string;
   features: ChannelFeature[];
   steps: ChannelStep[];
