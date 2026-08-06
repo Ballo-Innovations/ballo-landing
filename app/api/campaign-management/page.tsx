@@ -2,17 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  LayoutDashboard, 
-  Rocket, 
-  FileCode, 
-  Building2, 
-  Users, 
-  ShoppingCart, 
-  Megaphone, 
-  Tags, 
+import {
+  LayoutDashboard,
+  Users,
+  Megaphone,
+  Tags,
   CreditCard,
-  ThumbsUp, 
+  ThumbsUp,
   ThumbsDown,
   Download
 } from "lucide-react";
@@ -23,11 +19,7 @@ import ringImage from "@/public/Assets/9.png";
 // --- 1. CONFIGURATION: Left Sidebar Data ---
 const LEFT_MENU_ITEMS = [
   { name: "Overview", href: "/api", icon: LayoutDashboard, active: false },
-  { name: "Getting Started", href: "/api/getting-started", icon: Rocket, active: false },
-  { name: "API Reference", href: "/api/api-reference", icon: FileCode, active: false },
-  { name: "Company Management", href: "/api/company-management", icon: Building2, active: false },
   { name: "Client Subscriptions", href: "/api/client-subscription", icon: Users, active: false },
-  { name: "Purchase Orders", href: "/api/purchase-orders", icon: ShoppingCart, active: false },
   { name: "Campaign Management", href: "#", icon: Megaphone, active: true },
   { name: "Pricing Models", href: "/api/pricing-models", icon: Tags, active: false },
   { name: "Payment Integration", href: "/api/payment-intergration", icon: CreditCard, active: false },

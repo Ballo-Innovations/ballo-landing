@@ -23,9 +23,11 @@ export type BlogPost = {
   publishedAt: string | null;
 };
 
+export type BlogPostPagination = { total: number; page: number; limit: number; totalPages: number };
+
 type BlogPostPage = {
   data: BlogPost[];
-  pagination: { total: number; page: number; limit: number; totalPages: number };
+  pagination: BlogPostPagination;
 };
 
 const EMPTY_PAGE: BlogPostPage = {

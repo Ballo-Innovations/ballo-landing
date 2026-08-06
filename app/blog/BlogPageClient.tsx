@@ -8,7 +8,7 @@ import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCa
 import { FadeUpReveal } from "../components/ui/FadeUpReveal";
 import ConcentricRings from "../components/ui/ConcentricRings";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
-import type { BlogPost } from "@/lib/blogApi";
+import type { BlogPost, BlogPostPagination } from "@/lib/blogApi";
 
 type ArticleCardData = {
   title: string;
@@ -74,20 +74,58 @@ const supportHighlights = [
   },
 ];
 
-export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
+/** Build a `/blog` URL preserving whichever of page/category/tag are relevant. */
+function blogHref({
+  page,
+  category,
+  tag,
+}: {
+  page?: number;
+  category?: string | null;
+  tag?: string | null;
+}): string {
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (tag) params.set("tag", tag);
+  if (page && page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/blog?${qs}` : "/blog";
+}
+
+export default function BlogPageClient({
+  posts,
+  pagination,
+  categories,
+  activeCategory,
+  activeTag,
+}: {
+  posts: BlogPost[];
+  pagination: BlogPostPagination;
+  categories: string[];
+  activeCategory: string | null;
+  activeTag: string | null;
+}) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = useMemo(
-    () => Array.from(new Set(posts.map((p) => p.category).filter(Boolean))),
-    [posts],
-  );
+  // Only the current (already server-paginated + server-filtered) page of posts is
+  // available client-side, so search can only ever narrow down what's already on
+  // screen — it is not a full-dataset search.
+  const query = searchQuery.trim().toLowerCase();
+  const isSearching = query !== "";
+  const filteredPosts = posts.filter((p) => {
+    if (!query) return true;
+    return `${p.title} ${p.excerpt} ${p.category}`.toLowerCase().includes(query);
+  });
 
+  // The featured carousel is a "hero" for the default blog view only — showing it
+  // for an arbitrary filtered/paginated slice of posts would be misleading.
+  const isDefaultView = pagination.page === 1 && !activeCategory && !activeTag;
   const featuredPosts = useMemo(() => {
+    if (!isDefaultView) return [];
     const withCover = posts.filter((p) => p.coverImageUrl);
     const featured = withCover.filter((p) => p.featured);
     return (featured.length > 0 ? featured : withCover).slice(0, 7);
-  }, [posts]);
+  }, [isDefaultView, posts]);
 
   const carouselItems: StackedCard[] = featuredPosts.map((p) => ({
     title: p.title,
@@ -95,13 +133,7 @@ export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
     href: `/blog/${p.slug}`,
   }));
 
-  const query = searchQuery.trim().toLowerCase();
-  const isFiltering = selectedCategory !== null || query !== "";
-  const filteredPosts = posts.filter((p) => {
-    const catOk = !selectedCategory || p.category === selectedCategory;
-    const searchOk = !query || `${p.title} ${p.excerpt} ${p.category}`.toLowerCase().includes(query);
-    return catOk && searchOk;
-  });
+  const headingText = activeCategory ? `${activeCategory} articles` : isSearching ? "Search results" : "Latest articles";
 
   return (
     <main className="min-h-screen text-white" style={{ background: "linear-gradient(180deg, #070858 0%, #000000 100%)" }}>
@@ -115,7 +147,7 @@ export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
 
       {/* Search and Categories */}
       <section className="px-4 pb-4 pt-16 md:px-8">
-        <FadeUpReveal yOffset={40} duration={0.7} className="container mx-auto flex flex-col items-center gap-7">
+        <FadeUpReveal yOffset={40} duration={0.7} className="container mx-auto flex flex-col items-center gap-3">
           <div className="relative w-full max-w-md">
             <svg
               className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--dark-blue)]/60"
@@ -127,27 +159,36 @@ export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
             </svg>
             <input
               type="text"
-              placeholder="Search articles..."
+              placeholder="Search this page..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search articles"
+              aria-label="Search articles on this page"
               className="w-full rounded-full bg-white/90 py-3 pl-12 pr-5 text-sm text-[var(--dark-blue)] placeholder-[var(--dark-blue)]/50 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--cyan-bright)]"
             />
           </div>
+          <p className="text-xs text-white/50">
+            Searches only the {posts.length} article{posts.length === 1 ? "" : "s"} shown on this page — use pagination
+            below to browse more.
+          </p>
 
           {categories.length > 0 && (
-            <div className="blog-categories">
+            <div className="blog-categories mt-4">
+              <Link
+                href={blogHref({ tag: activeTag })}
+                className={`blog-category-pill ${!activeCategory ? "blog-category-pill--active" : ""}`}
+              >
+                All
+              </Link>
               {categories.map((category) => {
-                const active = selectedCategory === category;
+                const active = activeCategory === category;
                 return (
-                  <button
+                  <Link
                     key={category}
-                    type="button"
-                    onClick={() => setSelectedCategory(active ? null : category)}
+                    href={active ? blogHref({ tag: activeTag }) : blogHref({ category, tag: activeTag })}
                     className={`blog-category-pill ${active ? "blog-category-pill--active" : ""}`}
                   >
                     {category}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -160,13 +201,11 @@ export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
         <div className="container mx-auto flex flex-col gap-7">
           <FadeUpReveal yOffset={40} duration={0.7}>
             <div className="flex flex-col gap-2 max-w-4xl">
-              <h2 className="text-3xl md:text-5xl font-bold">
-                {isFiltering ? (selectedCategory ? `${selectedCategory} articles` : "Search results") : "Latest articles"}
-              </h2>
+              <h2 className="text-3xl md:text-5xl font-bold">{headingText}</h2>
               <p className="text-sm md:text-base text-white/70">
                 {filteredPosts.length} article{filteredPosts.length === 1 ? "" : "s"}
-                {selectedCategory ? ` in ${selectedCategory}` : ""}
-                {query ? ` matching “${searchQuery.trim()}”` : ""}
+                {isSearching ? ` matching “${searchQuery.trim()}” on this page` : " on this page"}
+                {pagination.totalPages > 1 ? ` · page ${pagination.page} of ${pagination.totalPages}` : ""}
               </p>
             </div>
           </FadeUpReveal>
@@ -185,21 +224,55 @@ export default function BlogPageClient({ posts }: { posts: BlogPost[] }) {
             <FadeUpReveal yOffset={30} duration={0.6}>
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <p className="text-lg font-semibold text-white">No articles found</p>
-                <p className="text-sm text-white/70">Try a different category or search term.</p>
-                {isFiltering && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(null);
-                      setSearchQuery("");
-                    }}
-                    className="blog-category-pill blog-category-pill--active mt-2"
-                  >
-                    Clear filters
-                  </button>
-                )}
+                <p className="text-sm text-white/70">
+                  {isSearching ? "Try a different search term." : "Try a different category."}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                  {isSearching && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      className="blog-category-pill blog-category-pill--active"
+                    >
+                      Clear search
+                    </button>
+                  )}
+                  {activeCategory && (
+                    <Link href={blogHref({ tag: activeTag })} className="blog-category-pill blog-category-pill--active">
+                      View all categories
+                    </Link>
+                  )}
+                </div>
               </div>
             </FadeUpReveal>
+          )}
+
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 pt-4">
+              {pagination.page > 1 ? (
+                <Link
+                  href={blogHref({ page: pagination.page - 1, category: activeCategory, tag: activeTag })}
+                  className="blog-category-pill"
+                >
+                  Previous
+                </Link>
+              ) : (
+                <span className="blog-category-pill opacity-40 pointer-events-none">Previous</span>
+              )}
+              <span className="text-sm text-white/70">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              {pagination.page < pagination.totalPages ? (
+                <Link
+                  href={blogHref({ page: pagination.page + 1, category: activeCategory, tag: activeTag })}
+                  className="blog-category-pill"
+                >
+                  Next
+                </Link>
+              ) : (
+                <span className="blog-category-pill opacity-40 pointer-events-none">Next</span>
+              )}
+            </div>
           )}
         </div>
       </section>

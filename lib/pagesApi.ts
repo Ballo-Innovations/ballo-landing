@@ -2,12 +2,7 @@ import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
 
-async function getBackendBaseUrl(): Promise<string> {
-  const headerList = await headers();
-  return resolvePublicApiBase(headerList.get("host"));
-}
-
-export type ContentPageResponse = {
+export type ContentPage = {
   id: number;
   slug: string;
   title: string;
@@ -17,26 +12,19 @@ export type ContentPageResponse = {
   updatedAt: string;
 };
 
-/**
- * A single CMS content page by slug. Returns null if the slug doesn't exist
- * yet, isn't published (backend 404s), or the request fails — callers should
- * fall back to static placeholder content rather than showing a blank page.
- */
-export async function getContentPage(slug: string): Promise<ContentPageResponse | null> {
-  const base = await getBackendBaseUrl();
+export async function getContentPage(slug: string): Promise<ContentPage | null> {
+  const headerList = await headers();
+  const base = resolvePublicApiBase(headerList.get("host"));
   const url = `${base}/v1/pages/${encodeURIComponent(slug)}`;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
     if (!res.ok) {
       if (res.status !== 404) {
         console.error("[pagesApi] non-OK response", { url, status: res.status });
       }
       return null;
     }
-    return (await res.json()) as ContentPageResponse;
+    return (await res.json()) as ContentPage;
   } catch (err) {
     console.error("[pagesApi] fetch failed", { url, err });
     return null;

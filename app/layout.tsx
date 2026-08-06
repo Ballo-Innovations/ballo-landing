@@ -13,6 +13,9 @@ import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 import { SmoothScroll } from "./components/ui/SmoothScroll";
 import { WaitlistProvider } from "./components/waitlist/WaitlistProvider";
+import { resolveSocialLinks } from "./components/social/socialLinks";
+import { getSocialLinks } from "@/lib/socialLinksApi";
+import { getSiteSettings } from "@/lib/siteSettingsApi";
 
 const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
@@ -39,19 +42,26 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [fetchedSocialLinks, siteSettings] = await Promise.all([getSocialLinks(), getSiteSettings()]);
+  const socialLinks = resolveSocialLinks(fetchedSocialLinks);
+
   return (
     <html lang="en" className={`${ubuntu.variable} ${ubuntuMono.variable}`}>
       <body className="font-sans antialiased">
         <SmoothScroll>
           <WaitlistProvider>
-            <Header />
+            <Header socialLinks={socialLinks} />
             {children}
-            <Footer />
+            <Footer
+              socialLinks={socialLinks}
+              contactPhone={siteSettings.contact_phone}
+              contactEmail={siteSettings.contact_email}
+            />
           </WaitlistProvider>
         </SmoothScroll>
       </body>

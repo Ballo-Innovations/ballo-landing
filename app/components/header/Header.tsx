@@ -14,7 +14,7 @@ import { ChevronDown, Facebook, Instagram, Linkedin, Menu, X } from "lucide-reac
 import logo_1 from "@/public/BalloAds Logo New/BalloAds-logo.png";
 import logo_2 from "@/public/BalloAds Logo New/BalloAds-logo-full.png";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
-import { socialLinks, type SocialKey } from "../social/socialLinks";
+import { socialLinks as defaultSocialLinks, type SocialKey, type SocialLink } from "../social/socialLinks";
 
 const TikTokIcon = ({ className }: { className?: string }) => (
   <svg
@@ -160,7 +160,7 @@ const NAV: NavEntry[] = [
   },
 ];
 
-const Header = () => {
+const Header = ({ socialLinks = defaultSocialLinks }: { socialLinks?: SocialLink[] } = {}) => {
   const pathname = usePathname();
   const { openWaitlist } = useWaitlist();
   const { scrollY } = useScroll();
