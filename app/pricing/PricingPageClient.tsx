@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 
 import bg from "@/public/BalloAds Assets 2/1.png";
 import ring from "@/public/Assets/9.png";
@@ -11,6 +12,11 @@ import { useEffect } from "react";
 import type { PricingPlan } from "@/lib/pricingApi";
 import type { HowItWorksStep } from "@/app/how-it-works/steps";
 import { resolveIcon } from "@/lib/iconRegistry";
+import {
+  type LadderBand,
+  durationLabel,
+  resolveRate,
+} from "@/lib/pricingLadderTypes";
 
 // ─── Inline icons (kept 1:1 with the pre-CMS design — selected by `channel`,
 //     a closed 3-value enum, rather than the freeform `iconName` string, so
@@ -49,26 +55,26 @@ function channelIcon(channel: PricingPlan["channel"]) {
 }
 
 // ─── Price logic ──────────────────────────────────────────────────────────────
-// Same shape as the original hand-written formula (base price below a message
-// floor, then `pricePerUnit` per `unitSize` messages above it) — just driven
-// by the plan's CMS-provided basePrice/pricePerUnit/unitSize instead of the
-// hardcoded 850 / 12 / 250 constants. Slider bounds aren't part of the CMS
-// schema, so they stay as local UI constants.
+// Recurring plans no longer carry their own price — the total is derived live
+// from the backoffice Pricing Ladder (Companies segment): find the volume tier
+// containing the selected message count, for the selected duration, and
+// multiply that tier's per-message rate (for this plan's channel) by the count.
 const MIN_MSGS = 1000;
 const MAX_MSGS = 10000;
+const MSG_STEP = 250;
 
-function calculatePrice(plan: PricingPlan, messages: number): number {
-  const extra = Math.max(0, messages - MIN_MSGS);
-  return plan.basePrice + Math.ceil(extra / plan.unitSize) * plan.pricePerUnit;
+function calculatePrice(plan: PricingPlan, bands: LadderBand[], messages: number): number | null {
+  const rate = resolveRate(bands, plan.channel, messages);
+  return rate === null ? null : messages * rate;
 }
 
 // ─── Pricing Card ─────────────────────────────────────────────────────────────
 
-function PricingCard({ plan }: { plan: PricingPlan }) {
+function PricingCard({ plan, bands }: { plan: PricingPlan; bands: LadderBand[] }) {
   const [messages, setMessages] = useState(1750);
-  const price = useMemo(() => calculatePrice(plan, messages), [plan, messages]);
+  const price = useMemo(() => calculatePrice(plan, bands, messages), [plan, bands, messages]);
   const progress = ((messages - MIN_MSGS) / (MAX_MSGS - MIN_MSGS)) * 100;
-  const step = plan.unitSize > 0 ? plan.unitSize : 250;
+  const step = MSG_STEP;
 
   return (
     <div
@@ -117,9 +123,9 @@ function PricingCard({ plan }: { plan: PricingPlan }) {
       <div className="px-5 pb-3">
         <div className="flex items-baseline gap-1">
           <span className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            {plan.currency}{price.toLocaleString()}
+            {price === null ? "Contact us" : `${plan.currency}${price.toLocaleString()}`}
           </span>
-          <span className="text-xs text-slate-400 font-normal">per month</span>
+          {price !== null && <span className="text-xs text-slate-400 font-normal">per period</span>}
         </div>
       </div>
 
@@ -217,13 +223,37 @@ function StepVisual({
 export default function PricingPageClient({
   plans,
   stepsFlow,
+  durations,
+  laddersByDuration,
 }: {
   plans: PricingPlan[];
   stepsFlow: HowItWorksStepStrip[];
+  durations: number[];
+  laddersByDuration: Record<number, LadderBand[]>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const isUnlimited = pathname === "/pricing/unlimited";
+  const [durationIndex, setDurationIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(1);
+  const duration = durations[durationIndex] ?? durations[0] ?? 30;
+  const bands = laddersByDuration[duration] ?? [];
+
+  function goToDuration(nextIndex: number) {
+    const clamped = Math.max(0, Math.min(durations.length - 1, nextIndex));
+    if (clamped === durationIndex) return;
+    setSlideDirection(clamped > durationIndex ? 1 : -1);
+    setDurationIndex(clamped);
+  }
+
+  function handleDragEnd(_: unknown, info: PanInfo) {
+    const SWIPE_THRESHOLD = 50;
+    if (info.offset.x < -SWIPE_THRESHOLD) {
+      goToDuration(durationIndex + 1);
+    } else if (info.offset.x > SWIPE_THRESHOLD) {
+      goToDuration(durationIndex - 1);
+    }
+  }
 
   // Force the body background to match the page so no dark bar shows behind the fixed nav.
   useEffect(() => {
@@ -287,10 +317,43 @@ export default function PricingPageClient({
 
         {/* Cards overlap the bottom of the hero card */}
         <div className="px-4 sm:px-8 lg:px-16 -mt-24 sm:-mt-28 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            {plans.map((plan) => (
-              <PricingCard key={plan.id} plan={plan} />
-            ))}
+          {!isUnlimited && durations.length > 1 && (
+            <div className="flex justify-center mb-5">
+              <div className="inline-flex bg-white border border-slate-200 rounded-full p-1 gap-1 shadow-sm">
+                {durations.map((d, i) => (
+                  <button
+                    key={d}
+                    onClick={() => goToDuration(i)}
+                    className={`min-h-9 px-4 rounded-full text-xs font-semibold transition-colors ${
+                      duration === d ? "bg-[#0a1f6e] text-white" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {durationLabel(d)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="relative max-w-5xl mx-auto overflow-hidden">
+            <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+              <motion.div
+                key={duration}
+                custom={slideDirection}
+                initial={{ x: slideDirection > 0 ? 80 : -80, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: slideDirection > 0 ? -80 : 80, opacity: 0 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                drag={durations.length > 1 && !isUnlimited ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleDragEnd}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 cursor-grab active:cursor-grabbing"
+              >
+                {plans.map((plan) => (
+                  <PricingCard key={plan.id} plan={plan} bands={bands} />
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </section>
