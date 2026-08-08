@@ -9,6 +9,7 @@ import ring from "@/public/Assets/9.png";
 import woman from "@/public/BalloAds Assets 2/25.png";
 import type { PricingPlan } from "@/lib/pricingApi";
 import { resolveIcon } from "@/lib/iconRegistry";
+import { type LadderBand, resolveRate } from "@/lib/pricingLadderTypes";
 
 // --- Icons (kept 1:1 with the pre-CMS design — selected by `channel`, a
 // closed 3-value enum, rather than the freeform `iconName` string) ---
@@ -25,33 +26,32 @@ function channelIcon(channel: PricingPlan["channel"]) {
 }
 
 // --- Price logic ---
-// Same shape as the original hand-written formula (flat basePrice up to a
-// message floor, then basePrice + pricePerUnit per unitSize messages above
-// it) — just driven by the plan's CMS-provided basePrice/pricePerUnit/unitSize
-// instead of the hardcoded 0.400 / -0.034 / 1000 constants.
+// Priced live from the backoffice Pricing Ladder's "no expiry" duration (0) —
+// the same volume-tier rate table the /pricing (monthly) cards use for their
+// 30/60/90-day durations, just with duration=0 selected.
 const MIN_MSGS = 1000;
 const MAX_MSGS = 10000;
 
-function calculatePrice(plan: PricingPlan, messages: number): number {
-  if (messages <= MIN_MSGS) return plan.basePrice;
-  const excess = messages - MIN_MSGS;
-  return plan.basePrice + Math.ceil(excess / plan.unitSize) * plan.pricePerUnit;
+function calculatePrice(plan: PricingPlan, bands: LadderBand[], messages: number): number | null {
+  const rate = resolveRate(bands, plan.channel, messages);
+  return rate === null ? null : messages * rate;
 }
 
 // --- Reusable components ---
 
 interface PricingCardProps {
   plan: PricingPlan;
+  bands: LadderBand[];
   initialMessages: number;
   maxMessages: number;
 }
 
-const PricingCard: React.FC<PricingCardProps> = ({ plan, initialMessages, maxMessages = 10000 }) => {
+const PricingCard: React.FC<PricingCardProps> = ({ plan, bands, initialMessages, maxMessages = 10000 }) => {
   const [selectedMessages, setSelectedMessages] = useState(initialMessages);
 
   const calculatedPrice = useMemo(() => {
-    return calculatePrice(plan, selectedMessages);
-  }, [plan, selectedMessages]);
+    return calculatePrice(plan, bands, selectedMessages);
+  }, [plan, bands, selectedMessages]);
 
   const handleSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedMessages(parseInt(event.target.value));
@@ -68,7 +68,10 @@ const PricingCard: React.FC<PricingCardProps> = ({ plan, initialMessages, maxMes
 
       <div className="mb-6">
         <div className="text-3xl font-bold text-slate-900 mb-2">
-          {plan.currency}{calculatedPrice} <span className="text-sm text-slate-500 font-normal">per month</span>
+          {calculatedPrice === null
+            ? "Contact us"
+            : `${plan.currency}${calculatedPrice.toLocaleString()}`}{" "}
+          <span className="text-sm text-slate-500 font-normal">per month</span>
         </div>
 
         {/* FUNCTIONAL SLIDER INPUT */}
@@ -157,9 +160,11 @@ function StepVisual({
 
 export default function PricingUnlimitedPageClient({
   plans,
+  bands,
   stepsFlow,
 }: {
   plans: PricingPlan[];
+  bands: LadderBand[];
   stepsFlow: HowItWorksStepStrip[];
 }) {
   const router = useRouter();
@@ -234,6 +239,7 @@ export default function PricingUnlimitedPageClient({
               <PricingCard
                 key={plan.id}
                 plan={plan}
+                bands={bands}
                 initialMessages={1250}
                 maxMessages={10000}
               />

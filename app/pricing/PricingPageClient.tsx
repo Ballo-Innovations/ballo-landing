@@ -234,13 +234,16 @@ export default function PricingPageClient({
   const router = useRouter();
   const pathname = usePathname();
   const isUnlimited = pathname === "/pricing/unlimited";
+  // "No expiry" (duration 0) is presented as the separate "unlimited" tab,
+  // not as one more tab alongside the fixed-term durations here.
+  const termDurations = useMemo(() => durations.filter((d) => d !== 0), [durations]);
   const [durationIndex, setDurationIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState(1);
-  const duration = durations[durationIndex] ?? durations[0] ?? 30;
+  const duration = termDurations[durationIndex] ?? termDurations[0] ?? 30;
   const bands = laddersByDuration[duration] ?? [];
 
   function goToDuration(nextIndex: number) {
-    const clamped = Math.max(0, Math.min(durations.length - 1, nextIndex));
+    const clamped = Math.max(0, Math.min(termDurations.length - 1, nextIndex));
     if (clamped === durationIndex) return;
     setSlideDirection(clamped > durationIndex ? 1 : -1);
     setDurationIndex(clamped);
@@ -317,10 +320,10 @@ export default function PricingPageClient({
 
         {/* Cards overlap the bottom of the hero card */}
         <div className="px-4 sm:px-8 lg:px-16 -mt-24 sm:-mt-28 relative z-10">
-          {!isUnlimited && durations.length > 1 && (
+          {!isUnlimited && termDurations.length > 1 && (
             <div className="flex justify-center mb-5">
               <div className="inline-flex bg-white border border-slate-200 rounded-full p-1 gap-1 shadow-sm">
-                {durations.map((d, i) => (
+                {termDurations.map((d, i) => (
                   <button
                     key={d}
                     onClick={() => goToDuration(i)}
@@ -343,7 +346,7 @@ export default function PricingPageClient({
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: slideDirection > 0 ? -80 : 80, opacity: 0 }}
                 transition={{ duration: 0.28, ease: "easeOut" }}
-                drag={durations.length > 1 && !isUnlimited ? "x" : false}
+                drag={termDurations.length > 1 && !isUnlimited ? "x" : false}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
                 onDragEnd={handleDragEnd}
