@@ -419,7 +419,7 @@ export default function FeaturesPage() {
               unlock new revenue, accelerate growth and engage your audience in real time.
             </p>
             <Link
-              href="/how-it-works"
+              href="https://crm.balloads.com/demo"
               className="inline-flex items-center gap-3 w-fit px-8 py-4 rounded-full bg-[var(--brand-color-1)] text-white font-semibold text-lg shadow-lg hover:bg-[var(--brand-color-2)] transition-colors"
             >
               Book a free demo
