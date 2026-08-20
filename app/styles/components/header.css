@@ -11,57 +11,6 @@
   position: sticky;
 }
 
-.header__top-socials {
-  position: fixed;
-  top: 0.55rem;
-  left: 50%;
-  z-index: 101;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.95rem;
-  width: min(calc(100vw - 1.5rem), 84rem);
-  padding-inline: 1.35rem;
-  pointer-events: auto;
-}
-
-.header__social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.94);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    color 0.2s ease;
-}
-
-.header__social-link:hover {
-  color: #fff;
-  opacity: 0.72;
-  transform: translateY(-1px);
-}
-
-.header__social-link:focus-visible {
-  outline: 2px solid rgba(93, 215, 255, 0.95);
-  outline-offset: 4px;
-  border-radius: 0.25rem;
-}
-
-.header__social-link[aria-disabled="true"] {
-  cursor: default;
-  opacity: 0.55;
-}
-
-.header__social-link[aria-disabled="true"]:hover {
-  transform: none;
-}
-
-.header__social-svg {
-  width: 1.2rem;
-  height: 1.2rem;
-}
-
 /* ===== Predictive navigation loading bar ===== */
 .nav-progress {
   position: fixed;
@@ -113,7 +62,7 @@
 /* ===== Glass bar: logo · nav · auth as separate pills ===== */
 .header__bar {
   position: fixed;
-  top: 2.45rem;
+  top: 1.35rem;
   left: 50%;
   z-index: 100;
   display: grid;
@@ -152,6 +101,31 @@
   padding: 0.35rem 0.45rem;
 }
 
+/* The dropdowns are children of the nav pill, so they composite their own tint
+   on top of the pill's and land visibly darker. Doubling the tint here matches
+   the bar to the panels that hang off it — and the logo and sign-in pills take
+   the same doubling so the whole bar is one depth. */
+.header__pill--nav.glass-surface-nav,
+.header-glass-pill,
+.header__auth-signin {
+  background: var(--glass-nav-sheen), var(--glass-nav-tint), var(--glass-nav-tint);
+}
+
+/* Nav island only: a cooler, dimmer slate than the logo/sign-in pills. The
+   lighter periwinkle read too bright against the hero and hid the ring art —
+   a single, desaturated tint with a restrained sheen lets the backdrop through
+   and keeps the bar sitting just above the page colour. */
+.header__pill--nav.glass-surface-nav {
+  --glass-nav-sheen: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.02) 55%,
+    rgba(255, 255, 255, 0.05)
+  );
+  --glass-nav-tint: linear-gradient(180deg, rgba(124, 139, 174, 0.2), rgba(94, 109, 146, 0.16));
+  background: var(--glass-nav-sheen), var(--glass-nav-tint);
+}
+
 .header__auth {
   justify-self: end;
   display: flex;
@@ -162,11 +136,7 @@
 .header-glass-pill {
   overflow: hidden;
   color: #fff;
-  background: transparent;
   border-radius: 999px;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.7),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
   transition:
     transform 0.2s ease,
     color 0.2s ease,
@@ -190,15 +160,9 @@
   pointer-events: none;
   filter: url(#header-pill-glass-filter);
   -webkit-filter: url(#header-pill-glass-filter);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.25) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0.15) 100%
-    );
+  /* Distortion only: the tint and sheen now come from the shared glass recipe,
+     so painting another white gradient here would out-brighten the island. */
+  background: none;
   transform: translateZ(0);
 }
 
@@ -206,10 +170,12 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  /* Matches .glass-surface-nav::after's edge treatment. */
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.3),
+    inset -1px -1px 1px rgba(5, 14, 63, 0.32);
 }
 
 .header-glass-pill__content {
@@ -222,47 +188,68 @@
   min-width: 0;
 }
 
-/* Liquid-glass surface, shared by every pill and the dropdown panels. */
-.glass-surface-nav {
+/* Liquid-glass surface, shared by every pill and the dropdown panels — the
+   centre nav island is the reference, and the logo pill and the sign-in pill
+   opt in through the same selector list so all three read as one material. */
+.glass-surface-nav,
+.header-glass-pill,
+.header__auth-signin {
   color: #fff;
-  /* The tint has to stay genuinely translucent or the backdrop-filter below
-     has nothing visible to blur. Kept dark enough (~0.52 -> 0.38) that the
-     white wordmark still reads on light pages. */
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08)),
-    linear-gradient(180deg, rgba(7, 12, 52, 0.52), rgba(1, 1, 40, 0.38));
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  /* The tint stays genuinely translucent or the backdrop-filter below has
+     nothing visible to blur — what is behind the panel (rings, hero art) has to
+     read through it, which is what makes it look like glass rather than a
+     painted slab. */
+  --glass-nav-sheen: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.04) 55%,
+    rgba(255, 255, 255, 0.07)
+  );
+  /* Light neutral grey, not navy: the island should sit a shade lighter than
+     the page behind it and match the active pill's grey, while the doubled
+     application below still gives it body. */
+  --glass-nav-tint: linear-gradient(180deg, rgba(198, 211, 236, 0.12), rgba(146, 163, 203, 0.1));
+  background: var(--glass-nav-sheen), var(--glass-nav-tint);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   box-shadow:
+    /* a single soft specular top edge — the pane is neutral white frost, so no
+       coloured rim and no bloom competing with the content behind it */
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 0 22px rgba(255, 255, 255, 0.08),
-    0 22px 70px rgba(1, 1, 40, 0.34);
-  backdrop-filter: blur(30px) saturate(185%);
-  -webkit-backdrop-filter: blur(30px) saturate(185%);
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 40px rgba(255, 255, 255, 0.06),
+    0 2px 8px rgba(1, 1, 40, 0.22),
+    0 24px 70px rgba(1, 1, 40, 0.34);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 
-.glass-surface-nav::before {
+/* Sheen layer: one soft highlight pooling in the top-left corner and nothing
+   else. Anything stronger (or tinted) starts reading as a painted-on gradient
+   instead of light falling across frosted glass. */
+.glass-surface-nav::before,
+.header__auth-signin::before {
   content: "";
   position: absolute;
   inset: 1px;
   border-radius: inherit;
   pointer-events: none;
   background:
-    linear-gradient(105deg, rgba(255, 255, 255, 0.34), transparent 23%, transparent 72%, rgba(113, 206, 255, 0.2)),
-    radial-gradient(circle at 28% 0%, rgba(255, 255, 255, 0.2), transparent 32%);
-  opacity: 0.8;
+    linear-gradient(112deg, rgba(255, 255, 255, 0.22), transparent 34%),
+    radial-gradient(130% 90% at 18% -14%, rgba(255, 255, 255, 0.2), transparent 52%);
+  opacity: 0.85;
   mix-blend-mode: screen;
 }
 
-.glass-surface-nav::after {
+.glass-surface-nav::after,
+.header__auth-signin::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
   box-shadow:
-    inset 1px 1px 1px rgba(255, 255, 255, 0.32),
-    inset -1px -1px 1px rgba(5, 14, 63, 0.55);
+    inset 1px 1px 1px rgba(255, 255, 255, 0.3),
+    inset -1px -1px 1px rgba(5, 14, 63, 0.32);
 }
 
 /* ===== Liquid glass (logo pill, sign-in/up, nav highlight) =====
@@ -319,11 +306,6 @@
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   filter: url(#glass-distortion);
-}
-
-.header__auth-pill-label {
-  position: relative;
-  z-index: 3;
 }
 
 /* Header Logo */
@@ -394,7 +376,7 @@
   border: 0;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1;
   color: rgba(255, 255, 255, 0.82);
@@ -483,7 +465,7 @@
   display: block;
   padding: 0.55rem 0.8rem;
   border-radius: 0.75rem;
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.84);
   white-space: nowrap;
@@ -502,38 +484,81 @@
   background: rgba(113, 206, 255, 0.16);
 }
 
-/* ===== Auth pills ===== */
-.header__auth-pill {
-  justify-content: center;
-  padding: 0 1.25rem;
-  min-height: 3.05rem;
-  font-family: inherit;
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
+/* The lone auth control in the bar, so it carries the same glass-pill
+   affordance as the logo and nav pills. */
+.header__auth-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.header__auth-pill:focus-visible {
+.header__auth-signin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 3.05rem;
+  padding: 0 1.25rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.86);
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+.header__auth-signin > * {
+  position: relative;
+  z-index: 2;
+}
+
+.header__auth-signin:hover {
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.header__auth-signin:focus-visible {
   outline: 2px solid rgba(93, 215, 255, 0.95);
   outline-offset: 3px;
 }
 
-/* Sign Up stays the primary CTA — same glass family, cyan-forward tint.
-   Compound selector keeps it winning over the shared .glass-surface-nav bg. */
-.header__pill.header__auth-pill--signup {
-  color: #eafcff;
-  border-color: rgba(255, 255, 255, 0.4);
+/* Right-aligned (the nav dropdowns are centre-aligned via framer's translateX;
+   this one anchors to the trigger's right edge so it can't overflow the bar). */
+.header__dropdown--auth {
+  left: auto;
+  right: 0;
+  min-width: 15.5rem;
 }
 
-.header__pill.header__auth-pill--signup:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+.header__dropdown--auth .header__dropdown-link {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.header__dropdown-link--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.6rem 0.8rem;
+}
+
+.header__dropdown-title {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.header__dropdown-desc {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 /* ===== Mobile toggle + sheet ===== */
@@ -679,7 +704,8 @@
   bottom: 0;
   z-index: 2;
   display: flex;
-  gap: 0.6rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-top: auto;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(255, 255, 255, 0.14);
@@ -687,8 +713,12 @@
     linear-gradient(180deg, rgba(13, 20, 72, 0), rgba(7, 12, 56, 0.96) 28%, rgba(3, 4, 45, 0.98));
 }
 
-.header__mobile-signin,
-.header__mobile-signup {
+.header__mobile-signin-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header__mobile-signin {
   flex: 1;
   padding: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -701,9 +731,11 @@
   cursor: pointer;
 }
 
-.header__mobile-signup {
-  border-color: rgba(139, 225, 255, 0.55);
-  background: linear-gradient(135deg, rgba(113, 206, 255, 0.4), rgba(42, 92, 214, 0.32));
+/* Two entries share the row, so the labels run a touch smaller than a single
+   full-width button would. */
+.header__mobile-signin {
+  padding: 0.7rem 0.5rem;
+  font-size: 0.82rem;
 }
 
 /* ===== Responsive ===== */
@@ -720,9 +752,8 @@
     padding: 0.35rem;
   }
 
-  /* Both auth pills live in the hamburger sheet on mobile, so hide them here. */
-  .header__auth-pill--signin,
-  .header__auth-pill--signup {
+  /* Auth lives in the hamburger sheet on mobile, so hide it in the bar. */
+  .header__auth-menu {
     display: none;
   }
 }
@@ -734,20 +765,8 @@
 }
 
 @media (max-width: 640px) {
-  .header__top-socials {
-    top: 0.45rem;
-    width: calc(100vw - 1rem);
-    padding-inline: 0.9rem;
-    gap: 0.78rem;
-  }
-
-  .header__social-svg {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
   .header__bar {
-    top: 2.15rem;
+    top: 1rem;
     width: calc(100vw - 1rem);
     gap: 0.4rem;
   }
@@ -762,12 +781,6 @@
 
   .header__pill--logo {
     padding: 0 1rem;
-  }
-
-  .header__auth-pill {
-    min-height: 3.2rem;
-    padding: 0 1.05rem;
-    font-size: 0.88rem;
   }
 
   .header__mobile-sheet {
@@ -801,26 +814,3 @@
   }
 }
 
-/* Light-page social icons (pricing, features — #DFE0E1 bg) */
-body:has(.features-page) .header__top-socials .header__social-link,
-body:has(.how-it-works-page) .header__top-socials .header__social-link,
-body:has(.pricing-route) .header__top-socials .header__social-link,
-.header__top-socials--light .header__social-link {
-  color: #020055;
-  opacity: 0.72;
-}
-
-body:has(.features-page) .header__top-socials .header__social-link:hover,
-body:has(.how-it-works-page) .header__top-socials .header__social-link:hover,
-body:has(.pricing-route) .header__top-socials .header__social-link:hover,
-.header__top-socials--light .header__social-link:hover {
-  color: #020055;
-  opacity: 1;
-}
-
-body:has(.features-page) .header__top-socials .header__social-link[aria-disabled="true"],
-body:has(.how-it-works-page) .header__top-socials .header__social-link[aria-disabled="true"],
-body:has(.pricing-route) .header__top-socials .header__social-link[aria-disabled="true"],
-.header__top-socials--light .header__social-link[aria-disabled="true"] {
-  opacity: 0.38;
-}

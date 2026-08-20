@@ -55,7 +55,7 @@ export default async function RootLayout({
       <body className="font-sans antialiased">
         <SmoothScroll>
           <WaitlistProvider>
-            <Header socialLinks={socialLinks} />
+            <Header />
             {children}
             <Footer
               socialLinks={socialLinks}

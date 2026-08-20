@@ -82,7 +82,7 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman3,
-    imageFrame: { scale: 1.16, x: "0%", y: "0%" },
+    imageFrame: { scale: 1, x: "0%", y: "0%" },
     href: "/whatsapp-marketing",
   },
   {
@@ -91,7 +91,7 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: man,
-    imageFrame: { scale: 0.98, x: "0%", y: "0%" },
+    imageFrame: { scale: 0.9, x: "0%", y: "0%" },
     href: "/sms-marketing",
   },
   {
@@ -100,7 +100,7 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman,
-    imageFrame: { scale: 1.28, x: "0%", y: "0%" },
+    imageFrame: { scale: 1.2, x: "-18%", y: "0%" },
     href: "/email-marketing",
   },
   {
@@ -109,7 +109,7 @@ const features = [
     description:
       "Experience automated email marketing for higher conversions. BalloAds gives you....",
     image: woman2,
-    imageFrame: { scale: 1.02, x: "0%", y: "0%" },
+    imageFrame: { scale: 1, x: "-15%", y: "0%" },
     href: "/features",
   },
 ];
@@ -269,7 +269,7 @@ export default function HomeClient({
   const marqueeLogos = partnerLogos.concat(partnerLogos);
 
   return (
-    <main className="relative min-h-screen text-white pt-3 overflow-x-hidden"
+    <main className="relative min-h-screen text-white overflow-x-hidden"
       style={{ background: "linear-gradient(180deg, #153D87 0%, #070756 12%, #05043A 34%, #030227 56%, #010113 78%, #000000 100%)" }}>
       <SilkBackground />
 
@@ -296,10 +296,10 @@ export default function HomeClient({
             rotating text (left) and person (right) change together as one slide;
             the person stands on the full-width "POWERFUL AND VERSATILE" card,
             which is pulled up to mask the cutout's clipped bottom edge. */}
-        <div className="hero-frame relative z-10">
+        <div className="hero-frame relative z-[1]">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
             {/* Left — rotating copy (text half of the carousel slide) */}
-            <div className="hero-copy min-w-0 relative z-10 mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+            <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
               <p className="hero-kicker text-shimmer">AI-Powered Performance Marketing</p>
 
               {/* Rotating headline */}
@@ -349,14 +349,14 @@ export default function HomeClient({
               {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
               <div className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
                 <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
                 </div>
               </div>
             </div>
@@ -386,7 +386,7 @@ export default function HomeClient({
                   src={features[currentSlide].image}
                   alt={features[currentSlide].title}
                   fill
-                  sizes="(max-width: 768px) 85vw, 40vw"
+                  sizes="(max-width: 768px) 90vw, 45vw"
                   className="hero-person-img object-contain object-bottom"
                   style={{
                     ["--person-scale" as string]: features[currentSlide].imageFrame.scale,
@@ -420,11 +420,10 @@ export default function HomeClient({
         <div className="pv-title-block flex w-full justify-center">
           <div className="pv-title-card">
             <h2
-              className="relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
+              className="pv-title-gradient relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
               style={{
                 fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
                 letterSpacing: "0.005em",
-                color: "#fff",
                 display: "block",
               }}
             >
@@ -535,6 +534,7 @@ export default function HomeClient({
                 <Image
                   src={logo.src}
                   alt={logo.alt}
+                  width={224}
                   height={112}
                   loading="lazy"
                   sizes="112px"

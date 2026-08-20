@@ -10,23 +10,10 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
-import { ChevronDown, Facebook, Instagram, Linkedin, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import logo_1 from "@/public/BalloAds Logo New/BalloAds-logo.png";
 import logo_2 from "@/public/BalloAds Logo New/BalloAds-logo-full.png";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
-import { socialLinks as defaultSocialLinks, type SocialKey, type SocialLink } from "../social/socialLinks";
-
-const TikTokIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    className={className}
-    fill="currentColor"
-    stroke="none"
-    aria-hidden="true"
-  >
-    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-  </svg>
-);
 
 // Strategy 2 — "Chromium-optimized SVG compositor" (the production technique
 // for a global sticky nav over live scrolling DOM). This <filter> is applied
@@ -110,13 +97,6 @@ const HeaderGlassPill = ({
   </Component>
 );
 
-const socialIconMap: Record<SocialKey, React.ReactNode> = {
-  facebook: <Facebook className="header__social-svg" fill="currentColor" stroke="none" />,
-  instagram: <Instagram className="header__social-svg" stroke="currentColor" strokeWidth={2} />,
-  linkedin: <Linkedin className="header__social-svg" fill="currentColor" stroke="none" />,
-  tiktok: <TikTokIcon className="header__social-svg" />,
-};
-
 // --- Navigation model -------------------------------------------------------
 // Top-level entries are either a direct link or a group with a hover/tap
 // dropdown. Edit here to add or regroup pages; the UI derives everything else.
@@ -160,7 +140,24 @@ const NAV: NavEntry[] = [
   },
 ];
 
-const Header = ({ socialLinks = defaultSocialLinks }: { socialLinks?: SocialLink[] } = {}) => {
+/* Auth in the header is a single "Sign in" control that fans out to the two
+   surfaces — the business app and the developer portal — so returning users
+   pick their destination one click in. Both are pre-launch, so every target
+   opens the waitlist for now; swap in the real hrefs here when they ship. */
+const AUTH_MENU = "__auth";
+
+const SIGN_IN_TARGETS = [
+  {
+    name: "Business app",
+    description: "Campaigns, audiences and reporting",
+  },
+  {
+    name: "Developer portal",
+    description: "API keys, docs and usage",
+  },
+];
+
+const Header = () => {
   const pathname = usePathname();
   const { openWaitlist } = useWaitlist();
   const { scrollY } = useScroll();
@@ -275,43 +272,6 @@ const Header = ({ socialLinks = defaultSocialLinks }: { socialLinks?: SocialLink
         data-active={pendingPath !== null}
         aria-hidden="true"
       />
-
-      <motion.div
-        variants={{
-          visible: { opacity: 1, y: 0, x: "-50%" },
-          hidden: { opacity: 0, y: "-140%", x: "-50%" },
-        }}
-        animate={hasScrolled ? "hidden" : "visible"}
-        initial="visible"
-        transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}
-        className="header__top-socials"
-        aria-label="BalloAds social media"
-      >
-        {socialLinks.map(({ key, label, url }) =>
-          url ? (
-            <a
-              key={key}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="header__social-link"
-              aria-label={label}
-            >
-              {socialIconMap[key]}
-            </a>
-          ) : (
-            <span
-              key={key}
-              className="header__social-link"
-              role="img"
-              aria-label={`${label} - link coming soon`}
-              aria-disabled="true"
-            >
-              {socialIconMap[key]}
-            </span>
-          )
-        )}
-      </motion.div>
 
       <motion.div
         variants={{
@@ -453,26 +413,58 @@ const Header = ({ socialLinks = defaultSocialLinks }: { socialLinks?: SocialLink
           </button>
         </nav>
 
-        {/* Pills 3 & 4 — Auth (Sign In and Sign Up as separate pills) */}
+        {/* Pill 3 — Auth: a single "Sign in" menu that fans out to the business
+            app and the developer portal. */}
         <div className="header__auth">
-          <HeaderGlassPill
-            as="button"
-            type="button"
-            onClick={openWaitlist}
-            className="header__auth-pill header__auth-pill--signin"
-            contentClassName="header__auth-pill-label"
+          <div
+            className="header__auth-menu"
+            onMouseEnter={() => openMenu(AUTH_MENU)}
+            onMouseLeave={scheduleClose}
           >
-            Sign In
-          </HeaderGlassPill>
-          <HeaderGlassPill
-            as="button"
-            type="button"
-            onClick={openWaitlist}
-            className="header__auth-pill header__auth-pill--signup"
-            contentClassName="header__auth-pill-label"
-          >
-            Sign Up
-          </HeaderGlassPill>
+            <button
+              type="button"
+              className="header__auth-signin"
+              aria-haspopup="true"
+              aria-expanded={openGroup === AUTH_MENU}
+              onClick={() => setOpenGroup(openGroup === AUTH_MENU ? null : AUTH_MENU)}
+            >
+              <span>Sign in</span>
+              <ChevronDown
+                className={`header__nav-chevron ${openGroup === AUTH_MENU ? "is-open" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            <AnimatePresence>
+              {openGroup === AUTH_MENU && (
+                <motion.div
+                  className="header__dropdown header__dropdown--auth glass-surface-nav"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                  onMouseEnter={() => openMenu(AUTH_MENU)}
+                  onMouseLeave={scheduleClose}
+                >
+                  {SIGN_IN_TARGETS.map((target) => (
+                    <button
+                      key={target.name}
+                      type="button"
+                      className="header__dropdown-link header__dropdown-link--stacked"
+                      onClick={() => {
+                        setOpenGroup(null);
+                        openWaitlist();
+                      }}
+                    >
+                      <span className="header__dropdown-title">{target.name}</span>
+                      <span className="header__dropdown-desc">{target.description}</span>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
         </div>
       </motion.div>
 
@@ -550,20 +542,18 @@ const Header = ({ socialLinks = defaultSocialLinks }: { socialLinks?: SocialLink
             })}
 
             <div className="header__mobile-auth">
-              <button
-                type="button"
-                onClick={openWaitlist}
-                className="header__mobile-signin"
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                onClick={openWaitlist}
-                className="header__mobile-signup"
-              >
-                Sign Up
-              </button>
+              <div className="header__mobile-signin-row">
+                {SIGN_IN_TARGETS.map((target) => (
+                  <button
+                    key={target.name}
+                    type="button"
+                    onClick={openWaitlist}
+                    className="header__mobile-signin"
+                  >
+                    Sign in · {target.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
