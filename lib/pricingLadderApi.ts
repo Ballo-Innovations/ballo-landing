@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
 import type { LadderBand } from "@/lib/pricingLadderTypes";
+import { cmsFetchInit } from "@/lib/cmsFetch";
 
 export type {
   LadderPlatform,
@@ -19,10 +20,7 @@ async function fetchLadderJson<T>(path: string): Promise<T | null> {
   const base = await getBackendBaseUrl();
   const url = `${base}${path}`;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, cmsFetchInit());
     if (!res.ok) {
       console.error("[pricingLadderApi] non-OK response", { url, status: res.status });
       return null;

@@ -13,8 +13,7 @@
 
 .btn-primary,
 .btn-secondary,
-.phone-next-btn,
-.store-btn {
+.phone-next-btn {
   height: 2.65rem;
   min-height: 2.65rem;
   padding: 0 1.15rem;
@@ -23,6 +22,25 @@
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1;
+}
+
+/* CTA pills always sit side by side, so both halves share one geometry — the
+   primary reads as primary through its fill and glow, not through being
+   taller. .phone-next-btn keeps the smaller size above (it lives inside the
+   phone mockup, not in a CTA row). */
+.btn-primary,
+.btn-secondary {
+  height: 3.15rem;
+  min-height: 3.15rem;
+  padding: 0 1.9rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+/* .store-btn is deliberately absent above: it is a rounded-rectangle badge with
+   its own height, padding and two-line type scale, not a pill CTA. */
+.store-btn {
+  font-family: inherit;
 }
 
 .btn-primary,
@@ -44,13 +62,6 @@
 
 .btn-primary {
   isolation: isolate;
-  /* Bigger + more pronounced than the secondary button (overrides the shared
-     geometry above) so "Sign Up" reads as the primary CTA everywhere. */
-  height: 3.15rem;
-  min-height: 3.15rem;
-  padding: 0 1.9rem;
-  font-size: 1.05rem;
-  letter-spacing: 0.01em;
   background: var(--btn-cta-bg);
   border: 1px solid var(--btn-cta-border);
   color: var(--btn-cta-text);
@@ -127,35 +138,59 @@
   outline-offset: 3px;
 }
 
+/* Store badges on the phone mockup — see components/ui/StoreBadge.tsx.
+   A pale pill with black type, matching the `elements small/18.png` and
+   `19.png` artwork (sampled: #d8e6ed pill, pure-black wordmark). It used to be
+   a dark translucent pill with white text and no store icon at all. */
 .store-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(100, 120, 255, 0.15);
-  color: #fff;
+  gap: 9px;
+  padding: 7px 16px 7px 13px;
+  border: none;
+  border-radius: 12px;
+  background: #d8e6ed;
+  color: #000;
   cursor: pointer;
+  white-space: nowrap;
   transition:
     transform 0.22s ease,
-    background 0.25s ease,
-    border-color 0.25s ease;
+    background 0.25s ease;
 }
 
 .store-btn:hover {
   transform: translateY(-1px);
-  background: rgba(26, 58, 255, 0.15);
-  border-color: var(--blue);
+  background: #e6f0f5;
 }
 
 .store-btn:active {
   transform: translateY(0) scale(0.98);
 }
 
+.store-btn:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+/* ~63% of the pill's height, as in the source artwork. */
+.store-btn__icon {
+  flex-shrink: 0;
+  width: 23px;
+  height: 23px;
+}
+
+.store-btn__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .store-btn .s1 {
   display: block;
-  font-size: 9px;
-  line-height: 1.2;
-  color: #8892b0;
+  font-size: 9.5px;
+  line-height: 1.25;
+  font-weight: 400;
+  color: #000;
 }
 
 .store-btn .s2 {
@@ -163,7 +198,7 @@
   font-size: 13px;
   line-height: 1.2;
   font-weight: 700;
-  color: #fff;
+  color: #000;
 }
 
 .phone-next-btn {
@@ -205,16 +240,16 @@
 
   .btn-primary,
   .btn-secondary,
-  .phone-next-btn,
-  .store-btn {
+  .phone-next-btn {
     height: 2.35rem;
     min-height: 2.35rem;
     padding: 0 0.72rem;
     font-size: clamp(0.78rem, 3.3vw, 0.88rem);
   }
 
-  /* Keep "Sign Up" the pronounced CTA on mobile too */
-  .btn-primary {
+  /* Both CTA pills stay matched on mobile too */
+  .btn-primary,
+  .btn-secondary {
     height: 2.8rem;
     min-height: 2.8rem;
     padding: 0 1.3rem;

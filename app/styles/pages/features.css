@@ -701,7 +701,7 @@
   background: #dfe0e1;
 }
 
-/* Smooth in-page section rhythm (scroll-behavior: smooth is set globally in SmoothScroll) */
+/* Smooth in-page section rhythm */
 .features-page section {
   scroll-margin-top: 5rem;
 }

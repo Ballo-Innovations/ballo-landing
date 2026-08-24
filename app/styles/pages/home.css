@@ -3,6 +3,29 @@
    File: app/page.tsx
    ============================================ */
 
+/* =============================================
+   Home page background gradient
+   File: app/components/ui/PageGradient.tsx
+
+   A fixed, viewport-sized layer — NOT a background on the scrolling <main>,
+   which is what it replaces. There it was a ~1440x7450px image that Chrome had
+   to rasterize in tiles while you scrolled, and a fast fling outran the tiler,
+   exposing the flat base colour. Fixed means always rastered, so there is
+   nothing to miss. The component paints only the slice currently on screen, so
+   the ramp still travels down the page at the same rate.
+
+   Sits at z-index -2, behind the page content, so <main> itself must stay
+   transparent for it to show through.
+   ============================================= */
+.page-gradient {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  /* Until the first paint runs, and as the floor if JS never arrives. */
+  background-color: var(--page-base);
+}
+
 /*
    Shared layout container — apply .page-inner to every section's inner wrapper.
    Provides consistent max-width, horizontal gutter, and vertical rhythm.
@@ -37,91 +60,6 @@
   .marquee-track {
     animation: none;
   }
-}
-
-/* Hero Section */
-.home-hero {
-  /* Add hero section styles here */
-}
-
-/* Background Pattern */
-.home-hero__pattern {
-  /* Add pattern overlay styles here */
-}
-
-/* Large Faded Text */
-.home-hero__faded-text {
-  text-size-adjust: 24px;
-  /* Add faded text styles here */
-}
-
-/* Hero Content */
-.home-hero__content {
-  /* Add hero content container styles here */
-}
-
-/* Hero Title */
-.home-hero__title {
-  /* Add hero title styles here */
-}
-
-/* Hero CTA Button */
-.home-hero__cta {
-  /* Add CTA button styles here */
-}
-
-/* Carousel Dots */
-.home-hero__dots {
-  /* Add carousel dots styles here */
-}
-
-/* Phone Image Container */
-.home-hero__phone-container {
-  /* Add phone image container styles here */
-}
-
-.home-hero_ring-container {
-  height: 200%;
-  width: 100%;
-}
-
-/* Powerful and Versatile Banner */
-.home-banner {
-  /* Add banner section styles here */
-}
-
-.home-banner__content {
-  /* Add banner content styles here */
-}
-
-.home-banner__title {
-  padding-left: 50%;
-  /* Add banner title styles here */
-}
-
-/* What We're About Section */
-.home-about {
-  /* Add about section styles here */
-}
-
-.home-about__container {
-  /* Add about container styles here */
-}
-
-.home-about__phone-mockup {
-  /* Add phone mockup styles here */
-}
-
-.home-about__content-card {
-  /* Add content card styles here */
-}
-
-.home-about__title {
-  /* Add about title styles here */
-}
-
-.home-about__description {
-  /* Add about description styles here */
 }
 
 /* Why Choose — color system (mirrors CodePen approach) */
@@ -167,6 +105,13 @@
 .why-scroll-heading {
   width: fit-content;
   flex-shrink: 0;
+  /* Column flex, not a plain block: the CTA is inline-flex, so in block flow it
+     baseline-aligns on a line box and inherits the strut's leading as dead
+     space above it — which read as a large unexplained gap under the copy.
+     Flex children generate no line boxes, so its mt-* is the whole gap. */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .why-scroll-heading h2 {
@@ -253,6 +198,11 @@
   justify-content: center;
   padding: 2rem 1.75rem;
   opacity: 0;
+  /* Cards slide horizontally past one another, so each needs its own opaque
+     screen background — otherwise the outgoing card shows through the
+     incoming one. */
+  background: oklch(11% 0.18 var(--bg-hue));
+  will-change: transform;
 }
 
 .why-scroll-item:last-child {
@@ -278,10 +228,15 @@
 }
 
 .why-scroll-item-desc {
-  font-size: 1rem;
-  color: rgba(255, 255, 255);
+  /* Same body size as the rest of the landing copy (--landing-body-size),
+     not a bespoke 1rem. The phone screen is small but the text in it is still
+     body text. */
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
+  /* Not solid white: inside the phone screen the copy sits right under a
+     bright cyan title, and full white makes the two compete. */
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
-  line-height: 1.55;
 }
 
 @media (max-width: 768px) {
@@ -298,11 +253,6 @@
 
   .why-scroll-heading {
     width: 100%;
-    /* Stack as flex so the inline-flex CTA's top margin is fully counted in
-       the block height — otherwise the phone column below overlaps the button. */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .why-right-area {
@@ -330,61 +280,37 @@
 }
 
 /* =============================================
-   Who Can Use — rising-image pinned stage (redesigned)
-   Heading on top; a single image frame whose filmstrip rises through
-   all industries on scroll, each captioned above a GradualBlur band.
+   Who Can Use — bento grid
+   File: app/components/sections/WhoScrollSection.tsx
+
+   All six industries on screen at once. No pin, no carousel, no per-slide
+   state — the section is about one viewport tall and the only motion is each
+   tile's staggered entrance plus an image scale on hover.
+
+   Replaces a pinned stage that held the page for ~3.85 viewports and raised
+   its card from below the fold over the first quarter of that (so the section
+   read as empty for about a full viewport of scrolling), and with it: a GSAP
+   ScrollTrigger driving a per-frame onUpdate, a six-layer backdrop-filter
+   "water line" re-rasterized on every scroll frame inside that pin, and a
+   separate mobile carousel with its own timers, swipe handlers and dots.
    ============================================= */
 
-.who-scroll-sticky {
+.who-outer {
   position: relative;
-  height: 100vh;
-  overflow: hidden;
-  padding: clamp(2.5rem, 6vh, 4.5rem) clamp(1.5rem, 5vw, 5rem) 0;
+  padding: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 5vw, 5rem);
+  /* The entrance parks tiles off to the side; clip that here so it never
+     produces a horizontal scrollbar mid-animation. `clip`, not `hidden`:
+     `hidden` would make this a scroll container and break the scroll-driven
+     `view()` timeline used for the entrance below. */
+  overflow: clip;
 }
 
-/* Persistent liquid-surface blur — a fixed band at the section's bottom
-   edge that the card rises THROUGH (never fades). Its own gradual layers
-   ramp the blur strongest at the very bottom, so the card's lower portion
-   reads as submerged / reflective and the top emerges sharp. */
-.who-reveal-blur {
-  pointer-events: none;
-}
-
-/* Crisp water-line where the card breaks the surface — centered under the
-   (centered) card, at the top edge of the blur band. */
-.who-surface-glow {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 10.5rem;
-  width: min(44vw, 430px);
-  height: 2px;
-  z-index: 16;
-  pointer-events: none;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(160,205,255,0.5) 40%, rgba(160,205,255,0.5) 60%, transparent);
-  filter: blur(1.5px);
-  opacity: 0.8;
-}
-
-/* Card stays CENTERED (equal 1fr gutters); the synced copy lives in the
-   right gutter. Heading spans the top, centered over the card. */
-.who-redesign-inner {
+.who-inner {
   max-width: 1180px;
-  height: 100%;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-rows: auto minmax(0, 1fr);
-  grid-template-areas:
-    "head head head"
-    "lead card text";
-  column-gap: clamp(1.5rem, 3vw, 3.25rem);
-  row-gap: clamp(1rem, 2.4vh, 1.75rem);
 }
 
 .who-stage-head {
-  grid-area: head;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -418,282 +344,339 @@
   margin: 0;
 }
 
-/* Active industry caption — right column, vertically centered against the
-   card. Remounts per slide so its staggered "focus-in" reveal replays. */
-.who-headline-caption {
-  grid-area: text;
-  align-self: center;
-  position: relative;
-  max-width: 30rem;
-  padding-left: clamp(1.1rem, 1.6vw, 1.6rem);
+/* ── The grid: 3 even columns, two rows of three. ── */
+.who-bento {
+  list-style: none;
+  margin: clamp(2rem, 5vh, 3.25rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.4vw, 1.15rem);
 }
 
-/* Accent rail that grows on each swap */
-.who-headline-caption::before {
+.who-bento-cell { grid-column: span 1; }
+
+/* Every card is the same size, so the six settle into a tidy 2 rows x 3. */
+.who-tile {
+  position: relative;
+  height: 100%;
+  /* Even footprint: the six cards read as a tidy 2 rows x 3. */
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  /* 28px — the radius the glass filter's displacement map was generated for. */
+  border-radius: 1.75rem;
+  background: #0b1230;
+  /* Glass edge, same recipe as the nav pills and the testimonial card: a
+     hairline rim over a soft drop shadow. The inset highlights live on the
+     ::after glass layer — an inset shadow here would paint under it. */
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
+  isolation: isolate;
+}
+
+/* No thickening ramp: the glass is a single pane over the whole card. The
+   legibility gradient below is the only thing that varies down the card. */
+
+/* ── The pane: a flat tint, deliberately no glass ───────────────────────────
+   This layer used to be real Liquid Glass: `backdrop-filter` blur/saturate
+   with an SVG edge-lens displacement (a chromatic three-pass
+   feDisplacementMap) bending the blurred backdrop. It looked right and it was
+   measured, on this section, as the thing dropping frames — six panes, each
+   re-rasterising every frame its backdrop moved, and a filtered
+   backdrop-filter cannot be composited at all. Standing it down mid-scroll and
+   only running it on settled tiles was not enough, because these tiles are on
+   a scroll-driven transform: "settled" and "moving" overlap for as long as the
+   grid is on screen.
+
+   A/B, both directions: entrance off + glass on still stuttered; entrance on +
+   glass off is clean. So the glass goes and the swing-in entrance stays.
+
+   What replaces it is compositor-only — a flat dark tint plus the inset white
+   rim that was already carrying most of the read. No backdrop-filter, no
+   filter, nothing sampled from behind, nothing to re-raster. If the refraction
+   is ever wanted back, it belongs somewhere the element is NOT also being
+   transformed on scroll. */
+.who-tile-liquid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  background: rgba(9, 9, 11, 0.16);
+  box-shadow: inset 0 0 5px 0 rgba(250, 250, 250, 0.32);
+}
+
+.who-tile-img {
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover lift is on the image only — the tile itself never moves, so a pointer
+   crossing the grid cannot cause a layout pass. */
+@media (hover: hover) and (pointer: fine) {
+  .who-tile:hover .who-tile-img {
+    transform: scale(1.06);
+  }
+}
+
+/* Copy block: anchored to the bottom of the card, above the tint. Generous
+   bottom padding and a tight top edge so the text sits on the darkest part of
+   the dimming ramp rather than floating in the middle of the photo. */
+.who-tile-body {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 0 0;
+  padding: clamp(1.5rem, 2.4vw, 2.25rem) clamp(1.15rem, 1.7vw, 1.6rem)
+    clamp(1.15rem, 1.6vw, 1.5rem);
+}
+
+/* ── Legibility: dimming, over the glass ─────────────────────────────────────
+   All of the card's darkening is here, so the top of the photo keeps its full
+   brightness — a long, soft ramp that only reaches full strength behind the
+   text. It sits ABOVE the liquid
+   layer (z-index -1 inside .who-tile-body, which is z-index 2) so it dims the
+   refracted result rather than the photo underneath it. */
+.who-tile-body::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0.4rem;
-  bottom: 0.4rem;
-  width: 2px;
-  border-radius: 999px;
-  background: linear-gradient(to bottom, var(--cyan-bright, #5dd7ff), rgba(93,215,255,0));
-  transform-origin: top center;
-  animation: whoAccentGrow 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  inset: -160% 0 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 90% at 0% 100%,
+      rgba(120, 190, 255, 0.1) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 90% at 100% 100%,
+      rgba(170, 160, 255, 0.09) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 5, 26, 0) 0%,
+      rgba(3, 5, 26, 0.06) 34%,
+      rgba(3, 5, 26, 0.3) 62%,
+      rgba(3, 5, 26, 0.62) 70%,
+      rgba(3, 5, 26) 100%
+    );
 }
 
-/* Each line eases up AND focuses in from blur — echoing the surface theme */
-.who-headline-caption > * {
-  animation: whoLineIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+/* ── Liquid glass: the wet edge ────────────────────────────────
+   Light pooling inside the bottom edge. Everything here is soft-edged on
+   purpose: a broad elliptical bloom low and centre, and a wide upward glow.
+   No 1px specular line — at this size a hairline reads as a drawn border,
+   which is the one thing this effect must not look like. */
+.who-tile-body::after {
+  content: "";
+  position: absolute;
+  inset: auto -6% -4% -6%;
+  height: 78%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* Bloom where the meniscus is thickest. */
+    radial-gradient(
+      68% 120% at 50% 108%,
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(215, 235, 255, 0.16) 44%,
+      transparent 78%
+    ),
+    /* Cool light creeping up out of the pool. */
+    linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(190, 225, 255, 0.07) 38%,
+      transparent 100%
+    );
+  /* No `filter: blur()` here. Both gradients are already soft-edged, so the
+     blur bought almost nothing visually and cost a filtered layer per tile —
+     six of them, on the same six tiles the entrance is transforming. */
 }
-.who-headline-caption > .who-caption-num { animation-delay: 0.04s; }
-.who-headline-caption > .who-caption-title { animation-delay: 0.12s; }
-.who-headline-caption > .who-caption-sub { animation-delay: 0.22s; }
 
-@keyframes whoLineIn {
-  from { opacity: 0; transform: translateY(16px); filter: blur(7px); }
-  to   { opacity: 1; transform: none; filter: blur(0); }
+/* Copy rides above the glass and its dimming ramp. */
+.who-tile-body > * {
+  position: relative;
+  z-index: 1;
 }
 
-@keyframes whoAccentGrow {
-  from { transform: scaleY(0); opacity: 0; }
-  to   { transform: scaleY(1); opacity: 1; }
-}
-
-.who-caption-num {
+.who-tile-num {
   display: block;
-  font-size: clamp(2rem, 3vw, 2.75rem);
   font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.5rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
   line-height: 1;
+  letter-spacing: -0.02em;
   color: transparent;
-  -webkit-text-stroke: 1.2px rgba(93,215,255,0.55);
-  margin-bottom: 0.85rem;
+  -webkit-text-stroke: 1.1px #5dd7ff;
+  margin-bottom: 0.4rem;
 }
 
-/* Industry name — Ubuntu (title) */
-.who-caption-title {
+/* Industry name — Ubuntu (headings) */
+.who-tile-title {
   font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
   font-weight: 800;
   color: #fff;
-  line-height: 1.12;
+  line-height: 1.15;
   letter-spacing: -0.02em;
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.35rem;
 }
 
 /* Description — Calibri (body) */
-.who-caption-sub {
+.who-tile-sub {
   font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
-  font-size: clamp(1rem, 1.25vw, 1.15rem);
-  font-weight: 400;
-  color: rgba(255,255,255,0.72);
-  line-height: 1.6;
+  /* Same token as every other paragraph on the page. The old clamp scaled it
+     down to ~0.88rem on narrower desktops, which read as small print. */
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
+  color: #fff;
   margin: 0;
   max-width: 34ch;
 }
 
-/* ── Rising-image card — portrait, CENTERED (auto column between equal 1fr
-      gutters); fills the row height and its bottom dips into the blur band. ── */
-.who-stage {
-  grid-area: card;
-  position: relative;
-  align-self: stretch;
-  width: min(44vw, 430px);
-  min-height: 0;
-  overflow: hidden;
-  border-radius: 1.75rem 1.75rem 0 0;
-  background: #0b1230;
-  box-shadow:
-    0 -10px 60px rgba(1,1,40,0.4),
-    inset 0 0 0 1px rgba(255,255,255,0.06);
-}
-
-/* Vertical filmstrip — each 100%-tall slide steps up one frame at a time. */
-.who-strip {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
+/* FadeUpReveal renders a wrapper div between the cell and the tile, so it has
+   to carry the full height through for the tiles to line up on a row. */
+.who-tile-reveal {
+  height: 100%;
+  /* The entrance transforms this element on a scroll-driven timeline; give it
+     its own layer so the move never costs a repaint of the card's contents. */
   will-change: transform;
 }
 
-.who-slide {
-  position: relative;
-  flex: 0 0 100%;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+/* ── Swing-in entrance ──────────────────────────────────────────────────────
+   Each tile flies in from below, from the side it will land on: the left
+   column from the bottom-left, the right column from the bottom-right, the
+   middle column straight up from the bottom-middle.
+
+   The rotation is deliberately small and about the tile's OWN centre. An
+   earlier version hinged on `transform-origin: 50% 100vh` for a wider arc,
+   which gave each tile a composited layer a whole viewport tall — Chrome
+   painted a stretched texture and one tile ended up full-bleed across the
+   page. A translate plus ~10deg reads as the same swing and keeps the layer
+   the size of the tile.
+
+   Transform only, no fade: the card stays fully opaque coming in and going
+   out. Compositor-only, nothing per-frame. Only the `out` state is
+   overridden; `in` is the shared `transform: none`. */
+
+/* Phone (single column) and reduced-motion keep the plain fade-up from
+   utilities.css — the arcs need horizontal room a narrow viewport lacks. */
+@media (min-width: 701px) {
+  .who-bento-cell .who-tile-reveal[data-fur="out"] {
+    /* Movement only — the card is fully opaque on the way in and on the way
+       out, so it reads as a solid object sliding into place, never a fade. */
+    opacity: 1;
+    transform: translate3d(0, 22vh, 0) scale(0.82);
+  }
 }
 
-/* Slow Ken Burns on the active image for continuous life */
-.who-slide img {
-  transform: scale(1.05);
-  will-change: transform;
+/* Desktop: three columns → left / middle / right. */
+@media (min-width: 1025px) {
+  .who-bento-cell:nth-child(3n + 1) .who-tile-reveal[data-fur="out"] {
+    transform: translate3d(-14vw, 22vh, 0) rotate(-10deg) scale(0.82);
+  }
+
+  .who-bento-cell:nth-child(3n + 3) .who-tile-reveal[data-fur="out"] {
+    transform: translate3d(14vw, 22vh, 0) rotate(10deg) scale(0.82);
+  }
 }
 
-.who-slide.is-active img {
-  animation: whoKenBurns 8s ease-out both;
+/* Tablet: two columns → left / right, no middle. */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .who-bento-cell:nth-child(2n + 1) .who-tile-reveal[data-fur="out"] {
+    transform: translate3d(-10vw, 20vh, 0) rotate(-8deg) scale(0.85);
+  }
+
+  .who-bento-cell:nth-child(2n + 2) .who-tile-reveal[data-fur="out"] {
+    transform: translate3d(10vw, 20vh, 0) rotate(8deg) scale(0.85);
+  }
 }
 
-@keyframes whoKenBurns {
-  from { transform: scale(1.12); }
-  to   { transform: scale(1.0); }
+/* ── Scroll-linked version of the same entrance ─────────────────────────────
+   Where the browser supports scroll-driven animations, the entrance is
+   scrubbed by the tile's own position in the viewport rather than played on a
+   timer: it advances as the tile rises into view and rewinds when the user
+   scrolls back up. The IntersectionObserver transition above stays as the
+   fallback for browsers without `view()`.
+
+   `animation-range: contain 0% contain 45%` finishes the tile well before it
+   is centred, so the grid is settled by the time it is being read. */
+@supports (animation-timeline: view()) {
+  @media (min-width: 701px) and (prefers-reduced-motion: no-preference) {
+    .who-bento-cell .who-tile-reveal,
+    .who-bento-cell .who-tile-reveal[data-fur="out"],
+    .who-bento-cell .who-tile-reveal[data-fur="in"] {
+      /* Hand control to the animation: no transition, no static out-state. */
+      transition: none;
+      opacity: 1;
+      transform: none;
+      animation: who-swing-in both linear;
+      animation-timeline: view();
+      animation-range: contain 0% contain 45%;
+    }
+
+    .who-bento-cell:nth-child(3n + 1) .who-tile-reveal {
+      animation-name: who-swing-in-left;
+    }
+
+    .who-bento-cell:nth-child(3n + 3) .who-tile-reveal {
+      animation-name: who-swing-in-right;
+    }
+  }
+
+  /* Tablet is two columns, so the sides key off 2n, not 3n. */
+  @media (min-width: 701px) and (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .who-bento-cell:nth-child(2n + 1) .who-tile-reveal {
+      animation-name: who-swing-in-left;
+    }
+
+    .who-bento-cell:nth-child(2n + 2) .who-tile-reveal {
+      animation-name: who-swing-in-right;
+    }
+  }
 }
 
-/* Progress dots — current image within the set */
-.who-progress {
-  position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
-  display: flex;
-  gap: 0.4rem;
-  z-index: 6;
+/* Only `from` is declared: the resting state is the element's own. */
+@keyframes who-swing-in {
+  from {
+    transform: translate3d(0, 22vh, 0) scale(0.82);
+  }
 }
 
-.who-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.3);
-  transition: width 0.35s ease, background 0.35s ease;
+@keyframes who-swing-in-left {
+  from {
+    transform: translate3d(-14vw, 22vh, 0) rotate(-10deg) scale(0.82);
+  }
 }
 
-.who-dot.is-active {
-  width: 1.5rem;
-  background: #fff;
+@keyframes who-swing-in-right {
+  from {
+    transform: translate3d(14vw, 22vh, 0) rotate(10deg) scale(0.82);
+  }
 }
 
-/* ── Static fallback (mobile + reduced-motion): stacked cards, no pin ── */
-.who-scroll-sticky.is-static {
-  height: auto;
-  min-height: 0;
-  overflow: visible;
-  padding: 2.5rem clamp(1.25rem, 4vw, 3rem) 3rem;
+/* ── Tablet: two columns. ── */
+@media (max-width: 1024px) {
+  .who-bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.who-scroll-sticky.is-static .who-redesign-inner {
-  height: auto;
-  max-width: 560px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 1.5rem;
+/* ── Phone: single column. ── */
+@media (max-width: 700px) {
+  .who-bento {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .who-tile {
+    aspect-ratio: 4 / 3;
+  }
 }
 
-.who-scroll-sticky.is-static .who-stage-head {
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-/* ── Mobile swipe/auto carousel — one industry at a time, mirroring the
-      desktop rising-card presentation (image + outlined number + caption). ── */
-.who-mcarousel {
-  width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.who-mstage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  border-radius: 1.5rem;
-  background: #0b1230;
-  box-shadow:
-    0 20px 60px -30px rgba(1, 1, 40, 0.6),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  /* Let the page scroll vertically while horizontal drags become swipes. */
-  touch-action: pan-y;
-}
-
-.who-mstrip {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
-  will-change: transform;
-}
-
-.who-mslide {
-  position: relative;
-  flex: 0 0 100%;
-  width: 100%;
-  height: 100%;
-}
-
-.who-mslide img {
-  object-fit: cover;
-}
-
-/* Caption below the card — reuses the desktop caption typography
-   (.who-caption-num / -title / -sub), centred, with the focus-in replay. */
-.who-mcaption {
-  margin-top: 1.4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.who-mcaption > * {
-  animation: whoLineIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
-.who-mcaption > .who-caption-num { animation-delay: 0.04s; margin-bottom: 0.5rem; }
-.who-mcaption > .who-caption-title { animation-delay: 0.12s; }
-.who-mcaption > .who-caption-sub { animation-delay: 0.22s; }
-
-/* Tappable progress dots (generous hit area, small visual dot). */
-.who-mdots {
-  display: flex;
-  justify-content: center;
-  gap: 0.35rem;
-  margin-top: 1.35rem;
-}
-
-.who-mdots button {
-  border: none;
-  background: none;
-  padding: 0.4rem;
-  cursor: pointer;
-  line-height: 0;
-}
-
-.who-mdots button::before {
-  content: "";
-  display: block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.3);
-  transition: width 0.35s ease, background 0.35s ease;
-}
-
-.who-mdots button.is-active::before {
-  width: 1.5rem;
-  background: #fff;
-}
-
-.who-mdots button:focus-visible {
-  outline: 2px solid var(--cyan-bright, #5dd7ff);
-  outline-offset: 2px;
-  border-radius: 999px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .who-mstrip { transition: none; }
-  .who-mcaption > * { animation: none; }
-}
-
-/* ── Mobile heading tweaks (stacked cards handled by .is-static above) ── */
+/* ── Mobile heading tweaks (the grid has its own breakpoints above) ── */
 @media (max-width: 768px) {
   .who-eyebrow-tag {
     font-size: 0.62rem;
@@ -707,45 +690,13 @@
   }
 }
 
-/* Trusted By Section */
-.home-trusted {
-  /* Add trusted section styles here */
-}
-
-.home-trusted__title {
-  /* Add trusted title styles here */
-}
-
-.home-trusted__companies {
-  /* Add companies list styles here */
-}
-
-.home-trusted__company {
-  /* Add individual company styles here */
-}
-
-/* Who Can Use Section */
-.home-who {
-  /* Add who section styles here */
-}
-
-.home-who__title {
-  /* Add who title styles here */
-}
-
-.home-who__container {
-  /* Add who container styles here */
-}
-
-.home-who__list {
-  /* Add who list styles here */
-}
-
 /* =============================================
-   Parallax background layers
-   Oversized vertically (top: -25%, height: 150%) so the GSAP yPercent
-   translation never exposes edges. z-index:0 keeps layers behind content
-   that uses z-10 and above. pointer-events: none so nothing is blocked.
+   Depth background layers
+   Static radial washes, one per section. They are oversized vertically
+   (top: -25%, height: 150%) from when GSAP translated them on scroll; the
+   overhang is harmless and keeps the gradients' falloff off the section edges.
+   z-index:0 keeps them behind content that uses z-10 and above.
+   pointer-events: none so nothing is blocked.
    ============================================= */
 
 .prlx-hero-1,
@@ -759,7 +710,28 @@
   height: 150%;
   z-index: 0;
   pointer-events: none;
-  will-change: transform;
+  /* Each of these sits inside a section with `overflow: hidden`, so the wash is
+     sliced off at the section's edges. The layer runs from -25% to +125% of its
+     section, which puts those cut lines at 16.7% and 83.3% of the LAYER's own
+     height — and any intensity still present there becomes a hard horizontal
+     seam the full width of the page. (Measured 2.6 RGB at the About/Why
+     boundary: a small number, but a hard edge on a dark gradient reads clearly.)
+     Fading to transparent exactly at those two lines removes the cut. The ramps
+     are kept tight so each wash keeps its shape and reach. */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 16.7%,
+    #000 24%,
+    #000 76%,
+    transparent 83.3%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 16.7%,
+    #000 24%,
+    #000 76%,
+    transparent 83.3%
+  );
 }
 
 /* Hero depth layer 1 — large indigo-blue bloom, mid-left.
@@ -810,84 +782,6 @@
   .prlx-testi-1 {
     display: none;
   }
-}
-
-.home-who__list-item {
-  /* Add who list item styles here */
-}
-
-.home-who__icon {
-  /* Add who icon styles here */
-}
-
-.home-who__building-image {
-  /* Add building image container styles here */
-}
-
-/* Testimonials Section */
-.home-testimonials {
-  /* Add testimonials section styles here */
-}
-
-.home-testimonials__title {
-  /* Add testimonials title styles here */
-}
-
-.home-testimonials__card {
-  /* Add testimonial card styles here */
-}
-
-.home-testimonials__quote {
-  /* Add testimonial quote styles here */
-}
-
-.home-testimonials__author {
-  /* Add testimonial author styles here */
-}
-
-.home-testimonials__author-name {
-  /* Add author name styles here */
-}
-
-.home-testimonials__author-title {
-  /* Add author title styles here */
-}
-
-/* Sign Up Form Section */
-.home-signup {
-  /* Add signup section styles here */
-}
-
-.home-signup__title {
-  /* Add signup title styles here */
-}
-
-.home-signup__container {
-  /* Add signup container styles here */
-}
-
-.home-signup__phone-mockup {
-  /* Add signup phone mockup styles here */
-}
-
-.home-signup__form-container {
-  /* Add form container styles here */
-}
-
-.home-signup__form {
-  /* Add form styles here */
-}
-
-.home-signup__form-input {
-  /* Add form input styles here */
-}
-
-.home-signup__form-textarea {
-  /* Add form textarea styles here */
-}
-
-.home-signup__form-button {
-  /* Add form submit button styles here */
 }
 
 /* Powerful and Versatile - Realism Border */
@@ -944,181 +838,11 @@
   background: radial-gradient(circle 60px at 0% 100%, #00e1ff1a, #0000ff11, transparent);
 }
 
-/* Responsive Breakpoints */
-/* Powerful and Versatile Banner Aurora Effect */
-.home-banner__aurora-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
-  mix-blend-mode: darken;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.home-banner__aurora-item {
-  position: absolute;
-  width: 60vw;
-  height: 60vw;
-  /* All items start centered; keyframes use transform: translate() — GPU compositable, no layout recalc */
-  top: 50%;
-  left: 50%;
-  filter: blur(2rem);
-  mix-blend-mode: overlay;
-  opacity: 0.5;
-  will-change: transform;
-}
-
-.home-banner__aurora-item:nth-of-type(1) {
-  background-color: #00c2ff;
-  animation: aurora-1 12s ease-in-out infinite alternate;
-}
-
-.home-banner__aurora-item:nth-of-type(2) {
-  background-color: #ffc640;
-  animation: aurora-2 12s ease-in-out infinite alternate;
-}
-
-.home-banner__aurora-item:nth-of-type(3) {
-  background-color: #33ff8c;
-  animation: aurora-3 8s ease-in-out infinite alternate;
-}
-
-.home-banner__aurora-item:nth-of-type(4) {
-  background-color: #e54cff;
-  animation: aurora-4 24s ease-in-out infinite alternate;
-}
-
-/* border-radius merged into each keyframe so transform stays on its own compositing layer */
-@keyframes aurora-1 {
-  0% {
-    transform: translate(0%, -90%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-
-  25% {
-    transform: translate(-20%, -70%);
-    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
-  }
-
-  50% {
-    transform: translate(-90%, 10%);
-    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
-  }
-
-  75% {
-    transform: translate(-60%, 10%);
-    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
-  }
-
-  100% {
-    transform: translate(0%, -90%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-}
-
-@keyframes aurora-2 {
-  0% {
-    transform: translate(-100%, -90%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-
-  25% {
-    transform: translate(-80%, -60%);
-    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
-  }
-
-  60% {
-    transform: translate(10%, 10%);
-    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
-  }
-
-  85% {
-    transform: translate(-40%, 10%);
-    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
-  }
-
-  100% {
-    transform: translate(-100%, -90%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-}
-
-@keyframes aurora-3 {
-  0% {
-    transform: translate(-100%, 10%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-
-  25% {
-    transform: translate(-60%, -40%);
-    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
-  }
-
-  40% {
-    transform: translate(10%, -100%);
-    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
-  }
-
-  65% {
-    transform: translate(-40%, -60%);
-    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
-  }
-
-  100% {
-    transform: translate(-100%, 10%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-}
-
-@keyframes aurora-4 {
-  0% {
-    transform: translate(0%, 10%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-
-  25% {
-    transform: translate(-30%, -20%);
-    border-radius: 47% 29% 39% 49% / 61% 19% 66% 26%;
-  }
-
-  50% {
-    transform: translate(-60%, -60%);
-    border-radius: 57% 23% 47% 72% / 63% 17% 66% 33%;
-  }
-
-  90% {
-    transform: translate(-30%, -90%);
-    border-radius: 28% 49% 29% 100% / 93% 20% 64% 25%;
-  }
-
-  100% {
-    transform: translate(0%, 10%);
-    border-radius: 37% 29% 27% 27% / 28% 25% 41% 37%;
-  }
-}
-
 /* ── Tablet (769–1024px) ──
-   These widths fall into the desktop *pinned* layouts for the Why/Who
-   sections, where the desktop column ratios and gutters get cramped.
-   Rebalance them without changing the layout structure. */
+   These widths fall into the desktop *pinned* layout for the Why section,
+   where the column ratios and gutters get cramped. (Who Can Use handles this
+   range with its own grid breakpoint.) */
 @media (min-width: 769px) and (max-width: 1024px) {
-  /* Who Can Use — give the left text column more room vs. the posters */
-  .who-redesign-inner {
-    grid-template-columns: 1fr 1.65fr;
-    gap: clamp(2rem, 4vw, 3.5rem);
-  }
-
-  .who-redesign-h2 {
-    margin-bottom: 1.75rem;
-  }
-
-  .who-scroll-sticky {
-    padding: 0 clamp(1.5rem, 4vw, 3rem);
-  }
-
   /* Why Choose — trim the oversized desktop gutter/gap so the phone fits */
   .why-scroll-inner {
     gap: 3rem;
@@ -1149,30 +873,50 @@
 }
 
 .phone3d {
+  /* ── Frame palette — sampled from public/Assets/phone-frame.png, the frame
+     used by the "Why Choose" section, so both mockups read as the same device.
+     Scanning inward from that PNG's edge gives: a dark hairline, then a bright
+     silver rail peaking at rgb(226,225,221), then true black for the body and
+     bezel. The greys are very slightly warm (R >= G >= B by 4-6), which is what
+     makes it read as titanium rather than chrome. --pf-1 is the rail highlight,
+     --pf-5 its deepest shade; recolouring the phone means editing these. */
+  --pf-1: #e2e1dd;
+  --pf-2: #d2cfc8;
+  --pf-3: #aeaca8;
+  --pf-4: #56554f;
+  --pf-5: #141413;
+  --pf-hairline: #616161; /* the dark line outboard of the rail */
+  --pf-btn: #cfcdc8;
+  --pf-btn-edge: #6a6862;
+  --pf-port: #2a2a28;
+  --pf-body: #050505;     /* back panel */
+  --pf-inner: #000000;    /* black bezel ring around the screen */
+
+  /* 1:2.017, matching the PNG exactly (was 256x537 = 1:2.098). */
   width: 256px;
-  height: 537px;
+  height: 516px;
   position: relative;
   transform-style: preserve-3d;
-  border-radius: 30px;
+  border-radius: 34px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .phone3d-back {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, #c0d0de, #a8bcd0, #b4c4d4);
-  border-radius: 30px;
+  background: linear-gradient(160deg, #0d0d0d, var(--pf-body), #0a0a0a);
+  border-radius: 34px;
   transform: translateZ(-16px);
 }
 
 .phone3d-edge {
   position: absolute;
-  background: linear-gradient(180deg, #c8d8e5, #a8b8ca, #b8c8d6);
+  background: linear-gradient(90deg, var(--pf-hairline) 0%, var(--pf-3) 14%, var(--pf-1) 46%, var(--pf-2) 62%, var(--pf-4) 92%, var(--pf-5) 100%);
 }
 
 .phone3d-edge-r {
-  top: 30px;
-  bottom: 30px;
+  top: 34px;
+  bottom: 34px;
   right: 0;
   width: 16px;
   transform-origin: right center;
@@ -1180,8 +924,8 @@
 }
 
 .phone3d-edge-l {
-  top: 30px;
-  bottom: 30px;
+  top: 34px;
+  bottom: 34px;
   left: 0;
   width: 16px;
   transform-origin: left center;
@@ -1189,63 +933,60 @@
 }
 
 .phone3d-edge-t {
-  left: 30px;
-  right: 30px;
+  left: 34px;
+  right: 34px;
   top: 0;
   height: 16px;
   transform-origin: center top;
   transform: rotateX(-90deg);
-  background: linear-gradient(90deg, #c0d0de, #b0c2d2, #c4d4e2);
+  background: linear-gradient(180deg, var(--pf-hairline) 0%, var(--pf-3) 16%, var(--pf-1) 48%, var(--pf-4) 92%, var(--pf-5) 100%);
 }
 
 .phone3d-edge-b {
-  left: 30px;
-  right: 30px;
+  left: 34px;
+  right: 34px;
   bottom: 0;
   height: 16px;
   transform-origin: center bottom;
   transform: rotateX(90deg);
-  background: linear-gradient(90deg, #b0c0d0, #a0b0c2, #b8c8d6);
+  background: linear-gradient(180deg, var(--pf-5) 0%, var(--pf-4) 10%, var(--pf-2) 52%, var(--pf-3) 84%, var(--pf-hairline) 100%);
 }
 
 /* Side buttons */
 .phone3d-edge-r::before {
   content: "";
   position: absolute;
-  top: 110px;
+  top: 22%;
   left: 2px;
   right: 2px;
-  height: 36px;
-  background: #cdd8e4;
+  height: 9%;
+  background: var(--pf-btn);
   border-radius: 2px;
   transform: translateZ(1px);
-  box-shadow: 0 0 0 1px #90a1b3;
 }
 
 .phone3d-edge-l::before {
   content: "";
   position: absolute;
-  top: 90px;
+  top: 20%;
   left: 2px;
   right: 2px;
-  height: 26px;
-  background: #cdd8e4;
+  height: 4.5%;
+  background: var(--pf-btn);
   border-radius: 2px;
   transform: translateZ(1px);
-  box-shadow: 0 0 0 1px #90a1b3;
 }
 
 .phone3d-edge-l::after {
   content: "";
   position: absolute;
-  top: 126px;
+  top: 27%;
   left: 2px;
   right: 2px;
-  height: 26px;
-  background: #cdd8e4;
+  height: 6%;
+  background: var(--pf-btn);
   border-radius: 2px;
   transform: translateZ(1px);
-  box-shadow: 0 0 0 1px #90a1b3;
 }
 
 /* Bottom connector port */
@@ -1257,7 +998,7 @@
   transform: translate(-50%, -50%) translateZ(-1px);
   width: 20px;
   height: 7px;
-  background: #3a4650;
+  background: var(--pf-port);
   border-radius: 3.5px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), inset 0 -0.5px 1px rgba(0, 0, 0, 0.2);
 }
@@ -1265,8 +1006,8 @@
 /* Corner pieces */
 .phone3d-corner {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   transform-style: preserve-3d;
 }
 
@@ -1296,51 +1037,59 @@
 }
 
 .phone3d-corner-tl .phone3d-clayer {
-  border-top: 2px solid #b3c3d3;
-  border-left: 2px solid #b3c3d3;
-  border-radius: 30px 0 0 0;
+  border-top: 2px solid var(--pf-2);
+  border-left: 2px solid var(--pf-2);
+  border-radius: 34px 0 0 0;
 }
 
 .phone3d-corner-tr .phone3d-clayer {
-  border-top: 2px solid #b3c3d3;
-  border-right: 2px solid #b3c3d3;
-  border-radius: 0 30px 0 0;
+  border-top: 2px solid var(--pf-2);
+  border-right: 2px solid var(--pf-2);
+  border-radius: 0 34px 0 0;
 }
 
 .phone3d-corner-bl .phone3d-clayer {
-  border-bottom: 2px solid #b3c3d3;
-  border-left: 2px solid #b3c3d3;
-  border-radius: 0 0 0 30px;
+  border-bottom: 2px solid var(--pf-2);
+  border-left: 2px solid var(--pf-2);
+  border-radius: 0 0 0 34px;
 }
 
 .phone3d-corner-br .phone3d-clayer {
-  border-bottom: 2px solid #b3c3d3;
-  border-right: 2px solid #b3c3d3;
-  border-radius: 0 0 30px 0;
+  border-bottom: 2px solid var(--pf-2);
+  border-right: 2px solid var(--pf-2);
+  border-radius: 0 0 34px 0;
 }
 
+/* Outer front rail — thin bright metal, matching the PNG's ~1.5%-of-width
+   band, with a hairline shadow at its inner lip. */
 .phone3d-bezel {
   width: 100%;
   height: 100%;
-  background: linear-gradient(160deg, #d0dde8, #b8cad8, #c4d4e2);
-  border-radius: 30px;
-  padding: 3px;
+  background: linear-gradient(150deg, var(--pf-1) 0%, var(--pf-3) 28%, var(--pf-1) 50%, var(--pf-2) 72%, var(--pf-4) 100%);
+  border-radius: 34px;
+  padding: 4px;
   position: relative;
   transform: translateZ(1px);
 }
 
+/* Black bezel between the rail and the display. */
 .phone3d-inner-shell {
   width: 100%;
   height: 100%;
-  background: #080808;
-  border-radius: 27px;
-  padding: 3px;
+  background: var(--pf-inner);
+  border-radius: 30px;
+  padding: 8px;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
 }
 
 .phone3d-screen {
   width: 100%;
   height: 100%;
-  border-radius: 24px;
+  border-radius: 22px;
+  /* Lets .phone-ui size itself in cqw — percentages of the SCREEN's width —
+     so the mocked app scales with the device instead of needing a second set
+     of values at the mobile breakpoint. */
+  container-type: inline-size;
   overflow: hidden;
   position: relative;
   background: #ffffff;
@@ -1348,19 +1097,177 @@
   mask-image: radial-gradient(white, black);
 }
 
-/* Camera dot */
-.phone3d-screen::after {
-  content: "";
+/* ==========================================================================
+   Mocked app screen inside the phone (About section)
+   File: app/HomeClient.tsx
+
+   Every dimension is in cqw = 1% of the screen's width, taken from the
+   reference screenshot: app icon 37.5% of the screen, upload card and Next
+   button both 74%, cloud glyph 30%.
+   ========================================================================== */
+.phone-ui {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  /* Top padding clears the Dynamic Island, which ends at roughly 12.5cqw
+     (top: 3.2% plus its own height) — at 11cqw the logo was running into it. */
+  padding: 20cqw 7cqw 7cqw;
+}
+
+.phone-ui-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5cqw;
+}
+
+/* Just the mark, scaled. No tile behind it: the logo asset already carries its
+   own rounded-square, so a CSS card here nested one inside another. */
+.phone-ui-logo {
+  width: 37.5cqw;
+  height: auto;
+}
+
+.phone-ui-tagline {
+  margin: 0;
+  color: #1b2a6e;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 5.6cqw;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.22;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.phone-ui-upload {
+  width: 74cqw;
+  aspect-ratio: 1 / 1.02;
+  border-radius: 13%;
+  background: #3d6fa5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+  box-shadow: 0 6cqw 14cqw -6cqw rgba(8, 20, 60, 0.55);
+}
+
+.phone-ui-cloud {
+  width: 30cqw;
+  height: 30cqw;
+  color: #fff;
+}
+
+.phone-ui-upload-text {
+  color: #fff;
+  font-weight: 700;
+  font-size: 4.7cqw;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Full-width dark navy pill, not the narrow blue-to-cyan gradient CTA. */
+.phone-ui-next {
+  width: 74cqw;
+  height: 16.5cqw;
+  border: none;
+  border-radius: 999px;
+  background: #0f1747;
+  color: #fff;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 7cqw;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.phone-ui-next:hover {
+  background: #16205e;
+}
+
+/* ── Front-visible side buttons ──
+   In phone-frame.png the buttons read as silver nubs at the rail even head-on,
+   so they cannot live only on the 3D side faces (those rotate out of sight at
+   rest). These sit just outboard of the phone's box; the pseudo-elements on the
+   edge faces above cover the same positions for when the phone tilts. */
+.phone3d-side-btn {
   position: absolute;
-  top: 10px;
+  /* Proportions and tone read straight off phone-frame.png: the button
+     protrudes only ~0.4% of the phone's width and stays a flat MID-GREY,
+     rgb(115,115,115) at its tip easing to rgb(136,136,134).
+
+     No outline, and no dark stop at the inboard end either. Both read as a
+     drawn stroke: the previous ramp bottomed out at #57574f exactly where the
+     nub met the bright rail, which put a hard dark line along the silhouette.
+     In the reference there is no boundary there at all — the nub is simply a
+     small grey tab outside the phone's edge. */
+  width: 1.5px;
+  background: linear-gradient(90deg, #a8a8a5 0%, #8f8f8c 100%);
+  transform: translateZ(-2px);
+}
+
+.phone3d-side-btn--action  { left: -1.5px; top: 20%;   height: 4.5%; border-radius: 1px 0 0 1px; }
+.phone3d-side-btn--volup   { left: -1.5px; top: 27%;   height: 6%;   border-radius: 1px 0 0 1px; }
+.phone3d-side-btn--voldown { left: -1.5px; top: 34.5%; height: 6%;   border-radius: 1px 0 0 1px; }
+
+.phone3d-side-btn--power {
+  right: -1.5px;
+  top: 22%;
+  height: 9%;
+  border-radius: 0 1px 1px 0;
+  background: linear-gradient(270deg, #a8a8a5 0%, #8f8f8c 100%);
+}
+
+/* ── Dynamic-island cutout + front camera ──
+   Replaces a single 11px round dot. Sized in PERCENTAGES of the screen rather
+   than fixed pixels, so it stays in proportion when .phone3d shrinks to
+   min(58vw, 13.5rem) at the mobile breakpoint. */
+.phone3d-island {
+  position: absolute;
+  top: 3.2%;
   left: 50%;
   transform: translateX(-50%);
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: #060606;
+  /* Proportions taken from the reference: a ~4.9:1 pill, which is also the
+     real Dynamic Island's ratio (126x37pt), at ~30% of the screen's width. */
+  width: 30%;
+  aspect-ratio: 4.9 / 1;
+  border-radius: 999px;
+  background: #050505;
   z-index: 30;
-  box-shadow: inset 0 0 2px rgba(30, 30, 60, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4.5%;
+  /* Hairline lift so the cutout reads as glass, not a flat hole. */
+  box-shadow:
+    inset 0 0.5px 1px rgba(255, 255, 255, 0.06),
+    0 0 0 0.5px rgba(255, 255, 255, 0.045);
+}
+
+/* Camera: a dark iris with a faint cool iridescence and a single specular
+   glint, layered as stacked radial gradients — no extra elements. */
+.phone3d-lens {
+  /* ~45% of the pill's height, as in the reference. */
+  height: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    /* specular highlight, upper-left */
+    radial-gradient(circle at 34% 28%, rgba(190, 220, 255, 0.6) 0 10%, rgba(190, 220, 255, 0) 42%),
+    /* iridescent ring */
+    radial-gradient(circle at 50% 50%, rgba(120, 90, 200, 0) 34%, rgba(110, 130, 220, 0.42) 46%, rgba(70, 60, 140, 0.18) 60%, rgba(0, 0, 0, 0) 72%),
+    /* iris body */
+    radial-gradient(circle at 50% 45%, #16223a 0 30%, #0a1120 62%, #04060c 100%);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.12),
+    inset 0 0 2px rgba(40, 60, 120, 0.5);
 }
 
 .phone3d-home-bar {
@@ -1452,6 +1359,40 @@
 .hero-person-img {
   transform: translate3d(var(--person-x, 0), var(--person-y, 0), 0) scale(var(--person-scale, 1));
   transform-origin: 50% 100%;
+}
+
+/* Stacked rotating headlines — same crossfade mechanic as the cutouts. The
+   min-heights reserve the tallest slide's box so a swap never reflows the CTAs
+   below (they used to sit on Tailwind utilities on the motion wrapper). */
+.hero-headline-stack {
+  position: relative;
+  width: 100%;
+  min-height: 130px;
+}
+
+@media (min-width: 640px) {
+  .hero-headline-stack { min-height: 170px; }
+}
+
+@media (min-width: 768px) {
+  .hero-headline-stack { min-height: 210px; }
+}
+
+.hero-headline {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+.hero-headline.is-active {
+  opacity: 1;
+  transform: none;
 }
 
 .hero-headline {
@@ -1592,9 +1533,6 @@
 
   .why-scroll-heading {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   .why-scroll-heading h2 {
@@ -1637,14 +1575,11 @@
   }
 
   .why-scroll-item-desc {
-    font-size: clamp(0.82rem, 3.5vw, 0.95rem);
-    line-height: 1.45;
+    font-size: var(--landing-body-size);
+    line-height: var(--landing-body-leading);
   }
 
-  .who-scroll-sticky {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
+  .who-outer {
     padding: 3rem 1.25rem;
   }
 }
@@ -1761,6 +1696,12 @@
   }
 }
 
+/* Breathing room between the "POWERFUL AND VERSATILE" banner above and the
+   "What We're About" content (phone + copy) below it. */
+.prlx-about-trigger.about-cover > .container {
+  margin-top: clamp(2.5rem, 6vw, 6rem);
+}
+
 /* Seat the section-2 title card right at the hero's bottom edge (desktop) / the
    bottom of the person image (mobile), so the image reads as ending exactly
    where the card begins. */
@@ -1773,11 +1714,15 @@
 }
 
 /* "POWERFUL AND VERSATILE" wordmark: teal → muted slate → violet, painted
-   through the glyphs and slowly morphing. Three radial blobs drift over the
-   linear base at different rates, which reads as lava rather than a gradient
-   sliding sideways. Only background-position animates (compositor-cheap; no
-   layout or paint of the text itself). `color` is the fallback for engines
-   without background-clip: text. */
+   through the glyphs — three radial blobs over a linear base, which reads as
+   lava rather than a flat gradient. `color` is the fallback for engines without
+   background-clip: text.
+
+   The blobs no longer drift. Animating background-position through
+   `background-clip: text` is NOT compositor-cheap, contrary to the note that
+   used to sit here: the glyph mask has to be re-rasterized every frame, and it
+   ran infinitely whether or not the section was on screen. The static
+   composition keeps the whole look. */
 .pv-title-gradient {
   color: #fff;
   background-image:
@@ -1791,38 +1736,12 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: pv-lava 18s ease-in-out infinite;
-}
-
-@keyframes pv-lava {
-  0% {
-    background-position: 0% 50%, 40% 40%, 100% 60%, 0% 50%;
-  }
-  25% {
-    background-position: 35% 35%, 75% 65%, 60% 35%, 45% 50%;
-  }
-  50% {
-    background-position: 100% 60%, 20% 55%, 15% 45%, 100% 50%;
-  }
-  75% {
-    background-position: 55% 45%, 85% 35%, 45% 65%, 55% 50%;
-  }
-  100% {
-    background-position: 0% 50%, 40% 40%, 100% 60%, 0% 50%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pv-title-gradient {
-    animation: none;
-  }
 }
 
 @supports not ((background-clip: text) or (-webkit-background-clip: text)) {
   .pv-title-gradient {
     -webkit-text-fill-color: #fff;
     background-image: none;
-    animation: none;
   }
 }
 
@@ -1873,10 +1792,27 @@
   height: clamp(20rem, 84vw, 29rem);
 }
 
+/* All four cutouts are stacked in the same box; only opacity/transform change
+   on a slide swap, so the crossfade stays on the compositor and the hero column
+   is never re-laid-out. */
 .hero-person-figure {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  opacity: 0;
+  transform: translate3d(1.5rem, 0, 0) scale(0.98);
+  transition:
+    opacity 0.55s ease-out,
+    transform 0.55s ease-out;
+}
+
+.hero-person-figure.is-active {
+  opacity: 1;
+  transform: none;
+  /* Only the visible cutout gets a compositing hint — four permanent layers
+     for four full-height images is a lot of GPU memory for one crossfade. */
+  will-change: opacity, transform;
 }
 
 /* Desktop: anchor the block to the hero SECTION so the rings can hold their
@@ -2090,6 +2026,11 @@
 
 .testimonial-glass::before {
   z-index: 1;
+  /* The frost lives here, on the tint layer, instead of on a separate
+     turbulence-filtered element. backdrop-filter alone is composited; the
+     filter: url(#glass-distortion) chain it replaces was not. */
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.12) 0%,
@@ -2109,4 +2050,29 @@
 .testimonial-glass > div {
   position: relative;
   z-index: 3;
+}
+
+/* Testimonial crossfade. The slide is keyed on the active index, so React
+   remounts it and this animation replays from the top — a one-shot CSS
+   animation rather than a library interpolating the same two properties on the
+   main thread every frame. */
+.testimonial-slide {
+  animation: testimonial-in 0.5s ease-in-out both;
+}
+
+@keyframes testimonial-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-slide {
+    animation: none;
+  }
 }

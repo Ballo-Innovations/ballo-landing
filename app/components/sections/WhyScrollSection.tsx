@@ -35,16 +35,36 @@ export function WhyScrollSection() {
     const numItems = items.length;
     // Section background stays transparent (page gradient shows through) and the
     // phone-screen hue stays fixed — no colour-change-on-scroll effect. Only the
-    // feature cards crossfade as the user scrolls, then flow to the next section.
+    // feature cards swipe vertically as the user scrolls, then flow to the next section.
     gsap.set(stickyEl, { "--bg-hue": 190, "--bg-alpha": 0 });
-    gsap.set(items, { opacity: 0 });
-    gsap.set(items[0], { opacity: 1 });
+    // Vertical carousel rather than a crossfade: every card is fully opaque
+    // and parked one full screen below, so two cards are never legible on top
+    // of each other. Each card is inset:0 on the screen box, so 100% == one
+    // whole phone screen of travel.
+    gsap.set(items, { opacity: 1, yPercent: 100 });
+    gsap.set(items[0], { yPercent: 0 });
+
+    // The timeline is hold-then-slide, not a continuous drift: each card rests
+    // for HOLD of the scroll and the swap itself only takes SLIDE. Combined
+    // with the snap below, the scroll cannot come to rest halfway through a
+    // swap — the state the design must never show is two half-cards stacked.
+    const HOLD = 1;
+    const SLIDE = 0.32;
 
     const tl = gsap.timeline();
+    // Progress values (0-1) where exactly one card fills the screen. These are
+    // the only positions the scroll is allowed to settle on.
+    const restTimes = [0];
     for (let i = 1; i < numItems; i++) {
-      tl.to(items[i - 1], { opacity: 0, duration: 0.7 });
-      tl.to(items[i], { opacity: 1, duration: 0.7 }, "<");
+      tl.to(items[i - 1], { yPercent: -100, duration: SLIDE, ease: "power2.inOut" }, `+=${HOLD}`);
+      tl.to(items[i], { yPercent: 0, duration: SLIDE, ease: "power2.inOut" }, "<");
+      restTimes.push(tl.duration());
     }
+    // Trailing hold so the last card gets the same dwell as the others before
+    // the pin releases.
+    tl.to({}, { duration: HOLD });
+    const total = tl.duration();
+    const snapPoints = restTimes.map((t) => t / total).concat(1);
 
     const mm = gsap.matchMedia();
 
@@ -52,33 +72,101 @@ export function WhyScrollSection() {
       ScrollTrigger.create({
         trigger: stickyEl,
         start: "top top",
-        end: `+=${numItems * 100}vh`,
+        // Function form → real pixels, recomputed on refresh. ScrollTrigger does
+        // NOT parse units inside a "+=" string, so the previous
+        // `+=${numItems * 100}vh` silently resolved to 500 *pixels* — the
+        // section pinned for well under one viewport and all five cards
+        // crossfaded inside it.
+        //
+        // Deliberately ~0.55 viewport per card rather than the full viewport
+        // the old string implied: that would be five viewports of held scroll,
+        // which is more scroll-jacking than this page should do (it is why the
+        // Who section stopped pinning entirely).
+        end: () => `+=${numItems * window.innerHeight * 0.55}`,
         pin: true,
         pinSpacing: true,
         anticipatePin: 1,
         animation: tl,
-        scrub: 0.5,
+        // 1:1 with the scroll position. `scrub: 0.5` was half a second of
+        // deliberate catch-up easing, which on a fast flick left the crossfade
+        // visibly trailing the scroll — two feature cards on screen at partial
+        // opacity at once. A number here buys smoothness at the cost of lag;
+        // `true` locks the timeline to the scrollbar.
+        scrub: true,
+        // Snap the timeline straight to its end state when a fast scroll blows
+        // past the pin, instead of leaving it mid-crossfade.
+        fastScrollEnd: true,
+        // Settle on a whole card. Without this, stopping mid-swap leaves two
+        // cards half on screen — the exact state this section must never show.
+        snap: {
+          snapTo: snapPoints,
+          duration: { min: 0.15, max: 0.45 },
+          delay: 0.04,
+          ease: "power1.inOut",
+        },
       });
     });
 
     mm.add("(max-width: 900px), (prefers-reduced-motion: reduce)", () => {
-      gsap.set(items, { opacity: (i) => (i === 0 ? 1 : 0) });
+      gsap.set(items, { opacity: 1, yPercent: (i) => (i === 0 ? 0 : 100) });
     });
 
     // Entrance reveal for the heading block (heading, subtitle, CTA) — fires
     // once as the section scrolls in, before the pin engages. Kept separate
     // from the pinned timeline so it never fights GSAP's opacity scrubbing.
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const headingChildren = outer.querySelectorAll<HTMLElement>(".why-scroll-heading > *");
-      gsap.from(headingChildren, {
-        y: 60,
-        opacity: 0,
-        duration: 0.9,
-        ease: "power3.out",
-        stagger: 0.12,
-        scrollTrigger: { trigger: stickyEl, start: "top 80%", once: true },
-      });
+      // The CTA is deliberately excluded from the y-translation. Any tween that
+      // moves it can leave an inline `transform: translate(0px, 60px)` behind
+      // if it is interrupted — StrictMode's double effect invoke, an HMR
+      // remount, or the ScrollTrigger.refresh() below — and because transforms
+      // do not affect layout that stranded offset reads as phantom margin above
+      // the button. It fades only, so no transform is ever written to it.
+      const revealTargets = outer.querySelectorAll<HTMLElement>(
+        ".why-scroll-heading > :not(button)",
+      );
+      const cta = outer.querySelector<HTMLElement>(".why-scroll-heading > button");
+      const trigger = { trigger: stickyEl, start: "top 80%", once: true } as const;
+
+      gsap.fromTo(
+        revealTargets,
+        { y: 60, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.12,
+          clearProps: "transform,opacity",
+          scrollTrigger: trigger,
+        },
+      );
+
+      if (cta) {
+        gsap.fromTo(
+          cta,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 0.9,
+            delay: 0.36,
+            ease: "power3.out",
+            clearProps: "opacity",
+            scrollTrigger: trigger,
+          },
+        );
+      }
     });
+
+    // This pin's start/end are measured against a layout that is still settling
+    // (fonts, the phone frame, and the industry images below). Remeasure once
+    // on load. The Who section used to own the only refresh() on the page and
+    // fixed this pin as a side effect; it no longer uses GSAP at all, so the
+    // pin that actually needs the refresh now asks for it itself.
+    if (document.readyState === "complete") {
+      ScrollTrigger.refresh();
+    } else {
+      window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+    }
   });
 
   return (
@@ -89,15 +177,18 @@ export function WhyScrollSection() {
             <h2 className="text-4xl md:text-8xl font-black text-gradient-silver leading-tight tracking-tight">
               Why<br />Choose<br />BalloAds?
             </h2>
-            <p className="mt-4 text-white text-base leading-relaxed" style={{ maxWidth: "22rem" }}>
-              The digital marketing platform built for your growth.
+            <p className="landing-body mt-3 text-white" style={{ maxWidth: "26rem" }}>
+              Most tools make you choose between reach and relevance. BalloAds
+              gives you both: one place to build an audience, send SMS,
+              WhatsApp and email campaigns, and see exactly what each message
+              earned you.
             </p>
             <button
               type="button"
               onClick={openWaitlist}
-              className="btn-primary group mt-8"
+              className="btn-primary group mt-6"
             >
-              Join Waitlist
+              Get Started
             </button>
           </div>
 
@@ -119,6 +210,7 @@ export function WhyScrollSection() {
                 src={phoneFrame}
                 alt=""
                 aria-hidden="true"
+                sizes="(max-width: 768px) 220px, 300px"
                 className="why-phone-frame-img"
               />
             </div>

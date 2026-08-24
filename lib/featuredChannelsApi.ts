@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
+import { cmsFetchInit } from "@/lib/cmsFetch";
 
 async function getBackendBaseUrl(): Promise<string> {
   const headerList = await headers();
@@ -24,10 +25,7 @@ export async function getFeaturedBusinessChannels(): Promise<FeaturedBusinessCha
   const base = await getBackendBaseUrl();
   const url = `${base}/v1/featured-business-channels`;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, cmsFetchInit());
     if (!res.ok) {
       console.error("[featuredChannelsApi] non-OK response", { url, status: res.status });
       return [];

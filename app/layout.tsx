@@ -11,7 +11,6 @@ import "./styles/index.css";
 import "./globals.css";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
-import { SmoothScroll } from "./components/ui/SmoothScroll";
 import { WaitlistProvider } from "./components/waitlist/WaitlistProvider";
 import { resolveSocialLinks } from "./components/social/socialLinks";
 import { getSocialLinks } from "@/lib/socialLinksApi";
@@ -53,17 +52,15 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${ubuntu.variable} ${ubuntuMono.variable}`}>
       <body className="font-sans antialiased">
-        <SmoothScroll>
-          <WaitlistProvider>
-            <Header />
-            {children}
-            <Footer
-              socialLinks={socialLinks}
-              contactPhone={siteSettings.contact_phone}
-              contactEmail={siteSettings.contact_email}
-            />
-          </WaitlistProvider>
-        </SmoothScroll>
+        <WaitlistProvider>
+          <Header />
+          {children}
+          <Footer
+            socialLinks={socialLinks}
+            contactPhone={siteSettings.contact_phone}
+            contactEmail={siteSettings.contact_email}
+          />
+        </WaitlistProvider>
       </body>
     </html>
   );

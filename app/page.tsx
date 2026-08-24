@@ -17,7 +17,11 @@ import logoBayport from "@/public/Client Logos/bayport color.png";
 import logoSeneca from "@/public/Client Logos/seneca-logo new-02.png";
 import logo9 from "@/public/Client Logos/9.png";
 
-export const dynamic = "force-dynamic";
+// No `force-dynamic`. The page still renders per-request (both CMS helpers read
+// headers() to pick the environment's API base), but force-dynamic additionally
+// forced `no-store` onto every fetch in this route, which overrode the
+// revalidate window on the testimonial and partner-logo lookups and put two
+// blocking round-trips in front of every visitor's first byte.
 
 // Fallback content — shown until the CMS has testimonial rows published.
 // Keep this array (never delete it): getTestimonials() returns [] both on
@@ -78,6 +82,17 @@ const FALLBACK_PARTNER_LOGOS: HomeLogoItem[] = [
   { src: logo9, alt: "Client" },
 ];
 
+// Fallback content — shown until the CMS has "Backed by" logo rows published
+// (a partner-logo row with "Backed by" switched on). No local image files ship
+// for these marks, so `src: null` tells HomeClient to render the name as a
+// wordmark; uploading a logo in the CMS replaces it with the image.
+const FALLBACK_BACKER_LOGOS: HomeLogoItem[] = [
+  { src: null, alt: "Airtel" },
+  { src: null, alt: "MTN" },
+  { src: null, alt: "Meta" },
+  { src: null, alt: "ZICTA" },
+];
+
 export default async function Home() {
   const [cmsTestimonials, cmsPartnerLogos] = await Promise.all([
     getTestimonials(),
@@ -94,10 +109,27 @@ export default async function Home() {
         }))
       : FALLBACK_TESTIMONIALS;
 
+  // One CMS list feeds two strips: rows flagged "Backed by" go to the backers
+  // section, everything else stays in the client marquee. Each side falls back
+  // independently, so seeding one does not blank the other.
+  const cmsBackers = cmsPartnerLogos.filter((p) => p.isBacker);
+  const cmsPartners = cmsPartnerLogos.filter((p) => !p.isBacker);
+
   const partnerLogos: HomeLogoItem[] =
-    cmsPartnerLogos.length > 0
-      ? cmsPartnerLogos.map((p) => ({ src: p.logoUrl, alt: p.name }))
+    cmsPartners.length > 0
+      ? cmsPartners.map((p) => ({ src: p.logoUrl, alt: p.name }))
       : FALLBACK_PARTNER_LOGOS;
 
-  return <HomeClient testimonials={testimonials} partnerLogos={partnerLogos} />;
+  const backerLogos: HomeLogoItem[] =
+    cmsBackers.length > 0
+      ? cmsBackers.map((p) => ({ src: p.logoUrl, alt: p.name }))
+      : FALLBACK_BACKER_LOGOS;
+
+  return (
+    <HomeClient
+      testimonials={testimonials}
+      partnerLogos={partnerLogos}
+      backerLogos={backerLogos}
+    />
+  );
 }

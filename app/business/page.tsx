@@ -299,7 +299,7 @@ const HeroSection: React.FC = () => {
                   Bulk SMS!
                 </h1>
               </div>
-              <p className="text-base text-white">
+              <p className="landing-body text-white">
                 With this service, you can send bulk SMS campaigns
                 instantly to thousands of recipients with just a few
                 clicks. The platform ensures fast delivery, detailed
@@ -346,7 +346,7 @@ const HeroSection: React.FC = () => {
                 Rebranding the future of your industry starts here.
               </h3>
             </div>
-            <p className="text-base md:text-lg text-white/70 leading-relaxed max-w-xl">
+            <p className="landing-body text-white/70 max-w-xl">
               Book a tailored BalloAds demo and see how our omnichannel marketing platform can help you
               unlock new revenue, accelerate growth and engage your audience in real time.
             </p>

@@ -52,8 +52,8 @@
 .channel-hero__intro {
   margin-top: 1.5rem;
   max-width: 34rem;
-  font-size: clamp(1rem, 2.2vw, 1.15rem);
-  line-height: 1.6;
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -125,8 +125,8 @@
 
 .channel-section__lede {
   margin-top: 1rem;
-  font-size: clamp(1rem, 2vw, 1.1rem);
-  line-height: 1.6;
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
   color: color-mix(in srgb, var(--dark-blue) 72%, transparent);
 }
 
@@ -241,8 +241,8 @@
 
 .channel-cta__lede {
   margin-top: 1rem;
-  font-size: clamp(1rem, 2vw, 1.1rem);
-  line-height: 1.6;
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
   color: rgba(255, 255, 255, 0.8);
 }
 

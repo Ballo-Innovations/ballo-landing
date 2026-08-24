@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
+import { cmsFetchInit } from "@/lib/cmsFetch";
 
 async function getBackendBaseUrl(): Promise<string> {
   const headerList = await headers();
@@ -13,6 +14,8 @@ export type PartnerLogo = {
   logoUrl: string;
   sortOrder: number;
   isPublished: boolean;
+  /** True = "Backed by" strip; false = "Trusted by the very best" marquee. */
+  isBacker: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -21,10 +24,7 @@ export async function getPartnerLogos(): Promise<PartnerLogo[]> {
   const base = await getBackendBaseUrl();
   const url = `${base}/v1/partner-logos`;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, cmsFetchInit());
     if (!res.ok) {
       console.error("[partnerLogosApi] non-OK response", { url, status: res.status });
       return [];

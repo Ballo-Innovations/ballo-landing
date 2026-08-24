@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 
 import { getFaqs, type FaqEntry } from "@/lib/faqApi";
 
-export const dynamic = "force-dynamic";
+// No `force-dynamic`: this route already renders per-request because its CMS
+// helpers read headers() to pick the environment's API base. All force-dynamic
+// added was forcing `no-store` onto every fetch in the route, which overrode the
+// revalidate window in lib/cmsFetch.ts and put an uncached upstream round-trip
+// in front of every visitor.
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -38,7 +42,7 @@ export default async function FAQPage() {
     <main className="min-h-screen bg-[var(--dark-blue)] text-white py-20 px-4">
       <div className="container mx-auto max-w-3xl">
         <h1 className="text-5xl font-bold mb-4">FAQ</h1>
-        <p className="text-xl text-white/80 mb-12">
+        <p className="landing-body text-white/80 mb-12">
           Find answers to frequently asked questions about BalloAds.
         </p>
 

@@ -58,8 +58,9 @@
 
 .prof-hero__intro {
   margin: 0.9rem 0 0;
-  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  font-size: var(--landing-body-size);
   color: rgba(255, 255, 255, 0.55);
+  line-height: var(--landing-body-leading);
 }
 
 /* ---- Accordion list ---- */

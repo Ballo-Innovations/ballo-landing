@@ -274,12 +274,12 @@ export default function FeaturesPage() {
                 <span className="features-growth__lead">Grow</span>{" "}
                 <span className="features-growth__rest">Your Audience</span>
               </h2>
-              <p className="text-base md:text-lg text-[var(--dark-blue)]/70 leading-relaxed">
+              <p className="landing-body text-[var(--dark-blue)]/70">
                 With integrated tools and strategic management, we help you reach the full potential of your brand with our marketing expertise. We specialise
                 in growing your audience across all platforms, from social media to search
                 engines, ensuring maximum visibility and engagement.
               </p>
-              <p className="text-base md:text-lg text-[var(--dark-blue)]/70 leading-relaxed">
+              <p className="landing-body text-[var(--dark-blue)]/70">
                 Let us help you reach new heights and connect with your target audience
                 like never before!
               </p>
@@ -414,7 +414,7 @@ export default function FeaturesPage() {
                 Rebranding the future of your industry starts here.
               </h3>
             </div>
-            <p className="text-base md:text-lg text-[var(--dark-blue)]/70 leading-relaxed max-w-xl">
+            <p className="landing-body text-[var(--dark-blue)]/70 max-w-xl">
               Book a tailored BalloAds demo and see how our omnichannel marketing platform can help you
               unlock new revenue, accelerate growth and engage your audience in real time.
             </p>

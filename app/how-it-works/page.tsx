@@ -14,7 +14,11 @@ import { getProcessSteps } from "@/lib/processStepsApi";
 import { toHowItWorksStep } from "./steps";
 import circuit from "@/public/Assets/hiw-circuit.png";
 
-export const dynamic = "force-dynamic";
+// No `force-dynamic`: this route already renders per-request because its CMS
+// helpers read headers() to pick the environment's API base. All force-dynamic
+// added was forcing `no-store` onto every fetch in the route, which overrode the
+// revalidate window in lib/cmsFetch.ts and put an uncached upstream round-trip
+// in front of every visitor.
 
 const benefits = [
   {

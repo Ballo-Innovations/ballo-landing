@@ -5,6 +5,9 @@
 
 :root {
   --background: #ffffff;
+  /* Base colour of the page canvas. The site is dark on every route, so this
+     is what must sit behind everything — see the html/body rules below. */
+  --page-base: #05043a;
   --foreground: #171717;
   --brand-color-1: #020055;
   --brand-color-2: #0b4d8c;
@@ -45,15 +48,32 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* No `scroll-behavior: smooth`. GSAP documents it as incompatible with
+     ScrollTrigger: the browser animates scrollTop asynchronously, so
+     ScrollTrigger's position readings desync from what is actually painted and
+     pinned sections tear during fast scrolling. */
   width: 100%;
   max-width: 100vw;
   overscroll-behavior: none;
 }
 
+/* The page canvas is dark, NOT var(--background) (which is #fff in light mode).
+   Chrome paints this base colour wherever a scroll-driven repaint has not
+   landed yet, so on a fast flick down the home page — whose gradient is a
+   single ~7500px-tall background on <main> — the browser was flashing WHITE
+   tiles until the gradient rasterized. Also set on <html> so the canvas itself
+   is dark before body's box is even considered. */
+html {
+  background-color: var(--page-base);
+}
+
+/* Transparent, NOT the base colour: body's background is a normal block
+   background (paint step 4), so an opaque one covers every negative-z-index
+   layer (step 2) — it was hiding .page-gradient. The base colour lives on
+   <html>, which paints as the canvas beneath everything. */
 body {
   margin: 0;
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
 }

@@ -48,6 +48,47 @@
   box-shadow: 0 0 30px rgba(63, 219, 255, 0.5);
 }
 
+/* ============================================
+   Scroll-in reveal (see components/ui/FadeUpReveal.tsx)
+   Compositor-only: opacity + translateY, one transition, no library.
+   ============================================ */
+.fade-up-reveal {
+  transition:
+    opacity var(--fur-duration, 1.05s) cubic-bezier(0.22, 1, 0.36, 1) var(--fur-delay, 0s),
+    transform var(--fur-duration, 1.05s) cubic-bezier(0.22, 1, 0.36, 1) var(--fur-delay, 0s);
+}
+
+.fade-up-reveal[data-fur="out"] {
+  opacity: 0;
+  transform: translate3d(0, var(--fur-y, 100px), 0) scale(0.92);
+}
+
+.fade-up-reveal[data-fur="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up-reveal,
+  .fade-up-reveal[data-fur="out"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================
+   Off-screen animation parking
+   Infinite decorative animations (marquees, shimmer) keep the compositor and
+   — for background-clip:text effects — the paint path busy even when scrolled
+   far out of view. Anything wrapped in an element the IntersectionObserver in
+   useAnimateWhenVisible() marks `data-anim="paused"` stops until it returns.
+   ============================================ */
+[data-anim="paused"],
+[data-anim="paused"] * {
+  animation-play-state: paused !important;
+}
+
 /* Logo marquee */
 @keyframes logo-scroll {
   0% {
@@ -69,6 +110,13 @@
   display: flex;
   width: max-content;
   animation: logo-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-marquee-track {
+    animation: none;
+  }
 }
 
 /* Shimmer text effect */
@@ -98,6 +146,13 @@
   animation: shimmer-slide 6s linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .text-shimmer {
+    animation: none;
+    background-position: 50% center;
+  }
+}
+
 /* Scrollbar utilities */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -106,4 +161,30 @@
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+/* =============================================================
+   Landing body copy.
+
+   One size for every section-level paragraph across the marketing
+   pages, taken from the home page's "What We're About" panel:
+   1.125rem on mobile, 1.25rem from the md breakpoint, 1.625 leading.
+
+   Scope note: this is for section prose only. Card captions, form
+   hints, table cells, badges and empty-state messages keep their own
+   smaller scales — bumping those breaks the layouts they sit in.
+   ============================================================= */
+:root {
+  --landing-body-size: 1.125rem;
+  --landing-body-leading: 1.625;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --landing-body-size: 1.25rem;
+  }
+}
+
+.landing-body {
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
 }

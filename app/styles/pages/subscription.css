@@ -34,11 +34,12 @@
 }
 
 .subscription-page__description {
-  font-size: 1.25rem;
+  font-size: var(--landing-body-size);
   color: rgba(255, 255, 255, 0.8);
   max-width: 42rem;
   margin-left: auto;
   margin-right: auto;
+  line-height: var(--landing-body-leading);
 }
 
 /* Subscription Cards Grid */

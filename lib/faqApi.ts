@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
+import { cmsFetchInit } from "@/lib/cmsFetch";
 
 async function getBackendBaseUrl(): Promise<string> {
   const headerList = await headers();
@@ -22,10 +23,7 @@ async function fetchFaqJson<T>(path: string): Promise<T | null> {
   const base = await getBackendBaseUrl();
   const url = `${base}${path}`;
   try {
-    const res = await fetch(url, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(url, cmsFetchInit());
     if (!res.ok) {
       console.error("[faqApi] non-OK response", { url, status: res.status });
       return null;

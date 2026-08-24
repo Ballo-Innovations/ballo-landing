@@ -3,41 +3,33 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-} from "framer-motion";
 import { Phone3D } from "./components/ui/Phone3D";
-import { SilkBackground } from "./components/ui/SilkBackground";
+import { StoreBadge } from "./components/ui/StoreBadge";
+import { PageGradient } from "./components/ui/PageGradient";
 import dynamic from "next/dynamic";
 
+// Why still needs `ssr: false` — it measures layout through GSAP on mount.
+// Who does not: it is now plain flow + IntersectionObserver, so it is imported
+// directly and its industry copy is server-rendered.
 const WhyScrollSection = dynamic(
   () => import("./components/sections/WhyScrollSection").then(m => m.WhyScrollSection),
   { ssr: false }
 );
-const WhoScrollSection = dynamic(
-  () => import("./components/sections/WhoScrollSection").then(m => m.WhoScrollSection),
-  { ssr: false }
-);
 
+import { WhoScrollSection } from "./components/sections/WhoScrollSection";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
+import { useAnimateWhenVisible } from "./components/ui/useAnimateWhenVisible";
 import { useWaitlist } from "./components/waitlist/WaitlistProvider";
-
-import playStore from "@/public/elements small/19.png";
-import appleStore from "@/public/elements small/18.png";
 
 import bglight from "@/public/Assets/2.png";
 import logoIcon from "@/public/BalloAds Logo New/BalloAds-Icon.png";
 import { CloudUpload } from "lucide-react";
 
 import woman from "@/public/Assets/11.png";
-import woman1 from "@/public/Assets/12.png";
 import woman2 from "@/public/Assets/13.png";
 import woman3 from "@/public/Assets/10.png";
 import man from "@/public/Assets/14.png";
 import ConcentricRings from "./components/ui/ConcentricRings";
-import bank from "@/public/Assets/19.png";
 
 // Referenced below for the one-off "invert to white" filter applied to the
 // Bayport mark specifically — kept here even though the rest of the fallback
@@ -52,27 +44,29 @@ export type HomeTestimonialItem = {
 };
 
 export type HomeLogoItem = {
-  src: StaticImageData | string;
+  /** null renders the name as a wordmark — used when no logo image exists yet. */
+  src: StaticImageData | string | null;
   alt: string;
 };
 
-function FeatureLabel({
-  text,
-  icon,
-  position,
-}: {
-  text: string;
-  icon: React.ReactNode;
-  position: string;
-}) {
-  return (
-    <div
-      className={`absolute ${position} flex items-center gap-3 bg-white shadow-lg px-4 py-2 rounded-full text-[var(--dark-blue)] text-sm md:text-base font-semibold z-20`}
-    >
-      <span>{icon}</span>
-      {text}
-    </div>
-  );
+/**
+ * Reduced-motion preference, without pulling an animation library in for it.
+ * Every visual transition on this page is CSS, so this is only used to stop the
+ * two autoplay timers — the animations themselves opt out via
+ * `@media (prefers-reduced-motion: reduce)` in home.css.
+ */
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  return reduced;
 }
 
 const features = [
@@ -117,99 +111,30 @@ const features = [
 export default function HomeClient({
   testimonials,
   partnerLogos,
+  backerLogos,
 }: {
   testimonials: HomeTestimonialItem[];
   partnerLogos: HomeLogoItem[];
+  backerLogos: HomeLogoItem[];
 }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    businessName: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
-
   const { openWaitlist } = useWaitlist();
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const nextSlide = (currentSlide + 1) % features.length;
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion = usePrefersReducedMotion();
   const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const testimonialsSectionRef = useRef<HTMLElement>(null);
   const isTestimonialsVisibleRef = useRef(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const glareRef = useRef<HTMLDivElement>(null);
-  const tiltRafRef = useRef<number | null>(null);
-  const tiltTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Infinite CSS marquees — parked while scrolled away (see the hook).
+  const heroMarqueeRef = useAnimateWhenVisible();
+  const trustedByRef = useAnimateWhenVisible<HTMLElement>();
 
   useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    el.style.willChange = "transform";
-    el.style.transform = "none";
     return () => {
-      if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
-      if (tiltTimeoutRef.current) clearTimeout(tiltTimeoutRef.current);
+      if (resumeAutoPlayTimeoutRef.current) clearTimeout(resumeAutoPlayTimeoutRef.current);
     };
   }, []);
-
-  const setTiltTransition = (ref: React.RefObject<HTMLDivElement | null>, glareRef: React.RefObject<HTMLDivElement | null>, timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
-    const el = ref.current;
-    const glare = glareRef.current;
-    if (!el) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    el.style.transition = `1200ms cubic-bezier(.03,.98,.52,.99)`;
-    if (glare) glare.style.transition = `opacity 1200ms cubic-bezier(.03,.98,.52,.99)`;
-    timeoutRef.current = setTimeout(() => {
-      el.style.transition = "";
-      if (glare) glare.style.transition = "";
-    }, 1200);
-  };
-
-  const handleCardMouseEnter = () => setTiltTransition(cardRef, glareRef, tiltTimeoutRef);
-
-  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
-    const clientX = e.clientX;
-    const clientY = e.clientY;
-    tiltRafRef.current = requestAnimationFrame(() => {
-      const el = cardRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const x = (clientX - rect.left) / rect.width - 0.5;
-      const y = (clientY - rect.top) / rect.height - 0.5;
-      el.style.transform = `perspective(1400px) rotateX(${y * -15}deg) rotateY(${x * 15}deg) scale3d(1.04,1.04,1.04)`;
-      const glare = glareRef.current;
-      if (glare) {
-        glare.style.transform = `rotate(${Math.atan2(y, x) * (180 / Math.PI) + 90}deg)`;
-        glare.style.opacity = `${Math.min(Math.sqrt(x * x + y * y) * 0.5, 0.2)}`;
-      }
-    });
-  };
-
-  const handleCardMouseLeave = () => {
-    if (tiltRafRef.current) cancelAnimationFrame(tiltRafRef.current);
-    setTiltTransition(cardRef, glareRef, tiltTimeoutRef);
-    const el = cardRef.current;
-    if (el) el.style.transform = "perspective(1400px) rotateY(-12deg) rotateX(2.5deg) scale3d(1,1,1)";
-    const glare = glareRef.current;
-    if (glare) glare.style.opacity = "0";
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
 
   useEffect(() => {
     if (!isAutoPlaying || shouldReduceMotion) return;
@@ -218,14 +143,6 @@ export default function HomeClient({
     }, 5000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, shouldReduceMotion]);
-
-  useEffect(() => {
-    return () => {
-      if (resumeAutoPlayTimeoutRef.current) {
-        clearTimeout(resumeAutoPlayTimeoutRef.current);
-      }
-    };
-  }, []);
 
   // Pause testimonials interval when section is off-screen
   useEffect(() => {
@@ -268,10 +185,18 @@ export default function HomeClient({
   // page.tsx resolved.
   const marqueeLogos = partnerLogos.concat(partnerLogos);
 
+  // <main> clips the x axis with `overflow-x: clip`, NOT `hidden`.
+  // `overflow-x: hidden` forces overflow-y to compute as `auto`, making the
+  // element a scroll container, which silently breaks `position: sticky` for
+  // every descendant — that is what kept the Who section's caption column from
+  // sticking. `clip` does the same horizontal clipping (needed for the 200vw
+  // hero marquee) without creating a scroll container.
   return (
-    <main className="relative min-h-screen text-white overflow-x-hidden"
-      style={{ background: "linear-gradient(180deg, #153D87 0%, #070756 12%, #05043A 34%, #030227 56%, #010113 78%, #000000 100%)" }}>
-      <SilkBackground />
+    <main className="relative min-h-screen text-white overflow-x-clip">
+      {/* <main> is deliberately transparent: the gradient now lives on a fixed
+          viewport layer behind it (PageGradient) rather than as a document-tall
+          background here, which is what a fast scroll was outrunning. */}
+      <PageGradient />
 
       {/* Hero Section */}
       <section
@@ -302,24 +227,37 @@ export default function HomeClient({
             <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
               <p className="hero-kicker text-shimmer">AI-Powered Performance Marketing</p>
 
-              {/* Rotating headline */}
-              <div className="relative w-full min-h-[130px] sm:min-h-[170px] md:min-h-[210px] flex items-start justify-center md:justify-start">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={`hero-text-${currentSlide}`}
-                    initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 24 }}
-                    animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-                    exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -16 }}
-                    transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
-                    className="w-full"
-                  >
-                    <h1 className="hero-headline">
-                      {features[currentSlide].titleLines.map((line) => (
-                        <span key={line}>{line}</span>
-                      ))}
+              {/* Rotating headline. All four headlines are mounted and stacked;
+                  only the `is-active` class moves, so a slide change is a pure
+                  opacity/transform crossfade on the compositor — no React
+                  remount, no re-layout of the hero column. Slide 1 is the H1
+                  (one per page); the rest are presentational. */}
+              <div className="hero-headline-stack">
+                {features.map((feature, index) => {
+                  const lines = feature.titleLines.map((line) => (
+                    <span key={line}>{line}</span>
+                  ));
+                  const active = index === currentSlide;
+                  return index === 0 ? (
+                    <h1
+                      key={feature.title}
+                      className={`hero-headline${active ? " is-active" : ""}`}
+                      aria-hidden={!active}
+                    >
+                      {lines}
                     </h1>
-                  </motion.div>
-                </AnimatePresence>
+                  ) : (
+                    <p
+                      key={feature.title}
+                      role="heading"
+                      aria-level={1}
+                      className={`hero-headline${active ? " is-active" : ""}`}
+                      aria-hidden={!active}
+                    >
+                      {lines}
+                    </p>
+                  );
+                })}
               </div>
 
               {/* Pagination Dots — above the CTAs */}
@@ -346,17 +284,19 @@ export default function HomeClient({
                 </Link>
               </div>
 
-              {/* Large Faded Text — pure CSS marquee (full-bleed across the hero) */}
-              <div className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
+              {/* Large Faded Text — pure CSS marquee (full-bleed across the
+                  hero). Six copies, not eight: the loop translates by -50%, so
+                  it only needs enough copies that HALF the track still overruns
+                  the 200vw window on the widest screens — and every extra copy
+                  widens an already very large composited layer. */}
+              <div ref={heroMarqueeRef} className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
                 <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">REACH EVERY CUSTOMER</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
                 </div>
               </div>
             </div>
@@ -373,34 +313,34 @@ export default function HomeClient({
             <ConcentricRings />
           </div>
           <div className="hero-person-stage">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={`hero-image-${currentSlide}`}
-                initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: 24, scale: 0.98 }}
-                animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, x: 0, scale: 1 }}
-                exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, x: -24, scale: 1.02 }}
-                transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: "easeOut" }}
-                className="hero-person-figure will-change-transform"
+            {/* All four cutouts are mounted and stacked, crossfading via CSS.
+                Previously each change unmounted the old <Image> and mounted the
+                new one, so every 5s the browser re-created and re-decoded an
+                image — and a hidden copy of the *next* slide had to be rendered
+                with `priority` to hide the cost, which competed with the real
+                LCP image for bandwidth. Mounting all four decodes each once and
+                deletes the preload hack outright. */}
+            {features.map((feature, index) => (
+              <div
+                key={feature.title}
+                className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
+                aria-hidden={index !== currentSlide}
               >
                 <Image
-                  src={features[currentSlide].image}
-                  alt={features[currentSlide].title}
+                  src={feature.image}
+                  alt={index === currentSlide ? feature.title : ""}
                   fill
                   sizes="(max-width: 768px) 90vw, 45vw"
                   className="hero-person-img object-contain object-bottom"
                   style={{
-                    ["--person-scale" as string]: features[currentSlide].imageFrame.scale,
-                    ["--person-x" as string]: features[currentSlide].imageFrame.x,
-                    ["--person-y" as string]: features[currentSlide].imageFrame.y,
+                    ["--person-scale" as string]: feature.imageFrame.scale,
+                    ["--person-x" as string]: feature.imageFrame.x,
+                    ["--person-y" as string]: feature.imageFrame.y,
                   } as React.CSSProperties}
-                  priority={currentSlide === 0}
+                  priority={index === 0}
                 />
-              </motion.div>
-            </AnimatePresence>
-            {/* Preload upcoming slide image */}
-            <div className="hidden" aria-hidden="true">
-              <Image src={features[nextSlide].image} alt="" width={400} height={600} priority />
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -440,6 +380,7 @@ export default function HomeClient({
               src={bglight}
               alt=""
               loading="lazy"
+              sizes="560px"
               className="about-phone-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
               style={{ width: "560px", height: "560px", maxWidth: "none", maxHeight: "none", objectFit: "contain" }}
               aria-hidden="true"
@@ -450,36 +391,38 @@ export default function HomeClient({
                   className="absolute hidden md:flex flex-col gap-2.5"
                   style={{ left: "-60px", top: "56%", transform: "translateZ(40px)" }}
                 >
-                  <button type="button" className="store-btn">
-                    <div className="flex flex-col items-start">
-                      <span className="s1">Get it on the</span>
-                      <span className="s2">App Store</span>
-                    </div>
-                  </button>
-                  <button type="button" className="store-btn">
-                    <div className="flex flex-col items-start">
-                      <span className="s1">Get it on</span>
-                      <span className="s2">Google Play</span>
-                    </div>
-                  </button>
+                  <StoreBadge store="apple" />
+                  <StoreBadge store="play" />
                 </div>
               }>
                 <div
                   className="absolute rounded-full"
                   style={{ width: "150px", height: "150px", top: "-48px", left: "-48px", background: "var(--dark-blue-2)", zIndex: 1 }}
                 />
-                <div className="relative z-10 flex flex-col items-center justify-between px-4 py-8 h-full w-full pt-14">
-                  <div className="flex flex-col items-center gap-3">
-                    <Image src={logoIcon} alt="BalloAds Logo" width={56} height={56} className="object-contain" />
-                    <h3 className="text-[var(--dark-blue-2)] font-black text-center text-[9px] tracking-[0.2em] uppercase leading-tight">
+                {/* App screen. Sized in cqw (container-query units) against the
+                    screen itself, so every element keeps its proportion when
+                    .phone3d shrinks at the mobile breakpoint — see .phone-ui in
+                    home.css. */}
+                <div className="phone-ui">
+                  <div className="phone-ui-head">
+                    <Image
+                      src={logoIcon}
+                      alt="BalloAds Logo"
+                      width={112}
+                      height={112}
+                      className="phone-ui-logo"
+                    />
+                    <h3 className="phone-ui-tagline">
                       Your Digital Marketing<br />Assistant
                     </h3>
                   </div>
-                  <div className="w-36 h-36 rounded-[1.75rem] bg-[#2273af] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
-                    <CloudUpload className="w-12 h-12 text-white mb-1.5" strokeWidth={1.5} />
-                    <span className="text-white font-bold text-[11px] text-center leading-tight">Upload your<br />artwork here</span>
+
+                  <div className="phone-ui-upload">
+                    <CloudUpload className="phone-ui-cloud" strokeWidth={1.75} />
+                    <span className="phone-ui-upload-text">Upload your<br />artwork here</span>
                   </div>
-                  <button className="phone-next-btn">Next</button>
+
+                  <button type="button" className="phone-ui-next">Next</button>
                 </div>
               </Phone3D>
             </div>
@@ -488,12 +431,7 @@ export default function HomeClient({
 
           {/* Right Side - Content Card */}
           <div
-            ref={cardRef}
             className="relative rounded-3xl p-8 md:p-12 overflow-hidden"
-            style={{ transformOrigin: "center center" }}
-            onMouseEnter={handleCardMouseEnter}
-            onMouseMove={handleCardMouseMove}
-            onMouseLeave={handleCardMouseLeave}
           >
             <div className="relative z-10">
               <FadeUpReveal>
@@ -502,7 +440,7 @@ export default function HomeClient({
                 </h2>
               </FadeUpReveal>
               <FadeUpReveal delay={0.15}>
-                <p className="text-lg md:text-xl leading-relaxed text-white/90">
+                <p className="landing-body text-white/90">
                   BalloAds is an AI-powered digital advertising platform
                   designed to help businesses and organisations
                   connect with the right audience through bulk SMS,
@@ -513,6 +451,16 @@ export default function HomeClient({
                   with ease
                 </p>
               </FadeUpReveal>
+              <FadeUpReveal delay={0.3}>
+                <div className="hero-actions mt-8 justify-start">
+                  <button type="button" onClick={openWaitlist} className="btn-primary group">
+                    Get Started
+                  </button>
+                  <Link href="/how-it-works" className="btn-secondary group">
+                    Learn More
+                  </Link>
+                </div>
+              </FadeUpReveal>
             </div>
           </div>
         </div>
@@ -521,31 +469,39 @@ export default function HomeClient({
       {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhyScrollSection />
 
-      {/* Trusted By Section */}
-      <section className="py-16">
-        <FadeUpReveal className="text-center mb-10">
-          <p className="text-3xl text-shimmer">Trusted by the very best</p>
-        </FadeUpReveal>
-        <FadeUpReveal yOffset={50} delay={0.1}>
-        <div className="logo-marquee">
-          <div className="logo-marquee-track">
-            {marqueeLogos.map((logo, i) => (
-              <div key={i} className="flex items-center justify-center px-5 shrink-0">
-                <Image
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={224}
-                  height={112}
-                  loading="lazy"
-                  sizes="112px"
-                  className="h-28 w-auto object-contain opacity-100 transition-opacity"
-                  style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
-                />
-              </div>
-            ))}
-          </div>
+      {/* Backed By Section. A short, CMS-driven list (partner-logo rows with
+          "Backed by" switched on), so this is a static grid rather than a
+          marquee — nothing to loop, and no always-on animation to park. Rows
+          with no logo image yet render as wordmarks. */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <FadeUpReveal className="text-center mb-10">
+            <p className="text-sm uppercase tracking-[0.35em] text-white/50">Backed by</p>
+          </FadeUpReveal>
+          <FadeUpReveal yOffset={50} delay={0.1}>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 md:gap-x-20">
+              {backerLogos.map((logo, i) => (
+                <div key={`${logo.alt}-${i}`} className="flex items-center justify-center">
+                  {logo.src ? (
+                    <Image
+                      src={logo.src}
+                      alt={logo.alt}
+                      width={224}
+                      height={112}
+                      loading="lazy"
+                      sizes="160px"
+                      className="h-16 w-auto object-contain md:h-20"
+                    />
+                  ) : (
+                    <span className="text-2xl font-semibold tracking-wide text-white/70 md:text-3xl">
+                      {logo.alt}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </FadeUpReveal>
         </div>
-        </FadeUpReveal>
       </section>
 
       {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
@@ -564,28 +520,28 @@ export default function HomeClient({
           </FadeUpReveal>
           <div className="max-w-4xl mx-auto">
             <div className="testimonial-glass rounded-3xl p-8 md:p-12 overflow-hidden flex flex-col">
-              {/* Liquid-glass refraction layer — same recipe as the nav pills:
-                  backdrop blur + SVG turbulence displacement (#glass-distortion,
-                  rendered globally by the header). */}
-              <span className="liquid-glass-distort" aria-hidden="true" />
+              {/* Frosted-glass layer. This used to also carry
+                  `filter: url(#glass-distortion)` — an SVG turbulence +
+                  displacement-map refraction on top of a backdrop blur, over a
+                  card this size. That filter chain cannot be composited, so the
+                  whole card re-rasterized on every scroll frame; it was the
+                  single most expensive thing on the page. The blur and glass
+                  edge (see .testimonial-glass in home.css) carry the look. */}
               <div className="flex-1">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={testimonialIndex}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="flex flex-col items-center text-center"
-                  >
+                {/* Remounting on index change replays the CSS reveal below —
+                    same crossfade the AnimatePresence wrapper gave, with no
+                    animation runtime driving it frame by frame. */}
+                <div
+                  key={testimonialIndex}
+                  className="testimonial-slide flex flex-col items-center text-center"
+                >
                     <p className="text-xl md:text-2xl leading-relaxed mb-8 italic line-clamp-4 overflow-hidden h-[8.5rem] md:h-[10rem]">
                       &quot;{testimonials[testimonialIndex].quote}&quot;
                     </p>
                     <p className="text-xl font-bold mb-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].name}</p>
                     <p className="text-white/80 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].title}</p>
                     <p className="text-white/60 text-sm mt-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].company}</p>
-                  </motion.div>
-                </AnimatePresence>
+                </div>
               </div>
               <div className="flex justify-center gap-3 mt-8">
                 {testimonials.map((_, i) => (
@@ -602,14 +558,44 @@ export default function HomeClient({
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="flex justify-center mt-12">
-            <button type="button" onClick={openWaitlist} className="glow-button group">
-              <span className="glow-button__text">Join waitlist</span>
-              <div className="glow-button__glow-core" />
-            </button>
+      {/* Trusted By Section — sits directly below the testimonials it backs up.
+          Both infinite animations in here — the logo track and the
+          .text-shimmer heading — park while the section is off-screen; the
+          shimmer in particular animates background-position through
+          background-clip:text, which repaints the glyphs every frame. */}
+      <section ref={trustedByRef} className="py-16">
+        <FadeUpReveal className="text-center mb-10">
+          <p className="text-3xl text-shimmer">Trusted by the very best</p>
+        </FadeUpReveal>
+        <FadeUpReveal yOffset={50} delay={0.1}>
+        <div className="logo-marquee">
+          <div className="logo-marquee-track">
+            {marqueeLogos.map((logo, i) => (
+              <div key={i} className="flex items-center justify-center px-5 shrink-0">
+                {logo.src ? (
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={224}
+                    height={112}
+                    loading="lazy"
+                    sizes="112px"
+                    className="h-28 w-auto object-contain opacity-100 transition-opacity"
+                    style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
+                  />
+                ) : (
+                  <span className="text-2xl font-semibold tracking-wide text-white/70">
+                    {logo.alt}
+                  </span>
+                )}
+              </div>
+            ))}
           </div>
         </div>
+        </FadeUpReveal>
       </section>
 
       {/* Want a Feel of BalloAds? — app try-it CTA. A device mockup (SVG) rests
@@ -618,19 +604,28 @@ export default function HomeClient({
       <section className="try-section">
         <FadeUpReveal yOffset={50} className="try-phone-wrap">
           {/* Cyan glow orb behind the device */}
-          <Image src={bglight} alt="" className="try-glow" aria-hidden="true" />
+          <Image src={bglight} alt="" className="try-glow" aria-hidden="true" sizes="(max-width: 420px) 132vw, 540px" />
           <button
             type="button"
             onClick={openWaitlist}
             className="try-visual"
             aria-label="Try BalloAds now"
           >
-            {/* Device artwork — scaled + clipped to the phone body */}
+            {/* Device artwork — scaled + clipped to the phone body. Served as
+                the SVG rather than through next/image because the optimizer
+                does not rasterize SVG; the file's three embedded bitmaps were
+                downscaled to the size this actually renders at, which took it
+                from 15MB to 0.4MB. Lazy + async-decoded: it is the last section
+                on the page and must not compete with the hero. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/Assets/try.it.now.svg"
               alt="Preview of the BalloAds app"
               className="try-art"
+              width={810}
+              height={1012}
+              loading="lazy"
+              decoding="async"
             />
             {/* On-screen content */}
             <span className="try-overlay">

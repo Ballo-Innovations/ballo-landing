@@ -9,7 +9,11 @@ import { toHowItWorksStep } from "../steps";
 // The CMS is the source of truth for which slugs exist, so this route is
 // dynamic (SSR'd per-request) rather than statically generated — matching
 // how `/blog/[slug]` already works.
-export const dynamic = "force-dynamic";
+// No `force-dynamic`: this route already renders per-request because its CMS
+// helpers read headers() to pick the environment's API base. All force-dynamic
+// added was forcing `no-store` onto every fetch in the route, which overrode the
+// revalidate window in lib/cmsFetch.ts and put an uncached upstream round-trip
+// in front of every visitor.
 
 export async function generateMetadata({
   params,

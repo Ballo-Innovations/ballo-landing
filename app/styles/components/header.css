@@ -61,6 +61,8 @@
 
 /* ===== Glass bar: logo · nav · auth as separate pills ===== */
 .header__bar {
+  /* Shared island height — see .header__pill. */
+  --header-pill-h: 3.4rem;
   position: fixed;
   top: 1.35rem;
   left: 50%;
@@ -83,17 +85,22 @@
   pointer-events: auto;
 }
 
+/* One height for all three islands. The logo pill has no vertical padding, so
+   its height is whatever .header__logo-image/-mark is (3.4rem); the nav and
+   sign-in pills are shorter than that on their own padding alone, which left
+   them visibly undersized next to it. Driving all three off this token keeps
+   them level — change the logo height and this with it. */
 .header__pill {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 3.05rem;
+  min-height: var(--header-pill-h);
   border-radius: 999px;
 }
 
 .header__pill--logo {
   justify-self: start;
-  padding: 0 1.5rem 0 1.4rem;
+  padding: 0 0.85rem 0 0.75rem;
 }
 
 .header__pill--nav {
@@ -116,13 +123,6 @@
    a single, desaturated tint with a restrained sheen lets the backdrop through
    and keeps the bar sitting just above the page colour. */
 .header__pill--nav.glass-surface-nav {
-  --glass-nav-sheen: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.02) 55%,
-    rgba(255, 255, 255, 0.05)
-  );
-  --glass-nav-tint: linear-gradient(180deg, rgba(124, 139, 174, 0.2), rgba(94, 109, 146, 0.16));
   background: var(--glass-nav-sheen), var(--glass-nav-tint);
 }
 
@@ -135,7 +135,7 @@
 
 .header-glass-pill {
   overflow: hidden;
-  color: #fff;
+  color: rgba(255,255,255,0.84);
   border-radius: 999px;
   transition:
     transform 0.2s ease,
@@ -199,16 +199,10 @@
      nothing visible to blur — what is behind the panel (rings, hero art) has to
      read through it, which is what makes it look like glass rather than a
      painted slab. */
-  --glass-nav-sheen: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.04) 55%,
-    rgba(255, 255, 255, 0.07)
-  );
-  /* Light neutral grey, not navy: the island should sit a shade lighter than
-     the page behind it and match the active pill's grey, while the doubled
-     application below still gives it body. */
-  --glass-nav-tint: linear-gradient(180deg, rgba(198, 211, 236, 0.12), rgba(146, 163, 203, 0.1));
+  --glass-nav-sheen:  linear-gradient(160deg, rgb(42 62 119 / 71%), rgba(45, 45, 54, 0.3) 55%, rgba(17, 18, 20, 0.19));
+  /* Desaturated slate over the dark sheen: the island reads as smoked glass
+     sitting just above the page colour rather than a lighter painted slab. */
+  --glass-nav-tint: linear-gradient(180deg, rgba(124, 139, 174, 0.2), rgba(94, 109, 146, 0.16));
   background: var(--glass-nav-sheen), var(--glass-nav-tint);
   border: 1px solid rgba(255, 255, 255, 0.38);
   box-shadow:
@@ -331,15 +325,16 @@
 
 .header__logo-image {
   display: block;
-  /* Height caps the logo so it — not padding — drives the pill height. */
-  height: 2.5rem;
+  /* Height caps the logo so it — not padding — drives the pill height. Scaled
+     with the enlarged nav type so the two pills read at the same weight. */
+  height: 3.4rem;
   width: auto;
   object-fit: contain;
   filter: brightness(0) invert(1);
 }
 
 .header__logo-mark {
-  height: 2.5rem;
+  height: 3.4rem;
   width: auto;
   flex: 0 0 auto;
 }
@@ -348,10 +343,10 @@
   /* width:auto preserves the wordmark's natural ratio (no stretch); the
      negative margin tucks it against the icon, closing the inner whitespace
      baked into both PNGs. */
-  height: 2.5rem;
+  height: 3.4rem;
   width: auto;
   flex: 0 0 auto;
-  margin-left: -0.75rem;
+  margin-left: -1rem;
 }
 
 /* ===== Nav items ===== */
@@ -372,14 +367,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.28rem;
-  padding: 0.55rem 0.8rem;
+  padding: 0.55rem 0.95rem;
   border: 0;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 1.175rem;
   font-weight: 600;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255,255,255,0.84);
+  /* color: #fff; */
   white-space: nowrap;
   background: transparent;
   cursor: pointer;
@@ -407,8 +403,8 @@
 .header__nav-chevron {
   position: relative;
   z-index: 1;
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 1.05rem;
+  height: 1.05rem;
   transition: transform 0.22s ease;
 }
 
@@ -461,14 +457,35 @@
   border-radius: 1.15rem;
 }
 
+/* The panels read as the nav island's material continued downward: same sheen
+   and tint. They only add a modest deep scrim and a touch more blur, because
+   they overlay page content (photography, light cards) rather than the hero
+   backdrop, and the bar's own translucency alone lets that content read
+   straight through the labels. */
+.header__dropdown.glass-surface-nav {
+  background:
+    var(--glass-nav-sheen),
+    var(--glass-nav-tint),
+    /* a frost veil rather than a solid floor: white haze first so the panel
+       reads as thick glass, over a lighter deep scrim than before */
+    linear-gradient(180deg, rgba(2, 46, 150, 0.433), rgb(20, 68, 157)),
+    linear-gradient(180deg, rgba(17, 62, 240, 0.667), rgba(15, 29, 102, 0.487));
+  /* Heavy blur plus a slight brightness lift is what sells depth of material —
+     detail behind dissolves into colour instead of staying legible. */
+  backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
+  -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
+}
+
 .header__dropdown-link {
   display: block;
   padding: 0.55rem 0.8rem;
   border-radius: 0.75rem;
-  font-size: 0.95rem;
+  /* Matches .header__nav-item so the panel reads as the bar continued. */
+  font-size: 1.175rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.84);
+  color: #fff;
   white-space: nowrap;
+  background: transparent;
   transition:
     background 0.18s ease,
     color 0.18s ease;
@@ -497,14 +514,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  min-height: 3.05rem;
+  min-height: var(--header-pill-h);
   padding: 0 1.25rem;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 1rem;
+  /* Matches .header__nav-item. */
+  font-size: 1.175rem;
   font-weight: 600;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.86);
+  color: #fff;
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -531,12 +549,15 @@
 .header__dropdown--auth {
   left: auto;
   right: 0;
-  min-width: 15.5rem;
+  min-width: 17.5rem;
 }
 
+/* These are <button>s, so they need the element resets the <a> links don't.
+   `background` is deliberately left to .header__dropdown-link's own rules —
+   setting it here would tie on specificity and, coming later in the file,
+   silently cancel the shared :hover state. */
 .header__dropdown--auth .header__dropdown-link {
   border: 0;
-  background: transparent;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
@@ -550,13 +571,13 @@
 }
 
 .header__dropdown-title {
-  font-size: 0.96rem;
+  font-size: 1.175rem;
   font-weight: 700;
   color: #fff;
 }
 
 .header__dropdown-desc {
-  font-size: 0.76rem;
+  font-size: 0.92rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.62);
 }
@@ -766,6 +787,9 @@
 
 @media (max-width: 640px) {
   .header__bar {
+    /* Logo drops to 2.35rem at this width; 3.2rem is the floor the pills read
+       well at, and all three still share it. */
+    --header-pill-h: 3.2rem;
     top: 1rem;
     width: calc(100vw - 1rem);
     gap: 0.4rem;
@@ -773,10 +797,6 @@
 
   .header__bar--scrolled {
     top: 0.75rem;
-  }
-
-  .header__pill {
-    min-height: 3.2rem;
   }
 
   .header__pill--logo {

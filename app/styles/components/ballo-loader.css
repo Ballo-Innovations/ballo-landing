@@ -1,0 +1,83 @@
+/* =============================================
+   BalloLoader — concentric ripple behind the "Why Choose" phone
+   File: app/components/ui/BalloLoader.tsx
+
+   Perf notes (this runs infinitely inside a *pinned* section, so every frame
+   it costs lands squarely on the scroll path):
+     • No backdrop-filter. Five overlapping translucent discs each blurring
+       everything behind them meant five full-size backdrop rasterizations per
+       frame; a plain translucent gradient fill is visually near-identical here
+       because what sits behind is the flat page gradient.
+     • box-shadow is static. Animating a shadow's offset/blur repaints the disc
+       every frame and cannot be composited; only `transform` animates now.
+   ============================================= */
+
+.ballo-loader {
+  --size: 480px;
+  --duration: 2s;
+  --logo-color: #06064b;
+  height: var(--size);
+  aspect-ratio: 1;
+  position: relative;
+}
+
+.ballo-loader .ballo-box {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(
+    0deg,
+    rgba(6, 6, 75, 0.2) 0%,
+    rgba(6, 6, 75, 0.45) 100%
+  );
+  border-top: 1px solid rgba(6, 6, 75, 1);
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 18px 16px 0px;
+  animation: ballo-ripple var(--duration) infinite ease-in-out;
+}
+
+.ballo-loader .ballo-box:nth-child(1) { inset: 40%; z-index: 99; }
+.ballo-loader .ballo-box:nth-child(2) { inset: 30%; z-index: 98; border-color: rgba(6, 6, 75, 0.8); animation-delay: 0.2s; }
+.ballo-loader .ballo-box:nth-child(3) { inset: 20%; z-index: 97; border-color: rgba(6, 6, 75, 0.6); animation-delay: 0.4s; }
+.ballo-loader .ballo-box:nth-child(4) { inset: 10%; z-index: 96; border-color: rgba(6, 6, 75, 0.4); animation-delay: 0.6s; }
+.ballo-loader .ballo-box:nth-child(5) { inset: 0%;  z-index: 95; border-color: rgba(6, 6, 75, 0.2); animation-delay: 0.8s; }
+
+.ballo-loader .ballo-logo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  padding: 30%;
+}
+
+/* The mark brightens with the ripple. Cross-fading two stacked copies keeps
+   this on the compositor — animating `fill` would repaint the glyph paths. */
+.ballo-loader .ballo-logo svg {
+  grid-area: 1 / 1;
+  width: 100%;
+}
+
+.ballo-loader .ballo-logo-base { fill: var(--logo-color); }
+
+.ballo-loader .ballo-logo-lit {
+  fill: #fff;
+  opacity: 0;
+  animation: ballo-lit var(--duration) infinite ease-in-out;
+}
+
+@keyframes ballo-ripple {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ballo-lit {
+  0%   { opacity: 0; }
+  50%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ballo-loader .ballo-box,
+  .ballo-loader .ballo-logo-lit {
+    animation: none;
+  }
+}

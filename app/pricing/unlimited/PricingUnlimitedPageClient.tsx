@@ -350,7 +350,7 @@ export default function PricingUnlimitedPageClient({
               Run your campaign <br />
               in just a few seconds
             </h2>
-            <p className="text-lg text-slate-600 mb-8 max-w-md">
+            <p className="landing-body text-slate-600 mb-8 max-w-md">
               After registration, utilise our automations and run your dynamic campaigns in just a few clicks
             </p>
             <button className="bg-blue-900 text-white px-8 py-4 rounded-full font-bold hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl">

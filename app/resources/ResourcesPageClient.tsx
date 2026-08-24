@@ -56,7 +56,7 @@ export default function ResourcesPageClient({ faqs }: { faqs: FaqEntry[] }) {
                     {heroCards.main.title}
                   </h2>
                   </div>
-                  <p className="text-base text-[var(--dark-blue)]/70">
+                  <p className="landing-body text-[var(--dark-blue)]/70">
                     Explore in-depth walkthroughs and video tutorials designed to help you launch campaigns in minutes.
                   </p>
                   <Link
@@ -149,7 +149,7 @@ export default function ResourcesPageClient({ faqs }: { faqs: FaqEntry[] }) {
                 </h2>
               </div>
               <div className="items-center">
-                <p className="max-w-2xl text-sm text-white/70 md:text-base">
+                <p className="landing-body max-w-2xl text-white/70">
                   Browse through common questions from the BalloAds community. Switch categories to explore more step-by-step guides.
                 </p>
               </div>

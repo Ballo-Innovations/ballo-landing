@@ -1,5 +1,8 @@
 :root {
   --background: #ffffff;
+  /* Base colour of the page canvas. The site is dark on every route, so this
+     is what must sit behind everything — see the html/body rules below. */
+  --page-base: #05043a;
   --foreground: #171717;
   --brand-color-1: #020055;
   --brand-color-2: #0b4d8c;
@@ -35,8 +38,14 @@
   }
 }
 
+html {
+  background-color: var(--page-base);
+}
+
+/* Transparent — see the note in globals.css: an opaque body background covers
+   negative-z-index layers such as .page-gradient. */
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
 }

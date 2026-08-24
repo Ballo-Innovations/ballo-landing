@@ -111,7 +111,7 @@ export default function PlaybookForm() {
         </span>
         <h3 className="kb-form__done-title">You&apos;re on the list</h3>
         <p className="kb-form__done-text">
-          Thanks — we&apos;ve got what we need for {data.business.trim() || "your business"}. Your
+          Thanks, we&apos;ve got what we need for {data.business.trim() || "your business"}. Your
           playbook is being put together and lands at <strong>{data.email.trim()}</strong> when we
           launch.
         </p>
@@ -166,7 +166,7 @@ export default function PlaybookForm() {
       {step === 2 && (
         <div className="kb-form__step-body">
           <p className="kb-form__q">What line of work are you in?</p>
-          <p className="kb-form__sub">Be specific — this is what makes the playbook yours and not a template.</p>
+          <p className="kb-form__sub">Be specific. This is what makes the playbook yours and not a template.</p>
           <label className="kb-form__field-label" htmlFor="pb-ind">Industry</label>
           <select
             id="pb-ind"
@@ -246,7 +246,7 @@ export default function PlaybookForm() {
           <p className="kb-form__q">Where should we send it?</p>
           <p className="kb-form__sub">Early adopters get the playbook free, plus first access at launch.</p>
           <div className="kb-form__recap">
-            {data.business.trim() || "Your business"} in {data.location.trim() || "your city"} —{" "}
+            {data.business.trim() || "Your business"} in {data.location.trim() || "your city"}:{" "}
             {data.doing.trim() || "what you do"}. Fixing: {data.pain || "your biggest headache"}.
             Reaching {data.size || "your"} people.
           </div>

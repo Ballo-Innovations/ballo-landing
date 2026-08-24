@@ -5,17 +5,30 @@
   font-family: var(--font-ubuntu), sans-serif;
 }
 
+/* Same box as .page-inner (app/styles/pages/home.css), so the footer columns
+   line up with the content above them. The old 84rem/40px combination gave a
+   1264px content width against the page's 1216px, which read as the footer
+   being ~24px wider on each side. */
 .footer__container {
-  max-width: 84rem;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding-inline: clamp(1rem, 5vw, 2rem);
 }
 
 .footer__grid {
   display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr 1.1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 32px;
   align-items: center;
+}
+
+/* The text columns: one grid row, so every heading sits on the same line
+   regardless of how many links sit under it. */
+.footer__columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.1fr;
+  gap: 32px;
+  align-items: start;
 }
 
 /* Logo Section — an oversized brand mark on the left (~2× the text-column
@@ -36,11 +49,13 @@
   height: clamp(360px, 44vw, 612px);
   object-fit: contain;
   object-position: left center;
-  /* Lift the mark off the black footer: a cyan halo so the teal body and the
-     neon ring both read clearly (body #005B87, ring #40D5FF). */
-  filter:
-    drop-shadow(0 0 24px rgba(64, 213, 255, 0.5))
-    drop-shadow(0 0 8px rgba(64, 213, 255, 0.35));
+  /* No drop-shadow. The asset carries its own neon glow, and drop-shadow
+     traces the image's ALPHA SILHOUETTE, which for this mark is the soft glow
+     rather than the crisp stroke: each shadow painted another blurred ring
+     whose bright edge landed outside the real one, so the ring read as
+     doubled and off-centre. Measured in the asset, the stroke itself is round
+     and concentric (white core r258-269, glow band r218-304 about 698,890),
+     so nothing needed compensating, only removing. */
 }
 
 .footer__stylized-logo {
@@ -162,11 +177,8 @@
 
 /* Tablet: keep the desktop 5-column layout, just tighten spacing. */
 @media (max-width: 1024px) {
-  .footer__container {
-    padding: 0 24px;
-  }
-
-  .footer__grid {
+  .footer__grid,
+  .footer__columns {
     gap: 16px;
   }
 
@@ -193,11 +205,12 @@
     padding: 56px 0;
   }
 
-  .footer__container {
-    padding: 0 24px;
+  .footer__grid {
+    grid-template-columns: 1fr;
+    gap: 32px 20px;
   }
 
-  .footer__grid {
+  .footer__columns {
     grid-template-columns: 1fr 1fr;
     gap: 32px 20px;
   }

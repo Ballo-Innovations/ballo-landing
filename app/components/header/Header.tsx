@@ -161,7 +161,6 @@ const Header = () => {
   const pathname = usePathname();
   const { openWaitlist } = useWaitlist();
   const { scrollY } = useScroll();
-  const [isHidden, setIsHidden] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -171,22 +170,12 @@ const Header = () => {
   // instant a link is clicked (predictive UI) instead of waiting for the next
   // page to load, and drives the top loading bar.
   const [pendingPath, setPendingPath] = useState<string | null>(null);
-  const lastScrollY = useRef(0);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navItemsRef = useRef<HTMLDivElement | null>(null);
   const navItemRefs = useRef<Record<string, HTMLElement | null>>({});
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = lastScrollY.current;
     setHasScrolled(latest > 12);
-
-    if (latest > previous && latest > 80) {
-      setIsHidden(true);
-    } else if (latest < previous) {
-      setIsHidden(false);
-    }
-
-    lastScrollY.current = latest;
   });
 
   // Any client navigation should dismiss whatever menu is open, and clears the
@@ -205,10 +194,6 @@ const Header = () => {
     const t = setTimeout(() => setPendingPath(null), 4000);
     return () => clearTimeout(t);
   }, [pendingPath]);
-
-  // Knowledge Base: keep the nav pinned (never hide on scroll-down) so the
-  // page's content scrolls up INTO the nav rather than into a bare strip.
-  const pinNav = pathname === "/knowledge-base";
 
   // Prefer the optimistic target while a navigation is in flight so the active
   // pill jumps immediately on click.
@@ -273,16 +258,10 @@ const Header = () => {
         aria-hidden="true"
       />
 
+      {/* The bar stays pinned at all times — no hide-on-scroll-down. */}
       <motion.div
-        variants={{
-          visible: { y: 0, x: "-50%" },
-          hidden: { y: "-135%", x: "-50%" },
-        }}
-        animate={isHidden && !pinNav ? "hidden" : "visible"}
-        initial="visible"
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className={`header__bar ${hasScrolled ? "header__bar--scrolled" : ""}`}
-        style={{ zIndex: 100 }}
+        style={{ x: "-50%", zIndex: 100 }}
       >
         {/* Pill 1 — Logo */}
         <HeaderGlassPill className="header__pill--logo">

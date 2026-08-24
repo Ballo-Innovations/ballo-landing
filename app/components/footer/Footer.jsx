@@ -40,78 +40,85 @@ const Footer = ({
             </Link>
           </div>
 
-          {/* Information */}
-          <div className="footer__column">
-            <h3 className="footer__column-title">Information</h3>
-            <ul className="footer__link-list">
-              <li><Link href="/features">Features</Link></li>
-              <li><Link href="/how-it-works">How it works</Link></li>
-              <li><Link href="/pricing">Pricing</Link></li>
-              <li><Link href="/blog">Blog</Link></li>
-              <li><Link href="/faq">FAQ</Link></li>
-              <li><Link href="/careers">Careers</Link></li>
-            </ul>
-          </div>
-
-          {/* Help & Support */}
-          <div className="footer__column">
-            <h3 className="footer__column-title">Help & Support</h3>
-            <ul className="footer__link-list">
-              <li><Link href="/knowledge-base">Knowledge Base</Link></li>
-              <li><Link href="/live-chat">Live Chat</Link></li>
-              <li><Link href="/privacy-policy">Privacy Policy</Link></li>
-              <li><Link href="/resources">Resources</Link></li>
-              <li><Link href="/whats-new">What&apos;s New</Link></li>
-            </ul>
-          </div>
-
-          {/* Our Socials */}
-          <div className="footer__column">
-            <h3 className="footer__column-title">Our Socials</h3>
-            <div className="footer__socials-grid">
-              {socialLinks.map(({ key, label, url }) => {
-                const Icon = SOCIAL_ICONS[key];
-                if (!Icon) return null;
-                return url ? (
-                  <Link
-                    key={key}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="footer__social-icon"
-                  >
-                    <Icon size={22} />
-                  </Link>
-                ) : (
-                  <span
-                    key={key}
-                    aria-label={`${label} - link coming soon`}
-                    aria-disabled="true"
-                    className="footer__social-icon"
-                  >
-                    <Icon size={22} />
-                  </span>
-                );
-              })}
+          {/* The four text columns share one grid row so their headings sit on
+              a single line; the group is centred against the logo. Centring
+              each column individually (the old align-items: center on
+              .footer__grid) put every heading at a different height, because
+              the columns have different link counts. */}
+          <div className="footer__columns">
+            {/* Information */}
+            <div className="footer__column">
+              <h3 className="footer__column-title">Information</h3>
+              <ul className="footer__link-list">
+                <li><Link href="/features">Features</Link></li>
+                <li><Link href="/how-it-works">How it works</Link></li>
+                <li><Link href="/pricing">Pricing</Link></li>
+                <li><Link href="/blog">Blog</Link></li>
+                <li><Link href="/faq">FAQ</Link></li>
+                <li><Link href="/careers">Careers</Link></li>
+              </ul>
             </div>
-          </div>
 
-          {/* Contact us */}
-          <div className="footer__column">
-            <h3 className="footer__column-title">Contact us</h3>
-            <div className="footer__contact-info">
-              <div className="footer__contact-item">
-                <div className="footer__contact-icon-wrapper">
-                  <Phone size={14} className="footer__contact-icon-inner" />
-                </div>
-                <span>{contactPhone}</span>
+            {/* Help & Support */}
+            <div className="footer__column">
+              <h3 className="footer__column-title">Help & Support</h3>
+              <ul className="footer__link-list">
+                <li><Link href="/knowledge-base">Knowledge Base</Link></li>
+                <li><Link href="/live-chat">Live Chat</Link></li>
+                <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+                <li><Link href="/resources">Resources</Link></li>
+                <li><Link href="/whats-new">What&apos;s New</Link></li>
+              </ul>
+            </div>
+
+            {/* Our Socials */}
+            <div className="footer__column">
+              <h3 className="footer__column-title">Our Socials</h3>
+              <div className="footer__socials-grid">
+                {socialLinks.map(({ key, label, url }) => {
+                  const Icon = SOCIAL_ICONS[key];
+                  if (!Icon) return null;
+                  return url ? (
+                    <Link
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="footer__social-icon"
+                    >
+                      <Icon size={22} />
+                    </Link>
+                  ) : (
+                    <span
+                      key={key}
+                      aria-label={`${label} - link coming soon`}
+                      aria-disabled="true"
+                      className="footer__social-icon"
+                    >
+                      <Icon size={22} />
+                    </span>
+                  );
+                })}
               </div>
-              <div className="footer__contact-item">
-                <div className="footer__contact-icon-wrapper">
-                  <Mail size={14} className="footer__contact-icon-inner" />
+            </div>
+
+            {/* Contact us */}
+            <div className="footer__column">
+              <h3 className="footer__column-title">Contact us</h3>
+              <div className="footer__contact-info">
+                <div className="footer__contact-item">
+                  <div className="footer__contact-icon-wrapper">
+                    <Phone size={14} className="footer__contact-icon-inner" />
+                  </div>
+                  <span>{contactPhone}</span>
                 </div>
-                <span>{contactEmail}</span>
+                <div className="footer__contact-item">
+                  <div className="footer__contact-icon-wrapper">
+                    <Mail size={14} className="footer__contact-icon-inner" />
+                  </div>
+                  <span>{contactEmail}</span>
+                </div>
               </div>
             </div>
           </div>

@@ -1,13 +1,14 @@
 import { headers } from "next/headers";
 
 import { resolvePublicApiBase } from "@/lib/publicApiBase";
+import { cmsFetchInit } from "@/lib/cmsFetch";
 
 export async function getSiteSettings(): Promise<Record<string, string>> {
   const headerList = await headers();
   const base = resolvePublicApiBase(headerList.get("host"));
   const url = `${base}/v1/site-settings`;
   try {
-    const res = await fetch(url, { cache: "no-store", headers: { Accept: "application/json" } });
+    const res = await fetch(url, cmsFetchInit());
     if (!res.ok) {
       console.error("[siteSettingsApi] non-OK response", { url, status: res.status });
       return {};
