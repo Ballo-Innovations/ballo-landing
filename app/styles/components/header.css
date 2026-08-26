@@ -217,6 +217,23 @@
   -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 
+/* Island-only glass: the three pills in the bar (logo, centre nav, sign-in)
+   carry a bluer, more saturated sheen than the shared recipe above. Pinned here
+   rather than edited into that recipe because .glass-surface-nav is also worn by
+   the dropdown panels and the mobile sheet, which keep the slate sheen — the
+   panels overlay page content, where this much blue would swamp it.
+   Must stay after the shared block: .header-glass-pill and .header__auth-signin
+   match its specificity, so order is what makes these win. */
+.header__pill--nav.glass-surface-nav,
+.header-glass-pill,
+.header__auth-signin {
+  color: #fff;
+  --glass-nav-sheen: linear-gradient(160deg, #2765c0a6, #0f2873eb 55%, #628ce1a3);
+  /* Same values as the shared tint today, restated so the islands hold this
+     look if the panels' tint is ever retuned. */
+  --glass-nav-tint: linear-gradient(180deg, #7c8bae33, #5e6d9229);
+}
+
 /* Sheen layer: one soft highlight pooling in the top-left corner and nothing
    else. Anything stronger (or tinted) starts reading as a painted-on gradient
    instead of light falling across frosted glass. */
