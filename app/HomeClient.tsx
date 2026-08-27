@@ -25,11 +25,31 @@ import bglight from "@/public/Assets/2.png";
 import logoIcon from "@/public/BalloAds Logo New/BalloAds-Icon.png";
 import { CloudUpload } from "lucide-react";
 
-import woman from "@/public/Assets/11.png";
-import woman2 from "@/public/Assets/13.png";
-import woman3 from "@/public/Assets/10.png";
-import man from "@/public/Assets/14.png";
-import ConcentricRings from "./components/ui/ConcentricRings";
+import {
+  ContainerAnimated,
+  ContainerScroll,
+  ContainerStagger,
+  ContainerSticky,
+  GalleryCol,
+  GalleryContainer,
+  GalleryImage,
+} from "./components/ui/AnimatedGallery";
+
+// Hero gallery art. All existing BalloAds renders — the six industry scenes,
+// two street shots, and three product screens — so the hero shows the actual
+// product and the sectors it serves rather than stock photography.
+import artBank from "@/public/Assets/Bank.jpg";
+import artHealth from "@/public/Assets/Health.png";
+import artNGO from "@/public/Assets/NGO.jpg";
+import artRetail from "@/public/Assets/Retail.png";
+import artUniversity from "@/public/Assets/University.png";
+import artFinancial from "@/public/Assets/Financial .png";
+import artBankNGO from "@/public/Assets/BANK + NGO.png";
+import artTower from "@/public/Assets/48.png";
+import artStorefront from "@/public/Assets/52.png";
+import artAnalytics from "@/public/Assets/analytics-D8Ni1S4n.png";
+import artCampaign from "@/public/Assets/campaign-ZQacCUNF.png";
+import artPackages from "@/public/Assets/packages-BliRP6bM.png";
 
 // Referenced below for the one-off "invert to white" filter applied to the
 // Bayport mark specifically — kept here even though the rest of the fallback
@@ -69,43 +89,35 @@ function usePrefersReducedMotion() {
   return reduced;
 }
 
-const features = [
-  {
-    title: "WHATSAPP MARKETING WITH PRECISION",
-    titleLines: ["WHATSAPP", "MARKETING", "WITH PRECISION"],
-    description:
-      "Experience automated email marketing for higher conversions. BalloAds gives you....",
-    image: woman3,
-    imageFrame: { scale: 1, x: "0%", y: "0%" },
-    href: "/whatsapp-marketing",
-  },
-  {
-    title: "TARGETED BULK SMS SOLUTIONS",
-    titleLines: ["TARGETED", "BULK SMS", "SOLUTIONS"],
-    description:
-      "Experience automated email marketing for higher conversions. BalloAds gives you....",
-    image: man,
-    imageFrame: { scale: 0.9, x: "0%", y: "0%" },
-    href: "/sms-marketing",
-  },
-  {
-    title: "EMAIL MARKETING AT YOUR FINGERTIPS",
-    titleLines: ["EMAIL MARKETING", "AT YOUR", "FINGERTIPS"],
-    description:
-      "Experience automated email marketing for higher conversions. BalloAds gives you....",
-    image: woman,
-    imageFrame: { scale: 1.2, x: "-18%", y: "0%" },
-    href: "/email-marketing",
-  },
-  {
-    title: "INITIATE POP UP AND WEB PUSH NOTIFICATIONS",
-    titleLines: ["INITIATE POP UP", "AND WEB PUSH", "NOTIFICATIONS"],
-    description:
-      "Experience automated email marketing for higher conversions. BalloAds gives you....",
-    image: woman2,
-    imageFrame: { scale: 1, x: "-15%", y: "0%" },
-    href: "/features",
-  },
+/**
+ * Hero gallery columns.
+ *
+ * Twelve tiles over three columns. The middle column is pulled up hard by the
+ * layout (`mt-[-50%]`), so it carries the same count as its neighbours to keep
+ * the grid filled through the full parallax travel.
+ */
+const GALLERY_COL_1 = [
+  { src: artFinancial, alt: "Ballo Financial branch lit at night", priority: true },
+  { src: artAnalytics, alt: "Campaign analytics dashboard showing delivery stats" },
+  { src: artRetail, alt: "BalloRetail storefront lit at night" },
+  { src: artStorefront, alt: "Ballo storefront on a rainy city street" },
+];
+
+const GALLERY_COL_2 = [
+  { src: artCampaign, alt: "Creating a bulk message in the BalloAds dashboard", priority: true },
+  { src: artHealth, alt: "Ballo Health facility lit at night" },
+  { src: artTower, alt: "City tower lit in BalloAds cyan" },
+  { src: artNGO, alt: "Ballo Public Impact building lit at night" },
+];
+
+/** Third from the top of the centre column — the tile the hero zooms into. */
+const ZOOM_TILE_INDEX = 2;
+
+const GALLERY_COL_3 = [
+  { src: artUniversity, alt: "BalloUniversity campus lit at night", priority: true },
+  { src: artPackages, alt: "Choosing an SMS and WhatsApp package" },
+  { src: artBank, alt: "Ballo bank branch lit at night" },
+  { src: artBankNGO, alt: "Ballo banking and public impact scene" },
 ];
 
 export default function HomeClient({
@@ -118,31 +130,17 @@ export default function HomeClient({
   backerLogos: HomeLogoItem[];
 }) {
   const { openWaitlist } = useWaitlist();
+  // The tile the gallery zooms into at the end of the scroll: third from the top
+  // of the centre column (the Ballo Bank tower).
+  const zoomTileRef = useRef<HTMLDivElement>(null);
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const shouldReduceMotion = usePrefersReducedMotion();
-  const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const testimonialsSectionRef = useRef<HTMLElement>(null);
   const isTestimonialsVisibleRef = useRef(false);
 
-  // Infinite CSS marquees — parked while scrolled away (see the hook).
-  const heroMarqueeRef = useAnimateWhenVisible();
+  // Infinite CSS marquee — parked while scrolled away (see the hook). The hero
+  // marquee that used the other instance went with the old carousel.
   const trustedByRef = useAnimateWhenVisible<HTMLElement>();
-
-  useEffect(() => {
-    return () => {
-      if (resumeAutoPlayTimeoutRef.current) clearTimeout(resumeAutoPlayTimeoutRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isAutoPlaying || shouldReduceMotion) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % features.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, shouldReduceMotion]);
 
   // Pause testimonials interval when section is off-screen
   useEffect(() => {
@@ -156,28 +154,16 @@ export default function HomeClient({
     return () => obs.disconnect();
   }, []);
 
-  const goToSlide = (index: number) => {
-    if (resumeAutoPlayTimeoutRef.current) {
-      clearTimeout(resumeAutoPlayTimeoutRef.current);
-    }
-    setCurrentSlide(index);
-    setIsAutoPlaying(false);
-    if (!shouldReduceMotion) {
-      resumeAutoPlayTimeoutRef.current = setTimeout(() => {
-        setIsAutoPlaying(true);
-      }, 10000);
-    }
-  };
-
   const [testimonialIndex, setTestimonialIndex] = useState(0);
 
   useEffect(() => {
+    if (shouldReduceMotion) return;
     const t = setInterval(() => {
       if (!isTestimonialsVisibleRef.current) return;
       setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
     }, 6000);
     return () => clearInterval(t);
-  }, [testimonials.length]);
+  }, [testimonials.length, shouldReduceMotion]);
 
   // Marquee loop needs the logo list duplicated end-to-end so the CSS
   // animation can scroll seamlessly — same doubling the hardcoded array used
@@ -198,151 +184,83 @@ export default function HomeClient({
           background here, which is what a fast scroll was outrunning. */}
       <PageGradient />
 
-      {/* Hero Section */}
-      <section
-        className="prlx-hero-trigger relative min-h-screen pt-24 pb-12 overflow-hidden"
-        style={{
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      >
-        {/* Parallax depth layers — behind all content */}
-        <div className="prlx-hero-1" aria-hidden="true" />
-        <div className="prlx-hero-2" aria-hidden="true" />
+      {/* Hero — 3D scroll gallery.
 
-        {/* Background Pattern */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{ backgroundSize: "cover" }}
-        />
+          Replaces the previous four-slide auto-rotating carousel. That carousel
+          auto-advanced every 5s with no pause or prev/next control (WCAG 2.2.2),
+          and mounted three of its four headlines as <p role="heading"
+          aria-level={1}>, so the page announced four level-1 headings. Both
+          problems are gone with it: one H1, stated once, and no timer. */}
+      <section className="relative">
+        <ContainerStagger className="relative z-20 -mb-16 place-self-center px-6 pt-32 text-center md:-mb-24">
+          <ContainerAnimated>
+            <h1 className="font-serif text-4xl font-extralight leading-tight md:text-6xl">
+              Your{" "}
+              <span className="font-serif font-extralight text-[var(--brand-color-4)]">
+                one source
+              </span>
+            </h1>
+          </ContainerAnimated>
+          <ContainerAnimated>
+            {/* Presentational continuation of the H1 above, so it must NOT be a
+                second heading element. */}
+            <p className="font-serif text-4xl font-extralight leading-tight md:text-6xl">
+              for reaching every customer
+            </p>
+          </ContainerAnimated>
 
-        {/* Frame uses the EXACT header-pill width formula so the hero's left
-            edge tracks the nav's at every viewport. Two-column carousel: the
-            rotating text (left) and person (right) change together as one slide;
-            the person stands on the full-width "POWERFUL AND VERSATILE" card,
-            which is pulled up to mask the cutout's clipped bottom edge. */}
-        <div className="hero-frame relative z-[1]">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
-            {/* Left — rotating copy (text half of the carousel slide) */}
-            <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
-              <p className="hero-kicker text-shimmer">AI-Powered Performance Marketing</p>
+          <ContainerAnimated className="my-6">
+            <p className="mx-auto max-w-[52ch] leading-relaxed tracking-tight text-white/70">
+              SMS, WhatsApp and email campaigns from one platform,
+              <br className="hidden sm:block" /> with the numbers to show what each one earned you.
+            </p>
+          </ContainerAnimated>
 
-              {/* Rotating headline. All four headlines are mounted and stacked;
-                  only the `is-active` class moves, so a slide change is a pure
-                  opacity/transform crossfade on the compositor — no React
-                  remount, no re-layout of the hero column. Slide 1 is the H1
-                  (one per page); the rest are presentational. */}
-              <div className="hero-headline-stack">
-                {features.map((feature, index) => {
-                  const lines = feature.titleLines.map((line) => (
-                    <span key={line}>{line}</span>
-                  ));
-                  const active = index === currentSlide;
-                  return index === 0 ? (
-                    <h1
-                      key={feature.title}
-                      className={`hero-headline${active ? " is-active" : ""}`}
-                      aria-hidden={!active}
-                    >
-                      {lines}
-                    </h1>
-                  ) : (
-                    <p
-                      key={feature.title}
-                      role="heading"
-                      aria-level={1}
-                      className={`hero-headline${active ? " is-active" : ""}`}
-                      aria-hidden={!active}
-                    >
-                      {lines}
-                    </p>
-                  );
-                })}
-              </div>
+          <ContainerAnimated className="flex flex-wrap items-center justify-center gap-3">
+            <button type="button" onClick={openWaitlist} className="btn-primary group">
+              Get started
+            </button>
+            <Link href="/how-it-works" className="btn-secondary group">
+              How it works
+            </Link>
+          </ContainerAnimated>
+        </ContainerStagger>
 
-              {/* Pagination Dots — above the CTAs */}
-              <div className="flex items-center justify-center md:justify-start gap-3">
-                {features.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full border border-white/85 transition-all ${index === currentSlide
-                      ? "bg-white"
-                      : "bg-transparent hover:bg-white/25"
-                      }`}
-                    aria-label={`Go to slide ${index + 1}`}
+        <ContainerScroll className="relative h-[450vh]">
+          {/* Stays a full viewport tall: the sticky child has to cover the
+              viewport, or the scroll parent behind it shows through as an empty
+              band. The tiles are centred within each column instead (see
+              justify-center on GalleryCol) — on a phone three columns of
+              aspect-video tiles only come to about 400px, which sat at the top
+              of the box with a void beneath it. */}
+          <ContainerSticky className="h-svh">
+            <GalleryContainer zoomTarget={zoomTileRef} zoomRange={[0.78, 1]}>
+              <GalleryCol yRange={["-10%", "0%"]} className="-mt-2 justify-center">
+                {GALLERY_COL_1.map((item) => (
+                  <GalleryImage key={item.alt} {...item} />
+                ))}
+              </GalleryCol>
+              <GalleryCol className="mt-[-50%] justify-center" yRange={["15%", "0%"]}>
+                {GALLERY_COL_2.map((item, i) => (
+                  <GalleryImage
+                    key={item.alt}
+                    {...item}
+                    innerRef={i === ZOOM_TILE_INDEX ? zoomTileRef : undefined}
+                    // The zoom target is magnified to fill the screen, so it
+                    // has to be fetched at viewport width, not tile width.
+                    sizes={i === ZOOM_TILE_INDEX ? "100vw" : undefined}
                   />
                 ))}
-              </div>
+              </GalleryCol>
+              <GalleryCol yRange={["-10%", "0%"]} className="-mt-2 justify-center">
+                {GALLERY_COL_3.map((item) => (
+                  <GalleryImage key={item.alt} {...item} />
+                ))}
+              </GalleryCol>
+            </GalleryContainer>
+          </ContainerSticky>
+        </ContainerScroll>
 
-              <div className="hero-actions justify-center md:justify-start">
-                <button type="button" onClick={openWaitlist} className="btn-primary group">
-                  Sign Up
-                </button>
-                <Link href={features[currentSlide].href} className="btn-secondary group">
-                  Learn More
-                </Link>
-              </div>
-
-              {/* Large Faded Text — pure CSS marquee (full-bleed across the
-                  hero). Six copies, not eight: the loop translates by -50%, so
-                  it only needs enough copies that HALF the track still overruns
-                  the 200vw window on the widest screens — and every extra copy
-                  widens an already very large composited layer. */}
-              <div ref={heroMarqueeRef} className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
-                <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Right-side visual. The concentric rings hold their position while the
-            rotating person rests on the bottom of the hero (desktop); on mobile
-            the whole block flows in below the copy. Anchored to the section (not
-            the grid) so the person can reach the viewport floor. */}
-        <div className="hero-visual">
-          <div className="hero-rings" aria-hidden="true">
-            <ConcentricRings />
-          </div>
-          <div className="hero-person-stage">
-            {/* All four cutouts are mounted and stacked, crossfading via CSS.
-                Previously each change unmounted the old <Image> and mounted the
-                new one, so every 5s the browser re-created and re-decoded an
-                image — and a hidden copy of the *next* slide had to be rendered
-                with `priority` to hide the cost, which competed with the real
-                LCP image for bandwidth. Mounting all four decodes each once and
-                deletes the preload hack outright. */}
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
-                aria-hidden={index !== currentSlide}
-              >
-                <Image
-                  src={feature.image}
-                  alt={index === currentSlide ? feature.title : ""}
-                  fill
-                  sizes="(max-width: 768px) 90vw, 45vw"
-                  className="hero-person-img object-contain object-bottom"
-                  style={{
-                    ["--person-scale" as string]: feature.imageFrame.scale,
-                    ["--person-x" as string]: feature.imageFrame.x,
-                    ["--person-y" as string]: feature.imageFrame.y,
-                  } as React.CSSProperties}
-                  priority={index === 0}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* What We're About — normal-flow, transparent panel (page gradient shows

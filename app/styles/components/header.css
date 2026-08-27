@@ -851,3 +851,179 @@
   }
 }
 
+
+/* ===== Full-width bar at rest → three islands on scroll =====
+
+   At the top of the page the header is a plain edge-to-edge bar: no island, no
+   outline, a single hairline along the bottom, and the three groups pushed out
+   to the left and right edges. Past the scroll threshold it lifts into the
+   floating logo / nav / sign-in pills.
+
+   The bar's own geometry carries the change (top, width, padding), and a
+   ::before supplies the surface. The surface has to be its own layer so the two
+   states can CROSS-FADE: gradient backgrounds do not interpolate, so animating
+   the bar's `background` between the island glass and this would snap. Opacity
+   on a dedicated layer does interpolate.
+
+   The pills are not re-laid-out to reach the edges — the bar going full-bleed
+   is what spreads them, since the logo is already `justify-self: start` and the
+   auth group `justify-self: end` inside a `1fr auto 1fr` grid. */
+.header__bar {
+  /* Ordering: the islands must APPEAR before the flat bar's surface goes, or
+     the header reads as changing colour a beat before it splits.
+
+     Why that happened when both ran together: the geometry barely moves (1440px
+     wide to 1344px, top 0 to 16px at desktop), so what the eye reads as "the
+     split" is purely the pills taking their glass back. That glass is a
+     `background` going from `none` to a gradient, which is NOT interpolatable —
+     CSS flips discrete values at 50% of the duration. The flat bar's `opacity`
+     fade, by contrast, is continuous and visible from the first frame. So the
+     surface visibly started changing while the pills were still waiting to pop.
+
+     The delay therefore belongs on whichever surface is LEAVING, in both
+     directions: scrolling down the pills tint immediately and the flat bar
+     fades out after; scrolling back up the flat bar returns first and the pills
+     give up their glass after. */
+  --header-morph-dur: 0.4s;
+  --header-tint-dur: 0.26s;
+  --header-tint-delay: 0.28s;
+  transition:
+    top var(--header-morph-dur, 0.4s) var(--liquid-ease, ease),
+    width var(--header-morph-dur, 0.4s) var(--liquid-ease, ease),
+    padding var(--header-morph-dur, 0.4s) var(--liquid-ease, ease);
+}
+
+.header__bar:not(.header__bar--scrolled) {
+  top: 0;
+  /* Edge to edge. The bar is left:50% + translateX(-50%), so 100vw lands flush
+     against both sides. */
+  width: 100vw;
+  padding: 0.45rem clamp(1rem, 3.5vw, 2.25rem);
+}
+
+.header__bar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  /* Leaving surface when scrolling DOWN, so it waits for the islands. */
+  transition:
+    opacity var(--header-tint-dur, 0.26s) var(--liquid-ease, ease) var(--header-tint-delay, 0.28s),
+    border-radius var(--header-tint-dur, 0.26s) var(--liquid-ease, ease);
+  /* No fill and no outline: only the hairline under it, plus enough blur to
+     keep the nav legible over whatever art is scrolling beneath. */
+  background: none;
+  border: 0 solid transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+}
+
+.header__bar:not(.header__bar--scrolled)::before {
+  opacity: 1;
+  /* Arriving surface when scrolling back UP, so it returns without waiting. */
+  transition-delay: 0s;
+}
+
+/* Pills stay laid out exactly as they are — they just stop painting their own
+   glass while the flat bar is showing. */
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav,
+.header__bar:not(.header__bar--scrolled) .header-glass-pill,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* The pills' sheen and rim are painted by extra layers, not by `background`, so
+   clearing the background alone still leaves each one outlined on the flat bar.
+   The logo pill uses real child elements (__rim, __refract); the nav and
+   sign-in pills use ::before/::after. All of them have to go. */
+.header__bar:not(.header__bar--scrolled) .header-glass-pill__rim,
+.header__bar:not(.header__bar--scrolled) .header-glass-pill__refract,
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav::before,
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav::after,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin::before,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin::after {
+  opacity: 0;
+}
+
+/* Timing below is per-DIRECTION. A transition runs with the timing declared on
+   the state it is moving TO, so the base rules here are the scroll-down case
+   (islands arriving, no delay) and the `:not(--scrolled)` rules are scroll-up
+   (islands leaving, delayed behind the flat bar's return). */
+.header__pill--nav.glass-surface-nav,
+.header__auth-signin {
+  transition:
+    background var(--header-tint-dur, 0.26s) var(--liquid-ease, ease),
+    border-color var(--header-tint-dur, 0.26s) var(--liquid-ease, ease),
+    box-shadow var(--header-tint-dur, 0.26s) var(--liquid-ease, ease);
+}
+
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin {
+  transition-delay: var(--header-tint-delay, 0.28s);
+}
+
+/* Restate the hover/press motion the block above would otherwise drop from
+   .header-glass-pill (its own rule sets `transition` wholesale). */
+.header-glass-pill {
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background var(--header-tint-dur, 0.26s) var(--liquid-ease, ease),
+    border-color var(--header-tint-dur, 0.26s) var(--liquid-ease, ease),
+    box-shadow var(--header-tint-dur, 0.26s) var(--liquid-ease, ease);
+}
+
+/* Positional delay list, not a blanket one: transform and colour are the hover
+   response and must stay instant, so only the three glass properties wait. */
+.header__bar:not(.header__bar--scrolled) .header-glass-pill {
+  transition-delay:
+    0s,
+    0s,
+    var(--header-tint-delay, 0.28s),
+    var(--header-tint-delay, 0.28s),
+    var(--header-tint-delay, 0.28s);
+}
+
+.header-glass-pill__rim,
+.header-glass-pill__refract,
+.header__pill--nav.glass-surface-nav::before,
+.header__pill--nav.glass-surface-nav::after,
+.header__auth-signin::before,
+.header__auth-signin::after {
+  transition: opacity var(--header-tint-dur, 0.26s) var(--liquid-ease, ease);
+}
+
+.header__bar:not(.header__bar--scrolled) .header-glass-pill__rim,
+.header__bar:not(.header__bar--scrolled) .header-glass-pill__refract,
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav::before,
+.header__bar:not(.header__bar--scrolled) .header__pill--nav.glass-surface-nav::after,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin::before,
+.header__bar:not(.header__bar--scrolled) .header__auth-signin::after {
+  transition-delay: var(--header-tint-delay, 0.28s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__bar,
+  .header__bar::before,
+  .header__bar:not(.header__bar--scrolled)::before,
+  .header__pill--nav.glass-surface-nav,
+  .header-glass-pill,
+  .header__auth-signin,
+  .header-glass-pill__rim,
+  .header-glass-pill__refract,
+  .header__pill--nav.glass-surface-nav::before,
+  .header__pill--nav.glass-surface-nav::after,
+  .header__auth-signin::before,
+  .header__auth-signin::after {
+    transition: none;
+  }
+}
