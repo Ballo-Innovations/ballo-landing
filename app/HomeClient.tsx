@@ -6,14 +6,22 @@ import React, { useState, useEffect, useRef } from "react";
 import { Phone3D } from "./components/ui/Phone3D";
 import { StoreBadge } from "./components/ui/StoreBadge";
 import { PageGradient } from "./components/ui/PageGradient";
+import { HeroZoomOut } from "./components/ui/HeroZoomOut";
+import { HeroMarquee } from "./components/ui/HeroMarquee";
+import { PhoneOnboardingScreen } from "./components/ui/PhoneOnboardingScreen";
 import dynamic from "next/dynamic";
 
-// Why still needs `ssr: false` — it measures layout through GSAP on mount.
-// Who does not: it is now plain flow + IntersectionObserver, so it is imported
-// directly and its industry copy is server-rendered.
+// Why keeps `ssr: false` for now. It no longer measures layout on mount — the
+// pin is CSS sticky and the carousel is framer-motion — but its cards are
+// decorative and there is nothing to gain from server-rendering five of them.
+// Who is plain flow + IntersectionObserver, so it is imported directly and its
+// industry copy IS server-rendered.
 const WhyScrollSection = dynamic(
-  () => import("./components/sections/WhyScrollSection").then(m => m.WhyScrollSection),
-  { ssr: false }
+  () =>
+    import("./components/sections/WhyScrollSection").then(
+      (m) => m.WhyScrollSection,
+    ),
+  { ssr: false },
 );
 
 import { WhoScrollSection } from "./components/sections/WhoScrollSection";
@@ -23,7 +31,6 @@ import { useWaitlist } from "./components/waitlist/WaitlistProvider";
 
 import bglight from "@/public/Assets/2.png";
 import logoIcon from "@/public/BalloAds Logo New/BalloAds-Icon.png";
-import { CloudUpload } from "lucide-react";
 
 import woman from "@/public/Assets/11.png";
 import woman2 from "@/public/Assets/13.png";
@@ -122,17 +129,21 @@ export default function HomeClient({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const shouldReduceMotion = usePrefersReducedMotion();
-  const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const testimonialsSectionRef = useRef<HTMLElement>(null);
   const isTestimonialsVisibleRef = useRef(false);
 
-  // Infinite CSS marquees — parked while scrolled away (see the hook).
-  const heroMarqueeRef = useAnimateWhenVisible();
+  // Infinite CSS marquee — parked while scrolled away (see the hook). The hero
+  // band no longer needs one: it is a canvas now and pauses its own rAF loop
+  // when it scrolls out of view.
   const trustedByRef = useAnimateWhenVisible<HTMLElement>();
 
   useEffect(() => {
     return () => {
-      if (resumeAutoPlayTimeoutRef.current) clearTimeout(resumeAutoPlayTimeoutRef.current);
+      if (resumeAutoPlayTimeoutRef.current)
+        clearTimeout(resumeAutoPlayTimeoutRef.current);
     };
   }, []);
 
@@ -149,8 +160,10 @@ export default function HomeClient({
     const el = testimonialsSectionRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => { isTestimonialsVisibleRef.current = entry.isIntersecting; },
-      { rootMargin: "100px" }
+      ([entry]) => {
+        isTestimonialsVisibleRef.current = entry.isIntersecting;
+      },
+      { rootMargin: "100px" },
     );
     obs.observe(el);
     return () => obs.disconnect();
@@ -198,159 +211,166 @@ export default function HomeClient({
           background here, which is what a fast scroll was outrunning. */}
       <PageGradient />
 
-      {/* Hero Section */}
-      <section
-        className="prlx-hero-trigger relative min-h-screen pt-24 pb-12 overflow-hidden"
-        style={{
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+      {/* Hero Section. Pinned by HeroZoomOut for the length of its track and
+          clipped down to a small rounded card as you scroll past it — the
+          21st.dev zoom-in run backwards. */}
+      <HeroZoomOut
+        /* Lives on the pin, not inside the scaled overlay — that is what stops
+           it shrinking with the hero card and getting cut off by the clip. It
+           keeps scrolling throughout (a CSS keyframe loop on the track), holds
+           its size, and rises to the middle of the stage as the hero closes.
+           Six copies, not eight: the loop translates by -50%, so it only needs
+           enough copies that HALF the track still overruns the 200vw window on
+           the widest screens — and every extra copy widens an already very
+           large composited layer. */
+        backdrop={<HeroMarquee />}
       >
-        {/* Parallax depth layers — behind all content */}
-        <div className="prlx-hero-1" aria-hidden="true" />
-        <div className="prlx-hero-2" aria-hidden="true" />
+        <section
+          className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"
+          style={{
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Parallax depth layers — behind all content */}
+          <div className="prlx-hero-1" aria-hidden="true" />
+          <div className="prlx-hero-2" aria-hidden="true" />
 
-        {/* Background Pattern */}
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{ backgroundSize: "cover" }}
-        />
+          {/* Background Pattern */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{ backgroundSize: "cover" }}
+          />
 
-        {/* Frame uses the EXACT header-pill width formula so the hero's left
+          {/* Frame uses the EXACT header-pill width formula so the hero's left
             edge tracks the nav's at every viewport. Two-column carousel: the
             rotating text (left) and person (right) change together as one slide;
             the person stands on the full-width "POWERFUL AND VERSATILE" card,
             which is pulled up to mask the cutout's clipped bottom edge. */}
-        <div className="hero-frame relative z-[1]">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
-            {/* Left — rotating copy (text half of the carousel slide) */}
-            <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
-              <p className="hero-kicker text-shimmer">AI-Powered Performance Marketing</p>
+          <div className="hero-frame relative z-[1]">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
+              {/* Left — rotating copy (text half of the carousel slide) */}
+              <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+                <p className="hero-kicker text-shimmer">
+                  AI-Powered Performance Marketing
+                </p>
 
-              {/* Rotating headline. All four headlines are mounted and stacked;
+                {/* Rotating headline. All four headlines are mounted and stacked;
                   only the `is-active` class moves, so a slide change is a pure
                   opacity/transform crossfade on the compositor — no React
                   remount, no re-layout of the hero column. Slide 1 is the H1
                   (one per page); the rest are presentational. */}
-              <div className="hero-headline-stack">
-                {features.map((feature, index) => {
-                  const lines = feature.titleLines.map((line) => (
-                    <span key={line}>{line}</span>
-                  ));
-                  const active = index === currentSlide;
-                  return index === 0 ? (
-                    <h1
-                      key={feature.title}
-                      className={`hero-headline${active ? " is-active" : ""}`}
-                      aria-hidden={!active}
-                    >
-                      {lines}
-                    </h1>
-                  ) : (
-                    <p
-                      key={feature.title}
-                      role="heading"
-                      aria-level={1}
-                      className={`hero-headline${active ? " is-active" : ""}`}
-                      aria-hidden={!active}
-                    >
-                      {lines}
-                    </p>
-                  );
-                })}
-              </div>
+                <div className="hero-headline-stack">
+                  {features.map((feature, index) => {
+                    const lines = feature.titleLines.map((line) => (
+                      <span key={line}>{line}</span>
+                    ));
+                    const active = index === currentSlide;
+                    return index === 0 ? (
+                      <h1
+                        key={feature.title}
+                        className={`hero-headline${active ? " is-active" : ""}`}
+                        aria-hidden={!active}
+                      >
+                        {lines}
+                      </h1>
+                    ) : (
+                      <p
+                        key={feature.title}
+                        role="heading"
+                        aria-level={1}
+                        className={`hero-headline${active ? " is-active" : ""}`}
+                        aria-hidden={!active}
+                      >
+                        {lines}
+                      </p>
+                    );
+                  })}
+                </div>
 
-              {/* Pagination Dots — above the CTAs */}
-              <div className="flex items-center justify-center md:justify-start gap-3">
-                {features.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full border border-white/85 transition-all ${index === currentSlide
-                      ? "bg-white"
-                      : "bg-transparent hover:bg-white/25"
+                {/* Pagination Dots — above the CTAs */}
+                <div className="flex items-center justify-center md:justify-start gap-3">
+                  {features.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`w-3 h-3 rounded-full border border-white/85 transition-all ${
+                        index === currentSlide
+                          ? "bg-white"
+                          : "bg-transparent hover:bg-white/25"
                       }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
-                ))}
-              </div>
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
 
-              <div className="hero-actions justify-center md:justify-start">
-                <button type="button" onClick={openWaitlist} className="btn-primary group">
-                  Sign Up
-                </button>
-                <Link href={features[currentSlide].href} className="btn-secondary group">
-                  Learn More
-                </Link>
-              </div>
-
-              {/* Large Faded Text — pure CSS marquee (full-bleed across the
-                  hero). Six copies, not eight: the loop translates by -50%, so
-                  it only needs enough copies that HALF the track still overruns
-                  the 200vw window on the widest screens — and every extra copy
-                  widens an already very large composited layer. */}
-              <div ref={heroMarqueeRef} className="hero-marquee relative left-1/2 -translate-x-1/2 w-[200vw] overflow-hidden pointer-events-none mt-2">
-                <div className="marquee-track flex whitespace-nowrap">
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
-                  <span className="text-[72px] md:text-[150px] font-bold text-white/5 select-none pr-10 shrink-0">YOUR DIGITAL MARKETING ASSISTANT</span>
+                <div className="hero-actions justify-center md:justify-start">
+                  <button
+                    type="button"
+                    onClick={openWaitlist}
+                    className="btn-primary group"
+                  >
+                    Sign Up
+                  </button>
+                  <Link
+                    href={features[currentSlide].href}
+                    className="btn-secondary group"
+                  >
+                    Learn More
+                  </Link>
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
 
-        {/* Right-side visual. The concentric rings hold their position while the
+          {/* Right-side visual. The concentric rings hold their position while the
             rotating person rests on the bottom of the hero (desktop); on mobile
             the whole block flows in below the copy. Anchored to the section (not
             the grid) so the person can reach the viewport floor. */}
-        <div className="hero-visual">
-          <div className="hero-rings" aria-hidden="true">
-            <ConcentricRings />
-          </div>
-          <div className="hero-person-stage">
-            {/* All four cutouts are mounted and stacked, crossfading via CSS.
+          <div className="hero-visual">
+            <div className="hero-rings" aria-hidden="true">
+              <ConcentricRings />
+            </div>
+            <div className="hero-person-stage">
+              {/* All four cutouts are mounted and stacked, crossfading via CSS.
                 Previously each change unmounted the old <Image> and mounted the
                 new one, so every 5s the browser re-created and re-decoded an
                 image — and a hidden copy of the *next* slide had to be rendered
                 with `priority` to hide the cost, which competed with the real
                 LCP image for bandwidth. Mounting all four decodes each once and
                 deletes the preload hack outright. */}
-            {features.map((feature, index) => (
-              <div
-                key={feature.title}
-                className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
-                aria-hidden={index !== currentSlide}
-              >
-                <Image
-                  src={feature.image}
-                  alt={index === currentSlide ? feature.title : ""}
-                  fill
-                  sizes="(max-width: 768px) 90vw, 45vw"
-                  className="hero-person-img object-contain object-bottom"
-                  style={{
-                    ["--person-scale" as string]: feature.imageFrame.scale,
-                    ["--person-x" as string]: feature.imageFrame.x,
-                    ["--person-y" as string]: feature.imageFrame.y,
-                  } as React.CSSProperties}
-                  priority={index === 0}
-                />
-              </div>
-            ))}
+              {features.map((feature, index) => (
+                <div
+                  key={feature.title}
+                  className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
+                  aria-hidden={index !== currentSlide}
+                >
+                  <Image
+                    src={feature.image}
+                    alt={index === currentSlide ? feature.title : ""}
+                    fill
+                    sizes="(max-width: 768px) 90vw, 45vw"
+                    className="hero-person-img object-contain object-bottom"
+                    style={
+                      {
+                        ["--person-scale" as string]: feature.imageFrame.scale,
+                        ["--person-x" as string]: feature.imageFrame.x,
+                        ["--person-y" as string]: feature.imageFrame.y,
+                      } as React.CSSProperties
+                    }
+                    priority={index === 0}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </HeroZoomOut>
 
       {/* What We're About — normal-flow, transparent panel (page gradient shows
           through). Opens with the "POWERFUL AND VERSATILE" title card, then the
           phone mockup + copy. */}
-      <section
-        className="prlx-about-trigger about-cover relative overflow-hidden pb-20 pt-16 px-4 z-50"
-      >
+      <section className="prlx-about-trigger about-cover relative overflow-hidden pb-20 pt-16 px-4 z-50">
         <div className="prlx-about-1" aria-hidden="true" />
 
         {/* "POWERFUL AND VERSATILE" title card — heads the section and seats
@@ -362,7 +382,8 @@ export default function HomeClient({
             <h2
               className="pv-title-gradient relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
               style={{
-                fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+                fontFamily:
+                  "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
                 letterSpacing: "0.005em",
                 display: "block",
               }}
@@ -374,65 +395,62 @@ export default function HomeClient({
 
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - 3D Phone Mockup */}
-          <FadeUpReveal yOffset={50} className="relative flex justify-center order-last md:order-first">
+          <FadeUpReveal
+            yOffset={50}
+            className="relative flex justify-center order-last md:order-first"
+          >
             <div className="relative flex justify-center scale-[0.9]">
-            <Image
-              src={bglight}
-              alt=""
-              loading="lazy"
-              sizes="560px"
-              className="about-phone-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-              style={{ width: "560px", height: "560px", maxWidth: "none", maxHeight: "none", objectFit: "contain" }}
-              aria-hidden="true"
-            />
-            <div className="relative">
-              <Phone3D floating={
-                <div
-                  className="absolute hidden md:flex flex-col gap-2.5"
-                  style={{ left: "-60px", top: "56%", transform: "translateZ(40px)" }}
+              <Image
+                src={bglight}
+                alt=""
+                loading="lazy"
+                sizes="560px"
+                className="about-phone-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+                style={{
+                  width: "560px",
+                  height: "560px",
+                  maxWidth: "none",
+                  maxHeight: "none",
+                  objectFit: "contain",
+                }}
+                aria-hidden="true"
+              />
+              <div className="relative">
+                <Phone3D
+                  floating={
+                    <div
+                      className="absolute hidden md:flex flex-col gap-2.5"
+                      style={{
+                        left: "-60px",
+                        top: "56%",
+                        transform: "translateZ(40px)",
+                      }}
+                    >
+                      <StoreBadge store="apple" />
+                      <StoreBadge store="play" />
+                    </div>
+                  }
                 >
-                  <StoreBadge store="apple" />
-                  <StoreBadge store="play" />
-                </div>
-              }>
-                <div
-                  className="absolute rounded-full"
-                  style={{ width: "150px", height: "150px", top: "-48px", left: "-48px", background: "var(--dark-blue-2)", zIndex: 1 }}
-                />
-                {/* App screen. Sized in cqw (container-query units) against the
-                    screen itself, so every element keeps its proportion when
-                    .phone3d shrinks at the mobile breakpoint — see .phone-ui in
-                    home.css. */}
-                <div className="phone-ui">
-                  <div className="phone-ui-head">
-                    <Image
-                      src={logoIcon}
-                      alt="BalloAds Logo"
-                      width={112}
-                      height={112}
-                      className="phone-ui-logo"
-                    />
-                    <h3 className="phone-ui-tagline">
-                      Your Digital Marketing<br />Assistant
-                    </h3>
-                  </div>
-
-                  <div className="phone-ui-upload">
-                    <CloudUpload className="phone-ui-cloud" strokeWidth={1.75} />
-                    <span className="phone-ui-upload-text">Upload your<br />artwork here</span>
-                  </div>
-
-                  <button type="button" className="phone-ui-next">Next</button>
-                </div>
-              </Phone3D>
-            </div>
+                  <div
+                    className="absolute rounded-full"
+                    style={{
+                      width: "150px",
+                      height: "150px",
+                      top: "-48px",
+                      left: "-48px",
+                      background: "var(--dark-blue-2)",
+                      zIndex: 1,
+                    }}
+                  />
+                  {/* App screen — shared with the phone the hero lands on. */}
+                  <PhoneOnboardingScreen />
+                </Phone3D>
+              </div>
             </div>
           </FadeUpReveal>
 
           {/* Right Side - Content Card */}
-          <div
-            className="relative rounded-3xl p-8 md:p-12 overflow-hidden"
-          >
+          <div className="relative rounded-3xl p-8 md:p-12 overflow-hidden">
             <div className="relative z-10">
               <FadeUpReveal>
                 <h2 className="text-4xl md:text-7xl font-bold mb-6 text-gradient-silver-2">
@@ -442,18 +460,21 @@ export default function HomeClient({
               <FadeUpReveal delay={0.15}>
                 <p className="landing-body text-white/90">
                   BalloAds is an AI-powered digital advertising platform
-                  designed to help businesses and organisations
-                  connect with the right audience through bulk SMS,
-                  targeted message ads, and data-driven campaign
-                  management. Whether you&apos;re a startup, an
-                  enterprise, or a service provider, BalloAds gives you
-                  the tools to launch impactful marketing campaigns
-                  with ease
+                  designed to help businesses and organisations connect with the
+                  right audience through bulk SMS, targeted message ads, and
+                  data-driven campaign management. Whether you&apos;re a
+                  startup, an enterprise, or a service provider, BalloAds gives
+                  you the tools to launch impactful marketing campaigns with
+                  ease
                 </p>
               </FadeUpReveal>
               <FadeUpReveal delay={0.3}>
                 <div className="hero-actions mt-8 justify-start">
-                  <button type="button" onClick={openWaitlist} className="btn-primary group">
+                  <button
+                    type="button"
+                    onClick={openWaitlist}
+                    className="btn-primary group"
+                  >
                     Get Started
                   </button>
                   <Link href="/how-it-works" className="btn-secondary group">
@@ -476,12 +497,17 @@ export default function HomeClient({
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <FadeUpReveal className="text-center mb-10">
-            <p className="text-sm uppercase tracking-[0.35em] text-white/50">Backed by</p>
+            <p className="text-sm uppercase tracking-[0.35em] text-white/50">
+              Backed by
+            </p>
           </FadeUpReveal>
           <FadeUpReveal yOffset={50} delay={0.1}>
             <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 md:gap-x-20">
               {backerLogos.map((logo, i) => (
-                <div key={`${logo.alt}-${i}`} className="flex items-center justify-center">
+                <div
+                  key={`${logo.alt}-${i}`}
+                  className="flex items-center justify-center"
+                >
                   {logo.src ? (
                     <Image
                       src={logo.src}
@@ -508,13 +534,18 @@ export default function HomeClient({
       <WhoScrollSection />
 
       {/* Testimonials Section */}
-      <section ref={testimonialsSectionRef} className="prlx-testi-trigger relative overflow-hidden py-20 px-4">
+      <section
+        ref={testimonialsSectionRef}
+        className="prlx-testi-trigger relative overflow-hidden py-20 px-4"
+      >
         <div className="prlx-testi-1" aria-hidden="true" />
         <div className="container mx-auto">
           <FadeUpReveal>
             <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
               <span className="text-gradient-cyan block">
-                HEAR FROM THOSE WHO HAVE<br />TRIED AND TESTED
+                HEAR FROM THOSE WHO HAVE
+                <br />
+                TRIED AND TESTED
               </span>
             </h2>
           </FadeUpReveal>
@@ -535,12 +566,18 @@ export default function HomeClient({
                   key={testimonialIndex}
                   className="testimonial-slide flex flex-col items-center text-center"
                 >
-                    <p className="text-xl md:text-2xl leading-relaxed mb-8 italic line-clamp-4 overflow-hidden h-[8.5rem] md:h-[10rem]">
-                      &quot;{testimonials[testimonialIndex].quote}&quot;
-                    </p>
-                    <p className="text-xl font-bold mb-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].name}</p>
-                    <p className="text-white/80 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].title}</p>
-                    <p className="text-white/60 text-sm mt-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">{testimonials[testimonialIndex].company}</p>
+                  <p className="text-xl md:text-2xl leading-relaxed mb-8 italic line-clamp-4 overflow-hidden h-[8.5rem] md:h-[10rem]">
+                    &quot;{testimonials[testimonialIndex].quote}&quot;
+                  </p>
+                  <p className="text-xl font-bold mb-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
+                    {testimonials[testimonialIndex].name}
+                  </p>
+                  <p className="text-white/80 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
+                    {testimonials[testimonialIndex].title}
+                  </p>
+                  <p className="text-white/60 text-sm mt-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
+                    {testimonials[testimonialIndex].company}
+                  </p>
                 </div>
               </div>
               <div className="flex justify-center gap-3 mt-8">
@@ -548,10 +585,11 @@ export default function HomeClient({
                   <button
                     key={i}
                     onClick={() => setTestimonialIndex(i)}
-                    className={`transition-all duration-300 rounded-full ${i === testimonialIndex
-                      ? "w-6 h-3 bg-white"
-                      : "w-3 h-3 bg-white/30 hover:bg-white/60"
-                      }`}
+                    className={`transition-all duration-300 rounded-full ${
+                      i === testimonialIndex
+                        ? "w-6 h-3 bg-white"
+                        : "w-3 h-3 bg-white/30 hover:bg-white/60"
+                    }`}
                     aria-label={`Go to testimonial ${i + 1}`}
                   />
                 ))}
@@ -571,30 +609,38 @@ export default function HomeClient({
           <p className="text-3xl text-shimmer">Trusted by the very best</p>
         </FadeUpReveal>
         <FadeUpReveal yOffset={50} delay={0.1}>
-        <div className="logo-marquee">
-          <div className="logo-marquee-track">
-            {marqueeLogos.map((logo, i) => (
-              <div key={i} className="flex items-center justify-center px-5 shrink-0">
-                {logo.src ? (
-                  <Image
-                    src={logo.src}
-                    alt={logo.alt}
-                    width={224}
-                    height={112}
-                    loading="lazy"
-                    sizes="112px"
-                    className="h-28 w-auto object-contain opacity-100 transition-opacity"
-                    style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
-                  />
-                ) : (
-                  <span className="text-2xl font-semibold tracking-wide text-white/70">
-                    {logo.alt}
-                  </span>
-                )}
-              </div>
-            ))}
+          <div className="logo-marquee">
+            <div className="logo-marquee-track">
+              {marqueeLogos.map((logo, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-center px-5 shrink-0"
+                >
+                  {logo.src ? (
+                    <Image
+                      src={logo.src}
+                      alt={logo.alt}
+                      width={224}
+                      height={112}
+                      loading="lazy"
+                      sizes="112px"
+                      className="h-28 w-auto object-contain opacity-100 transition-opacity"
+                      style={{
+                        filter:
+                          logo.src === logoBayport
+                            ? "brightness(0) invert(1)"
+                            : "none",
+                      }}
+                    />
+                  ) : (
+                    <span className="text-2xl font-semibold tracking-wide text-white/70">
+                      {logo.alt}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
         </FadeUpReveal>
       </section>
 
@@ -604,7 +650,13 @@ export default function HomeClient({
       <section className="try-section">
         <FadeUpReveal yOffset={50} className="try-phone-wrap">
           {/* Cyan glow orb behind the device */}
-          <Image src={bglight} alt="" className="try-glow" aria-hidden="true" sizes="(max-width: 420px) 132vw, 540px" />
+          <Image
+            src={bglight}
+            alt=""
+            className="try-glow"
+            aria-hidden="true"
+            sizes="(max-width: 420px) 132vw, 540px"
+          />
           <button
             type="button"
             onClick={openWaitlist}

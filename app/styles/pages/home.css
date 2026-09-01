@@ -62,6 +62,20 @@
   }
 }
 
+/* Below the pin's breakpoint, and for anyone who asked for less motion, the
+   section is plain flow: no track, no sticky, first card only. Mirrors the
+   `(max-width: 900px), (prefers-reduced-motion: reduce)` arm of the old
+   gsap.matchMedia. */
+@media (max-width: 900px), (prefers-reduced-motion: reduce) {
+  .why-scroll-outer {
+    height: auto;
+  }
+
+  .why-scroll-sticky {
+    position: static;
+  }
+}
+
 /* Why Choose — color system (mirrors CodePen approach) */
 @property --bg-hue {
   syntax: "<number>";
@@ -82,9 +96,22 @@
   --why-chroma: 0.24;
 }
 
+/* The pinned track. GSAP's `pinSpacing` used to create this scroll length at
+   runtime by injecting a spacer around the pinned element; it is real layout
+   now. One viewport for the sticky stage itself, plus HOLD_VH_PER_CARD (0.55)
+   of held scroll per card — the same `numItems * innerHeight * 0.55` the old
+   ScrollTrigger `end` computed. Deliberately not a full viewport per card:
+   that would be five viewports of held scroll, more scroll-jacking than this
+   page should do. */
+.why-scroll-outer {
+  height: calc(100vh + (var(--why-count, 5) * 55vh));
+}
+
 .why-scroll-sticky {
   --bg-hue: 190;
   --bg-alpha: 0;
+  position: sticky;
+  top: 0;
   height: 100vh;
   display: flex;
   align-items: center;
@@ -1474,7 +1501,7 @@
   }
 
   .hero-marquee span {
-    font-size: clamp(4.5rem, 18vw, 7rem) !important;
+    font-size: clamp(6rem, 24vw, 9.5rem) !important;
   }
 
   .hero-pv {
@@ -1634,7 +1661,7 @@
   }
 
   .hero-marquee span {
-    font-size: 92px !important;
+    font-size: 124px !important;
   }
 }
 

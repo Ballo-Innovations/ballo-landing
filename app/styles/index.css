@@ -13,6 +13,7 @@
 @import "./components/buttons.css";
 @import "./components/ballo-loader.css";
 @import "./components/stacked-carousel.css";
+@import "./components/hero-zoom-out.css";
 
 /* Pages */
 @import "./pages/home.css";

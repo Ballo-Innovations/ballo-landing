@@ -5,11 +5,26 @@ import { useRef, useEffect } from "react";
 interface Props {
   children: React.ReactNode;
   floating?: React.ReactNode;
+  /**
+   * Pointer tilt. Turning this off does not freeze the phone mid-lean: the loop
+   * keeps running and eases it back to flat, then stops.
+   *
+   * The hero uses that to have both things at once. It wants the same hover
+   * tilt this phone has in "What We're About", but its zoom-out lands on the
+   * Next button's measured rect, and `getBoundingClientRect` on a rotated
+   * element reports an axis-aligned bounding box rather than the button's real
+   * corners. So the hero leaves the tilt on while the phone is arriving and
+   * switches it off partway through the close, and the phone is flat — and the
+   * rect exact — well before the card arrives.
+   */
+  interactive?: boolean;
 }
 
-export function Phone3D({ children, floating }: Props) {
+export function Phone3D({ children, floating, interactive = true }: Props) {
   const tiltRef = useRef<HTMLDivElement>(null);
   const phoneRef = useRef<HTMLDivElement>(null);
+  const interactiveRef = useRef(interactive);
+  const flattenRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const tiltEl = tiltRef.current;
@@ -45,7 +60,10 @@ export function Phone3D({ children, floating }: Props) {
         targetRy = 0;
       }
 
-      const lerpFactor = isTracking ? 0.08 : 0.015;
+      // A forced flatten is a deadline, not a drift: the hero switches the tilt
+      // off because it is about to land on this phone, so ease back at tracking
+      // speed rather than the leisurely idle rate.
+      const lerpFactor = isTracking ? 0.08 : interactiveRef.current ? 0.015 : 0.08;
       rx = lerp(rx, targetRx, lerpFactor);
       ry = lerp(ry, targetRy, lerpFactor);
 
@@ -78,6 +96,14 @@ export function Phone3D({ children, floating }: Props) {
       }
     };
 
+    // Lets the effect below flatten the phone without tearing the loop down.
+    flattenRef.current = () => {
+      isTracking = false;
+      targetRx = 0;
+      targetRy = 0;
+      wake();
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         isVisible = entry.isIntersecting;
@@ -88,6 +114,7 @@ export function Phone3D({ children, floating }: Props) {
     observer.observe(phoneEl);
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (!interactiveRef.current) return;
       if (!isVisible) return;
       isTracking = true;
       lastMoveTime = performance.now();
@@ -117,8 +144,16 @@ export function Phone3D({ children, floating }: Props) {
       observer.disconnect();
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
+      flattenRef.current = null;
     };
   }, []);
+
+  // Kept out of the effect above on purpose: rebuilding the whole rig on every
+  // toggle would drop the phone's current lean and restart it from flat.
+  useEffect(() => {
+    interactiveRef.current = interactive;
+    if (!interactive) flattenRef.current?.();
+  }, [interactive]);
 
   return (
     <div className="phone3d-scene scale-110">
