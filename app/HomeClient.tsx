@@ -393,34 +393,6 @@ export default function HomeClient({
         </section>
       </HeroSideExit>
 
-      {/* What We're About — normal-flow, transparent panel (page gradient shows
-          through). Opens with the "POWERFUL AND VERSATILE" title card, then the
-          phone mockup + copy. */}
-      <section className="prlx-about-trigger about-cover relative overflow-hidden pb-20 pt-16 px-4 z-50">
-        <div className="prlx-about-1" aria-hidden="true" />
-
-        {/* "POWERFUL AND VERSATILE" title card — heads the section and seats
-            directly against the hero's clipped person image, so it must sit at
-            its resting position (no scroll-reveal offset that would leave the
-            image floating above it). */}
-        <div className="pv-title-block flex w-full justify-center">
-          <div className="pv-title-card">
-            <h2
-              className="pv-title-gradient relative z-10 text-center whitespace-nowrap text-[clamp(1rem,5.5vw,5.8rem)] font-black leading-none [transform:scaleY(1.24)_scaleX(0.9)]"
-              style={{
-                fontFamily:
-                  "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
-                letterSpacing: "0.005em",
-                display: "block",
-              }}
-            >
-              POWERFUL AND VERSATILE
-            </h2>
-          </div>
-        </div>
-
-      </section>
-
       {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhyScrollSection />
 
