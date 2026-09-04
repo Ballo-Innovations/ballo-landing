@@ -3,12 +3,9 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
-import { Phone3D } from "./components/ui/Phone3D";
-import { StoreBadge } from "./components/ui/StoreBadge";
 import { PageGradient } from "./components/ui/PageGradient";
 import { HeroSideExit } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
-import { PhoneOnboardingScreen } from "./components/ui/PhoneOnboardingScreen";
 import dynamic from "next/dynamic";
 
 // Why keeps `ssr: false` for now. It no longer measures layout on mount — the
@@ -218,6 +215,35 @@ export default function HomeClient({
         /* On the pin, behind the hero, unaffected by the exits: it keeps
            scrolling at its own size and rises as the items go. */
         backdrop={<HeroMarquee />}
+        /* Act two. This copy used to sit in the section below, beside a second
+           phone mockup; now that the hero's own phone arrives and steps aside
+           for it, that pairing happens up here and the section keeps only its
+           title card. No FadeUpReveal on these: inside a pinned stage they are
+           in the viewport from the first frame, so a viewport-triggered reveal
+           would fire before the phone had arrived. */
+        aside={
+          <>
+            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gradient-silver-2">
+              What We&apos;re About
+            </h2>
+            <p className="landing-body text-white/90">
+              BalloAds is an AI-powered digital advertising platform designed to
+              help businesses and organisations connect with the right audience
+              through bulk SMS, targeted message ads, and data-driven campaign
+              management. Whether you&apos;re a startup, an enterprise, or a
+              service provider, BalloAds gives you the tools to launch impactful
+              marketing campaigns with ease
+            </p>
+            <div className="hero-actions mt-8 justify-start">
+              <button type="button" onClick={openWaitlist} className="btn-primary group">
+                Get Started
+              </button>
+              <Link href="/how-it-works" className="btn-secondary group">
+                Learn More
+              </Link>
+            </div>
+          </>
+        }
       >
         <section
           className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"
@@ -393,98 +419,6 @@ export default function HomeClient({
           </div>
         </div>
 
-        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
-          {/* Left Side - 3D Phone Mockup */}
-          <FadeUpReveal
-            yOffset={50}
-            className="relative flex justify-center order-last md:order-first"
-          >
-            <div className="relative flex justify-center scale-[0.9]">
-              <Image
-                src={bglight}
-                alt=""
-                loading="lazy"
-                sizes="560px"
-                className="about-phone-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
-                style={{
-                  width: "560px",
-                  height: "560px",
-                  maxWidth: "none",
-                  maxHeight: "none",
-                  objectFit: "contain",
-                }}
-                aria-hidden="true"
-              />
-              <div className="relative">
-                <Phone3D
-                  floating={
-                    <div
-                      className="absolute hidden md:flex flex-col gap-2.5"
-                      style={{
-                        left: "-60px",
-                        top: "56%",
-                        transform: "translateZ(40px)",
-                      }}
-                    >
-                      <StoreBadge store="apple" />
-                      <StoreBadge store="play" />
-                    </div>
-                  }
-                >
-                  <div
-                    className="absolute rounded-full"
-                    style={{
-                      width: "150px",
-                      height: "150px",
-                      top: "-48px",
-                      left: "-48px",
-                      background: "var(--dark-blue-2)",
-                      zIndex: 1,
-                    }}
-                  />
-                  {/* App screen — shared with the phone the hero lands on. */}
-                  <PhoneOnboardingScreen />
-                </Phone3D>
-              </div>
-            </div>
-          </FadeUpReveal>
-
-          {/* Right Side - Content Card */}
-          <div className="relative rounded-3xl p-8 md:p-12 overflow-hidden">
-            <div className="relative z-10">
-              <FadeUpReveal>
-                <h2 className="text-4xl md:text-7xl font-bold mb-6 text-gradient-silver-2">
-                  What We&apos;re About
-                </h2>
-              </FadeUpReveal>
-              <FadeUpReveal delay={0.15}>
-                <p className="landing-body text-white/90">
-                  BalloAds is an AI-powered digital advertising platform
-                  designed to help businesses and organisations connect with the
-                  right audience through bulk SMS, targeted message ads, and
-                  data-driven campaign management. Whether you&apos;re a
-                  startup, an enterprise, or a service provider, BalloAds gives
-                  you the tools to launch impactful marketing campaigns with
-                  ease
-                </p>
-              </FadeUpReveal>
-              <FadeUpReveal delay={0.3}>
-                <div className="hero-actions mt-8 justify-start">
-                  <button
-                    type="button"
-                    onClick={openWaitlist}
-                    className="btn-primary group"
-                  >
-                    Get Started
-                  </button>
-                  <Link href="/how-it-works" className="btn-secondary group">
-                    Learn More
-                  </Link>
-                </div>
-              </FadeUpReveal>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}

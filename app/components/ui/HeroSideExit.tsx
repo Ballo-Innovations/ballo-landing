@@ -82,8 +82,23 @@ const BAND_SCALE: Range = [1, 1.3];
 /** And clears only at the very end of the track, well after everything else. */
 const BAND_OUT: Range = [0.9, 1];
 
-/** Track length: one extra viewport of held scroll for the handover. */
-const TRACK_CLASS = "h-[220vh]";
+/* ── Act two ──────────────────────────────────────────────────────────────
+   Once the device has fully arrived it steps aside and the "What We're
+   About" copy comes in beside it. Both live on this pin rather than in the
+   section below, which is what lets the copy be placed against the phone
+   instead of waiting for a separate section to scroll up under it. */
+
+/** The phone drifts out of the middle to make room. */
+const PHONE_ASIDE: Range = [0.6, 0.84];
+/** As a percentage of the stage, so it holds at any viewport width. */
+const PHONE_ASIDE_X = -26;
+const PHONE_ASIDE_SCALE = 0.86;
+
+/** The copy arrives from the right, into the half the phone just left. */
+const ASIDE_IN: Range = [0.66, 0.9];
+
+/** Track length: the handover, then act two. */
+const TRACK_CLASS = "h-[320vh]";
 
 /**
  * The element's true on-screen extent, its transformed descendants included.
@@ -166,6 +181,21 @@ function HeroPhone() {
   const liveY = useMotionValue(rise);
   useMotionValueEvent(y, "change", (v) => liveY.set(v));
 
+  // Act two. A percentage of the stage for x, so the drift holds at every
+  // viewport width without a second set of numbers.
+  const x = useTransform(
+    scrollYProgress,
+    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
+    ["0%", "0%", `${PHONE_ASIDE_X}%`, `${PHONE_ASIDE_X}%`],
+    { ease: easeInOut },
+  );
+  const scale = useTransform(
+    scrollYProgress,
+    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
+    [1, 1, PHONE_ASIDE_SCALE, PHONE_ASIDE_SCALE],
+    { ease: easeInOut },
+  );
+
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
     const apply = () => {
@@ -182,7 +212,7 @@ function HeroPhone() {
     <motion.div
       ref={rootRef}
       className="hero-zoom-phone"
-      style={{ y: liveY }}
+      style={{ x, y: liveY, scale }}
       aria-hidden="true"
     >
       {/* Pointer tilt is back on. It was off for the zoom-out, which had to
@@ -346,6 +376,45 @@ function HeroParts({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * The "What We're About" copy, arriving beside the phone once it has stepped
+ * aside.
+ *
+ * It lives here rather than in the section below because the phone it belongs
+ * next to is here: the pin holds both, so the copy can be placed against the
+ * device instead of waiting for a separate section to scroll up under it.
+ *
+ * No `FadeUpReveal` on it, for the same reason the Who tiles could not keep
+ * theirs: inside a pinned stage it is in the viewport from the first frame, so
+ * a viewport-triggered reveal would fire before the phone had even arrived.
+ */
+function HeroAside({ children }: { children: React.ReactNode }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  const place = React.useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const t = easeOut(at(scrollYProgress.get(), ASIDE_IN));
+    el.style.opacity = String(t);
+    el.style.transform = `translate3d(${((1 - t) * 64).toFixed(1)}px, 0, 0)`;
+    el.style.pointerEvents = t > 0.9 ? "auto" : "none";
+    el.style.willChange = t > 0.001 && t < 0.999 ? "transform, opacity" : "auto";
+  }, [scrollYProgress]);
+
+  React.useEffect(() => {
+    const unsub = scrollYProgress.on("change", place);
+    place();
+    return unsub;
+  }, [scrollYProgress, place]);
+
+  return (
+    <div ref={ref} className="hero-aside" style={{ opacity: 0 }}>
+      {children}
+    </div>
+  );
+}
+
+/**
  * The scrolling band behind the hero.
  *
  * A sibling of the hero and the phone on the pin. Nothing above it is opaque
@@ -392,10 +461,13 @@ function HeroBand({ children }: { children: React.ReactNode }) {
 export function HeroSideExit({
   children,
   backdrop,
+  aside,
 }: {
   children: React.ReactNode;
   /** Background band on the pin, behind everything. */
   backdrop?: React.ReactNode;
+  /** Copy that arrives beside the phone once it has stepped aside. */
+  aside?: React.ReactNode;
 }) {
   const reduced = useReducedMotion();
 
@@ -407,6 +479,7 @@ export function HeroSideExit({
         <div className="ch-stage ch-stage--static">
           {children}
           {backdrop}
+          {aside ? <div className="hero-aside hero-aside--static">{aside}</div> : null}
         </div>
       </div>
     );
@@ -417,6 +490,7 @@ export function HeroSideExit({
       <ContainerSticky className="ch-stage h-svh w-full">
         {backdrop ? <HeroBand>{backdrop}</HeroBand> : null}
         <HeroPhone />
+        {aside ? <HeroAside>{aside}</HeroAside> : null}
         <HeroParts>{children}</HeroParts>
       </ContainerSticky>
     </ContainerScroll>
