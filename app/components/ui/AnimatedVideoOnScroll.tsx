@@ -20,8 +20,9 @@ import { cn } from "@/lib/utils";
  * a `ContainerSticky` read that progress and place themselves against it. The
  * shape of the effect is not in here — it is in the ranges a caller passes, so
  * the same three components run the transform forwards (a pill of video
- * opening out to full bleed) or backwards (see HeroZoomOut, which closes the
- * hero down to a small rounded card).
+ * opening out to full bleed) or backwards. Nothing on this page runs it
+ * backwards any more: the hero hands over to the phone by leaving sideways
+ * rather than by closing down.
  *
  * Two deliberate departures from upstream:
  *
@@ -34,8 +35,7 @@ import { cn } from "@/lib/utils";
  *
  * Upstream's `HeroVideo` and `HeroButton` are not ported: one is a <video>, the
  * other a lime pill with a hardcoded glow, and neither has anything to do with
- * this hero. The scale `HeroVideo` applied to the video lives in HeroZoomOut
- * instead, on the hero's own content.
+ * this hero.
  */
 
 interface ContainerScrollContextValue {

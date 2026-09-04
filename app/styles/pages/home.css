@@ -1431,7 +1431,15 @@
   margin-inline: auto;
   color: #fff;
   font-size: clamp(2rem, 8.8vw, 4.75rem);
-  font-weight: 900;
+  /* 700 is the whole truth: Ubuntu ships 300/400/500/700 and has no black
+     weight, so the 900 that used to be declared here resolved to 700 anyway. */
+  font-weight: 700;
+  /* Which is why extra weight comes from a stroke rather than a bigger number.
+     Centred on the glyph outline, in the same colour as the fill, so the
+     letterforms thicken without the face changing. In `em` so it tracks the
+     clamped size across every breakpoint. */
+  -webkit-text-stroke: 0.022em currentColor;
+  paint-order: stroke fill;
   letter-spacing: 0;
   line-height: 0.96;
   text-align: center;

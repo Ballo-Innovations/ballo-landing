@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Phone3D } from "./components/ui/Phone3D";
 import { StoreBadge } from "./components/ui/StoreBadge";
 import { PageGradient } from "./components/ui/PageGradient";
-import { HeroZoomOut } from "./components/ui/HeroZoomOut";
+import { HeroSideExit } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
 import { PhoneOnboardingScreen } from "./components/ui/PhoneOnboardingScreen";
 import dynamic from "next/dynamic";
@@ -24,7 +24,7 @@ const WhyScrollSection = dynamic(
   { ssr: false },
 );
 
-import { WhoScrollSection } from "./components/sections/WhoScrollSection";
+import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
 import { useAnimateWhenVisible } from "./components/ui/useAnimateWhenVisible";
 import { useWaitlist } from "./components/waitlist/WaitlistProvider";
@@ -211,18 +211,12 @@ export default function HomeClient({
           background here, which is what a fast scroll was outrunning. */}
       <PageGradient />
 
-      {/* Hero Section. Pinned by HeroZoomOut for the length of its track and
-          clipped down to a small rounded card as you scroll past it — the
-          21st.dev zoom-in run backwards. */}
-      <HeroZoomOut
-        /* Lives on the pin, not inside the scaled overlay — that is what stops
-           it shrinking with the hero card and getting cut off by the clip. It
-           keeps scrolling throughout (a CSS keyframe loop on the track), holds
-           its size, and rises to the middle of the stage as the hero closes.
-           Six copies, not eight: the loop translates by -50%, so it only needs
-           enough copies that HALF the track still overruns the 200vw window on
-           the widest screens — and every extra copy widens an already very
-           large composited layer. */
+      {/* Hero Section. Pinned by HeroSideExit: the elements marked
+          data-hero-exit leave sideways, each toward whichever edge it already
+          sits nearer, and the phone rises into the space they vacate. */}
+      <HeroSideExit
+        /* On the pin, behind the hero, unaffected by the exits: it keeps
+           scrolling at its own size and rises as the items go. */
         backdrop={<HeroMarquee />}
       >
         <section
@@ -251,7 +245,7 @@ export default function HomeClient({
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
               {/* Left — rotating copy (text half of the carousel slide) */}
               <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
-                <p className="hero-kicker text-shimmer">
+                <p className="hero-kicker text-shimmer" data-hero-exit>
                   AI-Powered Performance Marketing
                 </p>
 
@@ -260,7 +254,7 @@ export default function HomeClient({
                   opacity/transform crossfade on the compositor — no React
                   remount, no re-layout of the hero column. Slide 1 is the H1
                   (one per page); the rest are presentational. */}
-                <div className="hero-headline-stack">
+                <div className="hero-headline-stack" data-hero-exit>
                   {features.map((feature, index) => {
                     const lines = feature.titleLines.map((line) => (
                       <span key={line}>{line}</span>
@@ -289,7 +283,10 @@ export default function HomeClient({
                 </div>
 
                 {/* Pagination Dots — above the CTAs */}
-                <div className="flex items-center justify-center md:justify-start gap-3">
+                <div
+                  className="flex items-center justify-center md:justify-start gap-3"
+                  data-hero-exit
+                >
                   {features.map((_, index) => (
                     <button
                       key={index}
@@ -304,7 +301,7 @@ export default function HomeClient({
                   ))}
                 </div>
 
-                <div className="hero-actions justify-center md:justify-start">
+                <div className="hero-actions justify-center md:justify-start" data-hero-exit>
                   <button
                     type="button"
                     onClick={openWaitlist}
@@ -327,11 +324,14 @@ export default function HomeClient({
             rotating person rests on the bottom of the hero (desktop); on mobile
             the whole block flows in below the copy. Anchored to the section (not
             the grid) so the person can reach the viewport floor. */}
+          {/* The rings and the figure leave separately, not as one block: they
+              sit at different depths, so they travel at different rates. The
+              container itself is not marked. */}
           <div className="hero-visual">
-            <div className="hero-rings" aria-hidden="true">
+            <div className="hero-rings" aria-hidden="true" data-hero-exit="slow">
               <ConcentricRings />
             </div>
-            <div className="hero-person-stage">
+            <div className="hero-person-stage" data-hero-exit="fast">
               {/* All four cutouts are mounted and stacked, crossfading via CSS.
                 Previously each change unmounted the old <Image> and mounted the
                 new one, so every 5s the browser re-created and re-decoded an
@@ -365,7 +365,7 @@ export default function HomeClient({
             </div>
           </div>
         </section>
-      </HeroZoomOut>
+      </HeroSideExit>
 
       {/* What We're About — normal-flow, transparent panel (page gradient shows
           through). Opens with the "POWERFUL AND VERSATILE" title card, then the
@@ -531,7 +531,7 @@ export default function HomeClient({
       </section>
 
       {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
-      <WhoScrollSection />
+      <WhoCinematicSection />
 
       {/* Testimonials Section */}
       <section
