@@ -13,6 +13,8 @@ export type PartnerLogo = {
   logoUrl: string;
   sortOrder: number;
   isPublished: boolean;
+  /** True = "Backed by" strip; false = "Trusted by the very best" marquee. */
+  isBacker: boolean;
   createdAt: string;
   updatedAt: string;
 };

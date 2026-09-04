@@ -52,7 +52,8 @@ export type HomeTestimonialItem = {
 };
 
 export type HomeLogoItem = {
-  src: StaticImageData | string;
+  /** null renders the name as a wordmark when no logo image exists yet. */
+  src: StaticImageData | string | null;
   alt: string;
 };
 
@@ -117,9 +118,11 @@ const features = [
 export default function HomeClient({
   testimonials,
   partnerLogos,
+  backerLogos,
 }: {
   testimonials: HomeTestimonialItem[];
   partnerLogos: HomeLogoItem[];
+  backerLogos: HomeLogoItem[];
 }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -522,6 +525,42 @@ export default function HomeClient({
       {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhyScrollSection />
 
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <FadeUpReveal className="text-center mb-10">
+            <p className="text-sm uppercase tracking-[0.35em] text-white/50">
+              Backed by
+            </p>
+          </FadeUpReveal>
+          <FadeUpReveal yOffset={50} delay={0.1}>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 md:gap-x-20">
+              {backerLogos.map((logo, i) => (
+                <div
+                  key={`${logo.alt}-${i}`}
+                  className="flex items-center justify-center"
+                >
+                  {logo.src ? (
+                    <Image
+                      src={logo.src}
+                      alt={logo.alt}
+                      width={224}
+                      height={112}
+                      loading="lazy"
+                      sizes="160px"
+                      className="h-16 w-auto object-contain md:h-20"
+                    />
+                  ) : (
+                    <span className="text-2xl font-semibold tracking-wide text-white/70 md:text-3xl">
+                      {logo.alt}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </FadeUpReveal>
+        </div>
+      </section>
+
       {/* Trusted By Section */}
       <section className="py-16">
         <FadeUpReveal className="text-center mb-10">
@@ -532,15 +571,21 @@ export default function HomeClient({
           <div className="logo-marquee-track">
             {marqueeLogos.map((logo, i) => (
               <div key={i} className="flex items-center justify-center px-5 shrink-0">
-                <Image
-                  src={logo.src}
-                  alt={logo.alt}
-                  height={112}
-                  loading="lazy"
-                  sizes="112px"
-                  className="h-28 w-auto object-contain opacity-100 transition-opacity"
-                  style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
-                />
+                {logo.src ? (
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    height={112}
+                    loading="lazy"
+                    sizes="112px"
+                    className="h-28 w-auto object-contain opacity-100 transition-opacity"
+                    style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
+                  />
+                ) : (
+                  <span className="text-lg font-semibold tracking-wide text-white/70">
+                    {logo.alt}
+                  </span>
+                )}
               </div>
             ))}
           </div>

@@ -78,6 +78,15 @@ const FALLBACK_PARTNER_LOGOS: HomeLogoItem[] = [
   { src: logo9, alt: "Client" },
 ];
 
+// Shown until CMS has "Backed by" logo rows published. `src: null` renders
+// the name as a wordmark; a CMS logo image replaces it.
+const FALLBACK_BACKER_LOGOS: HomeLogoItem[] = [
+  { src: null, alt: "Airtel" },
+  { src: null, alt: "MTN" },
+  { src: null, alt: "Meta" },
+  { src: null, alt: "ZICTA" },
+];
+
 export default async function Home() {
   const [cmsTestimonials, cmsPartnerLogos] = await Promise.all([
     getTestimonials(),
@@ -94,10 +103,24 @@ export default async function Home() {
         }))
       : FALLBACK_TESTIMONIALS;
 
+  const cmsBackers = cmsPartnerLogos.filter((p) => p.isBacker);
+  const cmsPartners = cmsPartnerLogos.filter((p) => !p.isBacker);
+
   const partnerLogos: HomeLogoItem[] =
-    cmsPartnerLogos.length > 0
-      ? cmsPartnerLogos.map((p) => ({ src: p.logoUrl, alt: p.name }))
+    cmsPartners.length > 0
+      ? cmsPartners.map((p) => ({ src: p.logoUrl, alt: p.name }))
       : FALLBACK_PARTNER_LOGOS;
 
-  return <HomeClient testimonials={testimonials} partnerLogos={partnerLogos} />;
+  const backerLogos: HomeLogoItem[] =
+    cmsBackers.length > 0
+      ? cmsBackers.map((p) => ({ src: p.logoUrl, alt: p.name }))
+      : FALLBACK_BACKER_LOGOS;
+
+  return (
+    <HomeClient
+      testimonials={testimonials}
+      partnerLogos={partnerLogos}
+      backerLogos={backerLogos}
+    />
+  );
 }
