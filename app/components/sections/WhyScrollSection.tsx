@@ -20,6 +20,9 @@ import { getLenis } from "@/app/components/ui/SmoothScroll";
 import phoneFrame from "@/public/Assets/phone-frame.png";
 import BalloLoader from "@/app/components/ui/BalloLoader";
 import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
+import { WhyFeatureChips } from "@/app/components/ui/FeatureChips";
+import { useContainerScrollContext } from "@/app/components/ui/AnimatedVideoOnScroll";
+import { at, type Range } from "@/lib/cinematic";
 
 /**
  * Why Choose BalloAds — a pinned phone with a vertical card carousel.
@@ -34,7 +37,7 @@ import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
  * remeasure, so that whole class of problem is gone with the dependency.
  */
 
-const features = [
+export const features = [
   {
     title: "AI-Powered Targeting",
     desc: "Get your message in front of the right audience at the right time.",
@@ -70,6 +73,7 @@ const features = [
 const HOLD = 1;
 const SLIDE = 0.32;
 
+
 /** GSAP's `power2.inOut`, which is a quad in-out. */
 const SWAP_EASE = cubicBezier(0.45, 0, 0.55, 1);
 
@@ -89,7 +93,7 @@ interface Swap {
  * The timeline, as plain numbers. `rest` holds the times at which exactly one
  * card fills the screen — the only positions the scroll may settle on.
  */
-function buildTimeline(count: number) {
+export function buildTimeline(count: number) {
   const rest = [0];
   const swaps: Swap[] = [];
   let cursor = 0;
@@ -178,6 +182,13 @@ function useSnapToCard(
   outerRef: React.RefObject<HTMLElement | null>,
   snapPoints: number[],
   enabled: boolean,
+  /**
+   * Progress below which the track belongs to something else and must not be
+   * snapped. It is 0 for this section, whose whole track is the carousel, and
+   * the start of the card window for the hero, whose track opens with four
+   * beats of handover that would be yanked around by a snap.
+   */
+  activeFrom: number = 0,
 ) {
   const frameRef = useRef<number | null>(null);
   const expectedRef = useRef<number | null>(null);
@@ -258,9 +269,9 @@ function useSnapToCard(
       const length = outer.offsetHeight - window.innerHeight;
       if (length <= 0) return;
       const progress = (window.scrollY - start) / length;
-      // Only while the section is actually pinned. At the very ends the reader
-      // is on their way somewhere else and must not be pulled back.
-      if (progress <= 0.001 || progress >= 0.999) return;
+      // Only while the cards actually own the track. At the very ends the
+      // reader is on their way somewhere else and must not be pulled back.
+      if (progress <= Math.max(0.001, activeFrom) || progress >= 0.999) return;
 
       const nearest = snapPoints.reduce((best, p) =>
         Math.abs(p - progress) < Math.abs(best - progress) ? p : best,
@@ -277,7 +288,7 @@ function useSnapToCard(
       if (settle) clearTimeout(settle);
       cancel();
     };
-  }, [enabled, outerRef, snapPoints, tweenTo, cancel]);
+  }, [enabled, outerRef, snapPoints, tweenTo, cancel, activeFrom]);
 }
 
 /**
@@ -291,7 +302,7 @@ function useSnapToCard(
  */
 const HEADING_STAGGER: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.55 } },
 };
 const RISE: Variants = {
   hidden: { y: 60, opacity: 0 },
@@ -309,7 +320,26 @@ const FADE: Variants = {
   },
 };
 
-function WhyCard({
+/**
+ * Slide in from the right of the column, not of the page.
+ *
+ * This must not live on the same node as `whileInView`. `hidden` parks the
+ * element one full width off-stage, and IntersectionObserver uses the
+ * transformed box — so the observer would wait for a target that can never
+ * enter the viewport, and the phone would stay at opacity 0 forever. The
+ * outer `.why-right-area` is what gets watched; this variant plays on a
+ * child that is free to travel.
+ */
+const PHONE_ENTER: Variants = {
+  hidden: { x: "100%", opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.9, ease: [0.215, 0.61, 0.355, 1] },
+  },
+};
+
+export function WhyCard({
   index,
   feature,
   swaps,
@@ -346,6 +376,77 @@ function WhyCard({
   );
 }
 
+/**
+ * All five feature cards, on the hero's own phone screen.
+ *
+ * This is the carousel — not a preview of it. It runs on the hero's pin (see
+ * `phoneScreen` on `HeroSideExit`), crossfaded onto the phone already on
+ * screen in place of the onboarding mock, so the whole five-step sequence is
+ * one continuous scroll scene rather than two that hand off mid-list.
+ *
+ * `range` is the hero's card window; the hero's progress is remapped into a
+ * fresh [0, 1] across it, which is the same shape of input `WhyCard` takes
+ * from `WhyScrollSection`'s own track. The snap is mapped back the other way:
+ * its rest points are fractions of the card window, and the hook needs them as
+ * fractions of the whole track, with everything before the window left alone.
+ */
+export function WhyCardSequence({ range }: { range: Range }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const progress = useTransform(scrollYProgress, (p) => at(p, range));
+  const rootRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLElement | null>(null);
+  const pinned = useMatchMedia(PINNED_QUERY);
+
+  const { total, swaps, snapPoints } = useMemo(
+    () => buildTimeline(features.length),
+    [],
+  );
+
+  // The snap measures the scroll track, which is the hero's `ContainerScroll`
+  // element — an ancestor rather than anything this renders, so it is resolved
+  // once on mount instead of being passed down through the phone.
+  useEffect(() => {
+    trackRef.current =
+      rootRef.current?.closest(".cinematic-hero") as HTMLElement | null;
+  }, []);
+
+  const trackSnapPoints = useMemo(
+    () => snapPoints.map((p) => range[0] + p * (range[1] - range[0])),
+    [snapPoints, range],
+  );
+
+  useSnapToCard(trackRef, trackSnapPoints, pinned, range[0]);
+
+  return (
+    <div ref={rootRef} className="hero-phone-why-screen" aria-hidden="true">
+      <ul
+        className="why-scroll-items why-scroll-items--flush"
+        style={{ "--count": features.length } as React.CSSProperties}
+      >
+        {features.map((feature, i) => (
+          <WhyCard
+            key={i}
+            index={i}
+            feature={feature}
+            swaps={swaps}
+            total={total}
+            progress={progress}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * The standalone section: its own pin, its own carousel.
+ *
+ * The home page does not render this any more — the hero's pin owns that scene
+ * now, cards and all (see `WhyCardSequence`). It is kept whole, and in its
+ * original standalone form, because it is the only self-contained version of
+ * this section: anything wanting "Why Choose" as a section of its own, rather
+ * than as part of a hero handover, mounts this.
+ */
 export function WhyScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
   const { openWaitlist } = useWaitlist();
@@ -374,7 +475,7 @@ export function WhyScrollSection() {
       <div className="why-scroll-sticky">
         <div className="why-scroll-inner">
           <motion.div
-            className="why-scroll-heading"
+            className="why-scroll-heading why-copy"
             variants={HEADING_STAGGER}
             initial="hidden"
             whileInView="visible"
@@ -382,7 +483,7 @@ export function WhyScrollSection() {
           >
             <motion.h2
               variants={RISE}
-              className="text-4xl md:text-8xl font-black text-gradient-silver leading-tight tracking-tight"
+              className="why-copy-title font-black text-gradient-silver"
             >
               Why
               <br />
@@ -390,81 +491,90 @@ export function WhyScrollSection() {
               <br />
               BalloAds?
             </motion.h2>
-            <motion.p
+            <motion.span
               variants={RISE}
-              className="landing-body mt-3 text-white"
-              style={{ maxWidth: "26rem" }}
-            >
+              className="why-copy-rule"
+              aria-hidden="true"
+            />
+            <motion.p variants={RISE} className="landing-body why-copy-body">
               Most tools make you choose between reach and relevance. BalloAds
               gives you both: one place to build an audience, send SMS, WhatsApp
               and email campaigns, and see exactly what each message earned you.
             </motion.p>
+            <motion.div variants={FADE}>
+              <WhyFeatureChips />
+            </motion.div>
             <motion.button
               variants={FADE}
               type="button"
               onClick={openWaitlist}
-              className="btn-primary group mt-6"
+              className="btn-primary group why-copy-cta"
             >
               Get Started
             </motion.button>
           </motion.div>
 
-          <div className="why-right-area">
-            <div
-              className="why-bg-images"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <BalloLoader />
-            </div>
-            <div className="why-phone-wrapper">
-              <ul
-                className="why-scroll-items"
-                style={{ "--count": features.length } as React.CSSProperties}
+          <motion.div
+            className="why-right-area"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
+            <motion.div className="why-right-enter" variants={PHONE_ENTER}>
+              <div
+                className="why-bg-images"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                {features.map((feature, i) =>
-                  pinned ? (
-                    <WhyCard
-                      key={i}
-                      index={i}
-                      feature={feature}
-                      swaps={swaps}
-                      total={total}
-                      progress={scrollYProgress}
-                    />
-                  ) : (
-                    // Mobile and reduced-motion: no pin, no carousel. The first
-                    // card sits on the screen and the rest stay parked below.
-                    <li
-                      key={i}
-                      className="why-scroll-item"
-                      style={
-                        {
-                          opacity: 1,
-                          transform: `translateY(${i === 0 ? 0 : 100}%)`,
-                          ["--i" as string]: i,
-                        } as React.CSSProperties
-                      }
-                    >
-                      <span className="why-scroll-item-num">0{i + 1}</span>
-                      <h3 className="why-scroll-item-title">{feature.title}</h3>
-                      <p className="why-scroll-item-desc">{feature.desc}</p>
-                    </li>
-                  ),
-                )}
-              </ul>
-              <Image
-                src={phoneFrame}
-                alt=""
-                aria-hidden="true"
-                sizes="(max-width: 768px) 220px, 300px"
-                className="why-phone-frame-img"
-              />
-            </div>
-          </div>
+                <BalloLoader />
+              </div>
+              <div className="why-phone-wrapper">
+                <ul
+                  className="why-scroll-items"
+                  style={{ "--count": features.length } as React.CSSProperties}
+                >
+                  {features.map((feature, i) =>
+                    pinned ? (
+                      <WhyCard
+                        key={i}
+                        index={i}
+                        feature={feature}
+                        swaps={swaps}
+                        total={total}
+                        progress={scrollYProgress}
+                      />
+                    ) : (
+                      <li
+                        key={i}
+                        className="why-scroll-item"
+                        style={
+                          {
+                            opacity: 1,
+                            transform: `translateY(${i === 0 ? 0 : 100}%)`,
+                            ["--i" as string]: i,
+                          } as React.CSSProperties
+                        }
+                      >
+                        <span className="why-scroll-item-num">0{i + 1}</span>
+                        <h3 className="why-scroll-item-title">{feature.title}</h3>
+                        <p className="why-scroll-item-desc">{feature.desc}</p>
+                      </li>
+                    ),
+                  )}
+                </ul>
+                <Image
+                  src={phoneFrame}
+                  alt=""
+                  aria-hidden="true"
+                  sizes="(max-width: 768px) 220px, 300px"
+                  className="why-phone-frame-img"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

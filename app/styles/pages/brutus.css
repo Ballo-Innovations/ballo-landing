@@ -491,3 +491,32 @@
     transform: none;
   }
 }
+
+
+/* ---------- Home-page variant: bubbles arrive in sequence ----------
+   Driven by the FadeUpReveal wrapping the phone (`data-fur`): once it is in,
+   each bubble plays a short slide-up keyed on its --i. No timers. */
+.brutus-phone--animated .brutus-chat {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+}
+
+[data-fur="in"] .brutus-phone--animated .brutus-chat {
+  animation: brutus-bubble-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.45s + var(--i, 0) * 0.5s);
+}
+
+@keyframes brutus-bubble-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brutus-phone--animated .brutus-chat {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

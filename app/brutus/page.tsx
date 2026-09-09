@@ -8,49 +8,17 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import ConcentricRings from "@/app/components/ui/ConcentricRings";
 import { FadeUpReveal } from "@/app/components/ui/FadeUpReveal";
 import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
-import "@/app/styles/pages/brutus.css";
+import { BrutusPhoneChat } from "@/app/components/brutus/BrutusPhoneChat";
+import { BRUTUS_CAPABILITIES } from "@/app/components/brutus/content";
+// Page styles are loaded through styles/index.css (styles/pages/brutus.css),
+// which is also what lets the home page's Brutus section share the phone
+// mock's styling.
 
-import phoneFrame from "@/public/Assets/phone-frame.png";
 import waGlow from "@/public/Assets/2.png";
 
 // Full-bleed hero background video (lives in the asset library; path encoded
 // for the spaces in the folder/filename).
 const HERO_VIDEO = encodeURI("/BalloAds Assets 2/BalloAds Asset Videos.mp4");
-
-// Brutus' capabilities. Mirrors the reference grid layout (two columns of
-// check-marked highlights) but with copy specific to the AI assistant.
-const capabilities = [
-  {
-    title: "24/7 Availability",
-    description:
-      "Brutus never clocks off. Day or night, your customers get instant, on-brand answers without waiting for a human agent.",
-  },
-  {
-    title: "Natural Conversations",
-    description:
-      "Powered by advanced language understanding, Brutus replies in a warm, human tone that keeps every conversation flowing.",
-  },
-  {
-    title: "Quick Response Time",
-    description:
-      "Replies land in milliseconds, so no lead goes cold and no question sits unanswered while momentum slips away.",
-  },
-  {
-    title: "System Integration",
-    description:
-      "Brutus plugs straight into your WhatsApp, SMS, email, and web channels — one assistant across every touchpoint.",
-  },
-  {
-    title: "Smart Automation",
-    description:
-      "From qualifying leads to booking follow-ups, Brutus automates the repetitive work so your team focuses on closing.",
-  },
-  {
-    title: "Implementation & Support",
-    description:
-      "We handle the full setup and stay with you afterwards, so Brutus is live, trained, and delivering value from day one.",
-  },
-];
 
 export default function BrutusPage() {
   const { openWaitlist } = useWaitlist();
@@ -131,29 +99,7 @@ export default function BrutusPage() {
               className="brutus-wa-glow"
               style={{ maxWidth: "none", maxHeight: "none" }}
             />
-            <div className="brutus-phone">
-              <Image src={phoneFrame} alt="" className="brutus-phone__frame" sizes="18rem" priority />
-              <div className="brutus-phone__screen">
-                <div className="brutus-chat brutus-chat--in">
-                  <span className="brutus-chat__avatar">
-                    <Sparkles size={12} aria-hidden="true" />
-                  </span>
-                  <p>Hi! I&apos;m Brutus. How can I help your business today?</p>
-                </div>
-                <div className="brutus-chat brutus-chat--out">
-                  <p>Send my new offer to all my WhatsApp contacts.</p>
-                </div>
-                <div className="brutus-chat brutus-chat--in">
-                  <span className="brutus-chat__avatar">
-                    <Sparkles size={12} aria-hidden="true" />
-                  </span>
-                  <p>On it — reaching 1,240 contacts now. ✅</p>
-                </div>
-                <button type="button" className="brutus-phone__cta">
-                  TRY IT NOW
-                </button>
-              </div>
-            </div>
+            <BrutusPhoneChat priority onCta={openWaitlist} />
           </div>
         </div>
 
@@ -174,7 +120,7 @@ export default function BrutusPage() {
           </FadeUpReveal>
 
           <ul className="brutus-capabilities__grid">
-            {capabilities.map((cap) => (
+            {BRUTUS_CAPABILITIES.map((cap) => (
               <li key={cap.title} className="brutus-cap">
                 <span className="brutus-cap__check" aria-hidden="true">
                   <svg

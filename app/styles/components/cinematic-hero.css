@@ -98,59 +98,6 @@
   );
 }
 
-/* The panel's content: a heading band and the industry grid beneath it, in
-   normal flow rather than the card's old three-column composition. The grid
-   is the section's own `.who-bento`, so it keeps the columns and the tile
-   proportions it had before the panel existed. */
-.ch-panel-inner {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(1.25rem, 3vh, 2.5rem);
-  width: 100%;
-  height: 100%;
-  max-width: 84rem;
-  margin-inline: auto;
-  /* The top padding clears the fixed header. The panel opens to full bleed,
-     so without it the eyebrow and heading sit underneath the nav pill. */
-  padding: clamp(6rem, 13vh, 8.5rem) clamp(1rem, 4vw, 3.5rem) clamp(1.5rem, 4vh, 3rem);
-  overflow: hidden;
-}
-
-/* The section's heading styling is reused as-is; only the outer spacing needs
-   adjusting, because inside a pinned panel there is no section above it to
-   space away from. */
-.ch-panel-head {
-  margin: 0;
-  will-change: transform, opacity;
-}
-
-/* The grid has to fit one viewport now rather than growing the page, so the
-   tiles take their height from the panel instead of from their own aspect
-   ratio. */
-.ch-panel-inner .who-bento {
-  margin: 0;
-  min-height: 0;
-  flex: 1 1 auto;
-  /* Two rows sharing whatever height the panel has left, rather than each tile
-     taking its height from its own 4:3. In flow the aspect ratio is right,
-     because the page can grow; inside a pin it cannot, and the second row was
-     being clipped by the panel's overflow. */
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-}
-
-.ch-panel-inner .who-tile {
-  aspect-ratio: auto;
-  height: 100%;
-}
-
-.ch-anim-tile {
-  height: 100%;
-  will-change: auto;
-}
-
 /* ── The hero's handover ─────────────────────────────────────────────────
    Three layers on the pin, back to front: the marquee band, the phone that
    rises into the space, and the hero itself. All siblings, none of them
@@ -179,18 +126,55 @@
    left by then. */
 .hero-aside {
   position: absolute;
-  top: 50%;
+  top: 0;
   right: 0;
+  bottom: 0;
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: min(46%, 34rem);
   margin-right: clamp(1.5rem, 6vw, 6rem);
-  transform: translateY(-50%);
   will-change: transform, opacity;
+}
+
+/* The two copy layers, stacked in one cell so the crossfade never reflows the
+   column and the column still has a height of its own (see `HeroAside`). */
+.hero-aside--stack {
+  display: grid;
+  align-content: center;
+}
+
+.hero-aside--stack > .hero-aside-layer {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* Same reason as `.why-copy` below: a grid item will not shrink under its
+     widest inflexible descendant unless told it may, and the copy in here
+     contains a marquee of `nowrap` pills. */
+  min-width: 0;
 }
 
 /* Below the phone on narrow screens, where there is no right-hand half to
    move into: the device rises, then the copy comes in underneath it. */
 @media (max-width: 900px) {
+  /* The phone moves to the top of the stage rather than its middle, so the
+     copy below it has a band of its own. Flex alignment, not a transform:
+     the scroll sequence owns this element's `transform` outright. */
+  .hero-zoom-phone {
+    align-items: flex-start;
+    padding-top: clamp(3.5rem, 10vh, 6rem);
+  }
+
+  /* The device is a fixed 256x516; shrinking it here is what buys the copy
+     below it enough room. On the scene, not on `.hero-zoom-phone` — the
+     scroll sequence writes that element's transform every frame. */
+  .hero-zoom-phone .phone3d-scene {
+    transform: scale(0.76);
+    transform-origin: top center;
+  }
+
   .hero-aside {
     top: auto;
     bottom: clamp(1rem, 5vh, 3rem);
@@ -213,6 +197,23 @@
   }
 }
 
+/* ── Act three: the handoff to "Why Choose" ──────────────────────────────
+   No separate boxes here any more — the phone stays put and its screen
+   crossfades, and the copy crossfades in place inside `.hero-aside` itself. */
+
+/* The feature-card preview, filling the phone's own screen in place of the
+   onboarding mock (see `WhyPreviewCards`). `.phone3d-screen` already masks to
+   the device's rounded corners, so this only needs to fill it flush — the
+   22px radius here is redundant against that mask but kept so the card's own
+   edge doesn't show a hard corner during the crossfade before the mask has
+   fully settled. */
+.hero-phone-why-screen {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
 /* ── Type ─────────────────────────────────────────────────────────────── */
 
 /* Brushed-silver fill. `translateZ(0)` is load-bearing, not a habit: without
@@ -232,51 +233,193 @@
     drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
 }
 
-/* ── CTA ──────────────────────────────────────────────────────────────── */
+/* ── "Why Choose" copy block ──────────────────────────────────────────────
+   The heading used to be Tailwind's `text-4xl md:text-8xl`, which is a step
+   function: 36px up to 767px, then 96px from 768px on. The column it lives in
+   is `min(46%, 34rem)`, so at the widths just past that breakpoint 96px type
+   nearly filled the measure — three hard-broken lines of it, sitting 12px off
+   a paragraph set at 18px. The jump was the layout problem, not the words.
 
-.ch-cta {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
+   Fluid type against the same viewport the column is sized from keeps the
+   heading proportional at every width, and the spacing below is stated as one
+   rhythm (rule, then body, then CTA) rather than three unrelated margins. */
+.why-copy {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 1rem;
-  will-change: transform, opacity;
+  align-items: flex-start;
+  /* A column, not the whole box. Below 901px `.hero-aside` spans the stage
+     edge to edge, and without a measure here the heading and body sat in a
+     narrow strip on the left of a very wide container with nothing beside
+     them. */
+  max-width: 40rem;
+  /* Load-bearing. A grid or flex item defaults to `min-width: auto`, so it
+     cannot shrink below its widest inflexible child — and the feature-chip
+     marquee in here is a row of `nowrap` pills whose min-content is far wider
+     than the aside. That pushed this column to 608px inside a 471px aside,
+     and the heading then wrapped against 608 and overflowed. The marquee
+     clips its own overflow, which is its job; this lets it. */
+  min-width: 0;
 }
 
-.ch-cta-heading {
-  font-family: var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
-  margin: 0 0 1.25rem;
+.why-copy-title {
+  margin: 0;
+  /* Never wider than the column, whatever the ch measure below works out to
+     at the current fluid size. */
+  max-width: 100%;
+  /* Tracks the column, which is itself a percentage of the viewport. Topping
+     out lower than it did: at 5.5rem in a 544px column the heading was three
+     lines of near-column-width type and read as a wall rather than a title. */
+  font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  /* Wraps to two even lines instead of one long and one short. */
+  text-wrap: balance;
+  max-width: 18ch;
 }
 
-.ch-cta-body {
-  color: rgba(219, 231, 255, 0.7);
-  font-size: clamp(1rem, 1.4vw, 1.25rem);
-  font-weight: 300;
-  line-height: 1.65;
-  max-width: 36rem;
-  margin: 0 0 2.5rem;
+/* Carries the gap between the heading and the body copy, so the two blocks
+   are separated by a measured rhythm instead of the heading's own margin. */
+.why-copy-rule {
+  width: clamp(2.5rem, 6vw, 4rem);
+  height: 2px;
+  /* Tighter than it was, since the heading above it is no longer three lines
+     tall and the block does not need as much air to breathe. */
+  margin-block: clamp(1rem, 2vh, 1.5rem);
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--brand-color-5) 90%, transparent),
+    transparent
+  );
 }
 
-.ch-cta-actions {
+.why-copy-body {
+  margin: 0;
+  /* A measure in characters, not rems: it stays readable as the fluid type
+     around it changes size. 34ch put roughly 30 characters on a line, well
+     under the comfortable range, and ran this paragraph to six ragged lines
+     at every breakpoint. */
+  max-width: 46ch;
+  /* A step up from `.landing-body`, which is tuned for copy that stands on its
+     own. Under a heading this size it needs the extra weight or it reads as a
+     caption. */
+  font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+  line-height: 1.55;
+  color: rgba(226, 236, 255, 0.92);
+}
+
+.why-copy-cta {
+  margin-top: clamp(1.5rem, 3.2vh, 2.25rem);
+}
+
+/* ── The feature chip rows ────────────────────────────────────────────────
+   The same chips as the closing CTA (see FeatureChips.tsx), sat between the
+   body copy and the CTA so "one place for every channel" is shown as well as
+   claimed.
+
+   This block is spending height inside a pin: heading, body, rows and CTA all
+   have to fit one viewport next to the phone. So it is the part that gives —
+   one row instead of two below the desktop breakpoint, and nothing at all on
+   a short viewport, where the CTA losing its place on screen would cost more
+   than the chips are worth.
+
+   The width is stated, not inherited. `.hero-aside` is far wider than the copy
+   that sits in it — 1600px at a 1440px viewport — so `width: 100%` would run
+   the rows off the right of the screen, and with them the mask's fade: the
+   chips would be cut off mid-word at the viewport edge instead of dissolving.
+   Sized against the viewport, both fades land on screen at every width, and
+   the rail still reads wider than the copy's own 34ch measure. */
+.why-copy-rows {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  align-items: center;
+  gap: 0.5rem;
+  width: min(38rem, calc(100vw - 2.5rem));
+  margin-block: clamp(1.25rem, 2.6vh, 1.75rem) 0;
 }
 
-@media (min-width: 640px) {
-  .ch-cta-actions {
-    flex-direction: row;
-    gap: 1.5rem;
+.why-copy-rows .cta-chip {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+}
+
+.why-copy-rows .mq__group {
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* One row under the phone, where the copy is bottom-anchored and the measure
+   is the full column. */
+@media (max-width: 900px) {
+  .why-copy-rows {
+    margin-block: 1rem 0;
+  }
+
+  .why-copy-rows .mq--row-b {
+    display: none;
   }
 }
+
+/* Landscape phones and short laptops: the pin has no height to spare. */
+@media (max-height: 700px) {
+  .why-copy-rows {
+    display: none;
+  }
+}
+
+
+/* Bottom-anchored under the phone rather than beside it — tighten the rhythm
+   so the whole block still clears the viewport edge. */
+@media (max-width: 900px) {
+  .why-copy-title {
+    font-size: clamp(2.5rem, 11vw, 4rem);
+  }
+
+  .why-copy-rule {
+    margin-block: 1rem;
+  }
+
+  .why-copy-cta {
+    margin-top: 1.25rem;
+  }
+}
+
+/* Phone plus three lines of display type plus body plus a button, in one
+   viewport: at phone widths the stack only fits if both ends give a little. */
+@media (max-width: 640px) {
+  .hero-zoom-phone {
+    padding-top: clamp(2rem, 6vh, 3.5rem);
+  }
+
+  .hero-zoom-phone .phone3d-scene {
+    transform: scale(0.62);
+  }
+
+  .why-copy-title {
+    font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+  }
+
+  .why-copy-rule {
+    margin-block: 0.875rem;
+  }
+
+  .why-copy-body {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .why-copy-cta {
+    margin-top: 1rem;
+  }
+}
+
+/* ── CTA ────────────────────────────────────────────────────────────────
+   The "Start your first campaign." block that used to close this section is
+   gone, and `.ch-cta`, `.ch-cta-static`, `.ch-cta-heading`, `.ch-cta-body`
+   and `.ch-cta-actions` went with it — nothing else wore them.
+
+   `.ch-silver` below stays. It is a reusable brushed-silver text fill rather
+   than layout for that one block, and the portrait wall's stylesheet points
+   at it as the example of how this page floats a headline over artwork. */
 
 /* ── Reduced motion ───────────────────────────────────────────────────── */
 

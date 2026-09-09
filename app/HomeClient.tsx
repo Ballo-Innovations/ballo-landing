@@ -2,38 +2,29 @@
 
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { PageGradient } from "./components/ui/PageGradient";
-import { HeroSideExit } from "./components/ui/HeroSideExit";
+import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
-import dynamic from "next/dynamic";
-
-// Why keeps `ssr: false` for now. It no longer measures layout on mount — the
-// pin is CSS sticky and the carousel is framer-motion — but its cards are
-// decorative and there is nothing to gain from server-rendering five of them.
-// Who is plain flow + IntersectionObserver, so it is imported directly and its
-// industry copy IS server-rendered.
-const WhyScrollSection = dynamic(
-  () =>
-    import("./components/sections/WhyScrollSection").then(
-      (m) => m.WhyScrollSection,
-    ),
-  { ssr: false },
-);
+import { WhyFeatureChips } from "./components/ui/FeatureChips";
 
 import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
+import { BrutusSection } from "./components/sections/BrutusSection";
+import { Testimonials3D } from "./components/sections/Testimonials3D";
+import { FinalCta } from "./components/sections/FinalCta";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
 import { useAnimateWhenVisible } from "./components/ui/useAnimateWhenVisible";
 import { useWaitlist } from "./components/waitlist/WaitlistProvider";
-
-import bglight from "@/public/Assets/2.png";
-import logoIcon from "@/public/BalloAds Logo New/BalloAds-Icon.png";
 
 import woman from "@/public/Assets/11.png";
 import woman2 from "@/public/Assets/13.png";
 import woman3 from "@/public/Assets/10.png";
 import man from "@/public/Assets/14.png";
 import ConcentricRings from "./components/ui/ConcentricRings";
+// Not lazy, unlike the section it comes from: this runs on the hero's own pin,
+// so it is on screen within a screen or two of the top.
+import { WhyCardSequence } from "./components/sections/WhyScrollSection";
+import { BackedBy } from "./components/ui/BackedBy";
 
 // Referenced below for the one-off "invert to white" filter applied to the
 // Bayport mark specifically — kept here even though the rest of the fallback
@@ -51,6 +42,13 @@ export type HomeLogoItem = {
   /** null renders the name as a wordmark — used when no logo image exists yet. */
   src: StaticImageData | string | null;
   alt: string;
+  /**
+   * What this partner is to BalloAds ("Network partner", "Regulator"). Read by
+   * the "Backed by" rail, which spotlights one partner at a time and shows
+   * this beside its name; omitted rows simply show the name. The CMS has no
+   * field for it yet, so only the fallback list in page.tsx sets it.
+   */
+  role?: string;
 };
 
 /**
@@ -125,16 +123,30 @@ export default function HomeClient({
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  /**
+   * Logos whose image failed to load, by name.
+   *
+   * A CMS row carries a URL the server cannot verify, so a dead asset used to
+   * put a browser's broken-image icon in the marquee. `src: null` already
+   * means "render the name as a wordmark" — a URL that 404s is the same
+   * situation discovered later, so it lands in the same place.
+   */
+  const [brokenLogos, setBrokenLogos] = useState<Set<string>>(new Set());
+  const markLogoBroken = useCallback((alt: string) => {
+    setBrokenLogos((prev) => {
+      if (prev.has(alt)) return prev;
+      const next = new Set(prev);
+      next.add(alt);
+      return next;
+    });
+  }, []);
   const shouldReduceMotion = usePrefersReducedMotion();
   const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
-  const testimonialsSectionRef = useRef<HTMLElement>(null);
-  const isTestimonialsVisibleRef = useRef(false);
-
-  // Infinite CSS marquee — parked while scrolled away (see the hook). The hero
-  // band no longer needs one: it is a canvas now and pauses its own rAF loop
-  // when it scrolls out of view.
+  // Infinite CSS marquee — parked while scrolled away (see the hook). Every
+  // other section with an infinite animation (Brutus, testimonials, the
+  // closing CTA) owns its own instance of the same hook.
   const trustedByRef = useAnimateWhenVisible<HTMLElement>();
 
   useEffect(() => {
@@ -152,20 +164,6 @@ export default function HomeClient({
     return () => clearInterval(interval);
   }, [isAutoPlaying, shouldReduceMotion]);
 
-  // Pause testimonials interval when section is off-screen
-  useEffect(() => {
-    const el = testimonialsSectionRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        isTestimonialsVisibleRef.current = entry.isIntersecting;
-      },
-      { rootMargin: "100px" },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
   const goToSlide = (index: number) => {
     if (resumeAutoPlayTimeoutRef.current) {
       clearTimeout(resumeAutoPlayTimeoutRef.current);
@@ -178,16 +176,6 @@ export default function HomeClient({
       }, 10000);
     }
   };
-
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (!isTestimonialsVisibleRef.current) return;
-      setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
-    }, 6000);
-    return () => clearInterval(t);
-  }, [testimonials.length]);
 
   // Marquee loop needs the logo list duplicated end-to-end so the CSS
   // animation can scroll seamlessly — same doubling the hardcoded array used
@@ -244,6 +232,41 @@ export default function HomeClient({
             </div>
           </>
         }
+        /* Act three, beat 2: "Why Choose"'s heading, crossfaded into the same
+           spot as the "What We're About" copy once the phone has started
+           showing its cards. This is the only place the "Why Choose" copy
+           lives now — there is no separate section below repeating it. */
+        whyHeading={
+          <div className="why-copy">
+            {/* No hard line breaks. Forcing "Why / Choose / BalloAds?" onto
+                three lines made the heading a tall narrow stack whatever the
+                column was doing: at 850px it filled 280px of a 786px column
+                and pushed the body copy most of a viewport down. It wraps to
+                the column now, balanced. */}
+            <h2 className="why-copy-title font-black text-gradient-silver">
+              Why Choose BalloAds?
+            </h2>
+            <span className="why-copy-rule" aria-hidden="true" />
+            <p className="landing-body why-copy-body">
+              Most tools make you choose between reach and relevance. BalloAds
+              gives you both: one place to build an audience, send SMS, WhatsApp
+              and email campaigns, and see exactly what each message earned you.
+            </p>
+            <WhyFeatureChips />
+            <button
+              type="button"
+              onClick={openWaitlist}
+              className="btn-primary group why-copy-cta"
+            >
+              Get Started
+            </button>
+          </div>
+        }
+        /* Act three, beat 1: the phone's own screen crossfades from the
+           onboarding mock to the feature cards, then runs all five of them on
+           the rest of this pin. There is no separate "Why Choose" section
+           below any more — this is that section. */
+        phoneScreen={<WhyCardSequence range={PHONE_CONTENT} />}
       >
         <section
           className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"
@@ -393,117 +416,35 @@ export default function HomeClient({
         </section>
       </HeroSideExit>
 
-      {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
-      <WhyScrollSection />
+      {/* No "Why Choose BalloAds" section here: the hero's pin above is that
+          scene now — heading, phone and all five feature cards, in one
+          continuous scroll (see `whyHeading`/`phoneScreen` on HeroSideExit).
+          Rendering `WhyScrollSection` as well would repeat all of it. */}
 
-      {/* Backed By Section. A short, CMS-driven list (partner-logo rows with
-          "Backed by" switched on), so this is a static grid rather than a
-          marquee — nothing to loop, and no always-on animation to park. Rows
-          with no logo image yet render as wordmarks. */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <FadeUpReveal className="text-center mb-10">
-            <p className="text-sm uppercase tracking-[0.35em] text-white/50">
-              Backed by
-            </p>
-          </FadeUpReveal>
-          <FadeUpReveal yOffset={50} delay={0.1}>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 md:gap-x-20">
-              {backerLogos.map((logo, i) => (
-                <div
-                  key={`${logo.alt}-${i}`}
-                  className="flex items-center justify-center"
-                >
-                  {logo.src ? (
-                    <Image
-                      src={logo.src}
-                      alt={logo.alt}
-                      width={224}
-                      height={112}
-                      loading="lazy"
-                      sizes="160px"
-                      className="h-16 w-auto object-contain md:h-20"
-                    />
-                  ) : (
-                    <span className="text-2xl font-semibold tracking-wide text-white/70 md:text-3xl">
-                      {logo.alt}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </FadeUpReveal>
-        </div>
+      {/* Backed By. A short, CMS-driven list (partner-logo rows with "Backed
+          by" switched on) — too few to loop, so it is a rail with a travelling
+          spotlight rather than a marquee. One partner is named at full size at
+          a time; the pointer overrides the cycle, and the cycle itself stops
+          while the section is off-screen. */}
+      <section className="backers-section">
+        {/* The reveal is only the trigger here: its own transform is turned
+            off in CSS and the label and each mark animate themselves, so the
+            logos arrive one after another instead of the whole rail fading in
+            as one block. */}
+        <FadeUpReveal yOffset={0} className="backers-reveal">
+          <BackedBy logos={backerLogos} />
+        </FadeUpReveal>
       </section>
 
-      {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
+      {/* Who can use BalloAds — the question and CTA beside two marquee rows
+          of industry tiles. */}
       <WhoCinematicSection />
 
-      {/* Testimonials Section */}
-      <section
-        ref={testimonialsSectionRef}
-        className="prlx-testi-trigger relative overflow-hidden py-20 px-4"
-      >
-        <div className="prlx-testi-1" aria-hidden="true" />
-        <div className="container mx-auto">
-          <FadeUpReveal>
-            <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
-              <span className="text-gradient-cyan block">
-                HEAR FROM THOSE WHO HAVE
-                <br />
-                TRIED AND TESTED
-              </span>
-            </h2>
-          </FadeUpReveal>
-          <div className="max-w-4xl mx-auto">
-            <div className="testimonial-glass rounded-3xl p-8 md:p-12 overflow-hidden flex flex-col">
-              {/* Frosted-glass layer. This used to also carry
-                  `filter: url(#glass-distortion)` — an SVG turbulence +
-                  displacement-map refraction on top of a backdrop blur, over a
-                  card this size. That filter chain cannot be composited, so the
-                  whole card re-rasterized on every scroll frame; it was the
-                  single most expensive thing on the page. The blur and glass
-                  edge (see .testimonial-glass in home.css) carry the look. */}
-              <div className="flex-1">
-                {/* Remounting on index change replays the CSS reveal below —
-                    same crossfade the AnimatePresence wrapper gave, with no
-                    animation runtime driving it frame by frame. */}
-                <div
-                  key={testimonialIndex}
-                  className="testimonial-slide flex flex-col items-center text-center"
-                >
-                  <p className="text-xl md:text-2xl leading-relaxed mb-8 italic line-clamp-4 overflow-hidden h-[8.5rem] md:h-[10rem]">
-                    &quot;{testimonials[testimonialIndex].quote}&quot;
-                  </p>
-                  <p className="text-xl font-bold mb-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
-                    {testimonials[testimonialIndex].name}
-                  </p>
-                  <p className="text-white/80 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
-                    {testimonials[testimonialIndex].title}
-                  </p>
-                  <p className="text-white/60 text-sm mt-1 line-clamp-1 overflow-hidden w-full min-h-[1rem]">
-                    {testimonials[testimonialIndex].company}
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-center gap-3 mt-8">
-                {testimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setTestimonialIndex(i)}
-                    className={`transition-all duration-300 rounded-full ${
-                      i === testimonialIndex
-                        ? "w-6 h-3 bg-white"
-                        : "w-3 h-3 bg-white/30 hover:bg-white/60"
-                    }`}
-                    aria-label={`Go to testimonial ${i + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Brutus, the AI assistant — a trailer for /brutus, on the home page. */}
+      <BrutusSection />
+
+      {/* Testimonials — tilted marquee columns, no timers. */}
+      <Testimonials3D items={testimonials} />
 
       {/* Trusted By Section — sits directly below the testimonials it backs up.
           Both infinite animations in here — the logo track and the
@@ -522,7 +463,7 @@ export default function HomeClient({
                   key={i}
                   className="flex items-center justify-center px-5 shrink-0"
                 >
-                  {logo.src ? (
+                  {logo.src && !brokenLogos.has(logo.alt) ? (
                     <Image
                       src={logo.src}
                       alt={logo.alt}
@@ -530,6 +471,7 @@ export default function HomeClient({
                       height={112}
                       loading="lazy"
                       sizes="112px"
+                      onError={() => markLogoBroken(logo.alt)}
                       className="h-28 w-auto object-contain opacity-100 transition-opacity"
                       style={{
                         filter:
@@ -550,60 +492,9 @@ export default function HomeClient({
         </FadeUpReveal>
       </section>
 
-      {/* Want a Feel of BalloAds? — app try-it CTA. A device mockup (SVG) rests
-          over the cyan glow orb; the brand mark, headline and "Try it now"
-          action sit on the screen. The whole visual opens the waitlist. */}
-      <section className="try-section">
-        <FadeUpReveal yOffset={50} className="try-phone-wrap">
-          {/* Cyan glow orb behind the device */}
-          <Image
-            src={bglight}
-            alt=""
-            className="try-glow"
-            aria-hidden="true"
-            sizes="(max-width: 420px) 132vw, 540px"
-          />
-          <button
-            type="button"
-            onClick={openWaitlist}
-            className="try-visual"
-            aria-label="Try BalloAds now"
-          >
-            {/* Device artwork — scaled + clipped to the phone body. Served as
-                the SVG rather than through next/image because the optimizer
-                does not rasterize SVG; the file's three embedded bitmaps were
-                downscaled to the size this actually renders at, which took it
-                from 15MB to 0.4MB. Lazy + async-decoded: it is the last section
-                on the page and must not compete with the hero. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/Assets/try.it.now.svg"
-              alt="Preview of the BalloAds app"
-              className="try-art"
-              width={810}
-              height={1012}
-              loading="lazy"
-              decoding="async"
-            />
-            {/* On-screen content */}
-            <span className="try-overlay">
-              <Image
-                src={logoIcon}
-                alt="BalloAds"
-                width={80}
-                height={80}
-                className="try-overlay-logo"
-              />
-              <span className="try-overlay-title">
-                WANT A FEEL OF
-                <br />
-                BALLOADS?
-              </span>
-              <span className="try-overlay-btn">TRY IT NOW</span>
-            </span>
-          </button>
-        </FadeUpReveal>
-      </section>
+      {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
+          BalloAds?" phone, which opens the waitlist. */}
+      <FinalCta />
     </main>
   );
 }

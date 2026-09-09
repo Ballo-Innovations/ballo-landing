@@ -1,0 +1,12 @@
+---
+description: Promote landing slices onto main; never merge the whole Landing branch
+alwaysApply: true
+---
+
+# Branch, PR, and feature promotion
+
+Production is `main`. Do not merge all of `Landing` into `main`. Cherry-pick
+the slice onto a branch off `origin/main`, PR, merge.
+
+New user-facing UI takes `isFeatureEnabled` from `lib/featureFlags.ts`. Follow
+`docs/feature-promotion.md`. Do not change `ballo-ads-web-app` from this repo.

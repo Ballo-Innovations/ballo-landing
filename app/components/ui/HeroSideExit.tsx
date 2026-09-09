@@ -29,13 +29,38 @@ import { at, clamp01, easeInOut, easeOut, lerp, staggered, type Range } from "@/
  */
 
 /**
+ * The handover, then the five-card sequence, on one track.
+ *
+ * This pin owns the whole "Why Choose" scene now — heading, phone and all five
+ * feature cards — rather than previewing two of them and handing the rest to a
+ * section below. Four swaps need the bulk of the scroll, so the handover (the
+ * hero leaving, the phone arriving, the copy swapping) is compressed into the
+ * opening `HANDOVER_END` of the track and the cards get the rest.
+ *
+ * Every range below is still written in the numbers it was tuned in — where the
+ * handover ran from 0 to `HANDOVER_TUNED_END` — and `hand()` maps them onto
+ * their share of the real track. Restating them against the track directly
+ * would mean renumbering all six of them every time this split moves, and each
+ * one is tuned against the others rather than against the track.
+ *
+ * The physical scroll the handover gets is unchanged by the split: it was
+ * 0.9 of 480vh, and it is HANDOVER_END of TRACK_CLASS.
+ */
+const HANDOVER_END = 0.48;
+const HANDOVER_TUNED_END = 0.9;
+const hand = ([from, to]: Range): Range => [
+  (from / HANDOVER_TUNED_END) * HANDOVER_END,
+  (to / HANDOVER_TUNED_END) * HANDOVER_END,
+];
+
+/**
  * The hero's elements leave over the first stretch of the track.
  *
  * Shortened to match what they actually do: with the per-element speeds below,
  * the last of them is clear well before the old 0.55, so the nominal range was
  * describing a departure that had already finished.
  */
-const ITEMS_OUT: Range = [0, 0.38];
+const ITEMS_OUT: Range = hand([0, 0.38]);
 
 /**
  * Gap between one element's departure and the next.
@@ -56,7 +81,7 @@ const ITEM_STAGGER = 0.025;
  * stage between the two. Starting it at 0.36 left a visible gap, because the
  * elements were gone by about a quarter of the way through.
  */
-const PHONE_IN: Range = [0.14, 0.58];
+const PHONE_IN: Range = hand([0.14, 0.58]);
 
 /**
  * How far below its resting place the phone starts, as a fraction of the stage.
@@ -79,9 +104,6 @@ const BAND_RISE: Range = [0, PHONE_IN[1]];
 const BAND_TOP: Range = [86, 50];
 const BAND_SCALE: Range = [1, 1.3];
 
-/** And clears only at the very end of the track, well after everything else. */
-const BAND_OUT: Range = [0.9, 1];
-
 /* ── Act two ──────────────────────────────────────────────────────────────
    Once the device has fully arrived it steps aside and the "What We're
    About" copy comes in beside it. Both live on this pin rather than in the
@@ -89,16 +111,69 @@ const BAND_OUT: Range = [0.9, 1];
    instead of waiting for a separate section to scroll up under it. */
 
 /** The phone drifts out of the middle to make room. */
-const PHONE_ASIDE: Range = [0.6, 0.84];
+const PHONE_ASIDE: Range = hand([0.6, 0.7]);
 /** As a percentage of the stage, so it holds at any viewport width. */
 const PHONE_ASIDE_X = -26;
 const PHONE_ASIDE_SCALE = 0.86;
 
-/** The copy arrives from the right, into the half the phone just left. */
-const ASIDE_IN: Range = [0.66, 0.9];
+/**
+ * The copy arrives from the right, into the half the phone just left.
+ *
+ * Settles well before `TEXT_SWAP` starts, so there is a stretch where "What
+ * We're About" is simply sitting there readable rather than arriving and
+ * leaving in one movement.
+ */
+const ASIDE_IN: Range = hand([0.62, 0.72]);
 
-/** Track length: the handover, then act two. */
-const TRACK_CLASS = "h-[320vh]";
+/**
+ * Act three: "What We're About" hands off to "Why Choose BalloAds" in place,
+ * rather than the phone leaving and a second phone arriving beside a second
+ * block of copy. The phone that is already on screen stays exactly where it
+ * is and its own screen changes what it's showing; the copy column crossfades
+ * the same way. Two beats, and the copy leads:
+ *
+ *   1. "What We're About" 's copy crossfades to "Why Choose" 's heading, in
+ *      the same spot
+ *   2. only then does the phone's screen crossfade from the onboarding mock to
+ *      the feature cards, and go on to run all five of them
+ */
+/** The copy goes first, and finishes before the phone's screen starts. */
+const TEXT_SWAP: Range = hand([0.76, 0.86]);
+const TEXT_SWAP_DISTANCE = 64;
+/**
+ * The whole rest of the track: the five-card sequence (see `WhyCardSequence`)
+ * runs here, four swaps and their dwells, holding on the last card until the
+ * pin releases. Exported so the sequence can remap the same scroll progress
+ * into its own [0, 1].
+ */
+export const PHONE_CONTENT: Range = [HANDOVER_END, 1];
+/**
+ * Just the crossfade — the onboarding mock fading out under the cards. Ends
+ * exactly where `PHONE_CONTENT` starts, so the phone is not still fading in
+ * while its first card is already dwelling.
+ */
+const PHONE_SCREEN_CROSSFADE: Range = hand([0.86, 0.9]);
+
+/**
+ * The band dissolves once the phone has finished moving aside, not while it
+ * is still travelling.
+ *
+ * It used to be tied to ASIDE_IN, which overlapped `PHONE_ASIDE` almost
+ * exactly — and because the band is what lights the middle of the stage, the
+ * phone lost its backlight in the middle of its own move and read as fading
+ * out, even though its opacity never left 1. Starting the dissolve at the end
+ * of the move keeps the device lit the whole way across; it still clears
+ * before "Why Choose" arrives, which is what it was tied to ASIDE_IN for.
+ */
+const BAND_OUT: Range = hand([0.7, 0.78]);
+
+/**
+ * Track length: the handover, then act two, then the in-place handoff to
+ * "Why Choose". `PHONE_CONTENT` needs room to fit an actual card swap (see
+ * `WhyPreviewCards`), not just a crossfade, so this stays generous rather
+ * than shrinking back toward the 360vh this started at.
+ */
+const TRACK_CLASS = "h-[900vh]";
 
 /**
  * The element's true on-screen extent, its transformed descendants included.
@@ -155,10 +230,25 @@ function useReducedMotion() {
  * own movement so the target did not slide out from under the animation. There
  * is no landing any more, so none of that machinery is here.
  */
-function HeroPhone() {
+function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [rise, setRise] = React.useState(0);
+  /**
+   * Below 900px the copy comes in *underneath* the phone rather than beside
+   * it (see `.hero-aside`), so there is no right-hand half for the device to
+   * clear: drifting left there only walks it into the heading. It stays
+   * centred and the stack does the separating.
+   */
+  const [narrow, setNarrow] = React.useState(false);
+  React.useEffect(() => {
+    const mql = window.matchMedia("(max-width: 900px)");
+    const apply = () => setNarrow(mql.matches);
+    apply();
+    mql.addEventListener("change", apply);
+    return () => mql.removeEventListener("change", apply);
+  }, []);
+  const asideX = narrow ? 0 : PHONE_ASIDE_X;
 
   // Travel only, no opacity. The device arrives at full strength: a fade made
   // it materialise rather than move, and the movement is the point.
@@ -181,12 +271,13 @@ function HeroPhone() {
   const liveY = useMotionValue(rise);
   useMotionValueEvent(y, "change", (v) => liveY.set(v));
 
-  // Act two. A percentage of the stage for x, so the drift holds at every
-  // viewport width without a second set of numbers.
+  // Act two. The phone drifts aside and stays there for the rest of the
+  // track — act three changes what's on its screen rather than moving it
+  // again.
   const x = useTransform(
     scrollYProgress,
     [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
-    ["0%", "0%", `${PHONE_ASIDE_X}%`, `${PHONE_ASIDE_X}%`],
+    ["0%", "0%", `${asideX}%`, `${asideX}%`],
     { ease: easeInOut },
   );
   const scale = useTransform(
@@ -195,6 +286,35 @@ function HeroPhone() {
     [1, 1, PHONE_ASIDE_SCALE, PHONE_ASIDE_SCALE],
     { ease: easeInOut },
   );
+
+  // The onboarding mock crossfades into the feature cards over
+  // `PHONE_SCREEN_CROSSFADE`; `screen` then drives its own card swap through
+  // the rest of `PHONE_CONTENT`.
+  //
+  // BOTH sides are written here. Fading only the outgoing one leaves the cards
+  // — which are opaque and stacked above — sitting on top of the onboarding
+  // screen from the first frame, so the phone shows both at once rather than
+  // either of them. Written straight to the DOM, not state, so this doesn't
+  // re-render on every scroll frame.
+  const onboardingRef = React.useRef<HTMLDivElement>(null);
+  const screenRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const place = () => {
+      const p = scrollYProgress.get();
+      const t = easeOut(at(p, PHONE_SCREEN_CROSSFADE));
+      if (onboardingRef.current) {
+        onboardingRef.current.style.opacity = String(1 - t);
+      }
+      if (screenRef.current) {
+        screenRef.current.style.opacity = String(t);
+        // Nothing to composite while it is entirely one or the other.
+        screenRef.current.style.willChange =
+          t > 0.001 && t < 0.999 ? "opacity" : "auto";
+      }
+    };
+    place();
+    return scrollYProgress.on("change", place);
+  }, [scrollYProgress]);
 
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
@@ -220,7 +340,19 @@ function HeroPhone() {
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
       <Phone3D>
-        <PhoneOnboardingScreen />
+        {/* Two screens stacked in the same box, crossfading — the onboarding
+            mock is what's on the phone at rest, `screen` (the feature-card
+            preview) is what it hands off to. Absolute-on-relative rather than
+            a mount/unmount swap, so neither screen ever pops during the
+            crossfade. */}
+        <div ref={onboardingRef} style={{ position: "absolute", inset: 0 }}>
+          <PhoneOnboardingScreen />
+        </div>
+        {screen ? (
+          <div ref={screenRef} style={{ position: "absolute", inset: 0, opacity: 0 }}>
+            {screen}
+          </div>
+        ) : null}
       </Phone3D>
     </motion.div>
   );
@@ -376,8 +508,9 @@ function HeroParts({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The "What We're About" copy, arriving beside the phone once it has stepped
- * aside.
+ * The copy column: "What We're About" arrives beside the phone once it has
+ * stepped aside, then crossfades to "Why Choose" 's heading in the same spot
+ * once the phone has started showing its cards.
  *
  * It lives here rather than in the section below because the phone it belongs
  * next to is here: the pin holds both, so the copy can be placed against the
@@ -387,18 +520,41 @@ function HeroParts({ children }: { children: React.ReactNode }) {
  * theirs: inside a pinned stage it is in the viewport from the first frame, so
  * a viewport-triggered reveal would fire before the phone had even arrived.
  */
-function HeroAside({ children }: { children: React.ReactNode }) {
+function HeroAside({
+  children,
+  whyHeading,
+}: {
+  children: React.ReactNode;
+  /** "Why Choose" 's heading, crossfaded in over `TEXT_SWAP`. */
+  whyHeading?: React.ReactNode;
+}) {
   const { scrollYProgress } = useContainerScrollContext();
   const ref = React.useRef<HTMLDivElement>(null);
+  const oldRef = React.useRef<HTMLDivElement>(null);
+  const newRef = React.useRef<HTMLDivElement>(null);
 
   const place = React.useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    const t = easeOut(at(scrollYProgress.get(), ASIDE_IN));
-    el.style.opacity = String(t);
-    el.style.transform = `translate3d(${((1 - t) * 64).toFixed(1)}px, 0, 0)`;
-    el.style.pointerEvents = t > 0.9 ? "auto" : "none";
-    el.style.willChange = t > 0.001 && t < 0.999 ? "transform, opacity" : "auto";
+    const p = scrollYProgress.get();
+    const tIn = easeOut(at(p, ASIDE_IN));
+    const tSwap = easeInOut(at(p, TEXT_SWAP));
+    el.style.opacity = String(tIn);
+    el.style.transform = `translate3d(${((1 - tIn) * 64).toFixed(1)}px, 0, 0)`;
+    el.style.pointerEvents = tIn > 0.9 && tSwap < 0.1 ? "auto" : "none";
+    el.style.willChange = tIn > 0.001 && tIn < 0.999 ? "transform, opacity" : "auto";
+
+    if (oldRef.current) {
+      oldRef.current.style.opacity = String(1 - tSwap);
+      oldRef.current.style.transform =
+        `translate3d(${(-tSwap * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
+    }
+    if (newRef.current) {
+      newRef.current.style.opacity = String(tSwap);
+      newRef.current.style.transform =
+        `translate3d(${((1 - tSwap) * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
+      newRef.current.style.pointerEvents = tSwap > 0.9 ? "auto" : "none";
+    }
   }, [scrollYProgress]);
 
   React.useEffect(() => {
@@ -408,8 +564,26 @@ function HeroAside({ children }: { children: React.ReactNode }) {
   }, [scrollYProgress, place]);
 
   return (
-    <div ref={ref} className="hero-aside" style={{ opacity: 0 }}>
-      {children}
+    <div
+      ref={ref}
+      className={whyHeading ? "hero-aside hero-aside--stack" : "hero-aside"}
+      style={{ opacity: 0 }}
+    >
+      {/* Both crossfade layers occupy the same grid cell, so swapping copy
+          never reflows the column and neither layer is taken out of flow.
+          They were absolute-on-inset-0, which works only while the column has
+          a height of its own to fill: below 900px `.hero-aside` is anchored by
+          `bottom` alone, so with both children absolute it collapsed to zero
+          height and the copy spilled off the bottom of the stage. A grid
+          stack takes its height from the taller layer at every width. */}
+      <div ref={oldRef} className="hero-aside-layer">
+        {children}
+      </div>
+      {whyHeading ? (
+        <div ref={newRef} className="hero-aside-layer" style={{ opacity: 0 }}>
+          {whyHeading}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -418,9 +592,9 @@ function HeroAside({ children }: { children: React.ReactNode }) {
  * The scrolling band behind the hero.
  *
  * A sibling of the hero and the phone on the pin. Nothing above it is opaque
- * any more, so it is simply visible for the whole handover: it starts low,
- * travels to the middle as the hero leaves and the phone arrives, and clears
- * only at the very end of the track.
+ * any more, so it is simply visible for the handover: it starts low, travels
+ * to the middle as the hero leaves and the phone arrives, and dissolves as
+ * the "What We're About" copy comes in beside the device.
  */
 function HeroBand({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -438,7 +612,9 @@ function HeroBand({ children }: { children: React.ReactNode }) {
     const y = (stage.clientHeight * lerp(BAND_TOP[0], BAND_TOP[1], m)) / 100;
     el.style.transform =
       `translate(-50%, calc(${y.toFixed(1)}px - 50%)) scale(${lerp(BAND_SCALE[0], BAND_SCALE[1], m).toFixed(3)})`;
-    el.style.opacity = String(clamp01(1 - at(p, BAND_OUT)));
+    // easeOut to match the aside's arrival, so the band drops as fast as the
+    // copy comes up rather than lingering linearly behind already-readable text.
+    el.style.opacity = String(clamp01(1 - easeOut(at(p, BAND_OUT))));
   }, [scrollYProgress]);
 
   React.useEffect(() => {
@@ -462,17 +638,33 @@ export function HeroSideExit({
   children,
   backdrop,
   aside,
+  whyHeading,
+  phoneScreen,
 }: {
   children: React.ReactNode;
   /** Background band on the pin, behind everything. */
   backdrop?: React.ReactNode;
   /** Copy that arrives beside the phone once it has stepped aside. */
   aside?: React.ReactNode;
+  /**
+   * "Why Choose" 's heading, crossfaded in over the same spot as `aside`
+   * once the phone has started showing its cards (`TEXT_SWAP`). The real
+   * section below starts already in this pose — see `skipEntrance` on
+   * `WhyScrollSection`.
+   */
+  whyHeading?: React.ReactNode;
+  /**
+   * "Why Choose" 's feature cards, crossfaded onto the phone's own screen in
+   * place of the onboarding mock (`PHONE_CONTENT`/`PHONE_SCREEN_CROSSFADE`) —
+   * the phone never leaves or is replaced, only what it's showing changes.
+   */
+  phoneScreen?: React.ReactNode;
 }) {
   const reduced = useReducedMotion();
 
   // No pin and no handover: the hero is just the hero, and the band follows it
-  // in normal flow.
+  // in normal flow. "Why Choose" gets no preview either — it plays its own
+  // entrance once scrolled into view, same as any other section.
   if (reduced) {
     return (
       <div className="cinematic-hero">
@@ -489,8 +681,8 @@ export function HeroSideExit({
     <ContainerScroll className={`cinematic-hero ${TRACK_CLASS}`}>
       <ContainerSticky className="ch-stage h-svh w-full">
         {backdrop ? <HeroBand>{backdrop}</HeroBand> : null}
-        <HeroPhone />
-        {aside ? <HeroAside>{aside}</HeroAside> : null}
+        <HeroPhone screen={phoneScreen} />
+        {aside ? <HeroAside whyHeading={whyHeading}>{aside}</HeroAside> : null}
         <HeroParts>{children}</HeroParts>
       </ContainerSticky>
     </ContainerScroll>

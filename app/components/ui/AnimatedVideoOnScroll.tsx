@@ -33,9 +33,9 @@ import { cn } from "@/lib/utils";
  *     and two CTAs, and `pointer-events: none` on the wrapper would make all
  *     of them dead at rest.
  *
- * Upstream's `HeroVideo` and `HeroButton` are not ported: one is a <video>, the
- * other a lime pill with a hardcoded glow, and neither has anything to do with
- * this hero.
+ * `HeroVideo` IS ported (see below), with the playback guards upstream leaves
+ * out. `HeroButton` is not: it is a lime pill with a hardcoded `#84cc16` glow,
+ * and this project has `ShinyButton` in its own palette.
  */
 
 interface ContainerScrollContextValue {
@@ -217,3 +217,74 @@ export const ContainerInset = React.forwardRef<
   },
 );
 ContainerInset.displayName = "ContainerInset";
+
+/**
+ * The video inside a `ContainerInset`, scaling up as the inset opens.
+ *
+ * The scroll-driven `scale` is upstream's, unchanged. What is added is the
+ * handling upstream has no need for on a demo page and this page cannot do
+ * without, because this is one section of a long marketing route rather than
+ * the whole document:
+ *
+ *   - `preload="none"` and a `poster`. Upstream sets neither, so the browser
+ *     fetches the video on load — for a section most visitors have not
+ *     scrolled to yet. Nothing is fetched here until playback is asked for.
+ *   - Playback follows visibility. Upstream's `autoPlay` runs the decoder for
+ *     the life of the page; this plays on approach and pauses on leaving, so
+ *     a video that is not on screen costs nothing.
+ *   - It does not autoplay under `prefers-reduced-motion`, where the poster
+ *     stands in. A looping clip is exactly the kind of motion that preference
+ *     is about.
+ *
+ * `autoPlay` is deliberately NOT set as an attribute — `play()` is called
+ * instead, once the element is actually near the viewport.
+ */
+export const HeroVideo = React.forwardRef<
+  HTMLVideoElement,
+  HTMLMotionProps<"video">
+>(({ style, className, transition, ...props }, ref) => {
+  const { scrollYProgress } = useContainerScrollContext();
+  const scale = useTransform(scrollYProgress, [0, 0.8], [0.7, 1]);
+  const localRef = React.useRef<HTMLVideoElement | null>(null);
+
+  React.useEffect(() => {
+    const el = localRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Autoplay can be refused (a data-saver mode, a platform policy).
+          // The poster is already showing, so a rejection needs no handling
+          // beyond not throwing.
+          void el.play().catch(() => {});
+        } else {
+          el.pause();
+        }
+      },
+      // Enough margin to have decoded a frame or two before it is on screen.
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.video
+      ref={(node) => {
+        localRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) ref.current = node;
+      }}
+      className={cn("relative z-10 size-auto max-h-full max-w-full", className)}
+      muted
+      loop
+      playsInline
+      preload="none"
+      style={{ scale, ...style }}
+      {...props}
+    />
+  );
+});
+HeroVideo.displayName = "HeroVideo";

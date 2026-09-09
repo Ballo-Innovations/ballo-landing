@@ -141,10 +141,6 @@
   align-items: flex-start;
 }
 
-.why-scroll-heading h2 {
-  line-height: 1.1;
-}
-
 /* Right column — fills remaining space, contains bg images + phone */
 .why-right-area {
   position: relative;
@@ -154,6 +150,16 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+/* Fills the column so the slide-in is clipped to it, not measured from it. */
+.why-right-enter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 /* Dashboard screenshot crossfade layer */
@@ -213,6 +219,20 @@
   background: oklch(11% 0.18 var(--bg-hue));
   margin-top: -2.5rem;
   height: 96%;
+}
+
+/* Used when the cards are previewed inside the hero's own phone (see
+   `WhyPreviewCards`) rather than the separate phone-frame mockup below: that
+   screen has no bezel of its own to inset from, so the cards fill it flush
+   instead of floating inside a 5-8% margin sized for the other mockup. */
+.why-scroll-items--flush {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin-top: 0;
+  height: 100%;
+  border-radius: 22px;
 }
 
 /* Each item fills the full screen — stacked, GSAP crossfades between them */
@@ -307,45 +327,17 @@
 }
 
 /* =============================================
-   Who Can Use — bento grid
-   File: app/components/sections/WhoScrollSection.tsx
-
-   All six industries on screen at once. No pin, no carousel, no per-slide
-   state — the section is about one viewport tall and the only motion is each
-   tile's staggered entrance plus an image scale on hover.
-
-   Replaces a pinned stage that held the page for ~3.85 viewports and raised
-   its card from below the fold over the first quarter of that (so the section
-   read as empty for about a full viewport of scrolling), and with it: a GSAP
-   ScrollTrigger driving a per-frame onUpdate, a six-layer backdrop-filter
-   "water line" re-rasterized on every scroll frame inside that pin, and a
-   separate mobile carousel with its own timers, swipe handlers and dots.
+   Shared section headings
+   `.section-eyebrow` and `.section-h2` are worn by the Brutus, testimonials
+   and closing-CTA sections, so every section below the hero opens the same
+   way. They began as the "Who can use" bento's own eyebrow and title and
+   outlived it twice over: that grid became a scroll portrait wall and is now
+   a marquee CTA, and the bento's own rules have been removed.
    ============================================= */
 
-.who-outer {
-  position: relative;
-  padding: clamp(3rem, 8vh, 5.5rem) clamp(1.25rem, 5vw, 5rem);
-  /* The entrance parks tiles off to the side; clip that here so it never
-     produces a horizontal scrollbar mid-animation. `clip`, not `hidden`:
-     `hidden` would make this a scroll container and break the scroll-driven
-     `view()` timeline used for the entrance below. */
-  overflow: clip;
-}
-
-.who-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.who-stage-head {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.who-eyebrow-tag {
+.section-eyebrow {
   display: inline-flex;
+  gap: 0.4rem;
   align-items: center;
   font-size: 0.75rem;
   font-weight: 600;
@@ -360,8 +352,7 @@
   width: fit-content;
 }
 
-/* Title — Ubuntu (headings) */
-.who-redesign-h2 {
+.section-h2 {
   font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(2rem, 3.6vw, 3.25rem);
   font-weight: 800;
@@ -371,347 +362,14 @@
   margin: 0;
 }
 
-/* ── The grid: 3 even columns, two rows of three. ── */
-.who-bento {
-  list-style: none;
-  margin: clamp(2rem, 5vh, 3.25rem) 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.75rem, 1.4vw, 1.15rem);
-}
-
-.who-bento-cell { grid-column: span 1; }
-
-/* Every card is the same size, so the six settle into a tidy 2 rows x 3. */
-.who-tile {
-  position: relative;
-  height: 100%;
-  /* Even footprint: the six cards read as a tidy 2 rows x 3. */
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  /* 28px — the radius the glass filter's displacement map was generated for. */
-  border-radius: 1.75rem;
-  background: #0b1230;
-  /* Glass edge, same recipe as the nav pills and the testimonial card: a
-     hairline rim over a soft drop shadow. The inset highlights live on the
-     ::after glass layer — an inset shadow here would paint under it. */
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.32);
-  isolation: isolate;
-}
-
-/* No thickening ramp: the glass is a single pane over the whole card. The
-   legibility gradient below is the only thing that varies down the card. */
-
-/* ── The pane: a flat tint, deliberately no glass ───────────────────────────
-   This layer used to be real Liquid Glass: `backdrop-filter` blur/saturate
-   with an SVG edge-lens displacement (a chromatic three-pass
-   feDisplacementMap) bending the blurred backdrop. It looked right and it was
-   measured, on this section, as the thing dropping frames — six panes, each
-   re-rasterising every frame its backdrop moved, and a filtered
-   backdrop-filter cannot be composited at all. Standing it down mid-scroll and
-   only running it on settled tiles was not enough, because these tiles are on
-   a scroll-driven transform: "settled" and "moving" overlap for as long as the
-   grid is on screen.
-
-   A/B, both directions: entrance off + glass on still stuttered; entrance on +
-   glass off is clean. So the glass goes and the swing-in entrance stays.
-
-   What replaces it is compositor-only — a flat dark tint plus the inset white
-   rim that was already carrying most of the read. No backdrop-filter, no
-   filter, nothing sampled from behind, nothing to re-raster. If the refraction
-   is ever wanted back, it belongs somewhere the element is NOT also being
-   transformed on scroll. */
-.who-tile-liquid {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  border-radius: inherit;
-  overflow: hidden;
-  background: rgba(9, 9, 11, 0.16);
-  box-shadow: inset 0 0 5px 0 rgba(250, 250, 250, 0.32);
-}
-
-.who-tile-img {
-  object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Hover lift is on the image only — the tile itself never moves, so a pointer
-   crossing the grid cannot cause a layout pass. */
-@media (hover: hover) and (pointer: fine) {
-  .who-tile:hover .who-tile-img {
-    transform: scale(1.06);
-  }
-}
-
-/* Copy block: anchored to the bottom of the card, above the tint. Generous
-   bottom padding and a tight top edge so the text sits on the darkest part of
-   the dimming ramp rather than floating in the middle of the photo. */
-.who-tile-body {
-  position: absolute;
-  z-index: 2;
-  inset: auto 0 0 0;
-  padding: clamp(1.5rem, 2.4vw, 2.25rem) clamp(1.15rem, 1.7vw, 1.6rem)
-    clamp(1.15rem, 1.6vw, 1.5rem);
-}
-
-/* ── Legibility: dimming, over the glass ─────────────────────────────────────
-   All of the card's darkening is here, so the top of the photo keeps its full
-   brightness — a long, soft ramp that only reaches full strength behind the
-   text. It sits ABOVE the liquid
-   layer (z-index -1 inside .who-tile-body, which is z-index 2) so it dims the
-   refracted result rather than the photo underneath it. */
-.who-tile-body::before {
-  content: "";
-  position: absolute;
-  inset: -160% 0 0 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      120% 90% at 0% 100%,
-      rgba(120, 190, 255, 0.1) 0%,
-      transparent 62%
-    ),
-    radial-gradient(
-      120% 90% at 100% 100%,
-      rgba(170, 160, 255, 0.09) 0%,
-      transparent 62%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(3, 5, 26, 0) 0%,
-      rgba(3, 5, 26, 0.06) 34%,
-      rgba(3, 5, 26, 0.3) 62%,
-      rgba(3, 5, 26, 0.62) 70%,
-      rgba(3, 5, 26) 100%
-    );
-}
-
-/* ── Liquid glass: the wet edge ────────────────────────────────
-   Light pooling inside the bottom edge. Everything here is soft-edged on
-   purpose: a broad elliptical bloom low and centre, and a wide upward glow.
-   No 1px specular line — at this size a hairline reads as a drawn border,
-   which is the one thing this effect must not look like. */
-.who-tile-body::after {
-  content: "";
-  position: absolute;
-  inset: auto -6% -4% -6%;
-  height: 78%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    /* Bloom where the meniscus is thickest. */
-    radial-gradient(
-      68% 120% at 50% 108%,
-      rgba(255, 255, 255, 0.4) 0%,
-      rgba(215, 235, 255, 0.16) 44%,
-      transparent 78%
-    ),
-    /* Cool light creeping up out of the pool. */
-    linear-gradient(
-      to top,
-      rgba(255, 255, 255, 0.16) 0%,
-      rgba(190, 225, 255, 0.07) 38%,
-      transparent 100%
-    );
-  /* No `filter: blur()` here. Both gradients are already soft-edged, so the
-     blur bought almost nothing visually and cost a filtered layer per tile —
-     six of them, on the same six tiles the entrance is transforming. */
-}
-
-/* Copy rides above the glass and its dimming ramp. */
-.who-tile-body > * {
-  position: relative;
-  z-index: 1;
-}
-
-.who-tile-num {
-  display: block;
-  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: transparent;
-  -webkit-text-stroke: 1.1px #5dd7ff;
-  margin-bottom: 0.4rem;
-}
-
-/* Industry name — Ubuntu (headings) */
-.who-tile-title {
-  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.05rem, 1.5vw, 1.35rem);
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.35rem;
-}
-
-/* Description — Calibri (body) */
-.who-tile-sub {
-  font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
-  /* Same token as every other paragraph on the page. The old clamp scaled it
-     down to ~0.88rem on narrower desktops, which read as small print. */
-  font-size: var(--landing-body-size);
-  line-height: var(--landing-body-leading);
-  color: #fff;
-  margin: 0;
-  max-width: 34ch;
-}
-
-/* FadeUpReveal renders a wrapper div between the cell and the tile, so it has
-   to carry the full height through for the tiles to line up on a row. */
-.who-tile-reveal {
-  height: 100%;
-  /* The entrance transforms this element on a scroll-driven timeline; give it
-     its own layer so the move never costs a repaint of the card's contents. */
-  will-change: transform;
-}
-
-/* ── Swing-in entrance ──────────────────────────────────────────────────────
-   Each tile flies in from below, from the side it will land on: the left
-   column from the bottom-left, the right column from the bottom-right, the
-   middle column straight up from the bottom-middle.
-
-   The rotation is deliberately small and about the tile's OWN centre. An
-   earlier version hinged on `transform-origin: 50% 100vh` for a wider arc,
-   which gave each tile a composited layer a whole viewport tall — Chrome
-   painted a stretched texture and one tile ended up full-bleed across the
-   page. A translate plus ~10deg reads as the same swing and keeps the layer
-   the size of the tile.
-
-   Transform only, no fade: the card stays fully opaque coming in and going
-   out. Compositor-only, nothing per-frame. Only the `out` state is
-   overridden; `in` is the shared `transform: none`. */
-
-/* Phone (single column) and reduced-motion keep the plain fade-up from
-   utilities.css — the arcs need horizontal room a narrow viewport lacks. */
-@media (min-width: 701px) {
-  .who-bento-cell .who-tile-reveal[data-fur="out"] {
-    /* Movement only — the card is fully opaque on the way in and on the way
-       out, so it reads as a solid object sliding into place, never a fade. */
-    opacity: 1;
-    transform: translate3d(0, 22vh, 0) scale(0.82);
-  }
-}
-
-/* Desktop: three columns → left / middle / right. */
-@media (min-width: 1025px) {
-  .who-bento-cell:nth-child(3n + 1) .who-tile-reveal[data-fur="out"] {
-    transform: translate3d(-14vw, 22vh, 0) rotate(-10deg) scale(0.82);
-  }
-
-  .who-bento-cell:nth-child(3n + 3) .who-tile-reveal[data-fur="out"] {
-    transform: translate3d(14vw, 22vh, 0) rotate(10deg) scale(0.82);
-  }
-}
-
-/* Tablet: two columns → left / right, no middle. */
-@media (min-width: 701px) and (max-width: 1024px) {
-  .who-bento-cell:nth-child(2n + 1) .who-tile-reveal[data-fur="out"] {
-    transform: translate3d(-10vw, 20vh, 0) rotate(-8deg) scale(0.85);
-  }
-
-  .who-bento-cell:nth-child(2n + 2) .who-tile-reveal[data-fur="out"] {
-    transform: translate3d(10vw, 20vh, 0) rotate(8deg) scale(0.85);
-  }
-}
-
-/* ── Scroll-linked version of the same entrance ─────────────────────────────
-   Where the browser supports scroll-driven animations, the entrance is
-   scrubbed by the tile's own position in the viewport rather than played on a
-   timer: it advances as the tile rises into view and rewinds when the user
-   scrolls back up. The IntersectionObserver transition above stays as the
-   fallback for browsers without `view()`.
-
-   `animation-range: contain 0% contain 45%` finishes the tile well before it
-   is centred, so the grid is settled by the time it is being read. */
-@supports (animation-timeline: view()) {
-  @media (min-width: 701px) and (prefers-reduced-motion: no-preference) {
-    .who-bento-cell .who-tile-reveal,
-    .who-bento-cell .who-tile-reveal[data-fur="out"],
-    .who-bento-cell .who-tile-reveal[data-fur="in"] {
-      /* Hand control to the animation: no transition, no static out-state. */
-      transition: none;
-      opacity: 1;
-      transform: none;
-      animation: who-swing-in both linear;
-      animation-timeline: view();
-      animation-range: contain 0% contain 45%;
-    }
-
-    .who-bento-cell:nth-child(3n + 1) .who-tile-reveal {
-      animation-name: who-swing-in-left;
-    }
-
-    .who-bento-cell:nth-child(3n + 3) .who-tile-reveal {
-      animation-name: who-swing-in-right;
-    }
-  }
-
-  /* Tablet is two columns, so the sides key off 2n, not 3n. */
-  @media (min-width: 701px) and (max-width: 1024px) and (prefers-reduced-motion: no-preference) {
-    .who-bento-cell:nth-child(2n + 1) .who-tile-reveal {
-      animation-name: who-swing-in-left;
-    }
-
-    .who-bento-cell:nth-child(2n + 2) .who-tile-reveal {
-      animation-name: who-swing-in-right;
-    }
-  }
-}
-
-/* Only `from` is declared: the resting state is the element's own. */
-@keyframes who-swing-in {
-  from {
-    transform: translate3d(0, 22vh, 0) scale(0.82);
-  }
-}
-
-@keyframes who-swing-in-left {
-  from {
-    transform: translate3d(-14vw, 22vh, 0) rotate(-10deg) scale(0.82);
-  }
-}
-
-@keyframes who-swing-in-right {
-  from {
-    transform: translate3d(14vw, 22vh, 0) rotate(10deg) scale(0.82);
-  }
-}
-
-/* ── Tablet: two columns. ── */
-@media (max-width: 1024px) {
-  .who-bento {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* ── Phone: single column. ── */
-@media (max-width: 700px) {
-  .who-bento {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .who-tile {
-    aspect-ratio: 4 / 3;
-  }
-}
-
-/* ── Mobile heading tweaks (the grid has its own breakpoints above) ── */
 @media (max-width: 768px) {
-  .who-eyebrow-tag {
+  .section-eyebrow {
     font-size: 0.62rem;
     letter-spacing: 0.16em;
     padding: 0.3rem 0.75rem;
   }
 
-  .who-redesign-h2 {
+  .section-h2 {
     font-size: clamp(1.6rem, 7vw, 2.1rem);
     line-height: 1.12;
   }
@@ -1278,23 +936,94 @@
     0 0 0 0.5px rgba(255, 255, 255, 0.045);
 }
 
-/* Camera: a dark iris with a faint cool iridescence and a single specular
-   glint, layered as stacked radial gradients — no extra elements. */
+/* Camera: a lens sitting recessed under the island's glass.
+   Three planes rather than one — the barrel and aperture here, the coating on
+   ::before, the reflections on ::after. Stacked on a single element it had
+   every layer in the same plane, and with the highlight the widest thing on
+   it, it read as a convex blue bead rather than a hole with glass over it.
+   What sells the recess is the ordering of values: the centre is the darkest
+   part of the whole phone, the rim catches the light, and the glint is small
+   and hard rather than a broad bloom. */
 .phone3d-lens {
+  position: relative;
   /* ~45% of the pill's height, as in the reference. */
   height: 46%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background:
-    /* specular highlight, upper-left */
-    radial-gradient(circle at 34% 28%, rgba(190, 220, 255, 0.6) 0 10%, rgba(190, 220, 255, 0) 42%),
-    /* iridescent ring */
-    radial-gradient(circle at 50% 50%, rgba(120, 90, 200, 0) 34%, rgba(110, 130, 220, 0.42) 46%, rgba(70, 60, 140, 0.18) 60%, rgba(0, 0, 0, 0) 72%),
-    /* iris body */
-    radial-gradient(circle at 50% 45%, #16223a 0 30%, #0a1120 62%, #04060c 100%);
+  /* Barrel and aperture: near-black, deepest dead centre. */
+  background: radial-gradient(
+    circle at 50% 50%,
+    #010204 0 26%,
+    #05070d 48%,
+    #090d16 74%,
+    #05070c 100%
+  );
   box-shadow:
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.12),
-    inset 0 0 2px rgba(40, 60, 120, 0.5);
+    /* Rim. Hairlines at this scale: the lens is about 7px on the hero phone,
+       so these are a tint on the edge pixels rather than a drawn bevel — the
+       coating below is what actually shapes the rim. Kept because they hold
+       the edge from going soft, and they do resolve on a large display. */
+    inset 0 0.4px 0.4px rgba(190, 214, 255, 0.34),
+    inset 0 -0.4px 0.5px rgba(0, 0, 0, 0.95),
+    inset 0 0 0 0.4px rgba(255, 255, 255, 0.09),
+    /* seats it into the island's glass instead of resting on top */
+    0 0.4px 1px rgba(0, 0, 0, 0.85);
+}
+
+/* The anti-reflective coating. A conic gradient, not a radial one: a real
+   coating shifts hue around the lens — violet through blue to teal — instead
+   of glowing evenly, and that shift is most of what makes it read as coated
+   glass. Masked to a ring so the aperture underneath stays open. */
+.phone3d-lens::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 200deg,
+    rgba(104, 78, 196, 0.5),
+    rgba(66, 116, 208, 0.46) 22%,
+    rgba(52, 166, 178, 0.38) 42%,
+    rgba(38, 66, 152, 0.26) 62%,
+    rgba(88, 70, 186, 0.34) 80%,
+    rgba(104, 78, 196, 0.5) 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 30%,
+    #000 52%,
+    #000 82%,
+    transparent 97%
+  );
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 30%,
+    #000 52%,
+    #000 82%,
+    transparent 97%
+  );
+}
+
+/* Reflections. One tight, bright glint where the room light lands, and a much
+   dimmer counter-bloom opposite it — the second one is what stops the first
+   from reading as a painted dot. */
+.phone3d-lens::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 34% 27%,
+      rgba(255, 255, 255, 0.92) 0 6%,
+      rgba(214, 234, 255, 0.4) 13%,
+      rgba(214, 234, 255, 0) 27%
+    ),
+    radial-gradient(
+      circle at 67% 73%,
+      rgba(150, 190, 255, 0.2) 0 9%,
+      rgba(150, 190, 255, 0) 32%
+    );
 }
 
 .phone3d-home-bar {
@@ -1570,11 +1299,6 @@
     width: 100%;
   }
 
-  .why-scroll-heading h2 {
-    font-size: clamp(2.6rem, 13vw, 4.25rem) !important;
-    line-height: 0.98 !important;
-  }
-
   .why-right-area {
     width: 100%;
     height: auto;
@@ -1612,10 +1336,6 @@
   .why-scroll-item-desc {
     font-size: var(--landing-body-size);
     line-height: var(--landing-body-leading);
-  }
-
-  .who-outer {
-    padding: 3rem 1.25rem;
   }
 }
 
@@ -2109,5 +1829,1364 @@
 @media (prefers-reduced-motion: reduce) {
   .testimonial-slide {
     animation: none;
+  }
+}
+
+
+/* =============================================================
+   Shared section header tokens
+   `.section-eyebrow` and `.section-h2` share their rules with the Who
+   section's eyebrow/heading above, so every section below the hero opens the
+   same way. Only the alignment differs per section.
+   ============================================================= */
+.section-h2 {
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+/* =============================================================
+   Horizontal marquee primitive
+   File: app/components/ui/Marquee.tsx
+   Content is rendered twice and the track translates by exactly one copy, so
+   the loop is seamless at any content width. Transform-only; parks under
+   [data-anim="paused"] with the section it sits in.
+   ============================================================= */
+@keyframes mq-scroll {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.mq {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.mq__track {
+  display: flex;
+  width: max-content;
+  animation: mq-scroll var(--mq-dur, 30s) linear infinite;
+  will-change: transform;
+}
+
+.mq__track--rev {
+  animation-direction: reverse;
+}
+
+/* Hover holds the row so a labelled tile can actually be read. Pointer-only:
+   there is no hover on touch, and pausing on tap would fight scrolling. */
+@media (hover: hover) and (pointer: fine) {
+  .mq--pause:hover .mq__track {
+    animation-play-state: paused;
+  }
+}
+
+.mq__group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mq__track {
+    animation: none;
+  }
+}
+
+/* =============================================================
+   Brutus — home page section
+   File: app/components/sections/BrutusSection.tsx
+   ============================================================= */
+/* `overflow: clip`, never `hidden`: `hidden` would make this a scroll
+   container, and the stage inside it is `position: sticky`, which sticks to
+   the nearest scrollport. `clip` does not create one, so the pin still tracks
+   the viewport. */
+.brutus-home {
+  position: relative;
+  overflow: clip;
+  /* No padding. The section is one pinned stage now, and the stage supplies
+     its own; the section below brings its own top padding. */
+}
+
+.cta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  white-space: nowrap;
+}
+
+.cta-chip svg {
+  color: var(--cyan-bright);
+  flex-shrink: 0;
+}
+
+@media (min-width: 901px) {
+}
+
+/* =============================================================
+   Testimonials — 3D marquee columns
+   File: app/components/sections/Testimonials3D.tsx
+   ============================================================= */
+.t3d {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4rem, 9vw, 6rem) 0 0;
+}
+
+.t3d__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: clamp(1rem, 3vh, 2rem);
+}
+
+/* Holds the masked, clipping scene and the focused card side by side, so the
+   card that comes forward is outside both. */
+.t3d__stage {
+  position: relative;
+}
+
+/* The stage: a fixed-height window onto the tilted plane. The plane is larger
+   than the window on every side so the tilt never exposes an edge; the fades
+   below hide what is left. */
+.t3d__scene {
+  position: relative;
+  height: clamp(30rem, 70vh, 40rem);
+  overflow: hidden;
+  perspective: 300px;
+  /* The window unfurls: a rounded card inset from the page edges at the start,
+     opening to full bleed as the wall arrives. `clip-path`, not width and
+     border-radius — those are layout, and laying out forty cards on every
+     scroll frame is not something to do for a corner radius. */
+  --u: 1;
+  clip-path: inset(
+    0 calc((1 - var(--u)) * 7%) round calc((1 - var(--u)) * 44px)
+  );
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+/* Registered so it does NOT inherit. Custom properties inherit by default, so
+   writing `--p` on the group invalidated the style of every card under it —
+   forty of them, on every scroll frame — when the only element that reads it
+   is the group itself. `inherits: false` confines the recalc to one node.
+   Where `@property` is unsupported this is simply ignored and the property
+   behaves as it did: correct, just costlier. */
+@property --p {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.5;
+}
+
+/* The frame's own progress: the same scroll, mapped to finish early so the
+   window is open by the time the wall is worth looking at. Registered for the
+   same reason as `--p` — the scene has the entire section under it, and an
+   inheriting property would recalc all of it on every frame. */
+@property --u {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
+.t3d__group {
+  position: absolute;
+  /* Oversized on every side: the rotation swings the plane's corners into the
+     window, and at -20%/-10% the top-left one was showing as bare background. */
+  inset: -35% -30%;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  /* `--p` is this section's own progress through the viewport: 0 as it comes
+     up from below, 1 as it leaves the top. The component writes that one
+     number and nothing else, so every angle stays here in CSS with the rest of
+     the section's geometry — and the `transform: none` overrides below cannot
+     be undone by script, which is what would otherwise put the tilt back on
+     phones and under reduced motion.
+
+     It defaults to the midpoint, which is the angle the wall used to be fixed
+     at: with no script it renders exactly as it did before. */
+  --p: 0.5;
+  /* Every term lands on zero: at `--p: 1` the wall is square to the viewer and
+     centred, with no rotation and no depth left in it. It arrives deep and
+     turned away and ends straight. */
+  transform:
+    translateX(calc(-100px + var(--p) * 100px))
+    translateZ(calc(-240px + var(--p) * 240px))
+    rotateX(calc(30deg - var(--p) * 30deg))
+    rotateY(calc(-30deg + var(--p) * 30deg))
+    rotateZ(calc(26deg - var(--p) * 26deg));
+  transform-style: preserve-3d;
+}
+
+.t3d__col {
+  flex: 0 0 auto;
+  width: 15.5rem;
+  overflow: hidden;
+}
+
+/* Only the widest screens get the fifth column; below that it would be
+   almost entirely under the right-hand fade. */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .t3d__col:nth-child(5) {
+    display: none;
+  }
+}
+
+/* Only two columns on narrow screens; the outer pair are hidden rather than
+   squeezed. */
+@media (max-width: 767px) {
+  .t3d__scene {
+    perspective: none;
+    height: clamp(26rem, 80vh, 34rem);
+  }
+
+  .t3d__group {
+    inset: -10% 0;
+    gap: 0.75rem;
+    transform: none;
+  }
+
+  .t3d__scene {
+    clip-path: none;
+  }
+
+  .t3d__col {
+    width: min(46vw, 15rem);
+  }
+
+  .t3d__col:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@keyframes t3d-up {
+  to {
+    transform: translate3d(0, -50%, 0);
+  }
+}
+
+.t3d__track {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  animation: t3d-up var(--dur, 40s) linear infinite;
+  will-change: transform;
+}
+
+.t3d__col--rev .t3d__track {
+  animation-direction: reverse;
+}
+
+/* Hover deliberately does NOT hold the columns. It used to, so a quote could
+   be read in passing; clicking a card is how a quote is read now, and the wall
+   stops for that. Pausing on hover as well meant the whole thing stalled
+   whenever the pointer crossed it on the way down the page. */
+
+.t3d-card {
+  position: relative;
+  margin: 0;
+  padding: 1.25rem 1.35rem 1.15rem;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(120, 140, 220, 0.05) 60%, rgba(255, 255, 255, 0.03));
+  /* A deeper drop than before. Foreshortened at the far end of the plane the
+     cards were merging into one another, and the top-edge highlight was the
+     only thing separating them. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 18px 36px -20px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+
+/* A watermark, not punctuation — the quote itself is already quoted. It gives
+   the card a silhouette: at wall scale forty paragraphs of the same length
+   read as a field of grey, and this is what makes one legible as an object
+   from across the plane. */
+.t3d-card::before {
+  content: "\201C";
+  position: absolute;
+  /* The glyph's ink sits in the top third of its em box, so it is placed by
+     eye rather than by a negative offset — at `top: -1.25rem` the card clipped
+     everything but two ticks in the corner. */
+  top: 0.1rem;
+  left: 0.7rem;
+  font-size: 5.5rem;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.t3d-card__quote {
+  /* Positioned so it paints above the watermark: absolutely positioned
+     pseudo-elements are painted after their non-positioned siblings, so
+     without this the glyph would sit over the text rather than behind it. */
+  position: relative;
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.94);
+  /* Long quotes stop at five lines rather than stretching one card to twice
+     its neighbours. */
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The byline is a footer, not a second headline: a rule separates it, and the
+   type steps down to it. It used to be set at 0.92rem/700 in pure white
+   against a 0.95rem quote — the brightest, heaviest thing on every card was
+   the person rather than what they said. */
+.t3d-card__who {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Deliberately quiet. This was a white-to-cyan gradient: the most saturated
+   thing on the page, forty times over, on the least important part of the
+   card. The cyan is spent on the focused card instead, where there is one of
+   it and it means something. */
+.t3d-card__avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.09);
+  flex-shrink: 0;
+}
+
+.t3d-card__meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* One line each, truncated. In the narrow columns a two-word name was
+   wrapping and turning a two-line byline into four, which unbalanced the
+   card against its neighbours. */
+.t3d-card__name,
+.t3d-card__role {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.t3d-card__name {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.t3d-card__role {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* The whole card is the click target. It sits above the card's own content
+   and carries no visuals of its own — the hover and focus states below are
+   drawn on the card, so the plane keeps looking like a plane. */
+.t3d-card__hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.t3d-card:has(.t3d-card__hit:hover),
+.t3d-card:has(.t3d-card__hit:focus-visible) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(120, 140, 220, 0.09) 60%, rgba(255, 255, 255, 0.06));
+}
+
+.t3d-card:has(.t3d-card__hit:focus-visible) {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+/* ── One card, brought forward ───────────────────────────────────────────
+   Scoped to the stage rather than the viewport: the card belongs to this
+   section and scrolls with it, so this is a quote stepping out of the wall,
+   not a modal thrown over the page. The plane behind it keeps its tilt and
+   simply stops and recedes. */
+.t3d--focused .t3d__track {
+  animation-play-state: paused;
+}
+
+.t3d--focused .t3d__group {
+  filter: blur(3px) saturate(0.8);
+  opacity: 0.45;
+  transition: filter 400ms ease, opacity 400ms ease;
+}
+
+.t3d-focus {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+
+.t3d-focus:focus {
+  outline: none;
+}
+
+/* No fill: the wall behind the card is the background, and it recedes on its
+   own (below). This is here only to catch a click off the card. */
+.t3d-focus__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+.t3d-focus__shell {
+  position: relative;
+  z-index: 1;
+  /* The flight starts on the wall's own rotation, so the card needs somewhere
+     to be turned: without a perspective here the tilt it starts from would
+     project flat and the card would only slide and grow. */
+  perspective: 1100px;
+  width: min(34rem, 100%);
+}
+
+/* Square to the viewer, whatever the plane behind it is doing: the stage sets
+   a perspective, so the card states its own flat transform rather than
+   inheriting the group's rotation. */
+.t3d-focus__card {
+  margin: 0;
+  width: 100%;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(160deg, rgba(26, 36, 78, 0.96), rgba(10, 16, 46, 0.96));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 40px 90px -30px rgba(0, 0, 0, 0.95);
+  transform: none;
+  backface-visibility: hidden;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+/* Stepping with prev/next re-mounts this, so the new quote fades up in place
+   rather than replacing the old one between frames. */
+.t3d-focus__body {
+  animation: t3d-quote-in 320ms ease-out both;
+}
+
+@keyframes t3d-quote-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* The same card language, promoted: the watermark scales up with it so the
+   card that flew forward is recognisably the one that left the wall. */
+.t3d-focus__card::before {
+  content: "\201C";
+  position: absolute;
+  top: 0.25rem;
+  left: 1.1rem;
+  font-size: 10rem;
+  line-height: 1;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.t3d-focus__quote {
+  position: relative;
+  margin: 0 0 clamp(1.25rem, 3vh, 1.75rem);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.t3d-focus__who {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-top: clamp(1rem, 2.4vh, 1.35rem);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* The one place the accent is spent. Every avatar on the wall is muted glass,
+   so the colour marks the card being read rather than being the page's loudest
+   repeated element. */
+.t3d-focus__avatar {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--dark-blue);
+  background: linear-gradient(135deg, #fff, var(--cyan));
+  flex-shrink: 0;
+}
+
+.t3d-focus__name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.t3d-focus__role {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Pinned to the card's own top-right corner, not the stage's: at wide
+   viewports the stage is far wider than the card and the button would drift
+   away from what it closes. */
+.t3d-focus__close {
+  position: absolute;
+  top: -0.75rem;
+  right: -0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(12, 18, 48, 0.95);
+  color: #fff;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.t3d-focus__close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.t3d-focus__close:hover {
+  background: rgba(30, 42, 92, 0.95);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+@media (max-width: 767px) {
+  .t3d-focus__close {
+    top: -0.5rem;
+    right: -0.25rem;
+  }
+}
+
+.t3d__fade {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.t3d__fade--l,
+.t3d__fade--r {
+  top: 0;
+  bottom: 0;
+  width: 18%;
+}
+
+.t3d__fade--l {
+  left: 0;
+  background: linear-gradient(90deg, var(--page-base), transparent);
+  opacity: 0.7;
+}
+
+.t3d__fade--r {
+  right: 0;
+  background: linear-gradient(270deg, var(--page-base), transparent);
+  opacity: 0.7;
+}
+
+/* Vertical fades are handled by the scene's mask. */
+.t3d__fade--t,
+.t3d__fade--b {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t3d__track {
+    animation: none;
+  }
+
+  .t3d__group {
+    transform: none;
+  }
+
+  .t3d__scene {
+    clip-path: none;
+  }
+
+  .t3d-focus__body {
+    animation: none;
+  }
+
+  .t3d--focused .t3d__group {
+    transition: none;
+  }
+}
+
+/* =============================================================
+   Closing CTA with marquee rows
+   File: app/components/sections/FinalCta.tsx
+   The `.try-*` phone rules above are reused as-is for the visual.
+   ============================================================= */
+.cta-mq {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(4rem, 9vw, 7rem) 0 clamp(4rem, 9vw, 6rem);
+}
+
+.cta-mq__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(2.5rem, 6vw, 5rem);
+  align-items: center;
+}
+
+.cta-mq__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.cta-mq__copy .section-eyebrow {
+  margin-bottom: 1rem;
+}
+
+.cta-mq__h2 {
+  margin: 0;
+  max-width: 16ch;
+}
+
+.cta-mq__lede {
+  color: rgba(255, 255, 255, 0.78);
+  max-width: 34rem;
+  margin: 1.25rem 0 0;
+}
+
+.cta-mq__actions,
+.cta-mq__stores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.cta-mq__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 36rem;
+}
+
+.cta-mq__visual {
+  justify-self: center;
+}
+
+@media (min-width: 901px) {
+  .cta-mq__grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .cta-mq__copy {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .cta-mq__actions,
+  .cta-mq__stores {
+    justify-content: flex-start;
+  }
+
+  .cta-mq__rows {
+    max-width: none;
+    /* The rows fade at both ends; let the left fade start at the copy's edge
+       and run the right one off the column. */
+    margin-right: -10%;
+  }
+}
+
+/* =============================================================
+   Backed by — the partner rail
+   File: app/components/ui/BackedBy.tsx
+
+   One partner is lit at a time: its name and role read at full size on the
+   left, and the mark itself glows on the right. The glow is a blurred copy of
+   the logo sitting behind it (see LogoGlow in BackedBy.tsx), so the halo is
+   the brand's own colours and only `opacity` animates — the blur is rasterised
+   once and never touched again.
+
+   This replaces a travelling lit panel behind the marks, which animated
+   `--spot-x/w/h` into a transform and a width. Custom properties driving
+   transform or size are exactly what the motion rules forbid animating, and
+   it needed a measured offset per layout change to stay aligned. Nothing here
+   measures anything.
+   ============================================================= */
+.backers-section {
+  padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1rem, 5vw, 2rem);
+}
+
+.backers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(2rem, 5vh, 3rem);
+  /* Bounded rather than spread across the page. As a `justify-between` row at
+     full width the four marks sat a third of the viewport away from their own
+     label, with nothing in between — the label read as belonging to nothing.  */
+  max-width: 68rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* ── The label ─────────────────────────────────────────────────────────── */
+
+.backers__eyebrow {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.backers__swap {
+  position: relative;
+  margin-top: 0.6rem;
+}
+
+.backers__line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Holds the box open behind the absolutely positioned live label. */
+.backers__line--sizer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.backers__live {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.backers__name {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.backers__role {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* The one cyan accent in the section: it is what ties the named partner to
+     the lit mark on the rail. */
+  color: color-mix(in srgb, var(--cyan) 82%, white);
+}
+
+/* ── The rail ──────────────────────────────────────────────────────────── */
+
+.backers__rail {
+  position: relative;
+  width: 100%;
+}
+
+/* Narrow screens get an even two-column grid, not a wrapping flex row: the
+   marks are different widths, so a wrapped row put each one at a different
+   left edge and the four read as scattered rather than as a set. The grid also
+   gives the spotlight equal cells to travel between. */
+.backers__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Each mark shrinks to its own box rather than filling its cell. Stretched
+     cells made the spotlight as wide as half the section — a 400px pill
+     around a 66px logo at tablet widths. */
+  justify-items: center;
+  align-items: center;
+  gap: clamp(0.25rem, 2vw, 0.75rem);
+  /* Keeps the 2x2 block compact and centred instead of letting the two columns
+     drift to the far edges of the section's 68rem. */
+  max-width: 25rem;
+  margin-inline: auto;
+}
+
+.backers__item {
+  /* The lit mark sits above its neighbours, so a halo that spreads past its
+     own box passes under them rather than over. */
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.9rem, 2vw, 1.35rem) clamp(1rem, 2.5vw, 1.75rem);
+  border-radius: 1.25rem;
+  /* Every mark sits at three-quarter strength and the lit one comes to full,
+     rather than the others dimming away: dimming three of four made the
+     travel read as the row switching off and on. */
+  opacity: 0.62;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.backers__item[data-active] {
+  z-index: 1;
+  opacity: 1;
+  transform: translateY(-3px);
+}
+
+/* Holds the mark and its glow in the same box, one over the other. */
+.backers__logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* One box for every mark; see the note in BackedBy.tsx. */
+  height: 2.75rem;
+  width: 7rem;
+}
+
+.backers__wordmark {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+/* The light, on the mark.
+
+   Static: the blur is never animated and neither is the scale — they only
+   shape the halo, and the fade is `opacity` alone. Kept at 8px, the ceiling
+   the project's motion rules put on blur, with the spread coming from the
+   slight scale-up rather than from a wider radius.
+
+   `saturate`/`brightness` are what make a halo read at all on this page's
+   near-black ground; without them a blurred logo just muddies. No
+   `will-change`: the filter already gets this its own layer, and four
+   permanently promoted layers for four small marks is the trade the layer
+   rules warn about. */
+.backers__logo-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(1.12);
+  filter: blur(8px) saturate(180%) brightness(1.2);
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.backers__item[data-active] .backers__logo-glow {
+  opacity: 1;
+}
+
+/* ── Desktop: label and rail side by side ──────────────────────────────── */
+@media (min-width: 901px) {
+  .backers {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    text-align: left;
+  }
+
+  .backers__label {
+    flex: 0 0 auto;
+  }
+
+  .backers__live {
+    align-items: flex-start;
+  }
+
+  .backers__rail {
+    /* Takes the remaining width so the marks spread evenly beside the label
+       instead of bunching at one end of it. */
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Desktop is one row of however many partners there are, spread across the
+     width the label leaves — so this drops the grid rather than fixing a
+     column count the CMS could outgrow. */
+  .backers__items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backers__item,
+  .backers__logo-glow {
+    transition: none;
+  }
+}
+
+
+/* =============================================================
+   Brutus — the pinned film stage
+   File: app/components/sections/BrutusSection.tsx
+   Runs on ui/AnimatedVideoOnScroll (the 21st.dev "animated video on scroll"
+   primitives, already used by the hero's own pin).
+   ============================================================= */
+
+/* The scroll the stage is pinned for. Shorter than the reference's 350vh:
+   that was a whole demo page, and this is one section of a route that already
+   opens with a 900vh hero pin. */
+.brutus-stage-track {
+  height: 170vh;
+}
+
+.brutus-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.25rem, 3vh, 2.25rem);
+  padding: clamp(5rem, 12vh, 7rem) clamp(1rem, 5vw, 2rem) clamp(2rem, 6vh, 3.5rem);
+  /* No background of any kind. The reference paints an opaque radial over the
+     whole stage, and this carried a softened version of it — a blue bloom
+     behind the heading. Both are wrong here: `.page-gradient` is already
+     running behind the section, so anything painted on the stage is a second
+     light source competing with it, and an opaque one would cut a hard seam
+     across it at both ends of the pin. The page's own gradient shows through
+     instead. */
+}
+
+.brutus-stage__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.9rem;
+}
+
+.brutus-stage__h2 {
+  margin: 0;
+  max-width: 24ch;
+}
+
+.brutus-stage__lede {
+  margin: 0;
+  max-width: 46ch;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+/* The clip window the film opens out of. `ContainerInset` writes the
+   `clip-path` itself; this only has to give it a box. */
+.brutus-stage__inset {
+  width: min(100%, 68rem);
+  max-height: min(46vh, 26rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brutus-stage__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brutus-stage__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+/* Reduced motion: no pin and no opening, just the film's poster frame in a
+   plain rounded box. `ContainerScroll`'s track collapses to the stage's own
+   height so the section stops being three viewports of held scroll. */
+@media (prefers-reduced-motion: reduce) {
+  .brutus-stage-track {
+    height: auto;
+    min-height: 0;
+  }
+
+  .brutus-stage {
+    position: static;
+    min-height: 0;
+  }
+
+  .brutus-stage__inset {
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+}
+
+
+/* =============================================================
+   Who can use BalloAds? — CTA with marquee
+   File: app/components/sections/WhoCinematicSection.tsx
+   The 21st.dev "CTA with marquee" layout: the question and the action on one
+   side, two rows of industry tiles drifting opposite ways on the other. Runs
+   on this project's own `.mq` marquee above.
+   ============================================================= */
+
+.who-cta {
+  position: relative;
+  /* No `min-h-screen`. The reference is a hero and can claim a viewport; this
+     is a section in the middle of a long page, and the row heights already
+     give it presence. */
+  padding: clamp(4rem, 10vh, 7rem) 0;
+  overflow: clip;
+}
+
+.who-cta__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vh, 4rem);
+  max-width: 84rem;
+  margin-inline: auto;
+}
+
+.who-cta__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+  padding-inline: clamp(1rem, 5vw, 2rem);
+}
+
+.who-cta__h2 {
+  max-width: 16ch;
+}
+
+.who-cta__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.who-cta__lines p {
+  margin: 0;
+  font-size: var(--landing-body-size);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* The two rows. `overflow: clip` on the section keeps them from widening the
+   page; each `.mq` masks its own ends. */
+.who-cta__rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.5vw, 1rem);
+  min-width: 0;
+}
+
+/* ── A tile ────────────────────────────────────────────────────────────── */
+
+.who-tile {
+  position: relative;
+  flex-shrink: 0;
+  width: clamp(8.5rem, 30vw, 12rem);
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #0b1230;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.who-tile__img {
+  object-fit: cover;
+}
+
+/* The industry name, on a ramp dark enough to hold it over any photograph.
+   Bottom-anchored so the top of the image stays clear. */
+.who-tile__label {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.75rem 0.75rem 0.65rem;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-wrap: balance;
+  background: linear-gradient(
+    to top,
+    rgba(3, 5, 26, 0.92) 0%,
+    rgba(3, 5, 26, 0.7) 45%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .who-tile__label {
+    font-size: 0.8rem;
+  }
+}
+
+/* ── Desktop: copy beside the rows ─────────────────────────────────────── */
+@media (min-width: 901px) {
+  .who-cta__inner {
+    /* The rows take the larger share: they are the part that moves, and the
+       copy is three short lines and a button. */
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 5vw, 4rem);
+  }
+
+  .who-cta__copy {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* Runs off the right edge of the page rather than stopping inside the
+     container, so the tiles read as a band passing through the section rather
+     than as a widget sitting in a box. */
+  .who-cta__rows {
+    margin-right: calc(-1 * clamp(1rem, 5vw, 4rem));
+  }
+}
+
+/* ── The scramble button ───────────────────────────────────────────────── */
+
+.scramble-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 3.15rem;
+  min-height: 3.15rem;
+  padding: 0 1.9rem;
+  border: 1px solid var(--btn-cta-border);
+  border-radius: 999px;
+  /* Mono, so a resolving label cannot change the button's width from one
+     frame to the next — and it suits an effect that reads as characters
+     landing into place. */
+  font-family: var(--font-ubuntu-mono), ui-monospace, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--btn-cta-text);
+  background: var(--btn-cta-bg);
+  box-shadow: var(--btn-cta-shadow);
+  transition: transform 0.22s ease, box-shadow 0.3s ease;
+}
+
+.scramble-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-cta-shadow-hover);
+}
+
+.scramble-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.scramble-btn:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .scramble-btn {
+    height: 2.8rem;
+    min-height: 2.8rem;
+    padding: 0 1.3rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scramble-btn:hover {
+    transform: none;
+  }
+}
+
+
+/* =============================================================
+   Scroll entrances — "Backed by" and "Who can use BalloAds?"
+   Files: app/components/ui/BackedBy.tsx
+          app/components/sections/WhoCinematicSection.tsx
+
+   Both sections use `FadeUpReveal` purely as a TRIGGER: its own transform is
+   turned off below, and the pieces inside animate themselves off the
+   `data-fur="in"` it writes. That is what buys a stagger — the component
+   moves one box, and a section that arrives all at once reads as a slide
+   rather than as an entrance.
+
+   Everything here is opacity and transform on a handful of small elements,
+   with `transition-delay` doing the sequencing. No JavaScript beyond the one
+   IntersectionObserver the reveal already owns, and nothing left running once
+   it has played.
+   ============================================================= */
+
+/* The two reveals are inert. Without this they would fade and lift their whole
+   subtree, and the staggers below would be a second animation on top of a
+   first. */
+.backers-reveal[data-fur="out"],
+.who-cta__copy-reveal[data-fur="out"],
+.who-cta__rows-reveal[data-fur="out"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Backed by ─────────────────────────────────────────────────────────── */
+
+.backers__eyebrow,
+.backers__swap,
+.backers__logo,
+.backers__wordmark {
+  transition:
+    opacity 0.7s ease var(--enter-delay, 0s),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
+}
+
+.backers-reveal[data-fur="out"] .backers__eyebrow,
+.backers-reveal[data-fur="out"] .backers__swap {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0);
+}
+
+.backers-reveal[data-fur="out"] .backers__swap {
+  --enter-delay: 0.08s;
+}
+
+/* The marks, not the `<li>`. The item's own transform is already spoken for by
+   the lit state's 3px lift, and an entrance on the same property would fight
+   it the first time the cycle advanced. */
+.backers-reveal[data-fur="out"] .backers__logo,
+.backers-reveal[data-fur="out"] .backers__wordmark {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0) scale(0.92);
+}
+
+/* One after another, off the index the component sets. */
+.backers__item .backers__logo,
+.backers__item .backers__wordmark {
+  --enter-delay: calc(0.18s + var(--i, 0) * 0.09s);
+}
+
+/* ── Who can use BalloAds? ─────────────────────────────────────────────── */
+
+.who-cta__copy > * {
+  transition:
+    opacity 0.75s ease var(--enter-delay, 0s),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
+}
+
+.who-cta__copy-reveal[data-fur="out"] .who-cta__copy > * {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+}
+
+.who-cta__copy > *:nth-child(2) {
+  --enter-delay: 0.1s;
+}
+
+.who-cta__copy > *:nth-child(3) {
+  --enter-delay: 0.2s;
+}
+
+/* Each row arrives from the side it travels towards, so the entrance settles
+   into the motion the row is already in rather than cutting across it. Row one
+   runs in reverse, which carries its tiles to the right. */
+.who-cta__rows > .mq {
+  transition:
+    opacity 0.9s ease var(--enter-delay, 0s),
+    transform 1s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
+}
+
+.who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(1) {
+  opacity: 0;
+  transform: translate3d(9%, 0, 0);
+}
+
+.who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(2) {
+  opacity: 0;
+  transform: translate3d(-9%, 0, 0);
+}
+
+.who-cta__rows > .mq:nth-child(2) {
+  --enter-delay: 0.12s;
+}
+
+/* Reduced motion: everything at rest, no entrance at all. The reveal's own
+   arm in utilities.css does the same for its wrapper. */
+@media (prefers-reduced-motion: reduce) {
+  .backers__eyebrow,
+  .backers__swap,
+  .backers__logo,
+  .backers__wordmark,
+  .who-cta__copy > *,
+  .who-cta__rows > .mq,
+  .backers-reveal[data-fur="out"] .backers__eyebrow,
+  .backers-reveal[data-fur="out"] .backers__swap,
+  .backers-reveal[data-fur="out"] .backers__logo,
+  .backers-reveal[data-fur="out"] .backers__wordmark,
+  .who-cta__copy-reveal[data-fur="out"] .who-cta__copy > *,
+  .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(1),
+  .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(2) {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

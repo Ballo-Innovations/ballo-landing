@@ -17,6 +17,21 @@ import logoBayport from "@/public/Client Logos/bayport color.png";
 import logoSeneca from "@/public/Client Logos/seneca-logo new-02.png";
 import logo9 from "@/public/Client Logos/9.png";
 
+// "Backed by" marks. Each is the brand's own primary logo, sourced from its
+// official/canonical asset rather than redrawn:
+//   airtel.svg — the Airtel mark (Wikimedia Commons, #ed1d24)
+//   mtn.svg    — MTN's 2022 mark, filled with MTN's brand yellow because the
+//                published file carries no fill and would render black on this
+//                page's dark background
+//   meta.svg   — Meta's infinity mark (svgl.app library)
+//   zicta-white.png — ZICTA's own white-on-dark logo, from zicta.zm, trimmed
+//                and downscaled from its 4726px original
+// A CMS "Backed by" row with an uploaded logo still overrides all of these.
+import backerAirtel from "@/public/Backer Logos/airtel.svg";
+import backerMtn from "@/public/Backer Logos/mtn.svg";
+import backerMeta from "@/public/Backer Logos/meta.svg";
+import backerZicta from "@/public/Backer Logos/zicta-white.png";
+
 // No `force-dynamic`. The page still renders per-request (both CMS helpers read
 // headers() to pick the environment's API base), but force-dynamic additionally
 // forced `no-store` onto every fetch in this route, which overrode the
@@ -83,14 +98,15 @@ const FALLBACK_PARTNER_LOGOS: HomeLogoItem[] = [
 ];
 
 // Fallback content — shown until the CMS has "Backed by" logo rows published
-// (a partner-logo row with "Backed by" switched on). No local image files ship
-// for these marks, so `src: null` tells HomeClient to render the name as a
-// wordmark; uploading a logo in the CMS replaces it with the image.
+// (a partner-logo row with "Backed by" switched on). These ship as real logo
+// files, so the row renders the marks themselves; `src: null` is still
+// honoured by HomeClient and renders the name as a wordmark instead, which is
+// what a CMS row with no uploaded image falls back to.
 const FALLBACK_BACKER_LOGOS: HomeLogoItem[] = [
-  { src: null, alt: "Airtel" },
-  { src: null, alt: "MTN" },
-  { src: null, alt: "Meta" },
-  { src: null, alt: "ZICTA" },
+  { src: backerAirtel, alt: "Airtel", role: "Network partner" },
+  { src: backerMtn, alt: "MTN", role: "Network partner" },
+  { src: backerMeta, alt: "Meta", role: "Technology partner" },
+  { src: backerZicta, alt: "ZICTA", role: "Regulatory authority" },
 ];
 
 export default async function Home() {

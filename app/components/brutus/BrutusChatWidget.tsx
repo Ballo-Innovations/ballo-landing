@@ -38,8 +38,9 @@ type Message = {
 const GREETING: Message = {
   id: 0,
   role: "assistant",
-  content: "Hi, I'm Brutus. Ask me about our channels, pricing, or how to get started.",
-  followUps: ["What can I send with BalloAds?", "How does pricing work?"],
+  content:
+    "Hi, I'm Brutus. I help businesses reach their customers directly on SMS, WhatsApp, and email. Tell me what you sell and I'll show you what to send first.",
+  followUps: ["How do I get repeat customers?", "What would a first campaign cost me?"],
 };
 
 export function BrutusChatWidget() {
@@ -198,9 +199,14 @@ export function BrutusChatWidget() {
             </button>
           </header>
 
+          {/* data-lenis-prevent is required, not decorative: Lenis runs page-wide
+              (components/ui/SmoothScroll.tsx) and intercepts wheel input, so
+              without this the thread's own overflow never sees the wheel and
+              scrolling up inside the chat scrolls the page instead. */}
           <div
             className="brutus-widget__thread"
             ref={threadRef}
+            data-lenis-prevent
             role="log"
             aria-live="polite"
             aria-atomic="false"
