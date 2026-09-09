@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const rate = limiter.check(key);
   if (!rate.allowed) {
     return NextResponse.json(
-      { error: "You're sending messages a bit fast. Give it a moment and try again." },
+      { error: "That is a lot of questions at once. Give it a few seconds and try again." },
       { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } },
     );
   }

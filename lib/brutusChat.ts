@@ -126,7 +126,17 @@ const TIMEOUT_MS = 25000;
 export async function callBrutusChat(request: BrutusChatRequest): Promise<BrutusChatResult> {
   const { baseUrl, apiKey, productId, contextId } = getBrutusConfig();
   if (!baseUrl) {
-    return { ok: false, status: 503, error: "The assistant is not configured." };
+    // Local dev hits this whenever BRUTUS_BASE_URL is unset, and the flag
+    // defaults on in `next dev` — so say what to do about it, server side.
+    console.error(
+      "[brutusChat] BRUTUS_BASE_URL is not set. Set it (and BRUTUS_API_KEY) in .env.local, " +
+        "or set NEXT_PUBLIC_FEATURE_SITE_ASSISTANT=false to hide the widget locally.",
+    );
+    return {
+      ok: false,
+      status: 503,
+      error: "Brutus is not switched on yet. Our team can help you in the meantime.",
+    };
   }
 
   let response: Response;
@@ -149,7 +159,7 @@ export async function callBrutusChat(request: BrutusChatRequest): Promise<Brutus
     });
   } catch (err) {
     console.error("[brutusChat] request failed", err instanceof Error ? err.message : err);
-    return { ok: false, status: 504, error: "The assistant took too long to answer." };
+    return { ok: false, status: 504, error: "That took too long to come back. Please try again." };
   }
 
   const text = await response.text();
@@ -168,13 +178,21 @@ export async function callBrutusChat(request: BrutusChatRequest): Promise<Brutus
     });
     // 404 means the feature flag is off upstream — that is "unavailable", not "broken".
     const status = response.status === 404 ? 503 : 502;
-    return { ok: false, status, error: "The assistant is unavailable right now." };
+    return {
+      ok: false,
+      status,
+      error: "Brutus is offline right now. Please try again in a moment.",
+    };
   }
 
   const answer = normalizeBrutusChatAnswer(json?.data);
   if (!answer) {
     console.error("[brutusChat] unusable response shape", text.slice(0, 300));
-    return { ok: false, status: 502, error: "The assistant is unavailable right now." };
+    return {
+      ok: false,
+      status: 502,
+      error: "Brutus is offline right now. Please try again in a moment.",
+    };
   }
 
   return { ok: true, answer };
