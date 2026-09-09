@@ -13,6 +13,7 @@ import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 import { WaitlistProvider } from "./components/waitlist/WaitlistProvider";
 import { SmoothScroll } from "./components/ui/SmoothScroll";
+import { BrutusChatWidget } from "./components/brutus/BrutusChatWidget";
 import { resolveSocialLinks } from "./components/social/socialLinks";
 import { getSocialLinks } from "@/lib/socialLinksApi";
 import { getSiteSettings } from "@/lib/siteSettingsApi";
@@ -62,6 +63,9 @@ export default async function RootLayout({
             contactPhone={siteSettings.contact_phone}
             contactEmail={siteSettings.contact_email}
           />
+          {/* Floating "Ask Brutus" assistant. Inside WaitlistProvider so an
+              answer it can't ground can hand off to the waitlist form. */}
+          <BrutusChatWidget />
         </WaitlistProvider>
       </body>
     </html>

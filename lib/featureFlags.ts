@@ -2,17 +2,20 @@
  * Per-environment feature flags. See docs/feature-promotion.md.
  */
 
-export type FeatureName = "cmsContent";
+export type FeatureName = "cmsContent" | "siteAssistant";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
 const FEATURE_ALIASES: Record<string, FeatureName> = {
   cms: "cmsContent",
   cmscontent: "cmsContent",
+  brutus: "siteAssistant",
+  siteassistant: "siteAssistant",
 };
 
 const FEATURE_ENV_VARS: Record<FeatureName, string> = {
   cmsContent: "NEXT_PUBLIC_FEATURE_CMS_CONTENT",
+  siteAssistant: "NEXT_PUBLIC_FEATURE_SITE_ASSISTANT",
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VARS) as FeatureName[];

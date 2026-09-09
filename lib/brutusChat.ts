@@ -1,0 +1,181 @@
+/**
+ * Server-side client for the Brutus `site-assistant` task — the RAG chatbot in
+ * the site's chat widget.
+ *
+ * Nothing here may run in the browser: `BRUTUS_API_KEY` is a shared internal
+ * key for the whole AI hub. The widget talks to /api/brutus-chat, which is the
+ * only thing that talks to Brutus.
+ */
+
+export const BRUTUS_CHAT_TASK = "site-assistant";
+
+/** Matches SITE_MAX_MESSAGE_CHARS in brutus (the task rejects longer). */
+export const MAX_MESSAGE_CHARS = 500;
+/** Turns kept per request. Brutus caps this too; this keeps the payload small. */
+export const MAX_HISTORY_TURNS = 6;
+
+export type BrutusChatTurn = { role: "user" | "assistant"; content: string };
+
+export type BrutusChatSource = { type: string; title: string; url?: string };
+
+export type BrutusChatAnswer = {
+  reply: string;
+  grounded: boolean;
+  confidence: number;
+  sources: BrutusChatSource[];
+  followUps: string[];
+  escalate: boolean;
+};
+
+export type BrutusChatRequest = { message: string; history: BrutusChatTurn[] };
+
+export function getBrutusConfig() {
+  const baseUrl = (process.env.BRUTUS_BASE_URL ?? "").trim().replace(/\/+$/, "");
+  const apiKey = (process.env.BRUTUS_API_KEY ?? "").trim();
+  const productId =
+    (process.env.BRUTUS_SITE_PRODUCT_ID ?? "ballo-landing").trim() || "ballo-landing";
+  const contextId = (process.env.BRUTUS_CONTEXT_ID ?? "ballo-default").trim() || "ballo-default";
+  return { baseUrl, apiKey, productId, contextId };
+}
+
+export function validateBrutusChatRequest(
+  body: unknown,
+): { ok: true; value: BrutusChatRequest } | { ok: false; error: string } {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { ok: false, error: "Request body is required" };
+  }
+  const record = body as Record<string, unknown>;
+
+  const message = typeof record.message === "string" ? record.message.trim() : "";
+  if (!message) return { ok: false, error: "message is required" };
+  if (message.length > MAX_MESSAGE_CHARS) {
+    return { ok: false, error: `message must be ${MAX_MESSAGE_CHARS} characters or fewer` };
+  }
+
+  // History is client-supplied and therefore untrusted: keep only well-formed
+  // turns, normalize the role to the two the task accepts, and clamp both the
+  // number of turns and each turn's length so a crafted payload can't inflate
+  // the prompt.
+  const history: BrutusChatTurn[] = Array.isArray(record.history)
+    ? record.history
+        .filter(
+          (turn): turn is Record<string, unknown> =>
+            !!turn && typeof turn === "object" && typeof (turn as { content?: unknown }).content === "string",
+        )
+        .map((turn) => ({
+          role: turn.role === "assistant" ? ("assistant" as const) : ("user" as const),
+          content: String(turn.content).trim().slice(0, MAX_MESSAGE_CHARS),
+        }))
+        .filter((turn) => turn.content !== "")
+        .slice(-MAX_HISTORY_TURNS)
+    : [];
+
+  return { ok: true, value: { message, history } };
+}
+
+type BrutusProcessResponse = {
+  success?: boolean;
+  data?: unknown;
+  error?: string;
+  message?: string;
+};
+
+export type BrutusChatResult =
+  | { ok: true; answer: BrutusChatAnswer }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Coerce the task response into the widget's shape.
+ *
+ * Defensive rather than trusting: if a field is missing or the wrong type, the
+ * safe reading is "not grounded" — the widget then shows the hand-off, which is
+ * always a correct thing to say.
+ */
+export function normalizeBrutusChatAnswer(data: unknown): BrutusChatAnswer | null {
+  if (!data || typeof data !== "object") return null;
+  const record = data as Record<string, unknown>;
+
+  const reply = typeof record.reply === "string" ? record.reply.trim() : "";
+  if (!reply) return null;
+
+  const sources: BrutusChatSource[] = Array.isArray(record.sources)
+    ? record.sources
+        .filter((s): s is Record<string, unknown> => !!s && typeof s === "object")
+        .map((s) => ({
+          type: typeof s.type === "string" ? s.type : "page",
+          title: typeof s.title === "string" ? s.title : "",
+          ...(typeof s.url === "string" && s.url.startsWith("/") ? { url: s.url } : {}),
+        }))
+        .filter((s) => s.title !== "")
+    : [];
+
+  return {
+    reply,
+    grounded: record.grounded === true,
+    confidence: typeof record.confidence === "number" ? record.confidence : 0,
+    sources,
+    followUps: Array.isArray(record.followUps)
+      ? record.followUps.filter((f): f is string => typeof f === "string" && f.trim() !== "")
+      : [],
+    escalate: record.escalate === true,
+  };
+}
+
+const TIMEOUT_MS = 25000;
+
+export async function callBrutusChat(request: BrutusChatRequest): Promise<BrutusChatResult> {
+  const { baseUrl, apiKey, productId, contextId } = getBrutusConfig();
+  if (!baseUrl) {
+    return { ok: false, status: 503, error: "The assistant is not configured." };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/brutus/v1/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        productId,
+        taskType: BRUTUS_CHAT_TASK,
+        contextId,
+        payload: { message: request.message, history: request.history },
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch (err) {
+    console.error("[brutusChat] request failed", err instanceof Error ? err.message : err);
+    return { ok: false, status: 504, error: "The assistant took too long to answer." };
+  }
+
+  const text = await response.text();
+  let json: BrutusProcessResponse | null = null;
+  try {
+    json = text ? (JSON.parse(text) as BrutusProcessResponse) : null;
+  } catch {
+    json = null;
+  }
+
+  if (!response.ok) {
+    // Upstream detail (keys, task names, stack traces) never reaches the browser.
+    console.error("[brutusChat] non-OK response", {
+      status: response.status,
+      body: text.slice(0, 300),
+    });
+    // 404 means the feature flag is off upstream — that is "unavailable", not "broken".
+    const status = response.status === 404 ? 503 : 502;
+    return { ok: false, status, error: "The assistant is unavailable right now." };
+  }
+
+  const answer = normalizeBrutusChatAnswer(json?.data);
+  if (!answer) {
+    console.error("[brutusChat] unusable response shape", text.slice(0, 300));
+    return { ok: false, status: 502, error: "The assistant is unavailable right now." };
+  }
+
+  return { ok: true, answer };
+}

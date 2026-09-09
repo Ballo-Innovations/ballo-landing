@@ -1,0 +1,355 @@
+/* =============================================================
+   Brutus chat widget — the floating "Ask Brutus" RAG assistant
+   (app/components/brutus/BrutusChatWidget.tsx).
+
+   Mounted site-wide from app/layout.tsx, so it sits above every
+   page and must never affect page layout: fixed positioning
+   only, no page-level scroll. Brand tokens from variables.css.
+
+   Motion is CSS-only and one-shot on open (no infinite loops
+   except the typing dots, which exist only while a request is in
+   flight) — the home page's performance rules.
+   ============================================================= */
+
+.brutus-widget__launcher {
+  position: fixed;
+  right: clamp(1rem, 3vw, 1.75rem);
+  bottom: clamp(1rem, 3vw, 1.75rem);
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--btn-cta-border, rgba(255, 255, 255, 0.56));
+  border-radius: 999px;
+  background: var(--btn-cta-bg, linear-gradient(135deg, #ffffff, #9fe8ff));
+  color: var(--btn-cta-text, #061044);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--btn-cta-shadow, 0 12px 28px rgba(42, 132, 255, 0.24));
+  transition:
+    transform 0.2s var(--liquid-ease, ease),
+    background 0.2s var(--liquid-ease, ease);
+}
+
+.brutus-widget__launcher:hover {
+  transform: translateY(-2px);
+  background: var(--btn-cta-bg-hover, linear-gradient(135deg, #8be1ff, #ffffff));
+}
+
+.brutus-widget__launcher:focus-visible {
+  outline: 2px solid var(--cyan, #3fdbff);
+  outline-offset: 3px;
+}
+
+/* ---------- Panel ---------- */
+.brutus-widget__panel {
+  position: fixed;
+  right: clamp(0.5rem, 3vw, 1.75rem);
+  /* Clear of the launcher. */
+  bottom: calc(clamp(1rem, 3vw, 1.75rem) + 3.75rem);
+  z-index: 71;
+  display: flex;
+  flex-direction: column;
+  width: min(23rem, calc(100vw - 1rem));
+  max-height: min(32rem, calc(100vh - 7rem));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-liquid, 24px);
+  /* Opaque, not translucent: a backdrop-filter here would composite against
+     everything scrolling behind it on every frame. */
+  background: linear-gradient(180deg, #0b1030 0%, #05071c 100%);
+  color: #eef3ff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: brutus-widget-in 0.22s var(--liquid-ease, ease) both;
+}
+
+@keyframes brutus-widget-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brutus-widget__panel {
+    animation: none;
+  }
+  .brutus-widget__launcher {
+    transition: none;
+  }
+  .brutus-widget__launcher:hover {
+    transform: none;
+  }
+}
+
+.brutus-widget__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.brutus-widget__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--blue, #1a3aff));
+  color: #04102a;
+}
+
+.brutus-widget__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.brutus-widget__subtitle {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: rgba(238, 243, 255, 0.6);
+}
+
+.brutus-widget__close {
+  margin-left: auto;
+  display: inline-flex;
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  color: rgba(238, 243, 255, 0.7);
+  cursor: pointer;
+}
+
+.brutus-widget__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ---------- Thread ---------- */
+.brutus-widget__thread {
+  flex: 1 1 auto;
+  min-height: 8rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  scrollbar-width: thin;
+}
+
+.brutus-widget__msg {
+  max-width: 88%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.brutus-widget__msg--in {
+  align-self: flex-start;
+  border-bottom-left-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.brutus-widget__msg--out {
+  align-self: flex-end;
+  border-bottom-right-radius: 0.35rem;
+  background: linear-gradient(135deg, var(--blue, #1a3aff), var(--blue2, #2d4dff));
+  color: #fff;
+}
+
+.brutus-widget__msg--error {
+  background: rgba(255, 128, 128, 0.12);
+  border: 1px solid rgba(255, 128, 128, 0.28);
+}
+
+/* Citations — every grounded answer says where it came from. */
+.brutus-widget__sources {
+  margin-top: 0.5rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  list-style: none;
+}
+
+.brutus-widget__sources li {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(63, 219, 255, 0.28);
+  border-radius: 999px;
+  color: rgba(238, 243, 255, 0.82);
+}
+
+.brutus-widget__sources a:hover {
+  color: var(--cyan, #3fdbff);
+  text-decoration: underline;
+}
+
+.brutus-widget__handoff {
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.brutus-widget__handoff:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Typing dots — only rendered while a request is in flight, so the one
+   infinite animation on the page cannot outlive the response. */
+.brutus-widget__typing {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  height: 1rem;
+}
+
+.brutus-widget__typing i {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(238, 243, 255, 0.65);
+  animation: brutus-widget-dot 1s ease-in-out infinite;
+}
+
+.brutus-widget__typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.brutus-widget__typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes brutus-widget-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brutus-widget__typing i {
+    animation: none;
+  }
+}
+
+/* ---------- Suggestions + composer ---------- */
+.brutus-widget__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0 1rem 0.6rem;
+}
+
+.brutus-widget__suggestion {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid rgba(63, 219, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(63, 219, 255, 0.08);
+  color: rgba(238, 243, 255, 0.9);
+  font-size: 0.74rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.brutus-widget__suggestion:hover {
+  background: rgba(63, 219, 255, 0.16);
+}
+
+.brutus-widget__composer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.brutus-widget__composer input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.brutus-widget__composer input::placeholder {
+  color: rgba(238, 243, 255, 0.45);
+}
+
+.brutus-widget__composer input:focus-visible {
+  outline: none;
+  border-color: rgba(63, 219, 255, 0.55);
+}
+
+.brutus-widget__composer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--cyan, #3fdbff), var(--blue, #1a3aff));
+  color: #04102a;
+  cursor: pointer;
+}
+
+.brutus-widget__composer button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.brutus-widget__disclaimer {
+  padding: 0 1rem 0.8rem;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: rgba(238, 243, 255, 0.45);
+}
+
+/* On a narrow screen the panel takes the width and the launcher loses its
+   label, so the two never overlap the page's own CTAs. */
+@media (max-width: 26rem) {
+  .brutus-widget__launcher-label {
+    display: none;
+  }
+
+  .brutus-widget__launcher {
+    padding: 0.8rem;
+  }
+
+  .brutus-widget__panel {
+    left: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+  }
+}
