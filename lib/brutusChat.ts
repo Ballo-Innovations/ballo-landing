@@ -122,6 +122,23 @@ export function normalizeBrutusChatAnswer(data: unknown): BrutusChatAnswer | nul
 }
 
 const TIMEOUT_MS = 25000;
+/** Pause before the single retry of an immediately-failed request. */
+const RETRY_DELAY_MS = 250;
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** True for errors that mean the request never got off the ground. */
+function isConnectivityError(err: unknown): boolean {
+  const cause = (err as { cause?: { code?: string } })?.cause;
+  const code = cause?.code ?? (err as { code?: string })?.code;
+  return (
+    code === "ENOTFOUND" ||
+    code === "EAI_AGAIN" ||
+    code === "ECONNRESET" ||
+    code === "ECONNREFUSED" ||
+    code === "EPIPE"
+  );
+}
 
 export async function callBrutusChat(request: BrutusChatRequest): Promise<BrutusChatResult> {
   const { baseUrl, apiKey, productId, contextId } = getBrutusConfig();
@@ -139,9 +156,8 @@ export async function callBrutusChat(request: BrutusChatRequest): Promise<Brutus
     };
   }
 
-  let response: Response;
-  try {
-    response = await fetch(`${baseUrl}/brutus/v1/tasks`, {
+  const send = () =>
+    fetch(`${baseUrl}/brutus/v1/tasks`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,11 +171,59 @@ export async function callBrutusChat(request: BrutusChatRequest): Promise<Brutus
         payload: { message: request.message, history: request.history },
       }),
       cache: "no-store",
+      // A fresh signal per attempt: an AbortSignal is single-use.
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
+
+  let response: Response;
+  try {
+    try {
+      response = await send();
+    } catch (err) {
+      // One dropped DNS query should not surface as a broken widget. These fail
+      // in milliseconds, so the retry costs nothing the visitor can feel, and
+      // it is deliberately not applied to a timeout, where a second attempt
+      // would double an already long wait.
+      if (!isConnectivityError(err)) throw err;
+      console.warn("[brutusChat] connection failed, retrying once");
+      await delay(RETRY_DELAY_MS);
+      response = await send();
+    }
   } catch (err) {
-    console.error("[brutusChat] request failed", err instanceof Error ? err.message : err);
-    return { ok: false, status: 504, error: "That took too long to come back. Please try again." };
+    // A timeout and "the host does not resolve" are different problems and the
+    // visitor deserves the right sentence for each. Reporting a 27ms DNS
+    // failure as "that took too long" sends whoever is debugging it looking for
+    // a slow upstream that is not there.
+    const cause = (err as { cause?: { code?: string } })?.cause;
+    const code = cause?.code ?? (err as { code?: string })?.code;
+    const isTimeout =
+      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+
+    console.error("[brutusChat] request failed", {
+      url: `${baseUrl}/brutus/v1/tasks`,
+      name: err instanceof Error ? err.name : typeof err,
+      message: err instanceof Error ? err.message : String(err),
+      code,
+    });
+
+    if (isTimeout) {
+      return { ok: false, status: 504, error: "That took too long to come back. Please try again." };
+    }
+
+    // DNS, refused connections, and TLS failures mean the host is wrong or
+    // unreachable from this server: a configuration problem, not a busy one.
+    if (code === "ENOTFOUND" || code === "EAI_AGAIN") {
+      console.error(
+        `[brutusChat] cannot resolve ${baseUrl}. Check BRUTUS_BASE_URL, and on macOS try ` +
+          "`sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`.",
+      );
+    }
+
+    return {
+      ok: false,
+      status: 503,
+      error: "I can't reach Brutus right now. Please try again in a moment.",
+    };
   }
 
   const text = await response.text();
