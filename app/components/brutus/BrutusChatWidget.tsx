@@ -40,7 +40,10 @@ const GREETING: Message = {
   role: "assistant",
   content:
     "Hi, I'm Brutus. I help businesses reach their customers directly on SMS, WhatsApp, and email. Tell me what you sell and I'll show you what to send first.",
-  followUps: ["How do I get repeat customers?", "What would a first campaign cost me?"],
+  // Kept in step with STARTER_QUESTIONS in brutus's site-assistant-smalltalk.ts.
+  // Both are verified to retrieve an answer: a chip that dead-ends is worse
+  // than no chip at all.
+  followUps: ["How do I improve my SMS results?", "How much does SMS cost?"],
 };
 
 export function BrutusChatWidget() {
