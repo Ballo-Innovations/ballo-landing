@@ -26,6 +26,42 @@
   background-color: var(--page-base);
 }
 
+/* The lattice of boxes the hero's dust becomes, kept for the rest of the page.
+   See PageDots.tsx — the particle field forms it, this is what it hands over
+   to. One fixed tile, so scrolling costs nothing and every section below the
+   hero sits on the same grid.
+
+   z-index -1 puts it above `.page-gradient` and below all content: sections
+   set no z-index of their own, so they paint over a negative layer. Fixed
+   rather than scrolling with the document — the grid is the room the page is
+   in, not part of any section of it.
+
+   The box is 3px at 22px centres, matched to the field's own dots and to the
+   alpha they land at (0.1 on the canvas, halved by the band's rest opacity).
+   Drawn as an SVG tile because a CSS gradient can give crossing lines or round
+   dots but not a lattice of squares. */
+.page-dots {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 700ms ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect width='3' height='3' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+  background-size: 22px 22px;
+  background-repeat: repeat;
+}
+
+.page-dots--on {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-dots {
+    transition: none;
+  }
+}
+
 /*
    Shared layout container — apply .page-inner to every section's inner wrapper.
    Provides consistent max-width, horizontal gutter, and vertical rhythm.
@@ -233,6 +269,35 @@
   margin-top: 0;
   height: 100%;
   border-radius: 22px;
+}
+
+/* The band's own particles, drawn a second time onto the phone's screen (see
+   `DustMirror` and `drawMirror` in cursor-driven-particles-typography.tsx).
+   Above the screen surface, below the cards. */
+.why-screen-dust {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* With the dust underneath them, the cards cannot go on carrying the screen's
+   background — it is what was hiding it. `.hero-phone-why-screen` carries it
+   instead (see cinematic-hero.css).
+   
+   The reason they could not simply be transparent before is stated on
+   `.why-scroll-item` below, and it is out of date: it describes cards sliding
+   HORIZONTALLY past one another. They slide vertically now, one full screen
+   apart, so a swap has the outgoing card leaving the top edge as the incoming
+   one arrives at the bottom — they tile, and never overlap. Only the flush
+   (hero) variant is affected: the standalone section has no band behind it and
+   keeps its opaque cards. */
+.why-scroll-items--dust,
+.why-scroll-items--dust .why-scroll-item,
+.why-scroll-items--dust .why-scroll-item:last-child {
+  background: transparent;
 }
 
 /* Each item fills the full screen — stacked, GSAP crossfades between them */
@@ -2799,6 +2864,12 @@
 
 .brutus-stage {
   display: flex;
+  /* `ContainerSticky` is `min-h-svh`, which is a floor, not a ceiling — so
+     with the film moved above the copy the stage simply grew past the viewport
+     and left the CTA below the fold on a pinned section, where there is no
+     scrolling it into view. Capping it means the children have to fit, and the
+     film is what gives way (see `min-height: 0` on the inset). */
+  max-height: 100svh;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -2836,6 +2907,10 @@
    `clip-path` itself; this only has to give it a box. */
 .brutus-stage__inset {
   width: min(100%, 68rem);
+  /* The film absorbs whatever the copy and the CTA do not need. `min-height:
+     0` is what lets it: a flex item will not shrink below its base size
+     without it, and its base here is a 16:9 frame at the column's width. */
+  min-height: 0;
   max-height: min(46vh, 26rem);
   display: flex;
   align-items: center;

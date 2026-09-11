@@ -11,6 +11,8 @@ import {
   useContainerScrollContext,
 } from "./AnimatedVideoOnScroll";
 import { at, clamp01, easeInOut, easeOut, lerp, staggered, type Range } from "@/lib/cinematic";
+import { useLatchedBeat } from "./useLatchedBeat";
+import { DustMirrorProvider } from "./DustMirror";
 
 /**
  * The hero's handover to the phone.
@@ -138,7 +140,19 @@ const ASIDE_IN: Range = hand([0.62, 0.72]);
  *      the feature cards, and go on to run all five of them
  */
 /** The copy goes first, and finishes before the phone's screen starts. */
-const TEXT_SWAP: Range = hand([0.76, 0.86]);
+export const TEXT_SWAP: Range = hand([0.76, 0.86]);
+
+/**
+ * While the band holds the wordmark instead of the travelling line.
+ *
+ * Act two is the one beat where the band had nothing to say: the hero has
+ * gone, "What We're About" is being read beside the device, and the tagline
+ * kept scrolling past behind it — a second line of moving type competing with
+ * the copy for the same attention. So the dust comes to rest as "BalloAds"
+ * for the length of that beat. It opens as the copy arrives and closes exactly
+ * where `TEXT_SWAP` does, which is where the per-card words take over.
+ */
+export const BAND_WORDMARK: Range = hand([0.62, 0.86]);
 const TEXT_SWAP_DISTANCE = 64;
 /**
  * The whole rest of the track: the five-card sequence (see `WhyCardSequence`)
@@ -165,7 +179,24 @@ const PHONE_SCREEN_CROSSFADE: Range = hand([0.86, 0.9]);
  * of the move keeps the device lit the whole way across; it still clears
  * before "Why Choose" arrives, which is what it was tied to ASIDE_IN for.
  */
-const BAND_OUT: Range = hand([0.7, 0.78]);
+/*
+ * Moved to after the wordmark, not through the middle of it. At
+ * hand([0.7, 0.78]) this dimming landed inside `BAND_WORDMARK` — so the dust
+ * settled into "BalloAds" and was faded to half strength in the same breath.
+ * It now starts where the wordmark hands over to the per-card words, which is
+ * the copy this dimming was tuned for.
+ */
+const BAND_OUT: Range = hand([0.86, 0.9]);
+/**
+ * What the band dims *to*, rather than out to. It is the one element that runs
+ * the whole length of the pin, and it is the only thing keeping the middle of
+ * the stage from reading as empty once the phone has stepped aside — so it
+ * stays there, quietly, behind "What We're About" and "Why Choose" both.
+ *
+ * Low enough that the copy in front of it is the thing being read: this is
+ * texture at this point in the pin, not type.
+ */
+const BAND_REST_OPACITY = 0.5;
 
 /**
  * Track length: the handover, then act two, then the in-place handoff to
@@ -296,25 +327,34 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   // screen from the first frame, so the phone shows both at once rather than
   // either of them. Written straight to the DOM, not state, so this doesn't
   // re-render on every scroll frame.
+  //
+  // Scroll-triggered but self-timed, like the copy's own swap: a crossfade
+  // that stops halfway shows the mock through the cards, which is the state
+  // this whole block exists to avoid. See `useLatchedBeat`.
   const onboardingRef = React.useRef<HTMLDivElement>(null);
   const screenRef = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    const place = () => {
-      const p = scrollYProgress.get();
-      const t = easeOut(at(p, PHONE_SCREEN_CROSSFADE));
-      if (onboardingRef.current) {
-        onboardingRef.current.style.opacity = String(1 - t);
-      }
-      if (screenRef.current) {
-        screenRef.current.style.opacity = String(t);
-        // Nothing to composite while it is entirely one or the other.
-        screenRef.current.style.willChange =
-          t > 0.001 && t < 0.999 ? "opacity" : "auto";
-      }
-    };
-    place();
-    return scrollYProgress.on("change", place);
-  }, [scrollYProgress]);
+  const screenSwap = React.useRef(0);
+  const placeScreen = React.useCallback(() => {
+    const t = easeOut(screenSwap.current);
+    if (onboardingRef.current) {
+      onboardingRef.current.style.opacity = String(1 - t);
+    }
+    if (screenRef.current) {
+      screenRef.current.style.opacity = String(t);
+      // Nothing to composite while it is entirely one or the other.
+      screenRef.current.style.willChange =
+        t > 0.001 && t < 0.999 ? "opacity" : "auto";
+    }
+  }, []);
+  useLatchedBeat(
+    scrollYProgress,
+    PHONE_SCREEN_CROSSFADE,
+    screenSwap,
+    placeScreen,
+    // Shorter than the copy's: this one is only an opacity swap on one small
+    // surface, and it follows the copy rather than accompanying it.
+    0.32,
+  );
 
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
@@ -533,12 +573,17 @@ function HeroAside({
   const oldRef = React.useRef<HTMLDivElement>(null);
   const newRef = React.useRef<HTMLDivElement>(null);
 
+  // Scroll-triggered, self-timed: see `useLatchedBeat`. `place` reads the
+  // beat rather than the scroll for the swap, so stopping mid-scroll cannot
+  // leave both blocks of copy legible at once.
+  const swap = React.useRef(0);
+
   const place = React.useCallback(() => {
     const el = ref.current;
     if (!el) return;
     const p = scrollYProgress.get();
     const tIn = easeOut(at(p, ASIDE_IN));
-    const tSwap = easeInOut(at(p, TEXT_SWAP));
+    const tSwap = easeInOut(swap.current);
     el.style.opacity = String(tIn);
     el.style.transform = `translate3d(${((1 - tIn) * 64).toFixed(1)}px, 0, 0)`;
     el.style.pointerEvents = tIn > 0.9 && tSwap < 0.1 ? "auto" : "none";
@@ -556,6 +601,8 @@ function HeroAside({
       newRef.current.style.pointerEvents = tSwap > 0.9 ? "auto" : "none";
     }
   }, [scrollYProgress]);
+
+  useLatchedBeat(scrollYProgress, TEXT_SWAP, swap, place);
 
   React.useEffect(() => {
     const unsub = scrollYProgress.on("change", place);
@@ -593,8 +640,8 @@ function HeroAside({
  *
  * A sibling of the hero and the phone on the pin. Nothing above it is opaque
  * any more, so it is simply visible for the handover: it starts low, travels
- * to the middle as the hero leaves and the phone arrives, and dissolves as
- * the "What We're About" copy comes in beside the device.
+ * to the middle as the hero leaves and the phone arrives, and dims — never
+ * all the way out — as the "What We're About" copy comes in beside the device.
  */
 function HeroBand({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -613,8 +660,11 @@ function HeroBand({ children }: { children: React.ReactNode }) {
     el.style.transform =
       `translate(-50%, calc(${y.toFixed(1)}px - 50%)) scale(${lerp(BAND_SCALE[0], BAND_SCALE[1], m).toFixed(3)})`;
     // easeOut to match the aside's arrival, so the band drops as fast as the
-    // copy comes up rather than lingering linearly behind already-readable text.
-    el.style.opacity = String(clamp01(1 - easeOut(at(p, BAND_OUT))));
+    // copy comes up rather than lingering linearly behind already-readable
+    // text. It settles at BAND_REST_OPACITY, not at 0.
+    el.style.opacity = String(
+      lerp(1, BAND_REST_OPACITY, easeOut(at(p, BAND_OUT))),
+    );
   }, [scrollYProgress]);
 
   React.useEffect(() => {
@@ -679,12 +729,17 @@ export function HeroSideExit({
 
   return (
     <ContainerScroll className={`cinematic-hero ${TRACK_CLASS}`}>
-      <ContainerSticky className="ch-stage h-svh w-full">
-        {backdrop ? <HeroBand>{backdrop}</HeroBand> : null}
-        <HeroPhone screen={phoneScreen} />
-        {aside ? <HeroAside whyHeading={whyHeading}>{aside}</HeroAside> : null}
-        <HeroParts>{children}</HeroParts>
-      </ContainerSticky>
+      {/* The band and the phone's screen are cousins here, and the band draws
+          the word it is holding into the screen as well (see `DustMirror`).
+          The provider is what lets them find each other. */}
+      <DustMirrorProvider>
+        <ContainerSticky className="ch-stage h-svh w-full">
+          {backdrop ? <HeroBand>{backdrop}</HeroBand> : null}
+          <HeroPhone screen={phoneScreen} />
+          {aside ? <HeroAside whyHeading={whyHeading}>{aside}</HeroAside> : null}
+          <HeroParts>{children}</HeroParts>
+        </ContainerSticky>
+      </DustMirrorProvider>
     </ContainerScroll>
   );
 }

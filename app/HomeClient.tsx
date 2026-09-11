@@ -4,6 +4,7 @@ import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { PageGradient } from "./components/ui/PageGradient";
+import { PageDots } from "./components/ui/PageDots";
 import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
 import { WhyFeatureChips } from "./components/ui/FeatureChips";
@@ -195,6 +196,12 @@ export default function HomeClient({
           viewport layer behind it (PageGradient) rather than as a document-tall
           background here, which is what a fast scroll was outrunning. */}
       <PageGradient />
+      {/* The hero's dust becomes a lattice of boxes after the last feature
+          card; this is what carries it down the rest of the page (see
+          PageDots.tsx). Mounted here rather than in the layout so it belongs
+          to the page whose hero hands it over — move it to `app/layout.tsx`
+          to put the same grid behind every route. */}
+      <PageDots />
 
       {/* Hero Section. Pinned by HeroSideExit: the elements marked
           data-hero-exit leave sideways, each toward whichever edge it already
@@ -210,19 +217,25 @@ export default function HomeClient({
            in the viewport from the first frame, so a viewport-triggered reveal
            would fire before the phone had arrived. */
         aside={
-          <>
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 text-gradient-silver-2">
+          /* The same `.aside-copy` treatment as "Why Choose" below, rather
+             than its own Tailwind type scale. The two are the two halves of
+             one crossfade in the same column, so a heading that changed
+             weight, size, gradient and measure halfway through read as a
+             different component arriving rather than the same one changing
+             its words. */
+          <div className="aside-copy">
+            <h2 className="aside-copy-title font-black text-gradient-silver">
               What We&apos;re About
             </h2>
-            <p className="landing-body text-white/90">
+            <p className="landing-body aside-copy-body">
               BalloAds is an AI-powered digital advertising platform designed to
               help businesses and organisations connect with the right audience
               through bulk SMS, targeted message ads, and data-driven campaign
               management. Whether you&apos;re a startup, an enterprise, or a
               service provider, BalloAds gives you the tools to launch impactful
-              marketing campaigns with ease
+              marketing campaigns with ease.
             </p>
-            <div className="hero-actions mt-8 justify-start">
+            <div className="hero-actions aside-copy-cta">
               <button type="button" onClick={openWaitlist} className="btn-primary group">
                 Get Started
               </button>
@@ -230,24 +243,23 @@ export default function HomeClient({
                 Learn More
               </Link>
             </div>
-          </>
+          </div>
         }
         /* Act three, beat 2: "Why Choose"'s heading, crossfaded into the same
            spot as the "What We're About" copy once the phone has started
            showing its cards. This is the only place the "Why Choose" copy
            lives now — there is no separate section below repeating it. */
         whyHeading={
-          <div className="why-copy">
+          <div className="aside-copy">
             {/* No hard line breaks. Forcing "Why / Choose / BalloAds?" onto
                 three lines made the heading a tall narrow stack whatever the
                 column was doing: at 850px it filled 280px of a 786px column
                 and pushed the body copy most of a viewport down. It wraps to
                 the column now, balanced. */}
-            <h2 className="why-copy-title font-black text-gradient-silver">
+            <h2 className="aside-copy-title font-black text-gradient-silver">
               Why Choose BalloAds?
             </h2>
-            <span className="why-copy-rule" aria-hidden="true" />
-            <p className="landing-body why-copy-body">
+            <p className="landing-body aside-copy-body">
               Most tools make you choose between reach and relevance. BalloAds
               gives you both: one place to build an audience, send SMS, WhatsApp
               and email campaigns, and see exactly what each message earned you.
@@ -256,7 +268,7 @@ export default function HomeClient({
             <button
               type="button"
               onClick={openWaitlist}
-              className="btn-primary group why-copy-cta"
+              className="btn-primary group aside-copy-cta"
             >
               Get Started
             </button>
@@ -421,6 +433,12 @@ export default function HomeClient({
           continuous scroll (see `whyHeading`/`phoneScreen` on HeroSideExit).
           Rendering `WhyScrollSection` as well would repeat all of it. */}
 
+      {/* Brutus, the AI assistant — a trailer for /brutus, on the home page.
+          Sits directly under the hero, ahead of the proof sections: it is the
+          product story, and the partners and industries below it are the
+          evidence for it. */}
+      <BrutusSection />
+
       {/* Backed By. A short, CMS-driven list (partner-logo rows with "Backed
           by" switched on) — too few to loop, so it is a rail with a travelling
           spotlight rather than a marquee. One partner is named at full size at
@@ -439,9 +457,6 @@ export default function HomeClient({
       {/* Who can use BalloAds — the question and CTA beside two marquee rows
           of industry tiles. */}
       <WhoCinematicSection />
-
-      {/* Brutus, the AI assistant — a trailer for /brutus, on the home page. */}
-      <BrutusSection />
 
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />

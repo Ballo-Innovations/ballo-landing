@@ -173,6 +173,17 @@ interface ContainerInsetProps extends HTMLMotionProps<"div"> {
   roundednessRange?: [number, number];
   /** Progress at which the inset finishes. Upstream hardcodes 0.8. */
   closeAt?: number;
+  /**
+   * Progress at which the inset STARTS opening; it holds its `insetYRange`
+   * start until then. Upstream has no equivalent — it always begins at 0.
+   *
+   * Needed wherever a track begins before the section owns the screen. The
+   * Brutus stage's track starts as the section first peeks in from below
+   * (`offset: ["start end", "end end"]`), which is a whole viewport before the
+   * previous section has finished leaving — so at 0 the film opened while the
+   * hero's closing copy was still on screen.
+   */
+  openFrom?: number;
 }
 
 /**
@@ -192,6 +203,7 @@ export const ContainerInset = React.forwardRef<
       insetXRange = [45, 0],
       roundednessRange = [1000, 16],
       closeAt = 0.8,
+      openFrom = 0,
       transition,
       ...props
     },
@@ -199,9 +211,19 @@ export const ContainerInset = React.forwardRef<
   ) => {
     const { scrollYProgress } = useContainerScrollContext();
 
-    const insetY = useTransform(scrollYProgress, [0, closeAt], insetYRange);
-    const insetX = useTransform(scrollYProgress, [0, closeAt], insetXRange);
-    const roundedness = useTransform(scrollYProgress, [0, closeAt], roundednessRange);
+    /* Stops spelled out across the whole domain, with the flats stated. A
+       range that does not span the source's domain does not hold its end value
+       here — it interpolates back toward the first (the same note sits on the
+       hero's transforms). */
+    const stops = React.useMemo(
+      () => [0, openFrom, closeAt, 1],
+      [openFrom, closeAt],
+    );
+    const hold = <T,>([from, to]: [T, T]) => [from, from, to, to];
+
+    const insetY = useTransform(scrollYProgress, stops, hold(insetYRange));
+    const insetX = useTransform(scrollYProgress, stops, hold(insetXRange));
+    const roundedness = useTransform(scrollYProgress, stops, hold(roundednessRange));
 
     const clipPath =
       useMotionTemplate`inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${roundedness}px)`;

@@ -150,7 +150,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* Same reason as `.why-copy` below: a grid item will not shrink under its
+  /* Same reason as `.aside-copy` below: a grid item will not shrink under its
      widest inflexible descendant unless told it may, and the copy in here
      contains a marquee of `nowrap` pills. */
   min-width: 0;
@@ -212,6 +212,11 @@
   inset: 0;
   border-radius: 22px;
   overflow: hidden;
+  /* The screen surface. It used to be each card's own background; the cards
+     are transparent in this variant so the mirrored dust can show through
+     them (see `.why-screen-dust` in home.css), and the surface has to live
+     under the dust rather than over it. */
+  background: oklch(11% 0.18 var(--bg-hue));
 }
 
 /* ── Type ─────────────────────────────────────────────────────────────── */
@@ -243,7 +248,14 @@
    Fluid type against the same viewport the column is sized from keeps the
    heading proportional at every width, and the spacing below is stated as one
    rhythm (rule, then body, then CTA) rather than three unrelated margins. */
-.why-copy {
+/* The copy column in `.hero-aside`, worn by BOTH halves of the crossfade —
+   "What We're About" and "Why Choose BalloAds?" — so the two read as one
+   composition that changes its words rather than two differently-styled
+   blocks. Named for where it sits, not for either one of them: it was
+   `.why-copy` when only the second half used it. Renamed everywhere it was
+   worn: the chip rows in FeatureChips.tsx and the standalone
+   `WhyScrollSection` use the same classes. */
+.aside-copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -261,7 +273,7 @@
   min-width: 0;
 }
 
-.why-copy-title {
+.aside-copy-title {
   margin: 0;
   /* Never wider than the column, whatever the ch measure below works out to
      at the current fluid size. */
@@ -277,24 +289,11 @@
   max-width: 18ch;
 }
 
-/* Carries the gap between the heading and the body copy, so the two blocks
-   are separated by a measured rhythm instead of the heading's own margin. */
-.why-copy-rule {
-  width: clamp(2.5rem, 6vw, 4rem);
-  height: 2px;
-  /* Tighter than it was, since the heading above it is no longer three lines
-     tall and the block does not need as much air to breathe. */
-  margin-block: clamp(1rem, 2vh, 1.5rem);
-  border-radius: 2px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--brand-color-5) 90%, transparent),
-    transparent
-  );
-}
-
-.why-copy-body {
-  margin: 0;
+.aside-copy-body {
+  /* The gap to the heading, which used to be carried by a rule between the
+     two (its own margin-block, top and bottom). The rule is gone; the rhythm
+     it set is not. */
+  margin: clamp(2rem, 4vh, 3rem) 0 0;
   /* A measure in characters, not rems: it stays readable as the fluid type
      around it changes size. 34ch put roughly 30 characters on a line, well
      under the comfortable range, and ran this paragraph to six ragged lines
@@ -308,7 +307,7 @@
   color: rgba(226, 236, 255, 0.92);
 }
 
-.why-copy-cta {
+.aside-copy-cta {
   margin-top: clamp(1.5rem, 3.2vh, 2.25rem);
 }
 
@@ -329,7 +328,7 @@
    chips would be cut off mid-word at the viewport edge instead of dissolving.
    Sized against the viewport, both fades land on screen at every width, and
    the rail still reads wider than the copy's own 34ch measure. */
-.why-copy-rows {
+.aside-copy-rows {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -337,12 +336,12 @@
   margin-block: clamp(1.25rem, 2.6vh, 1.75rem) 0;
 }
 
-.why-copy-rows .cta-chip {
+.aside-copy-rows .cta-chip {
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
 }
 
-.why-copy-rows .mq__group {
+.aside-copy-rows .mq__group {
   gap: 0.5rem;
   padding-right: 0.5rem;
 }
@@ -350,18 +349,18 @@
 /* One row under the phone, where the copy is bottom-anchored and the measure
    is the full column. */
 @media (max-width: 900px) {
-  .why-copy-rows {
+  .aside-copy-rows {
     margin-block: 1rem 0;
   }
 
-  .why-copy-rows .mq--row-b {
+  .aside-copy-rows .mq--row-b {
     display: none;
   }
 }
 
 /* Landscape phones and short laptops: the pin has no height to spare. */
 @media (max-height: 700px) {
-  .why-copy-rows {
+  .aside-copy-rows {
     display: none;
   }
 }
@@ -370,15 +369,15 @@
 /* Bottom-anchored under the phone rather than beside it — tighten the rhythm
    so the whole block still clears the viewport edge. */
 @media (max-width: 900px) {
-  .why-copy-title {
+  .aside-copy-title {
     font-size: clamp(2.5rem, 11vw, 4rem);
   }
 
-  .why-copy-rule {
-    margin-block: 1rem;
+  .aside-copy-body {
+    margin-top: 2rem;
   }
 
-  .why-copy-cta {
+  .aside-copy-cta {
     margin-top: 1.25rem;
   }
 }
@@ -394,21 +393,78 @@
     transform: scale(0.62);
   }
 
-  .why-copy-title {
+  .aside-copy-title {
     font-size: clamp(2.25rem, 10.5vw, 3.25rem);
   }
 
-  .why-copy-rule {
-    margin-block: 0.875rem;
-  }
-
-  .why-copy-body {
+  .aside-copy-body {
+    margin-top: 1.75rem;
     font-size: 1rem;
     line-height: 1.5;
   }
 
-  .why-copy-cta {
+  .aside-copy-cta {
     margin-top: 1rem;
+  }
+}
+
+/* ── Right-aligned, where the column is genuinely on the right ───────────
+   Both halves of the crossfade — "What We're About" and "Why Choose
+   BalloAds?", which share `.aside-copy` — set against the right edge of the
+   stage rather than left-ragged in the middle of it.
+
+   This block sits below every rule it overrides on purpose. A media query
+   adds no specificity, so `.aside-copy { align-items: flex-start }` further
+   up the file would simply win on source order: the first version of this
+   turned the text right but left the rule and the button sitting at the left
+   edge of the column.
+
+   Only above the side-by-side breakpoint. Below it `.hero-aside` spans the
+   stage edge to edge underneath the device, where there is no right-hand
+   column to be the right edge of, and ranging the copy right would only push
+   it away from the phone it belongs to. */
+@media (min-width: 901px) {
+  .hero-aside > .hero-aside-layer {
+    align-items: flex-end;
+  }
+
+  .aside-copy {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  /* No measure in this column. The heading fills it, so a body capped at 46ch
+     ended ~50px short of the heading's right edge — close enough to read as a
+     mistake rather than as a measure. The column is itself `min(46%, 34rem)`,
+     which is the measure. Below 901px the cap stays: the aside is the full
+     width of the stage there and the lines would run long without it. */
+  .aside-copy-body {
+    max-width: none;
+  }
+
+  /* The rule has to turn round with the copy. It ran solid-to-transparent
+     left-to-right, which under right-aligned text put its solid end out in
+     the margin and faded it toward the words. */
+  .aside-copy-rule {
+    background: linear-gradient(
+      270deg,
+      color-mix(in srgb, var(--brand-color-5) 90%, transparent),
+      transparent
+    );
+  }
+
+  /* The actions keep their order and pack to the right, which is what shows
+     once they wrap. */
+  .aside-copy-cta {
+    justify-content: flex-end;
+  }
+
+  /* The chip rail is wider than the copy and masked at both ends, so it hangs
+     off the left of the column instead of the right — the fade is what ends
+     it, and it should end away from the edge the copy is set against. */
+  .aside-copy-rows {
+    margin-right: 0;
+    margin-left: -12%;
   }
 }
 
@@ -469,6 +525,20 @@
    somewhere to translate to would just be wasted canvas. */
 .hero-marquee-canvas {
   width: 100vw;
-  height: clamp(9rem, 26vh, 16rem);
+  /* The stage's height, not the line's.
+     
+     It was `clamp(9rem, 26vh, 16rem)` — a band exactly as tall as the type in
+     it, which is all the travelling line ever needed. The dust becomes a
+     lattice of boxes after the last feature card (`#grid` in HeroMarquee), and
+     that can only be a background if the canvas it is drawn on covers the
+     stage; in a 26vh box it was a strip across the middle.
+     
+     The line does not move: it is drawn at the canvas's vertical centre, and
+     `.ch-marquee` is translated by -50% of its own height, so growing the box
+     keeps that centre where it was — measured before and after, 638px vs
+     643px at the same scroll position. The stage clips (`.ch-stage` is
+     `overflow: hidden`), so the 1.3 scale the pin ends on cannot bleed the
+     lattice into the section below; `.page-dots` is what continues it. */
+  height: 100svh;
   margin-inline: auto;
 }

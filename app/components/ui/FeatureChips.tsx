@@ -68,7 +68,7 @@ export function Chips({ items }: { items: typeof CHIPS }) {
  * Both rows, counter-scrolling.
  *
  * No wrapper of its own: the caller's element is the wrapper —
- * `.cta-mq__rows` in the CTA, `.why-copy-rows` under "Why Choose" — because
+ * `.cta-mq__rows` in the CTA, `.aside-copy-rows` under "Why Choose" — because
  * that is what decides the width the rows are masked against, and an extra
  * div between it and the marquees would shrink to its content instead.
  */
@@ -95,7 +95,7 @@ export function FeatureChipRows() {
  *
  * "Why Choose" plays inside the hero's pin, so this block has to fit one
  * viewport alongside three lines of display type, the body copy and the CTA.
- * `.why-copy-rows` is what keeps it to that budget — the second row goes away
+ * `.aside-copy-rows` is what keeps it to that budget — the second row goes away
  * before the first does.
  */
 export function WhyFeatureChips() {
@@ -104,7 +104,7 @@ export function WhyFeatureChips() {
   if (!enabled) return null;
 
   return (
-    <div className="why-copy-rows">
+    <div className="aside-copy-rows">
       <FeatureChipRows />
     </div>
   );

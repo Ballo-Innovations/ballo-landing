@@ -92,16 +92,40 @@ function die(message) {
   process.exit(1);
 }
 
-async function api(base, token, path, init = {}) {
-  const res = await fetch(`${base}/${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`${init.method ?? "GET"} ${path} → ${res.status} ${body.slice(0, 300)}`);
+/**
+ * Retries the transport, never the response.
+ *
+ * A dropped connection or a DNS blip between the upload and the row it belongs
+ * to would leave the seed half applied, so those are retried. An HTTP error is
+ * not: a 401 or a 400 will say the same thing three times, and re-sending a
+ * POST that may already have been recorded is how duplicates appear.
+ */
+async function api(base, token, path, init = {}, attempts = 3) {
+  let lastErr;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let res;
+    try {
+      res = await fetch(`${base}/${path}`, {
+        ...init,
+        headers: { Authorization: `Bearer ${token}`, ...(init.headers ?? {}) },
+      });
+    } catch (err) {
+      lastErr = err;
+      const code = err.cause?.code ?? err.message;
+      if (attempt < attempts) {
+        console.error(`  … ${init.method ?? "GET"} ${path} (${code}), retry ${attempt}/${attempts - 1}`);
+        await new Promise((r) => setTimeout(r, 500 * attempt));
+        continue;
+      }
+      throw new Error(`${init.method ?? "GET"} ${path} → ${code} after ${attempts} attempts`);
+    }
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`${init.method ?? "GET"} ${path} → ${res.status} ${body.slice(0, 300)}`);
+    }
+    return res.status === 204 ? null : res.json();
   }
-  return res.status === 204 ? null : res.json();
+  throw lastErr;
 }
 
 async function uploadLogo(base, token, relPath) {

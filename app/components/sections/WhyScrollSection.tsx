@@ -21,6 +21,7 @@ import phoneFrame from "@/public/Assets/phone-frame.png";
 import BalloLoader from "@/app/components/ui/BalloLoader";
 import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
 import { WhyFeatureChips } from "@/app/components/ui/FeatureChips";
+import { useDustMirror } from "@/app/components/ui/DustMirror";
 import { useContainerScrollContext } from "@/app/components/ui/AnimatedVideoOnScroll";
 import { at, type Range } from "@/lib/cinematic";
 
@@ -37,26 +38,37 @@ import { at, type Range } from "@/lib/cinematic";
  * remeasure, so that whole class of problem is gone with the dependency.
  */
 
+/**
+ * `word` is the card's one-word echo on the background band, which stops
+ * travelling and holds it while the card is up (see `HeroMarquee`). It lives
+ * on the card rather than in the band because it is the card's word: whoever
+ * edits this list is the one who has to keep the two saying the same thing.
+ */
 export const features = [
   {
     title: "AI-Powered Targeting",
     desc: "Get your message in front of the right audience at the right time.",
+    word: "AI",
   },
   {
     title: "Bulk & Personalised Messaging",
     desc: "Scale up your outreach while keeping it personal.",
+    word: "SCALE",
   },
   {
     title: "Real-Time Analytics",
     desc: "Track campaign performance and optimise results.",
+    word: "INSIGHT",
   },
   {
     title: "User-Friendly Dashboard",
     desc: "Manage all your campaigns in one place.",
+    word: "CONTROL",
   },
   {
     title: "Affordable & Scalable",
     desc: "Flexible pricing that grows with your business.",
+    word: "GROWTH",
   },
 ];
 
@@ -396,6 +408,7 @@ export function WhyCardSequence({ range }: { range: Range }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLElement | null>(null);
   const pinned = useMatchMedia(PINNED_QUERY);
+  const mirror = useDustMirror();
 
   const { total, swaps, snapPoints } = useMemo(
     () => buildTimeline(features.length),
@@ -419,8 +432,16 @@ export function WhyCardSequence({ range }: { range: Range }) {
 
   return (
     <div ref={rootRef} className="hero-phone-why-screen" aria-hidden="true">
+      {/* The band's own particles, drawn a second time in register (see
+          `DustMirror`): the phone covers part of the word the band is holding,
+          and this is that part — same field, same pointer, so it scatters with
+          the rest of the dust. It sits under the cards, which is why they are
+          transparent in this variant and the screen carries the background. */}
+      {mirror ? (
+        <canvas ref={mirror} className="why-screen-dust" aria-hidden="true" />
+      ) : null}
       <ul
-        className="why-scroll-items why-scroll-items--flush"
+        className="why-scroll-items why-scroll-items--flush why-scroll-items--dust"
         style={{ "--count": features.length } as React.CSSProperties}
       >
         {features.map((feature, i) => (
@@ -475,7 +496,7 @@ export function WhyScrollSection() {
       <div className="why-scroll-sticky">
         <div className="why-scroll-inner">
           <motion.div
-            className="why-scroll-heading why-copy"
+            className="why-scroll-heading aside-copy"
             variants={HEADING_STAGGER}
             initial="hidden"
             whileInView="visible"
@@ -483,7 +504,7 @@ export function WhyScrollSection() {
           >
             <motion.h2
               variants={RISE}
-              className="why-copy-title font-black text-gradient-silver"
+              className="aside-copy-title font-black text-gradient-silver"
             >
               Why
               <br />
@@ -491,12 +512,7 @@ export function WhyScrollSection() {
               <br />
               BalloAds?
             </motion.h2>
-            <motion.span
-              variants={RISE}
-              className="why-copy-rule"
-              aria-hidden="true"
-            />
-            <motion.p variants={RISE} className="landing-body why-copy-body">
+            <motion.p variants={RISE} className="landing-body aside-copy-body">
               Most tools make you choose between reach and relevance. BalloAds
               gives you both: one place to build an audience, send SMS, WhatsApp
               and email campaigns, and see exactly what each message earned you.
@@ -508,7 +524,7 @@ export function WhyScrollSection() {
               variants={FADE}
               type="button"
               onClick={openWaitlist}
-              className="btn-primary group why-copy-cta"
+              className="btn-primary group aside-copy-cta"
             >
               Get Started
             </motion.button>
