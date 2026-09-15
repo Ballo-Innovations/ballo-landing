@@ -5,10 +5,12 @@
    and bright top rim as a nav dropdown, so the two read as one
    surface. Deliberately NOT a generic chat card.
 
-   No backdrop-filter anywhere. The waitlist card can afford one
-   because it sits over a frozen page; this panel sits over a
-   scrolling one, so the blur would recomposite on every frame.
-   The layered gradients give the same read for free.
+   The panel frosts what is behind it (backdrop-filter, stronger
+   than the nav's 22px because it sits over busier content). That
+   recomposites on every scrolled frame, but only across the panel's
+   own ~23rem, and the page it covers is otherwise still while the
+   visitor is typing. The entrance animation is 140ms and one-shot,
+   so the blur is almost never on a moving element.
 
    Mounted site-wide from app/layout.tsx, so it is fixed-position
    only and never affects page layout. Brand tokens from
@@ -110,11 +112,9 @@
      `.glass-surface-nav` over the frost veil and deep blue scrim that
      `.header__dropdown.glass-surface-nav` adds on top of them (both in
      components/header.css). Spelled out here rather than pulled in by wearing
-     the class, because those rules also carry a `backdrop-filter` this panel
-     cannot have — see the note at the top of this file: the dropdown opens
-     over a page that is not moving, and this one sits over a page that is.
-     Little is lost to dropping it, since the scrim's own layers are nearly
-     opaque by the bottom of the panel.
+     the class so the blur strength can differ: the dropdown opens over the
+     quiet top of the page and 22px is enough there; this panel sits over
+     feature chips and copy, and needs more to read as one surface.
 
      Keep these values in step with header.css if the dropdowns are retuned. */
   background:
@@ -130,6 +130,8 @@
     inset 0 0 40px rgba(255, 255, 255, 0.06),
     0 2px 8px rgba(1, 1, 40, 0.22),
     0 34px 80px -28px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
   animation: brutus-widget-in 0.14s var(--liquid-ease, ease) both;
 }
 

@@ -39,7 +39,7 @@ const GREETING: Message = {
   id: 0,
   role: "assistant",
   content:
-    "Hi, I'm Brutus. I help businesses reach their customers directly on SMS, WhatsApp, and email. Tell me what you sell and I'll show you what to send first.",
+    "Hi, I'm Brutus. BalloAds lets you send messages straight to your own customers on SMS, WhatsApp, and email, all from one place. Tell me what kind of business you run and I'll show you what you could send.",
   // Kept in step with STARTER_QUESTIONS in brutus's site-assistant-smalltalk.ts.
   // Both are verified to retrieve an answer: a chip that dead-ends is worse
   // than no chip at all.
@@ -191,7 +191,7 @@ export function BrutusChatWidget() {
             </span>
             <div className="brutus-widget__identity">
               <p className="brutus-widget__title">Brutus</p>
-              <p className="brutus-widget__subtitle">Ask about pricing, channels, or setup</p>
+              <p className="brutus-widget__subtitle">New here? Ask me what BalloAds can do for you</p>
             </div>
             <button
               type="button"

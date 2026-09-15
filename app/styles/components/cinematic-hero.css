@@ -364,9 +364,35 @@
   margin-block: clamp(1.25rem, 2.6vh, 1.75rem) 0;
 }
 
+/* Solid, built the way `.shiny-btn`'s face is: a white top-of-the-box
+   highlight over a blue gradient, with the same inset top edge picking out the
+   rim. The shared `.cta-chip` is a 6%-white wash on glass, which reads as a
+   label printed on the page; against the hero's own blue these needed to read
+   as objects sitting on it.
+
+   Two deliberate departures from the button they are modelled on. The gradient
+   runs between the mid-blues rather than the button's `--blue` → `--cyan-bright`:
+   twelve pills at full CTA brightness pull the eye straight past the Get Started
+   button underneath them, which is the thing here to press. And there is no
+   rotating rim or sheen — those are two infinite animations apiece, and these
+   chips already ride a marquee. */
 .aside-copy-rows .cta-chip {
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 60%),
+    linear-gradient(135deg, var(--brand-color-2), var(--brand-color-3));
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 8px 16px -10px rgba(2, 0, 85, 0.9);
+}
+
+/* The icons were `--cyan-bright` against near-black; on the blue face that is
+   the one colour in the chip fighting the label for attention. */
+.aside-copy-rows .cta-chip svg {
+  color: rgba(214, 240, 255, 0.95);
 }
 
 .aside-copy-rows .mq__group {

@@ -2543,7 +2543,14 @@
 
 @media (min-width: 901px) {
   .cta-mq__grid {
+    /* The second column is deliberately empty: the phone that filled it is
+       gone, and the space is where the tubes layer behind this section plays.
+       Collapsing to one column would stretch the copy across the full width
+       and leave the strands on top of it. */
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    /* Without the phone the row has nothing tall in it, and the section would
+       close the page on a thin band. This keeps it a scene. */
+    min-height: min(34rem, 70vh);
   }
 
   .cta-mq__copy {

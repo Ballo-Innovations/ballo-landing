@@ -26,16 +26,19 @@
   /* Nothing here is interactive and the library listens on document.body, so
      the layer never eats a click meant for the content above it. */
   pointer-events: none;
-  /* Fades the glow towards the edges of the section rather than ending it on a
-     hard line where the canvas stops. */
+  /* Fades the canvas out BEFORE its own edges, which it has to do rather than
+     merely soften them: the bloom pass leaves the backdrop a shade off black,
+     so any part of the canvas the mask still shows reads as a faint rectangle
+     with a hard edge down the page. The radii are half the box, so the fade
+     reaches full transparency exactly at the edge on every side. */
   -webkit-mask-image: radial-gradient(
-    ellipse 80% 70% at 50% 50%,
-    #000 35%,
+    ellipse 50% 55% at 50% 50%,
+    #000 20%,
     transparent 100%
   );
   mask-image: radial-gradient(
-    ellipse 80% 70% at 50% 50%,
-    #000 35%,
+    ellipse 50% 55% at 50% 50%,
+    #000 20%,
     transparent 100%
   );
   opacity: 0;
@@ -45,6 +48,16 @@
 /* Set by the component once the scene is built and the first frame is up. */
 .tubes-cursor[data-ready="true"] {
   opacity: 1;
+}
+
+/* The strands keep to the right of the CTA — the column the "Want a feel of
+   BalloAds?" phone used to fill. Only where that column exists: below this
+   width the section is a single centred column, and half a canvas there would
+   just be a glow pinned to one edge of the copy. */
+@media (min-width: 901px) {
+  .tubes-cursor {
+    left: 55%;
+  }
 }
 
 .tubes-cursor__canvas {
