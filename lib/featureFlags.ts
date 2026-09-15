@@ -26,15 +26,32 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   tubescursor: "tubesCursor",
 };
 
-const FEATURE_ENV_VARS: Record<FeatureName, string> = {
-  cmsContent: "NEXT_PUBLIC_FEATURE_CMS_CONTENT",
-  siteAssistant: "NEXT_PUBLIC_FEATURE_SITE_ASSISTANT",
-  whyFeatureChips: "NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS",
-  whoStackSpread: "NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD",
-  tubesCursor: "NEXT_PUBLIC_FEATURE_TUBES_CURSOR",
+/**
+ * Each flag's environment value, read through a LITERAL `process.env.X`.
+ *
+ * The literal matters, and is the whole reason this is a map of values rather
+ * than the map of variable NAMES it used to be. Next.js substitutes
+ * `process.env.NEXT_PUBLIC_FOO` into the client bundle as text at build time;
+ * it cannot substitute `process.env[someExpression]`, which ships as a real
+ * property access on a `process.env` that, in the browser, holds nothing. So
+ * the old lookup read `undefined` for every flag in every deployed build, and
+ * each one silently fell back to its default — which is `false` outside
+ * development. Setting `NEXT_PUBLIC_FEATURE_*` in Vercel did nothing at all,
+ * and the only thing that ever turned a flag on in production was the
+ * `?features=` override below.
+ *
+ * Written out one line per flag because that is what makes them literals.
+ * Adding a flag means adding its line here; there is no way to derive them.
+ */
+const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
+  cmsContent: process.env.NEXT_PUBLIC_FEATURE_CMS_CONTENT,
+  siteAssistant: process.env.NEXT_PUBLIC_FEATURE_SITE_ASSISTANT,
+  whyFeatureChips: process.env.NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS,
+  whoStackSpread: process.env.NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD,
+  tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
 };
 
-const ALL_FEATURES = Object.keys(FEATURE_ENV_VARS) as FeatureName[];
+const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
 
 export function resolveFlag(input: {
   stored?: boolean | null;
@@ -102,7 +119,7 @@ export const featureFlags: Record<FeatureName, boolean> = Object.freeze(
       name,
       resolveFlag({
         stored: overrides[name] ?? null,
-        env: process.env[FEATURE_ENV_VARS[name]],
+        env: FEATURE_ENV_VALUES[name],
         defaultEnabled,
       }),
     ]),
