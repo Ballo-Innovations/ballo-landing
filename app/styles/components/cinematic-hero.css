@@ -307,6 +307,34 @@
   color: rgba(226, 236, 255, 0.92);
 }
 
+/* ── The per-step paragraph ───────────────────────────────────────────────
+   Five paragraphs in one grid cell, one visible at a time (see WhyStepBlurb).
+   Stacking them rather than swapping one node's text is what keeps the chips
+   and the CTA underneath still: the block is always as tall as the longest of
+   the five, so a shorter step cannot pull the column up. */
+
+.why-step-blurb {
+  display: grid;
+  /* One cell. Every child is placed in it explicitly below. */
+  grid-template-columns: 1fr;
+  /* The gap to the heading that `.aside-copy-body` used to carry on its own
+     margin — the paragraphs inside give theirs up so the stack aligns. */
+  margin: clamp(2rem, 4vh, 3rem) 0 0;
+  width: 100%;
+}
+
+.why-step-blurb__line {
+  grid-area: 1 / 1;
+  margin: 0;
+  transition: opacity 420ms ease, transform 420ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .why-step-blurb__line {
+    transition: none;
+  }
+}
+
 .aside-copy-cta {
   margin-top: clamp(1.5rem, 3.2vh, 2.25rem);
 }
@@ -408,63 +436,20 @@
   }
 }
 
-/* ── Right-aligned, where the column is genuinely on the right ───────────
+/* ── Left-aligned at every width ─────────────────────────────────────────
    Both halves of the crossfade — "What We're About" and "Why Choose
-   BalloAds?", which share `.aside-copy` — set against the right edge of the
-   stage rather than left-ragged in the middle of it.
-
-   This block sits below every rule it overrides on purpose. A media query
-   adds no specificity, so `.aside-copy { align-items: flex-start }` further
-   up the file would simply win on source order: the first version of this
-   turned the text right but left the rule and the button sitting at the left
-   edge of the column.
-
-   Only above the side-by-side breakpoint. Below it `.hero-aside` spans the
-   stage edge to edge underneath the device, where there is no right-hand
-   column to be the right edge of, and ranging the copy right would only push
-   it away from the phone it belongs to. */
+   BalloAds?", which share `.aside-copy` — used to range right above 901px,
+   set against the right edge of the stage. They read left-ragged now at every
+   width, matching the rest of the page's copy. The column itself still sits
+   in the right half of the stage (see `.hero-aside`); only the text inside it
+   changed direction. The base `.aside-copy { align-items: flex-start }` rule
+   above does the work, so nothing here overrides it. */
 @media (min-width: 901px) {
-  .hero-aside > .hero-aside-layer {
-    align-items: flex-end;
-  }
-
-  .aside-copy {
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  /* No measure in this column. The heading fills it, so a body capped at 46ch
-     ended ~50px short of the heading's right edge — close enough to read as a
-     mistake rather than as a measure. The column is itself `min(46%, 34rem)`,
-     which is the measure. Below 901px the cap stays: the aside is the full
-     width of the stage there and the lines would run long without it. */
+  /* No measure in this column: it is itself `min(46%, 34rem)`, which is the
+     measure. Below 901px the cap stays — the aside is the full width of the
+     stage there and the lines would run long without it. */
   .aside-copy-body {
     max-width: none;
-  }
-
-  /* The rule has to turn round with the copy. It ran solid-to-transparent
-     left-to-right, which under right-aligned text put its solid end out in
-     the margin and faded it toward the words. */
-  .aside-copy-rule {
-    background: linear-gradient(
-      270deg,
-      color-mix(in srgb, var(--brand-color-5) 90%, transparent),
-      transparent
-    );
-  }
-
-  /* The actions keep their order and pack to the right, which is what shows
-     once they wrap. */
-  .aside-copy-cta {
-    justify-content: flex-end;
-  }
-
-  /* The chip rail is wider than the copy and masked at both ends, so it hangs
-     off the left of the column instead of the right — the fade is what ends
-     it, and it should end away from the edge the copy is set against. */
-  .aside-copy-rows {
-    margin-right: 0;
-    margin-left: -12%;
   }
 }
 
@@ -525,20 +510,12 @@
    somewhere to translate to would just be wasted canvas. */
 .hero-marquee-canvas {
   width: 100vw;
-  /* The stage's height, not the line's.
-     
-     It was `clamp(9rem, 26vh, 16rem)` — a band exactly as tall as the type in
-     it, which is all the travelling line ever needed. The dust becomes a
-     lattice of boxes after the last feature card (`#grid` in HeroMarquee), and
-     that can only be a background if the canvas it is drawn on covers the
-     stage; in a 26vh box it was a strip across the middle.
-     
-     The line does not move: it is drawn at the canvas's vertical centre, and
-     `.ch-marquee` is translated by -50% of its own height, so growing the box
-     keeps that centre where it was — measured before and after, 638px vs
-     643px at the same scroll position. The stage clips (`.ch-stage` is
-     `overflow: hidden`), so the 1.3 scale the pin ends on cannot bleed the
-     lattice into the section below; `.page-dots` is what continues it. */
-  height: 100svh;
+  /* A band as tall as the type in it, which is all the travelling line and the
+     held words ever need. It was `100svh` for a while: the dust used to become
+     a lattice of boxes after the last feature card, and a background has to be
+     drawn on a canvas that covers the stage. That lattice is gone, and a
+     full-height canvas is a lot of pixels to clear and repaint every frame for
+     a strip of type. */
+  height: clamp(9rem, 26vh, 16rem);
   margin-inline: auto;
 }

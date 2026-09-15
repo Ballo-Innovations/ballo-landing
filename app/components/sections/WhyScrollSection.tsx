@@ -22,7 +22,10 @@ import BalloLoader from "@/app/components/ui/BalloLoader";
 import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
 import { WhyFeatureChips } from "@/app/components/ui/FeatureChips";
 import { useDustMirror } from "@/app/components/ui/DustMirror";
-import { useContainerScrollContext } from "@/app/components/ui/AnimatedVideoOnScroll";
+import {
+  useContainerScrollContext,
+  useOptionalContainerScrollContext,
+} from "@/app/components/ui/AnimatedVideoOnScroll";
 import { at, type Range } from "@/lib/cinematic";
 
 /**
@@ -49,26 +52,36 @@ export const features = [
     title: "AI-Powered Targeting",
     desc: "Get your message in front of the right audience at the right time.",
     word: "AI",
+    blurb:
+      "Most tools make you choose between reach and relevance. BalloAds gives you both: audiences built from what your contacts actually do, so the right message reaches the right people.",
   },
   {
     title: "Bulk & Personalised Messaging",
     desc: "Scale up your outreach while keeping it personal.",
     word: "SCALE",
+    blurb:
+      "Send to thousands at once without sounding like it. Every message can carry a name, a last order or anything else you already hold on a contact.",
   },
   {
     title: "Real-Time Analytics",
     desc: "Track campaign performance and optimise results.",
     word: "INSIGHT",
+    blurb:
+      "Watch a campaign as it lands: delivery, opens, replies and what each message earned you, while there is still time to change something.",
   },
   {
     title: "User-Friendly Dashboard",
     desc: "Manage all your campaigns in one place.",
     word: "CONTROL",
+    blurb:
+      "SMS, WhatsApp and email run from one place, off one contact list. No exports between tools, and no reconciling numbers at the end of the month.",
   },
   {
     title: "Affordable & Scalable",
     desc: "Flexible pricing that grows with your business.",
     word: "GROWTH",
+    blurb:
+      "Start on a plan that fits what you send today. Pricing moves with your volume, so the platform grows with the business rather than ahead of it.",
   },
 ];
 
@@ -351,6 +364,96 @@ const PHONE_ENTER: Variants = {
   },
 };
 
+/**
+ * The right-hand paragraph, re-written by whichever card the phone is holding.
+ *
+ * The copy beside the phone used to be one fixed paragraph for all five steps,
+ * so four of them were illustrated by a sentence that had nothing to do with
+ * them. Each feature now brings its own, and the swap is driven by the same
+ * scroll progress as the cards, at the midpoint of each swap — so the sentence
+ * turns over with the card rather than before or after it.
+ *
+ * Two things this deliberately does NOT do:
+ *
+ *   - re-render. The active index is written straight onto the paragraph nodes
+ *     from a scroll subscription, and only when the index actually changes, so
+ *     a scroll through the whole section costs no React renders at all;
+ *   - reflow. All five paragraphs occupy one grid cell, so the block is always
+ *     as tall as the longest of them and the chips and CTA underneath do not
+ *     move when the copy changes length.
+ */
+export function WhyStepBlurb({
+  range,
+  progress: progressProp,
+}: {
+  /** Where the card sequence sits in the track this reads. */
+  range: Range;
+  /** The track's progress. Defaults to the enclosing `ContainerScroll`. */
+  progress?: ReturnType<typeof useScroll>["scrollYProgress"];
+}) {
+  const ctx = useOptionalContainerScrollContext();
+  const source = progressProp ?? ctx?.scrollYProgress;
+  const nodes = useRef<Array<HTMLParagraphElement | null>>([]);
+  const active = useRef(0);
+
+  // The point in each swap at which the copy turns over: its midpoint, which
+  // is where the outgoing card is half gone and the incoming one half arrived.
+  const midpoints = useMemo(() => {
+    const { total, swaps } = buildTimeline(features.length);
+    return swaps.map((sw) => (sw.start + sw.end) / 2 / total);
+  }, []);
+
+  const [from, to] = range;
+
+  useEffect(() => {
+    if (!source) return;
+
+    const apply = () => {
+      const t = at(source.get(), [from, to]);
+      let index = 0;
+      for (let i = 0; i < midpoints.length; i++) {
+        if (t >= midpoints[i]) index = i + 1;
+      }
+      if (index === active.current) return;
+      active.current = index;
+
+      nodes.current.forEach((node, i) => {
+        if (!node) return;
+        const on = i === index;
+        node.style.opacity = on ? "1" : "0";
+        node.style.transform = on ? "none" : "translate3d(0, 0.75rem, 0)";
+        // Opacity alone leaves the other four readable to a screen reader, so
+        // only the one on screen is in the accessibility tree.
+        node.setAttribute("aria-hidden", on ? "false" : "true");
+      });
+    };
+
+    apply();
+    return source.on("change", apply);
+  }, [source, from, to, midpoints]);
+
+  return (
+    <div className="why-step-blurb">
+      {features.map((feature, i) => (
+        <p
+          key={i}
+          ref={(node) => {
+            nodes.current[i] = node;
+          }}
+          className="landing-body aside-copy-body why-step-blurb__line"
+          aria-hidden={i === 0 ? "false" : "true"}
+          style={{
+            opacity: i === 0 ? 1 : 0,
+            transform: i === 0 ? "none" : "translate3d(0, 0.75rem, 0)",
+          }}
+        >
+          {feature.blurb}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export function WhyCard({
   index,
   feature,
@@ -512,11 +615,10 @@ export function WhyScrollSection() {
               <br />
               BalloAds?
             </motion.h2>
-            <motion.p variants={RISE} className="landing-body aside-copy-body">
-              Most tools make you choose between reach and relevance. BalloAds
-              gives you both: one place to build an audience, send SMS, WhatsApp
-              and email campaigns, and see exactly what each message earned you.
-            </motion.p>
+            {/* Its own track, so the whole of it is the card sequence. */}
+            <motion.div variants={RISE}>
+              <WhyStepBlurb range={[0, 1]} progress={scrollYProgress} />
+            </motion.div>
             <motion.div variants={FADE}>
               <WhyFeatureChips />
             </motion.div>

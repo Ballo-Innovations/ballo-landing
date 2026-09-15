@@ -3,24 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FadeUpReveal } from "../ui/FadeUpReveal";
-import { FeatureChipRows } from "../ui/FeatureChips";
 import { ShinyButton } from "../ui/ShinyButton";
 import { StoreBadge } from "../ui/StoreBadge";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
 
-import bglight from "@/public/Assets/2.png";
 import logoIcon from "@/public/BalloAds Logo New/BalloAds-Icon.png";
 
 /**
- * The closing CTA, in the 21st.dev "CTA with marquee" shape: copy and actions
- * on one side with two counter-scrolling rows of feature chips beneath them,
- * and the "Want a feel of BalloAds?" phone — the whole device is the CTA — on
- * the other.
- *
- * The chips themselves are shared with "Why Choose BalloAds" (see
- * `FeatureChips`); the rows here are parked off-screen by
- * `useAnimateWhenVisible`.
+ * The closing CTA: copy and actions on one side, and the "Want a feel of
+ * BalloAds?" phone — the whole device is the CTA — on the other.
  */
 
 export function FinalCta() {
@@ -49,10 +41,6 @@ export function FinalCta() {
             </Link>
           </FadeUpReveal>
 
-          <FadeUpReveal yOffset={24} delay={0.15} className="cta-mq__rows">
-            <FeatureChipRows />
-          </FadeUpReveal>
-
           <FadeUpReveal yOffset={16} delay={0.2} className="cta-mq__stores">
             <StoreBadge store="apple" />
             <StoreBadge store="play" />
@@ -60,13 +48,6 @@ export function FinalCta() {
         </div>
 
         <FadeUpReveal yOffset={50} className="try-phone-wrap cta-mq__visual">
-          <Image
-            src={bglight}
-            alt=""
-            className="try-glow"
-            aria-hidden="true"
-            sizes="(max-width: 420px) 132vw, 540px"
-          />
           <button
             type="button"
             onClick={openWaitlist}

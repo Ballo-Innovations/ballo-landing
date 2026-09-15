@@ -59,14 +59,19 @@ import { at, easeOut } from "@/lib/cinematic";
  * The track starts a whole viewport before this section owns the screen (see
  * the `offset` on `ContainerScroll` below), so progress 0 is NOT the moment
  * the stage takes over — it is the moment the section first appears at the
- * bottom of the screen, with the hero's "Why Choose BalloAds?" copy still
- * filling most of it.
+ * bottom of the screen.
  *
- * Measured: that copy's last pixel leaves the viewport at about progress
- * 0.47. So the film holds as a capsule until 0.5 and only then begins to
- * widen, which is what keeps the two scenes from animating over each other.
+ * Zero: the capsule starts widening as soon as it appears, which is what
+ * George asked for. It used to hold until 0.5, because the hero's "Why Choose
+ * BalloAds?" copy is measured to leave the viewport only at about 0.47, and
+ * holding kept the two scenes from animating over each other. They now
+ * overlap through the entry by design — the film opens across the whole
+ * approach instead of the back half of it.
+ *
+ * `FILM_OPEN` is unchanged, so the film still finishes opening exactly where
+ * it did and the copy and CTA beats below keep their cues.
  */
-const FILM_OPEN_FROM = 0.5;
+const FILM_OPEN_FROM = 0;
 /** Progress at which the film has finished opening to full bleed. */
 const FILM_OPEN = 0.78;
 

@@ -15,7 +15,7 @@ import { MAX_MESSAGE_CHARS } from "@/lib/brutusChat";
  * The "Ask Brutus" chat widget: answers visitor questions from content already
  * published on this site.
  *
- * Styled as a liquid-glass card to match the waitlist modal and the header,
+ * Styled as a liquid-glass card carrying the header dropdowns' own material,
  * rather than as a generic chat bubble, so it reads as part of the site. Styles
  * live in styles/components/brutus-chat.css.
  *
@@ -175,6 +175,9 @@ export function BrutusChatWidget() {
           aria-expanded={false}
           aria-controls="brutus-widget-panel"
         >
+          {/* The shiny button's rotating rim (see `.shiny-btn__ring` in
+              styles/components/buttons.css), recoloured for a pale pill. */}
+          <span className="brutus-widget__launcher-ring" aria-hidden="true" />
           <MessageSquare size={18} aria-hidden="true" />
           <span className="brutus-widget__launcher-label">Ask Brutus</span>
         </button>
@@ -182,8 +185,6 @@ export function BrutusChatWidget() {
 
       {isOpen ? (
         <section id="brutus-widget-panel" className="brutus-widget__panel" aria-label="Ask Brutus">
-          <span className="brutus-widget__aurora" aria-hidden="true" />
-
           <header className="brutus-widget__header">
             <span className="brutus-widget__avatar">
               <Image src={brutusMark} alt="" aria-hidden="true" sizes="32px" />

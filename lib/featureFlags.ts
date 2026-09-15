@@ -2,7 +2,12 @@
  * Per-environment feature flags. See docs/feature-promotion.md.
  */
 
-export type FeatureName = "cmsContent" | "siteAssistant" | "whyFeatureChips";
+export type FeatureName =
+  | "cmsContent"
+  | "siteAssistant"
+  | "whyFeatureChips"
+  | "whoStackSpread"
+  | "tubesCursor";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
@@ -14,12 +19,19 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   chips: "whyFeatureChips",
   whychips: "whyFeatureChips",
   whyfeaturechips: "whyFeatureChips",
+  stack: "whoStackSpread",
+  whostack: "whoStackSpread",
+  whostackspread: "whoStackSpread",
+  tubes: "tubesCursor",
+  tubescursor: "tubesCursor",
 };
 
 const FEATURE_ENV_VARS: Record<FeatureName, string> = {
   cmsContent: "NEXT_PUBLIC_FEATURE_CMS_CONTENT",
   siteAssistant: "NEXT_PUBLIC_FEATURE_SITE_ASSISTANT",
   whyFeatureChips: "NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS",
+  whoStackSpread: "NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD",
+  tubesCursor: "NEXT_PUBLIC_FEATURE_TUBES_CURSOR",
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VARS) as FeatureName[];

@@ -45,10 +45,11 @@ import { DustMirrorProvider } from "./DustMirror";
  * would mean renumbering all six of them every time this split moves, and each
  * one is tuned against the others rather than against the track.
  *
- * The physical scroll the handover gets is unchanged by the split: it was
- * 0.9 of 480vh, and it is HANDOVER_END of TRACK_CLASS.
+ * The physical scroll the handover gets is unchanged by the split, and stayed
+ * unchanged when the card sequence was shortened: it is HANDOVER_END of
+ * TRACK_CLASS, which is 432vh at both 0.48/900vh and 0.72/600vh.
  */
-const HANDOVER_END = 0.48;
+const HANDOVER_END = 0.72;
 const HANDOVER_TUNED_END = 0.9;
 const hand = ([from, to]: Range): Range => [
   (from / HANDOVER_TUNED_END) * HANDOVER_END,
@@ -201,10 +202,19 @@ const BAND_REST_OPACITY = 0.5;
 /**
  * Track length: the handover, then act two, then the in-place handoff to
  * "Why Choose". `PHONE_CONTENT` needs room to fit an actual card swap (see
- * `WhyPreviewCards`), not just a crossfade, so this stays generous rather
- * than shrinking back toward the 360vh this started at.
+ * `WhyPreviewCards`), not just a crossfade.
+ *
+ * Shortened from 900vh, and the shortening is all in the card sequence. At
+ * 900vh the cards had 468vh between five of them — roughly a full viewport of
+ * scrolling to advance one card, so a reader had to wheel several times per
+ * step and the section read as stuck. They have 168vh now, about 35vh a card,
+ * which one ordinary flick clears; the snap finishes the step from there.
+ *
+ * The handover is untouched by this. It was 0.48 of 900vh and is 0.72 of
+ * 600vh — 432vh either way — which is exactly what `HANDOVER_END` and `hand()`
+ * are for: the split moves, the beats before it do not.
  */
-const TRACK_CLASS = "h-[900vh]";
+const TRACK_CLASS = "h-[600vh]";
 
 /**
  * The element's true on-screen extent, its transformed descendants included.
@@ -264,7 +274,20 @@ function useReducedMotion() {
 function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
   const rootRef = React.useRef<HTMLDivElement>(null);
-  const [rise, setRise] = React.useState(0);
+  /**
+   * How far below its resting place the phone waits, in px. `null` until the
+   * stage has been measured, which cannot happen on the server.
+   *
+   * It matters that this is not `0`. The rise is the phone's whole entrance,
+   * so a rise of nothing puts the device at its ARRIVED position — dead centre
+   * of the hero, on top of the headline — and that is the state the server
+   * renders and the browser paints before the measuring effect below has run.
+   * It showed as a phone flashing over the hero on every cold load. Unmeasured
+   * is now its own state, and the phone is not painted at all until the real
+   * distance is known (see `visibility` on the stage).
+   */
+  const [rise, setRise] = React.useState<number | null>(null);
+  const measured = rise !== null;
   /**
    * Below 900px the copy comes in *underneath* the phone rather than beside
    * it (see `.hero-aside`), so there is no right-hand half for the device to
@@ -296,10 +319,10 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   const y = useTransform(
     scrollYProgress,
     [0, PHONE_IN[0], PHONE_IN[1], 1],
-    [rise, rise, 0, 0],
+    [rise ?? 0, rise ?? 0, 0, 0],
     { ease: easeOut },
   );
-  const liveY = useMotionValue(rise);
+  const liveY = useMotionValue(rise ?? 0);
   useMotionValueEvent(y, "change", (v) => liveY.set(v));
 
   // Act two. The phone drifts aside and stays there for the rest of the
@@ -372,7 +395,12 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
     <motion.div
       ref={rootRef}
       className="hero-zoom-phone"
-      style={{ x, y: liveY, scale }}
+      /* Hidden, not just displaced, until the rise is known: the server has no
+         stage to measure, so the markup it sends would otherwise place the
+         phone at y=0 — over the hero copy — for as long as it takes hydration
+         to run. `visibility` rather than a mount gate so the device and its
+         screens are in the document from the start and nothing pops in. */
+      style={{ x, y: liveY, scale, visibility: measured ? "visible" : "hidden" }}
       aria-hidden="true"
     >
       {/* Pointer tilt is back on. It was off for the zoom-out, which had to

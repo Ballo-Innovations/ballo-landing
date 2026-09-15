@@ -1,0 +1,81 @@
+/* ============================================
+   Tubes cursor — the WebGL layer behind the closing "Try it now" CTA.
+   Paired with app/components/ui/TubesCursor.tsx.
+
+   The canvas is transparent (the library asks for `alpha: true`), so this is a
+   glow over the page base rather than a black box. It sizes itself from
+   `.tubes-cursor`, which the library measures with a ResizeObserver — here
+   that is the CTA section.
+   ============================================ */
+
+.tubes-cursor {
+  /* Simply the section, which is about a screen tall. The layer belongs to the
+     closing CTA: it is laid out with it, scrolls with it, and cannot reach the
+     sections either side of it.
+
+     Nothing sticky or oversized here. Those were tried to carry the glow
+     across a run of sections, and the size that came with it was the problem —
+     the library's bloom pass wants several render targets the size of the
+     canvas, and over a multi-section zone (~1440x4800) it could not render
+     above devicePixelRatio 1, which is half native on a retina screen and is
+     what made the tubes look soft. One section fits the display's full ratio
+     with room to spare. */
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Nothing here is interactive and the library listens on document.body, so
+     the layer never eats a click meant for the content above it. */
+  pointer-events: none;
+  /* Fades the glow towards the edges of the section rather than ending it on a
+     hard line where the canvas stops. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    #000 35%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 80% 70% at 50% 50%,
+    #000 35%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 900ms ease-out;
+}
+
+/* Set by the component once the scene is built and the first frame is up. */
+.tubes-cursor[data-ready="true"] {
+  opacity: 1;
+}
+
+.tubes-cursor__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The component already declines to load anything under reduced motion; this
+   keeps the layer invisible if that check is ever relaxed. */
+@media (prefers-reduced-motion: reduce) {
+  .tubes-cursor {
+    display: none;
+  }
+}
+
+/* ---- The zone the layer covers ------------------------------------------- */
+
+.tubes-zone {
+  /* The layer's containing block: the canvas is `inset: 0` against this, so
+     this box is exactly where the glow starts and stops. */
+  position: relative;
+  /* A new stacking context, so the canvas is trapped between this zone's own
+     content and cannot slide under or over a neighbouring section. */
+  isolation: isolate;
+}
+
+/* The canvas is a positioned element at `z-index: 0`, which paints above
+   ordinary in-flow content. Lifting every sibling to `z-index: 1` puts the
+   sections back on top of it. */
+.tubes-zone > *:not(.tubes-cursor) {
+  position: relative;
+  z-index: 1;
+}

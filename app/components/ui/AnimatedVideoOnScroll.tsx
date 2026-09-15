@@ -215,11 +215,16 @@ export const ContainerInset = React.forwardRef<
        range that does not span the source's domain does not hold its end value
        here — it interpolates back toward the first (the same note sits on the
        hero's transforms). */
+    /* `openFrom: 0` (open as soon as the track starts) drops the leading hold
+       rather than repeating 0 as a stop: framer-motion wants strictly
+       increasing inputs, and `[0, 0, closeAt, 1]` is not. */
+    const holds = openFrom > 0;
     const stops = React.useMemo(
-      () => [0, openFrom, closeAt, 1],
-      [openFrom, closeAt],
+      () => (holds ? [0, openFrom, closeAt, 1] : [0, closeAt, 1]),
+      [holds, openFrom, closeAt],
     );
-    const hold = <T,>([from, to]: [T, T]) => [from, from, to, to];
+    const hold = <T,>([from, to]: [T, T]) =>
+      holds ? [from, from, to, to] : [from, to, to];
 
     const insetY = useTransform(scrollYProgress, stops, hold(insetYRange));
     const insetX = useTransform(scrollYProgress, stops, hold(insetXRange));

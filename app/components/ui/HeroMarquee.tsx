@@ -47,11 +47,8 @@ const WORDMARK = "BalloAds";
  * late enough that the card has been read, early enough that the lattice has
  * formed before the section starts leaving the screen.
  *
- * `PageDots` fades in on the same threshold and carries the same lattice down
- * the rest of the page, so what the pin builds here does not leave with it.
+ * The lattice lives and dies with the pin: it is not carried past the hero.
  */
-const GRID = "#grid";
-export const GRID_FROM = 0.93;
 
 /**
  * Travel speed, in px per second.
@@ -99,9 +96,6 @@ function wordAt(p: number) {
   if (p >= BAND_WORDMARK[0] && p < BAND_WORDMARK[1]) return WORDMARK;
   if (p < TEXT_SWAP[1]) return null;
   const t = at(p, PHONE_CONTENT);
-  // Past the last card the band stops saying anything and becomes the
-  // background it was always closest to being: the same dust, in a lattice.
-  if (t >= GRID_FROM) return GRID;
   let i = 0;
   for (const swap of CARD_SWAPS) {
     if (t >= (swap.start + swap.end) / 2 / CARD_TOTAL) i++;
@@ -155,8 +149,25 @@ export function HeroMarquee() {
       setWordShift(marqueeWordShift(window.innerWidth));
     };
     apply();
-    window.addEventListener("resize", apply);
-    return () => window.removeEventListener("resize", apply);
+    // Settled rather than live, and not for tidiness: `fontPx` is a dependency
+    // of the particle field's effect, so every distinct value a drag passes
+    // through tears the field down and re-samples up to 14,000 particles.
+    // `w * 0.13` rounds to a new number every eight pixels of width, which is
+    // a full rebuild several times a second for as long as the drag lasts.
+    // One rebuild once the window has stopped moving is the same result.
+    //
+    // Mobile needs it too: the URL bar collapsing on scroll fires `resize`,
+    // and `marqueeFontPx` reads `innerHeight`.
+    let settle: ReturnType<typeof setTimeout> | null = null;
+    const onResize = () => {
+      if (settle !== null) clearTimeout(settle);
+      settle = setTimeout(apply, 150);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      if (settle !== null) clearTimeout(settle);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   useMotionValueEvent(track?.scrollYProgress ?? idle, "change", (p) => {

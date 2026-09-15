@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { FadeUpReveal } from "../ui/FadeUpReveal";
 import { Marquee } from "../ui/Marquee";
-import { ScrambleButton } from "../ui/ScrambleButton";
+import { ShinyButton } from "../ui/ShinyButton";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
 
@@ -150,10 +150,9 @@ export function WhoCinematicSection() {
               <p>Banks, clinics, schools, shops, nonprofits, government.</p>
               <p>One dashboard, whatever you are sending.</p>
             </div>
-            <ScrambleButton
-              text="Start your first campaign"
-              onClick={openWaitlist}
-            />
+            <ShinyButton onClick={openWaitlist}>
+              Start your first campaign
+            </ShinyButton>
           </div>
         </FadeUpReveal>
 

@@ -71,13 +71,6 @@ export interface CursorDrivenParticleTypographyProps {
    * each particle home carries the whole field there. So the band *becomes*
    * the word, in the same dust, and travel eases to a stop while it does.
    * Back to `null` and the field morphs home and picks the line up again.
-   *
-   * A value beginning with `#` names a PATTERN rather than a literal word —
-   * `"#grid"` is the lattice of boxes the band becomes once the last feature
-   * card has had its moment, and which `.page-dots` then carries down the rest
-   * of the page. A token rather than an object because this prop is a
-   * dependency of the effect below: an object literal would be a new identity
-   * every render and would re-sample the field on each one.
    */
   morphTo?: string | null;
   /**
@@ -216,21 +209,50 @@ export function CursorDrivenParticleTypography({
   const morphFnRef = React.useRef<((word: string | null) => void) | null>(null);
   const mirrorRef = React.useRef(mirror);
   mirrorRef.current = mirror;
+  /**
+   * The two eased values, held outside the effect that drives them.
+   *
+   * The effect is re-run by anything in its dependency list — and `fontSize`
+   * is in there, recomputed from the window size on every resize. Re-running
+   * it is correct; the field really does have to be re-sampled at a new face.
+   * Restarting the animation from its initial state is not: a resize while the
+   * band was holding a word put `travel` back to 1, so the line lurched into
+   * motion under the word, and `surplus` back to 1, so the whole faded-out
+   * remainder of the band reappeared at full opacity in a single frame.
+   */
+  const travelRef = React.useRef(1);
+  const surplusRef = React.useRef(1);
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    // No `willReadFrequently` here, deliberately. Nothing ever reads this
+    // canvas back — the two sample canvases below are what `getImageData` is
+    // called on — and the flag forces the context onto a CPU backing store.
+    // This one is 100vw by the full stage height, cleared and repainted with
+    // thousands of rects every frame; in software that is where the frames go.
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let frame: number | null = null;
     let particles: Particle[] = [];
-    let mouseX = -1000;
-    let mouseY = -1000;
+    /**
+     * The pointer in CLIENT coordinates, mapped into canvas space once a frame
+     * rather than once a mousemove.
+     *
+     * Mapping at mousemove time bakes in the canvas rect as it was at that
+     * moment, and the band is pinned and scaled up to 1.3 as you scroll — a
+     * wheel or trackpad scroll fires no mousemove at all, so the stored
+     * coordinates go on describing a rectangle that no longer exists and the
+     * scatter drifts away from the cursor.
+     */
+    let clientX = 0;
+    let clientY = 0;
+    let pointerSeen = false;
     let width = 0;
     let height = 0;
     let tileWidth = 0;
@@ -238,14 +260,28 @@ export function CursorDrivenParticleTypography({
     let speed = 0;
     let last = 0;
     let visible = false;
-    /** 0 while a word is held, 1 while the line runs. Eased, not switched. */
-    let travel = 1;
+    /**
+     * 0 while a word is held, 1 while the line runs. Eased, not switched.
+     *
+     * Seeded from a ref, and written back every frame, because this effect is
+     * re-run by things that have nothing to do with where the animation is —
+     * a resize changing `fontSize`, fonts landing. Starting back at 1 there
+     * meant a resize mid-morph snapped the line back into motion.
+     */
+    let travel = travelRef.current;
     /** Resolved once in `init`; the mirror fills with the same colour. */
     let textColor = "#fff";
     /** Particles the current word uses; they sort to the front of the array. */
     let keptCount = 0;
-    /** Opacity of everything past `keptCount`. Eased, so the band dissolves. */
-    let surplus = 1;
+    /**
+     * Opacity of everything past `keptCount`. Eased, so the band dissolves.
+     *
+     * Seeded from a ref for the same reason as `travel`, and more visibly: a
+     * resize while a word was held put the whole faded surplus back at full
+     * opacity in one frame, which is exactly the pop `applyMorph` goes out of
+     * its way not to cause.
+     */
+    let surplus = surplusRef.current;
 
     /**
      * Turn whatever the caller passed into a family a canvas will accept.
@@ -427,39 +463,6 @@ export function CursorDrivenParticleTypography({
     };
 
     /**
-     * Pitch of the `#grid` lattice, in canvas pixels.
-     *
-     * Stated so that it lands on `PAGE_DOT_PITCH` once the pin's 1.3 scale is
-     * applied: the static layer that takes over below the hero has to have the
-     * same spacing on screen, or the handover reads as one background being
-     * replaced by a different one rather than as these boxes carrying on.
-     */
-    const GRID_STEP = Math.round(22 / 1.3);
-
-    /**
-     * A pattern's points, for a `#`-prefixed morph target.
-     *
-     * Ordered by x like `wordPoints`, so the same x-ordered mapping in
-     * `applyMorph` sweeps the field into it rather than scrambling it.
-     */
-    const patternPoints = (name: string) => {
-      const points: Array<{ x: number; y: number }> = [];
-      if (name !== "grid") return points;
-      // Centred, so the lattice is symmetrical about the middle of the band
-      // instead of hanging off whichever edge the loop started at.
-      const cols = Math.floor(width / GRID_STEP);
-      const rows = Math.floor(height / GRID_STEP);
-      const x0 = (width - (cols - 1) * GRID_STEP) / 2;
-      const y0 = (height - (rows - 1) * GRID_STEP) / 2;
-      for (let c = 0; c < cols; c++) {
-        for (let r = 0; r < rows; r++) {
-          points.push({ x: x0 + c * GRID_STEP, y: y0 + r * GRID_STEP });
-        }
-      }
-      return points;
-    };
-
-    /**
      * Give the particles the word needs a new origin, and let the springs do
      * the rest. The ones it does not need stay where they are and fade out.
      *
@@ -490,9 +493,7 @@ export function CursorDrivenParticleTypography({
         // the draw loop widens it again once the fade has actually caught up.
         return;
       }
-      const points = word.startsWith("#")
-        ? patternPoints(word.slice(1))
-        : wordPoints(word);
+      const points = wordPoints(word);
       if (!points.length) return;
 
       const order = particles
@@ -536,7 +537,7 @@ export function CursorDrivenParticleTypography({
      * `dst.left + mx * (dst.width / mirrorCssWidth)`. Solving one for the
      * other is the `scale`/`offset` pair below.
      */
-    const drawMirror = () => {
+    const drawMirror = (src: DOMRect) => {
       const canvasEl = mirrorRef.current?.current;
       if (!canvasEl || !keptCount) return;
       const cssW = canvasEl.clientWidth;
@@ -555,7 +556,6 @@ export function CursorDrivenParticleTypography({
       mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       mctx.clearRect(0, 0, cssW, cssH);
 
-      const src = canvas.getBoundingClientRect();
       const dst = canvasEl.getBoundingClientRect();
       if (!src.width || !dst.width) return;
       const scale = (src.width / width) * (cssW / dst.width);
@@ -586,17 +586,29 @@ export function CursorDrivenParticleTypography({
       // comes to rest as the word forms, which is one movement instead of two.
       const want = morphRef.current ? 0 : 1;
       travel += Math.sign(want - travel) * Math.min(Math.abs(want - travel), dt * 2.2);
+      travelRef.current = travel;
       const shift = speed * travel * dt;
       ctx.clearRect(0, 0, width, height);
       ctx.beginPath();
 
+      // Measured once a frame and shared with the mirror, which needs the same
+      // rectangle. Into the canvas's OWN coordinates, which is what the
+      // particles are in: the offset from the canvas's left edge is in screen
+      // pixels and this canvas is not drawn at 1:1 — the pin scales the band up
+      // to 1.3 as it rises.
+      const src = canvas.getBoundingClientRect();
       // Read per frame rather than captured: the prop can flip at any time and
       // -1000 is the sentinel `update` reads as "no pointer". Particles already
       // thrown keep their momentum and ease home on their own.
-      const mx = interactiveRef.current ? mouseX : -1000;
-      const my = interactiveRef.current ? mouseY : -1000;
+      let mx = -1000;
+      let my = -1000;
+      if (interactiveRef.current && pointerSeen && src.width && src.height) {
+        mx = (clientX - src.left) * (width / src.width);
+        my = (clientY - src.top) * (height / src.height);
+      }
 
       surplus += Math.sign(want - surplus) * Math.min(Math.abs(want - surplus), dt * 2.6);
+      surplusRef.current = surplus;
       if (want === 1 && surplus > 0.999) keptCount = particles.length;
 
       // One path for every particle rather than a fill each: at this count the
@@ -618,15 +630,29 @@ export function CursorDrivenParticleTypography({
 
       // Every particle is still simulated — the surplus is faded, not frozen,
       // so it is in the right place the moment the word lets go of the field.
+      // While a word is held, the particles drawing it are standing still in
+      // canvas space — the line is what travels, not them. `travel` eases to 0
+      // over about 450ms rather than cutting out, and for that whole window
+      // `shift` is still non-zero, so without this the word forms while being
+      // dragged sideways and, worse, any of its particles that crossed the
+      // recycle boundary were yanked out of the glyph and teleported to the
+      // far end of the track at the word's y rather than the line's. That is
+      // the holes punched in the word, and the stray dots off the band.
+      //
+      // `homeX` keeps tracking the line for every particle either way, so the
+      // band picks up in the right place when the word lets go.
+      const held = want === 0;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         if (shift) {
-          p.originX -= shift;
           p.homeX -= shift;
-          p.x -= shift;
-          // Off the left edge with a tile to spare: send it round to the far
-          // end of the track. It is out of frame, so the jump cannot be seen.
-          if (p.homeX < -tileWidth) p.reset(p.homeX + trackWidth);
+          if (!(held && i < keptCount)) {
+            p.originX -= shift;
+            p.x -= shift;
+            // Off the left edge with a tile to spare: send it round to the far
+            // end of the track. It is out of frame, so the jump cannot be seen.
+            if (p.homeX < -tileWidth) p.reset(p.homeX + trackWidth);
+          }
         }
         p.update(mx, my, dispersionStrength, returnSpeed);
         if (i < keptCount) dot(p);
@@ -642,7 +668,7 @@ export function CursorDrivenParticleTypography({
         ctx.globalAlpha = prev;
       }
 
-      drawMirror();
+      drawMirror(src);
 
       if (visible) frame = requestAnimationFrame(tick);
     };
@@ -654,22 +680,14 @@ export function CursorDrivenParticleTypography({
       }
     };
 
+    // Stored raw; `tick` maps them against a rect measured in the same frame.
     const onMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      // Into the canvas's OWN coordinates, which is what the particles are in.
-      // The offset from the canvas's left edge is in screen pixels, and this
-      // canvas is not drawn at 1:1 — the pin scales the band up to 1.3 as it
-      // rises. Taking the offset raw put the disturbance a third of the way
-      // across the band from wherever the cursor actually was, so the dust
-      // scattered somewhere the reader was not pointing.
-      const sx = rect.width ? width / rect.width : 1;
-      const sy = rect.height ? height / rect.height : 1;
-      mouseX = (e.clientX - rect.left) * sx;
-      mouseY = (e.clientY - rect.top) * sy;
+      clientX = e.clientX;
+      clientY = e.clientY;
+      pointerSeen = true;
     };
     const onMouseLeave = () => {
-      mouseX = -1000;
-      mouseY = -1000;
+      pointerSeen = false;
     };
 
     const io = new IntersectionObserver(
@@ -681,7 +699,14 @@ export function CursorDrivenParticleTypography({
     );
     io.observe(container);
 
+    // A ResizeObserver fires once immediately on observe, which is before the
+    // real face has landed. Sampling there built the entire field with the
+    // fallback font only for `start` to throw it away and build it again — two
+    // full allocations on every load, and the band visibly re-forming after
+    // first paint. `start` takes the first sample; this only handles resizes.
+    let sampled = false;
     const ro = new ResizeObserver(() => {
+      if (!sampled) return;
       init();
       wake();
     });
@@ -690,6 +715,7 @@ export function CursorDrivenParticleTypography({
     // Fonts land after first paint, and the sample is only as good as the face
     // that was available when it was taken.
     const start = () => {
+      sampled = true;
       init();
       wake();
     };
@@ -702,6 +728,12 @@ export function CursorDrivenParticleTypography({
     const target: Window | HTMLCanvasElement = trackPointer === "window" ? window : canvas;
     target.addEventListener("mousemove", onMouseMove as EventListener, { passive: true });
     target.addEventListener("mouseleave", onMouseLeave as EventListener);
+    // `mouseleave` on `window` is not reliable — it does not fire when the
+    // pointer exits over devtools, or when the tab loses focus mid-hover — and
+    // when it does not, the crater the cursor left stays dented into the band
+    // for good. The document and the blur are the two cases it misses.
+    document.addEventListener("mouseleave", onMouseLeave);
+    window.addEventListener("blur", onMouseLeave);
 
     return () => {
       morphFnRef.current = null;
@@ -709,6 +741,8 @@ export function CursorDrivenParticleTypography({
       ro.disconnect();
       target.removeEventListener("mousemove", onMouseMove as EventListener);
       target.removeEventListener("mouseleave", onMouseLeave as EventListener);
+      document.removeEventListener("mouseleave", onMouseLeave);
+      window.removeEventListener("blur", onMouseLeave);
       if (frame !== null) cancelAnimationFrame(frame);
     };
   }, [

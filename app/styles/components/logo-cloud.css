@@ -1,0 +1,89 @@
+/* ============================================
+   Logo cloud — the "Trusted by" client marks.
+   Paired with app/components/ui/LogoCloud.tsx.
+
+   The marks are static: they had a staggered blur-and-wipe pass, which George
+   asked for the removal of — the logos are there to be read, and a mark going
+   soft every few seconds reads as the page failing to load rather than as an
+   effect. Only the hover lift is left.
+   ============================================ */
+
+.logo-cloud {
+  /* Side gutter, so a wide mark scaled to its column still clears the screen
+     edge on a phone. */
+  padding-inline: 1rem;
+}
+
+.logo-cloud__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-items: center;
+  gap: 2rem 1rem;
+  max-width: 64rem;
+  margin: 2.5rem auto 0;
+}
+
+@media (min-width: 640px) {
+  .logo-cloud__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem 2.5rem;
+    margin-top: 3rem;
+  }
+}
+
+.logo-cloud__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .logo-cloud__item {
+    flex: 0 0 auto;
+    padding-inline: 0.5rem;
+  }
+}
+
+.logo-cloud__item:hover {
+  transform: scale(1.07);
+}
+
+.logo-cloud__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The marks are sized by height (h-12/h-16) with an auto width, so a wide
+     one — a long wordmark like "ZHTC Zambia Hands On Training Centre" — would
+     otherwise run out of its grid column on a phone. Capping the width lets
+     object-contain scale it down instead. */
+  max-width: 100%;
+}
+
+.logo-cloud__mark img {
+  max-width: 100%;
+}
+
+/* The same cap for rows with no usable image, which render the partner's name
+   instead: it wraps rather than pushing out of the column. */
+.logo-cloud__wordmark {
+  max-width: 100%;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-cloud__item {
+    transition: none;
+  }
+
+  .logo-cloud__item:hover {
+    transform: none;
+  }
+}

@@ -68,9 +68,9 @@ export function Chips({ items }: { items: typeof CHIPS }) {
  * Both rows, counter-scrolling.
  *
  * No wrapper of its own: the caller's element is the wrapper —
- * `.cta-mq__rows` in the CTA, `.aside-copy-rows` under "Why Choose" — because
- * that is what decides the width the rows are masked against, and an extra
- * div between it and the marquees would shrink to its content instead.
+ * `.aside-copy-rows` under "Why Choose" — because that is what decides the
+ * width the rows are masked against, and an extra div between it and the
+ * marquees would shrink to its content instead.
  */
 export function FeatureChipRows() {
   return (

@@ -26,42 +26,6 @@
   background-color: var(--page-base);
 }
 
-/* The lattice of boxes the hero's dust becomes, kept for the rest of the page.
-   See PageDots.tsx — the particle field forms it, this is what it hands over
-   to. One fixed tile, so scrolling costs nothing and every section below the
-   hero sits on the same grid.
-
-   z-index -1 puts it above `.page-gradient` and below all content: sections
-   set no z-index of their own, so they paint over a negative layer. Fixed
-   rather than scrolling with the document — the grid is the room the page is
-   in, not part of any section of it.
-
-   The box is 3px at 22px centres, matched to the field's own dots and to the
-   alpha they land at (0.1 on the canvas, halved by the band's rest opacity).
-   Drawn as an SVG tile because a CSS gradient can give crossing lines or round
-   dots but not a lattice of squares. */
-.page-dots {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 700ms ease;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22'%3E%3Crect width='3' height='3' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
-  background-size: 22px 22px;
-  background-repeat: repeat;
-}
-
-.page-dots--on {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .page-dots {
-    transition: none;
-  }
-}
-
 /*
    Shared layout container — apply .page-inner to every section's inner wrapper.
    Provides consistent max-width, horizontal gutter, and vertical rhythm.
@@ -1708,9 +1672,8 @@
   padding: clamp(4rem, 9vw, 6.25rem) 1.5rem;
 }
 
-/* Device artwork (try.it.now.svg) seated over the cyan glow orb (2.png), with
-   the brand mark, headline and CTA overlaid on the screen. The whole visual is
-   the CTA and opens the waitlist.
+/* Device artwork (try.it.now.svg), with the brand mark, headline and CTA
+   overlaid on the screen. The whole visual is the CTA and opens the waitlist.
 
    The exported SVG carries a full-canvas grey scrim around the phone, so the
    stage is sized to the phone BODY (viewBox 178.7–590.7 x, 14.3–903.5 y of
@@ -1720,19 +1683,6 @@
   position: relative;
   width: min(320px, 78vw);
   margin: 0 auto;
-}
-
-.try-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 168%;
-  height: auto;
-  max-width: none;
-  z-index: 0;
-  pointer-events: none;
-  user-select: none;
 }
 
 .try-visual {
@@ -2163,13 +2113,25 @@
   margin: 0;
   padding: 1.25rem 1.35rem 1.15rem;
   border-radius: 1.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(120, 140, 220, 0.05) 60%, rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(120, 140, 220, 0.08) 60%, rgba(255, 255, 255, 0.05));
+  /* Real glass, against the rule of thumb that keeps backdrop-filter off this
+     page: these cards ride a transform animation, which is the case that
+     smears (see header.css). It is affordable here only because the scene is
+     clipped and masked — that makes `.t3d__scene` a backdrop root, so each
+     card samples just the cards behind it on the tilted plane, not the whole
+     page beneath. That is also the effect worth having: depth between the
+     overlapping rows.
+
+     If this ever reads as ghosting mid-slide, this declaration is the thing to
+     drop; everything above it carries the look on its own. */
+  backdrop-filter: blur(28px) saturate(145%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
   /* A deeper drop than before. Foreshortened at the far end of the plane the
      cards were merging into one another, and the top-edge highlight was the
      only thing separating them. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
     0 18px 36px -20px rgba(0, 0, 0, 0.9);
   overflow: hidden;
 }
@@ -2575,14 +2537,6 @@
   gap: 0.85rem;
 }
 
-.cta-mq__rows {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  width: 100%;
-  max-width: 36rem;
-}
-
 .cta-mq__visual {
   justify-self: center;
 }
@@ -2600,13 +2554,6 @@
   .cta-mq__actions,
   .cta-mq__stores {
     justify-content: flex-start;
-  }
-
-  .cta-mq__rows {
-    max-width: none;
-    /* The rows fade at both ends; let the left fade start at the copy's edge
-       and run the right one off the column. */
-    margin-right: -10%;
   }
 }
 
@@ -3263,5 +3210,127 @@
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* =============================================================
+   Who can use BalloAds? — the scattering stack
+   Files: app/components/sections/WhoStackSection.tsx
+          app/components/ui/stack-spread.tsx
+
+   A sticky stage the cards spread across as the section scrolls
+   past. The scroll distance lives on the component (`scrollLength`),
+   because the stage is `position: sticky` inside it and the two
+   have to agree; everything else is here.
+   ============================================================= */
+
+.stack-spread {
+  position: relative;
+  width: 100%;
+}
+
+/* The centre copy. Interactive — the section ends on a button — so this layer
+   is NOT pointer-events:none; the card layer above it is instead. */
+.stack-spread__copy {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding-inline: clamp(1rem, 5vw, 2rem);
+  text-align: center;
+}
+
+/* ── A card ────────────────────────────────────────────────────────────── */
+
+.stack-spread__face {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0b1230;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+}
+
+.stack-spread__img {
+  object-fit: cover;
+}
+
+/* Same treatment as the tiles this replaced: a ramp dark enough to hold the
+   industry name over any photograph, anchored to the bottom. */
+.stack-spread__label {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 1.75rem 0.75rem 0.65rem;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-wrap: balance;
+  background: linear-gradient(
+    to top,
+    rgba(3, 5, 26, 0.92) 0%,
+    rgba(3, 5, 26, 0.7) 45%,
+    transparent 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .stack-spread__label {
+    font-size: 0.8rem;
+  }
+}
+
+.stack-spread__hint {
+  position: absolute;
+  inset: auto 0 3vh 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6vh;
+  pointer-events: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── The section's own copy ────────────────────────────────────────────── */
+
+.who-stack__h2 {
+  max-width: 16ch;
+}
+
+.who-stack__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.who-stack__lines p {
+  margin: 0;
+  font-size: var(--landing-body-size);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* The copy sits between the cards, so on a narrow screen it has to fit the
+   band they leave clear in the middle. */
+@media (max-width: 640px) {
+  .stack-spread__copy {
+    gap: 1rem;
+  }
+
+  .who-stack__lines p {
+    font-size: 0.95rem;
   }
 }

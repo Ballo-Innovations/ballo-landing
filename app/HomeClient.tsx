@@ -2,14 +2,15 @@
 
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PageGradient } from "./components/ui/PageGradient";
-import { PageDots } from "./components/ui/PageDots";
 import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
 import { WhyFeatureChips } from "./components/ui/FeatureChips";
 
 import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
+import { WhoStackSection } from "./components/sections/WhoStackSection";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import { BrutusSection } from "./components/sections/BrutusSection";
 import { Testimonials3D } from "./components/sections/Testimonials3D";
 import { FinalCta } from "./components/sections/FinalCta";
@@ -24,8 +25,13 @@ import man from "@/public/Assets/14.png";
 import ConcentricRings from "./components/ui/ConcentricRings";
 // Not lazy, unlike the section it comes from: this runs on the hero's own pin,
 // so it is on screen within a screen or two of the top.
-import { WhyCardSequence } from "./components/sections/WhyScrollSection";
+import {
+  WhyCardSequence,
+  WhyStepBlurb,
+} from "./components/sections/WhyScrollSection";
 import { BackedBy } from "./components/ui/BackedBy";
+import { LogoCloud } from "./components/ui/LogoCloud";
+import { TubesCursor } from "./components/ui/TubesCursor";
 
 // Referenced below for the one-off "invert to white" filter applied to the
 // Bayport mark specifically — kept here even though the rest of the fallback
@@ -124,23 +130,6 @@ export default function HomeClient({
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  /**
-   * Logos whose image failed to load, by name.
-   *
-   * A CMS row carries a URL the server cannot verify, so a dead asset used to
-   * put a browser's broken-image icon in the marquee. `src: null` already
-   * means "render the name as a wordmark" — a URL that 404s is the same
-   * situation discovered later, so it lands in the same place.
-   */
-  const [brokenLogos, setBrokenLogos] = useState<Set<string>>(new Set());
-  const markLogoBroken = useCallback((alt: string) => {
-    setBrokenLogos((prev) => {
-      if (prev.has(alt)) return prev;
-      const next = new Set(prev);
-      next.add(alt);
-      return next;
-    });
-  }, []);
   const shouldReduceMotion = usePrefersReducedMotion();
   const resumeAutoPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -149,6 +138,15 @@ export default function HomeClient({
   // other section with an infinite animation (Brutus, testimonials, the
   // closing CTA) owns its own instance of the same hook.
   const trustedByRef = useAnimateWhenVisible<HTMLElement>();
+
+  // Read after mount so the server and the client render the same markup: the
+  // flag also honours a localStorage override, which only exists client side.
+  const [whoStack, setWhoStack] = useState(false);
+  useEffect(() => setWhoStack(isFeatureEnabled("whoStackSpread")), []);
+  // Same read-after-mount shape for the WebGL layer under "Trusted by", so the
+  // one heavy dependency on this page can be switched off per environment.
+  const [tubesCursor, setTubesCursor] = useState(false);
+  useEffect(() => setTubesCursor(isFeatureEnabled("tubesCursor")), []);
 
   useEffect(() => {
     return () => {
@@ -178,11 +176,14 @@ export default function HomeClient({
     }
   };
 
-  // Marquee loop needs the logo list duplicated end-to-end so the CSS
-  // animation can scroll seamlessly — same doubling the hardcoded array used
-  // to get inline in JSX, just applied to whichever list (CMS or fallback)
-  // page.tsx resolved.
-  const marqueeLogos = partnerLogos.concat(partnerLogos);
+  // The logo cloud shows each mark once (the marquee it replaced needed the
+  // list doubled end-to-end to loop seamlessly). Bayport is the one fallback
+  // asset supplied as dark artwork, so it is flagged for the white-silhouette
+  // filter here — a CMS row that replaces it carries its own light logo.
+  const trustedLogos = partnerLogos.map((logo) => ({
+    ...logo,
+    invert: logo.src === logoBayport,
+  }));
 
   // <main> clips the x axis with `overflow-x: clip`, NOT `hidden`.
   // `overflow-x: hidden` forces overflow-y to compute as `auto`, making the
@@ -196,13 +197,6 @@ export default function HomeClient({
           viewport layer behind it (PageGradient) rather than as a document-tall
           background here, which is what a fast scroll was outrunning. */}
       <PageGradient />
-      {/* The hero's dust becomes a lattice of boxes after the last feature
-          card; this is what carries it down the rest of the page (see
-          PageDots.tsx). Mounted here rather than in the layout so it belongs
-          to the page whose hero hands it over — move it to `app/layout.tsx`
-          to put the same grid behind every route. */}
-      <PageDots />
-
       {/* Hero Section. Pinned by HeroSideExit: the elements marked
           data-hero-exit leave sideways, each toward whichever edge it already
           sits nearer, and the phone rises into the space they vacate. */}
@@ -259,11 +253,10 @@ export default function HomeClient({
             <h2 className="aside-copy-title font-black text-gradient-silver">
               Why Choose BalloAds?
             </h2>
-            <p className="landing-body aside-copy-body">
-              Most tools make you choose between reach and relevance. BalloAds
-              gives you both: one place to build an audience, send SMS, WhatsApp
-              and email campaigns, and see exactly what each message earned you.
-            </p>
+            {/* Not one fixed paragraph: it re-writes itself as the phone
+                beside it turns over its five cards, so the copy is always
+                about the feature being shown. */}
+            <WhyStepBlurb range={PHONE_CONTENT} />
             <WhyFeatureChips />
             <button
               type="button"
@@ -454,62 +447,36 @@ export default function HomeClient({
         </FadeUpReveal>
       </section>
 
-      {/* Who can use BalloAds — the question and CTA beside two marquee rows
-          of industry tiles. */}
-      <WhoCinematicSection />
+      {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
+          falling back to the marquee-row section while the flag is dark. The
+          flag is read after mount (see below), so the server and the first
+          client render always agree on which one is here. */}
+      {whoStack ? <WhoStackSection /> : <WhoCinematicSection />}
 
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />
 
-      {/* Trusted By Section — sits directly below the testimonials it backs up.
-          Both infinite animations in here — the logo track and the
-          .text-shimmer heading — park while the section is off-screen; the
-          shimmer in particular animates background-position through
-          background-clip:text, which repaints the glyphs every frame. */}
-      <section ref={trustedByRef} className="py-16">
-        <FadeUpReveal className="text-center mb-10">
-          <p className="text-3xl text-shimmer">Trusted by the very best</p>
-        </FadeUpReveal>
-        <FadeUpReveal yOffset={50} delay={0.1}>
-          <div className="logo-marquee">
-            <div className="logo-marquee-track">
-              {marqueeLogos.map((logo, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-center px-5 shrink-0"
-                >
-                  {logo.src && !brokenLogos.has(logo.alt) ? (
-                    <Image
-                      src={logo.src}
-                      alt={logo.alt}
-                      width={224}
-                      height={112}
-                      loading="lazy"
-                      sizes="112px"
-                      onError={() => markLogoBroken(logo.alt)}
-                      className="h-28 w-auto object-contain opacity-100 transition-opacity"
-                      style={{
-                        filter:
-                          logo.src === logoBayport
-                            ? "brightness(0) invert(1)"
-                            : "none",
-                      }}
-                    />
-                  ) : (
-                    <span className="text-2xl font-semibold tracking-wide text-white/70">
-                      {logo.alt}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* Trusted By — the client marks, as a static grid. The only infinite
+          animation left in it is the .text-shimmer heading, which parks while
+          the section is off-screen via `trustedByRef`: it animates
+          background-position through background-clip:text, which cannot be
+          composited and so repaints the glyphs on every frame. */}
+      <section ref={trustedByRef} className="trusted-by-section pt-32 pb-16">
+        <FadeUpReveal yOffset={50}>
+          <LogoCloud logos={trustedLogos} title="Trusted by the very best" />
         </FadeUpReveal>
       </section>
 
       {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
-          BalloAds?" phone, which opens the waitlist. */}
-      <FinalCta />
+          BalloAds?" phone, which opens the waitlist — and the only section
+          with the WebGL tubes behind it. The layer belongs to this section: it
+          is sized to it and scrolls away with it, and the ~770 KB module is
+          fetched only when the section nears the viewport. Skipped entirely
+          without a fine pointer or under reduced motion. */}
+      <div className="tubes-zone">
+        {tubesCursor ? <TubesCursor /> : null}
+        <FinalCta />
+      </div>
     </main>
   );
 }
