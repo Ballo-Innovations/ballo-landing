@@ -103,6 +103,15 @@ export type TubesCursorProps = {
   colors?: string[];
   /** Exactly four point-light colours — the library indexes 0..3. */
   lightColors?: string[];
+  /**
+   * Brightness of those four lights. The library ships 200; this is raised
+   * because the strands read as washed out against this page, which is close
+   * to black and puts nothing else near them.
+   *
+   * Tune it by eye, not by screenshot: the strands wander and bunch, so how
+   * bright a given frame looks depends far more on how spread out they are at
+   * that instant than on this number.
+   */
   lightIntensity?: number;
   /** Re-roll both palettes on click. Off by default: the colours are brand. */
   recolorOnClick?: boolean;
@@ -122,7 +131,7 @@ export function TubesCursor({
   className,
   colors = DEFAULT_TUBE_COLORS,
   lightColors = DEFAULT_LIGHT_COLORS,
-  lightIntensity = 200,
+  lightIntensity = 520,
   recolorOnClick = false,
 }: TubesCursorProps) {
   const wrapperRef = React.useRef<HTMLDivElement>(null);

@@ -83,6 +83,12 @@ export function BackedBy({
   // The caption's rise is the one piece that animates per swap. Under reduced
   // motion it is a plain crossfade — the cell still swaps, it just does not
   // travel.
+  // The caption waits for the mark to clear the cell before it arrives. The
+  // two share one box, so running them together left the logo sitting in full
+  // colour on top of the name it was making room for — a third of a second of
+  // the two overlapping, every swap. Leaving is not delayed: the outgoing
+  // caption goes as the incoming one starts, which is what keeps two partners
+  // from being named at once.
   const captionMotion = reduced
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
     : {
@@ -90,6 +96,12 @@ export function BackedBy({
         animate: { y: 0, opacity: 1 },
         exit: { y: -10, opacity: 0 },
       };
+
+  const captionTransition = {
+    duration: 0.26,
+    ease: [0.22, 1, 0.36, 1] as const,
+    delay: reduced ? 0.15 : 0.22,
+  };
 
   return (
     <div className="backers">
@@ -158,8 +170,12 @@ export function BackedBy({
                         <motion.p
                           key="caption"
                           className="backers__caption-line"
-                          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                          transition={captionTransition}
                           {...captionMotion}
+                          /* After the spread, so it overrides the exit in it:
+                             same target, but leaving on its own faster clock,
+                             undelayed. */
+                          exit={{ ...captionMotion.exit, transition: { duration: 0.18 } }}
                         >
                           <span className="backers__name">{logo.alt}</span>
                           {logo.role ? (

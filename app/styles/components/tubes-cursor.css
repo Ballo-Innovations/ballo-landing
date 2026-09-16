@@ -30,15 +30,22 @@
      merely soften them: the bloom pass leaves the backdrop a shade off black,
      so any part of the canvas the mask still shows reads as a faint rectangle
      with a hard edge down the page. The radii are half the box, so the fade
-     reaches full transparency exactly at the edge on every side. */
+     reaches full transparency exactly at the edge on every side.
+
+     The opaque core runs most of the way out, and the falloff is squeezed into
+     the last third. An earlier version started fading at 20% — which hid the
+     rectangle just as well but dimmed the strands by a measured 60%, because
+     everything but the dead centre sat somewhere on the ramp. */
   -webkit-mask-image: radial-gradient(
     ellipse 50% 55% at 50% 50%,
-    #000 20%,
+    #000 62%,
+    rgba(0, 0, 0, 0.72) 82%,
     transparent 100%
   );
   mask-image: radial-gradient(
     ellipse 50% 55% at 50% 50%,
-    #000 20%,
+    #000 62%,
+    rgba(0, 0, 0, 0.72) 82%,
     transparent 100%
   );
   opacity: 0;
