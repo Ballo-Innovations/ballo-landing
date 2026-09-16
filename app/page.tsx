@@ -97,16 +97,38 @@ const FALLBACK_PARTNER_LOGOS: HomeLogoItem[] = [
   { src: logo9, alt: "Client" },
 ];
 
+// What each backer is to BalloAds. The "Backed by" band prints this under the
+// partner's name, so it is the section's actual content rather than a caption —
+// a mark with no role here reveals as a bare name.
+//
+// Keyed by name so a CMS row gets its role too: the partner-logo API has no
+// role field yet, and without this a seeded "Backed by" row would replace a
+// named fallback with an unnamed one. Names are matched case-insensitively and
+// an unknown name simply has no role.
+const BACKER_ROLES: Record<string, string> = {
+  Airtel: "Connectivity partner",
+  MTN: "Digital partner",
+  Meta: "Technology provider",
+  ZICTA: "ICT innovation programme",
+};
+
+function roleFor(name: string): string | undefined {
+  const key = Object.keys(BACKER_ROLES).find(
+    (k) => k.toLowerCase() === name.trim().toLowerCase(),
+  );
+  return key ? BACKER_ROLES[key] : undefined;
+}
+
 // Fallback content — shown until the CMS has "Backed by" logo rows published
 // (a partner-logo row with "Backed by" switched on). These ship as real logo
 // files, so the row renders the marks themselves; `src: null` is still
 // honoured by HomeClient and renders the name as a wordmark instead, which is
 // what a CMS row with no uploaded image falls back to.
 const FALLBACK_BACKER_LOGOS: HomeLogoItem[] = [
-  { src: backerAirtel, alt: "Airtel", role: "Network partner" },
-  { src: backerMtn, alt: "MTN", role: "Network partner" },
-  { src: backerMeta, alt: "Meta", role: "Technology partner" },
-  { src: backerZicta, alt: "ZICTA", role: "Regulatory authority" },
+  { src: backerAirtel, alt: "Airtel", role: BACKER_ROLES.Airtel },
+  { src: backerMtn, alt: "MTN", role: BACKER_ROLES.MTN },
+  { src: backerMeta, alt: "Meta", role: BACKER_ROLES.Meta },
+  { src: backerZicta, alt: "ZICTA", role: BACKER_ROLES.ZICTA },
 ];
 
 export default async function Home() {
@@ -138,7 +160,11 @@ export default async function Home() {
 
   const backerLogos: HomeLogoItem[] =
     cmsBackers.length > 0
-      ? cmsBackers.map((p) => ({ src: p.logoUrl, alt: p.name }))
+      ? cmsBackers.map((p) => ({
+          src: p.logoUrl,
+          alt: p.name,
+          role: roleFor(p.name),
+        }))
       : FALLBACK_BACKER_LOGOS;
 
   return (

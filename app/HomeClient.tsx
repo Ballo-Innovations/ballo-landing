@@ -50,10 +50,11 @@ export type HomeLogoItem = {
   src: StaticImageData | string | null;
   alt: string;
   /**
-   * What this partner is to BalloAds ("Network partner", "Regulator"). Read by
-   * the "Backed by" rail, which spotlights one partner at a time and shows
-   * this beside its name; omitted rows simply show the name. The CMS has no
-   * field for it yet, so only the fallback list in page.tsx sets it.
+   * What this partner is to BalloAds ("Digital partner", "Technology
+   * provider"). Read by the "Backed by" band, which swaps one mark at a time
+   * for its partner's name and this line; omitted rows reveal the name alone.
+   * The CMS has no field for it yet, so page.tsx fills it in by name — see
+   * `BACKER_ROLES` there.
    */
   role?: string;
 };
@@ -433,14 +434,14 @@ export default function HomeClient({
       <BrutusSection />
 
       {/* Backed By. A short, CMS-driven list (partner-logo rows with "Backed
-          by" switched on) — too few to loop, so it is a rail with a travelling
-          spotlight rather than a marquee. One partner is named at full size at
-          a time; the pointer overrides the cycle, and the cycle itself stops
-          while the section is off-screen. */}
+          by" switched on) — too few to loop, so it is a band of fixed cells
+          rather than a marquee. One cell at a time swaps its logo for the
+          partner's name and role; the pointer overrides the cycle, and the
+          cycle itself stops while the section is off-screen. */}
       <section className="backers-section">
         {/* The reveal is only the trigger here: its own transform is turned
-            off in CSS and the label and each mark animate themselves, so the
-            logos arrive one after another instead of the whole rail fading in
+            off in CSS and the label and each cell animate themselves, so the
+            logos arrive one after another instead of the whole band fading in
             as one block. */}
         <FadeUpReveal yOffset={0} className="backers-reveal">
           <BackedBy logos={backerLogos} />

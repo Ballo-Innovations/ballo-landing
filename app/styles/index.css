@@ -17,6 +17,7 @@
 @import "./components/brutus-chat.css";
 @import "./components/logo-cloud.css";
 @import "./components/tubes-cursor.css";
+@import "./components/floating-glass-icons.css";
 /* Pages */
 @import "./pages/home.css";
 @import "./pages/business.css";

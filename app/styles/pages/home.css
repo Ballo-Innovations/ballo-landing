@@ -2537,16 +2537,23 @@
   gap: 0.85rem;
 }
 
+/* The column the channel tiles drift in, and their containing block.
+   `justify-self: stretch`, not the `center` this carried while the phone lived
+   here: centring sizes a grid item to its content, and the tiles are absolutely
+   positioned, so the column measured ZERO wide — every tile's percentage
+   resolved against nothing and the whole set piled up on its left edge. The
+   min-height is needed for the same reason, vertically. */
 .cta-mq__visual {
-  justify-self: center;
+  position: relative;
+  justify-self: stretch;
+  min-height: min(26rem, 52vh);
 }
 
 @media (min-width: 901px) {
   .cta-mq__grid {
-    /* The second column is deliberately empty: the phone that filled it is
-       gone, and the space is where the tubes layer behind this section plays.
+    /* The second column holds the drifting channel tiles, over the tubes.
        Collapsing to one column would stretch the copy across the full width
-       and leave the strands on top of it. */
+       and leave both on top of it. */
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
     /* Without the phone the row has nothing tall in it, and the section would
        close the page on a thin band. This keeps it a scene. */
@@ -2565,20 +2572,19 @@
 }
 
 /* =============================================================
-   Backed by — the partner rail
+   Backed by — the partner band
    File: app/components/ui/BackedBy.tsx
 
-   One partner is lit at a time: its name and role read at full size on the
-   left, and the mark itself glows on the right. The glow is a blurred copy of
-   the logo sitting behind it (see LogoGlow in BackedBy.tsx), so the halo is
-   the brand's own colours and only `opacity` animates — the blur is rasterised
-   once and never touched again.
+   A bordered band of equal cells, one per partner, split by dashed rules. One
+   cell at a time swaps its logo for the partner's name and role: the mark
+   travels up and out, the caption comes up from under it. Everything that
+   moves here is `opacity` and `translate` on two small elements per cell.
 
-   This replaces a travelling lit panel behind the marks, which animated
-   `--spot-x/w/h` into a transform and a width. Custom properties driving
-   transform or size are exactly what the motion rules forbid animating, and
-   it needed a measured offset per layout change to stay aligned. Nothing here
-   measures anything.
+   This replaces a rail whose marks only lit up while a large cycling headline
+   beside them did the naming. That named the same partner twice at once, and
+   the headline had to reserve the width of the longest name the CMS might ever
+   hold so a swap could not reflow the section. Naming each mark in its own
+   cell drops both, and the label above is now fixed copy.
    ============================================================= */
 .backers-section {
   padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1rem, 5vw, 2rem);
@@ -2588,10 +2594,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(2rem, 5vh, 3rem);
-  /* Bounded rather than spread across the page. As a `justify-between` row at
-     full width the four marks sat a third of the viewport away from their own
-     label, with nothing in between — the label read as belonging to nothing.  */
+  gap: clamp(2rem, 5vh, 2.75rem);
   max-width: 68rem;
   margin-inline: auto;
   text-align: center;
@@ -2599,205 +2602,211 @@
 
 /* ── The label ─────────────────────────────────────────────────────────── */
 
+.backers__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+/* A pill rather than bare type: it reads as a section marker above the band
+   instead of as the first line of the headline under it. */
 .backers__eyebrow {
   margin: 0;
-  font-size: 0.75rem;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.35em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.backers__swap {
-  position: relative;
-  margin-top: 0.6rem;
-}
-
-.backers__line {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+.backers__headline {
   margin: 0;
-  white-space: nowrap;
-}
-
-/* Holds the box open behind the absolutely positioned live label. */
-.backers__line--sizer {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.backers__live {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.backers__name {
+  max-width: 34ch;
   font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
-  font-weight: 700;
-  line-height: 1.1;
+  font-size: clamp(1.4rem, 3.4vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: #fff;
 }
 
-.backers__role {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  /* The one cyan accent in the section: it is what ties the named partner to
-     the lit mark on the rail. */
-  color: color-mix(in srgb, var(--cyan) 82%, white);
-}
+/* ── The band ──────────────────────────────────────────────────────────── */
 
-/* ── The rail ──────────────────────────────────────────────────────────── */
-
-.backers__rail {
-  position: relative;
+.backers__band {
   width: 100%;
+  padding: clamp(1rem, 2.5vw, 1.5rem) clamp(0.5rem, 2vw, 1.25rem);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 /* Narrow screens get an even two-column grid, not a wrapping flex row: the
    marks are different widths, so a wrapped row put each one at a different
-   left edge and the four read as scattered rather than as a set. The grid also
-   gives the spotlight equal cells to travel between. */
+   left edge and the four read as scattered rather than as a set. */
 .backers__items {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Each mark shrinks to its own box rather than filling its cell. Stretched
-     cells made the spotlight as wide as half the section — a 400px pill
-     around a 66px logo at tablet widths. */
-  justify-items: center;
-  align-items: center;
-  gap: clamp(0.25rem, 2vw, 0.75rem);
-  /* Keeps the 2x2 block compact and centred instead of letting the two columns
-     drift to the far edges of the section's 68rem. */
-  max-width: 25rem;
-  margin-inline: auto;
+  gap: clamp(1rem, 3vw, 1.5rem) 0;
 }
 
 .backers__item {
-  /* The lit mark sits above its neighbours, so a halo that spreads past its
-     own box passes under them rather than over. */
   position: relative;
-  z-index: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(0.9rem, 2vw, 1.35rem) clamp(1rem, 2.5vw, 1.75rem);
-  border-radius: 1.25rem;
-  /* Every mark sits at three-quarter strength and the lit one comes to full,
-     rather than the others dimming away: dimming three of four made the
-     travel read as the row switching off and on. */
-  opacity: 0.62;
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  padding-inline: clamp(0.5rem, 2vw, 1rem);
 }
 
-.backers__item[data-active] {
-  z-index: 1;
-  opacity: 1;
-  transform: translateY(-3px);
+/* The dashed rule between cells. On the item rather than between them so the
+   count is whatever the CMS publishes; `nth-child` picks out the cells that
+   open a row, which are the ones with nothing to their left to divide from. */
+.backers__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2.25rem;
+  border-left: 1px dashed rgba(255, 255, 255, 0.16);
+  transform: translateY(-50%);
 }
 
-/* Holds the mark and its glow in the same box, one over the other. */
+.backers__item:nth-child(odd)::before {
+  content: none;
+}
+
+/* The cell is the swap's stage: both the mark and the caption are laid over
+   each other in it, and it holds the height so a swap never reflows the band. */
+.backers__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 3.25rem;
+}
+
+/* One box for every mark; see the note in BackedBy.tsx. Leaves upward as the
+   caption arrives — `opacity` and `transform` only, both composited. */
 .backers__logo {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* One box for every mark; see the note in BackedBy.tsx. */
-  height: 2.75rem;
-  width: 7rem;
+  height: 100%;
+  width: min(100%, 7rem);
+  /* The marks sit greyed and a little short of full strength, rather than the
+     unlit ones dimming away: dimming three of four made the travel read as the
+     band switching off and on. Not lower than this — these are colour logos on
+     a near-black ground, and greyscale already costs them most of their
+     contrast (Airtel's red mark is the one that goes first). */
+  opacity: 0.8;
+  filter: grayscale(1);
+  transition:
+    opacity 0.35s ease,
+    filter 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.backers__item[data-active] .backers__logo {
+  opacity: 0;
+  transform: translate3d(0, -2.5rem, 0);
+}
+
+/* Hover on a cell that is not the lit one still de-greys its mark, so the
+   pointer has something to follow between swaps. */
+.backers__item:hover .backers__logo {
+  opacity: 1;
+  filter: grayscale(0);
 }
 
 .backers__wordmark {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.72);
   white-space: nowrap;
 }
 
-/* The light, on the mark.
+/* ── The caption ───────────────────────────────────────────────────────── */
 
-   Static: the blur is never animated and neither is the scale — they only
-   shape the halo, and the fade is `opacity` alone. Kept at 8px, the ceiling
-   the project's motion rules put on blur, with the spread coming from the
-   slight scale-up rather than from a wider radius.
-
-   `saturate`/`brightness` are what make a halo read at all on this page's
-   near-black ground; without them a blurred logo just muddies. No
-   `will-change`: the filter already gets this its own layer, and four
-   permanently promoted layers for four small marks is the trade the layer
-   rules warn about. */
-.backers__logo-glow {
+.backers__caption {
   position: absolute;
   inset: 0;
-  z-index: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transform: scale(1.12);
-  filter: blur(8px) saturate(180%) brightness(1.2);
   pointer-events: none;
-  transition: opacity 0.5s ease;
 }
 
-.backers__item[data-active] .backers__logo-glow {
-  opacity: 1;
+.backers__caption-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  margin: 0;
 }
 
-/* ── Desktop: label and rail side by side ──────────────────────────────── */
+.backers__name {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.backers__role {
+  font-size: clamp(0.6rem, 1.3vw, 0.7rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  /* The one cyan accent in the section: it is what separates what a partner is
+     from its name directly above. */
+  color: color-mix(in srgb, var(--cyan) 82%, white);
+}
+
+/* ── Desktop: one row of cells ─────────────────────────────────────────── */
 @media (min-width: 901px) {
-  .backers {
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(2.5rem, 6vw, 5rem);
-    text-align: left;
+  /* However many partners there are, spread across the band — so this drops
+     the column count rather than fixing one the CMS could outgrow. */
+  .backers__items {
+    display: flex;
+    gap: 0;
   }
 
-  .backers__label {
-    flex: 0 0 auto;
-  }
-
-  .backers__live {
-    align-items: flex-start;
-  }
-
-  .backers__rail {
-    /* Takes the remaining width so the marks spread evenly beside the label
-       instead of bunching at one end of it. */
-    flex: 1 1 auto;
+  .backers__item {
+    flex: 1 1 0;
     min-width: 0;
   }
 
-  /* Desktop is one row of however many partners there are, spread across the
-     width the label leaves — so this drops the grid rather than fixing a
-     column count the CMS could outgrow. */
-  .backers__items {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.5rem;
-    max-width: none;
+  /* Every cell but the first opens a "row" of one, so the odd-child rule that
+     suppresses the divider on narrow screens has to go. */
+  .backers__item:nth-child(odd)::before {
+    content: "";
+  }
+
+  .backers__item:first-child::before {
+    content: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .backers__item,
-  .backers__logo-glow {
-    transition: none;
+  .backers__logo {
+    transition: opacity 0.35s ease, filter 0.35s ease;
+  }
+
+  /* The mark still clears the cell for the caption — it just fades rather than
+     travelling. */
+  .backers__item[data-active] .backers__logo {
+    transform: none;
   }
 }
 
@@ -3121,36 +3130,34 @@
 /* ── Backed by ─────────────────────────────────────────────────────────── */
 
 .backers__eyebrow,
-.backers__swap,
-.backers__logo,
-.backers__wordmark {
+.backers__headline,
+.backers__cell {
   transition:
     opacity 0.7s ease var(--enter-delay, 0s),
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
 }
 
 .backers-reveal[data-fur="out"] .backers__eyebrow,
-.backers-reveal[data-fur="out"] .backers__swap {
+.backers-reveal[data-fur="out"] .backers__headline {
   opacity: 0;
   transform: translate3d(0, 16px, 0);
 }
 
-.backers-reveal[data-fur="out"] .backers__swap {
+.backers-reveal[data-fur="out"] .backers__headline {
   --enter-delay: 0.08s;
 }
 
-/* The marks, not the `<li>`. The item's own transform is already spoken for by
-   the lit state's 3px lift, and an entrance on the same property would fight
-   it the first time the cycle advanced. */
-.backers-reveal[data-fur="out"] .backers__logo,
-.backers-reveal[data-fur="out"] .backers__wordmark {
+/* The cell, not the `<li>` and not the mark inside it. The `<li>` carries the
+   dashed divider, which should not arrive with the mark; and the mark's own
+   transform is already spoken for by the swap, so an entrance on the same
+   property would fight it the first time the cycle advanced. */
+.backers-reveal[data-fur="out"] .backers__cell {
   opacity: 0;
   transform: translate3d(0, 18px, 0) scale(0.92);
 }
 
 /* One after another, off the index the component sets. */
-.backers__item .backers__logo,
-.backers__item .backers__wordmark {
+.backers__item .backers__cell {
   --enter-delay: calc(0.18s + var(--i, 0) * 0.09s);
 }
 
@@ -3202,15 +3209,13 @@
    arm in utilities.css does the same for its wrapper. */
 @media (prefers-reduced-motion: reduce) {
   .backers__eyebrow,
-  .backers__swap,
-  .backers__logo,
-  .backers__wordmark,
+  .backers__headline,
+  .backers__cell,
   .who-cta__copy > *,
   .who-cta__rows > .mq,
   .backers-reveal[data-fur="out"] .backers__eyebrow,
-  .backers-reveal[data-fur="out"] .backers__swap,
-  .backers-reveal[data-fur="out"] .backers__logo,
-  .backers-reveal[data-fur="out"] .backers__wordmark,
+  .backers-reveal[data-fur="out"] .backers__headline,
+  .backers-reveal[data-fur="out"] .backers__cell,
   .who-cta__copy-reveal[data-fur="out"] .who-cta__copy > *,
   .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(1),
   .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(2) {
