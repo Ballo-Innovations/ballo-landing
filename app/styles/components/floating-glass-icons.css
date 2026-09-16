@@ -73,6 +73,18 @@
   height: auto;
 }
 
+/* Which side of the strands a mark sits on. These numbers are read against the
+   canvas's `z-index: 2` in tubes-cursor.css, in the `.tubes-zone` stacking
+   context — which works only because the section between them no longer makes
+   a stacking context of its own. */
+.floating-glass__tile--behind {
+  z-index: 1;
+}
+
+.floating-glass__tile--front {
+  z-index: 3;
+}
+
 /* Two axes at different rates so the path is a slow figure rather than a
    bob: the vertical term completes twice per cycle, the horizontal once. */
 @keyframes floating-glass-drift {

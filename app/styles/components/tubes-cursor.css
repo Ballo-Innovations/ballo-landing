@@ -106,15 +106,12 @@
   isolation: isolate;
 }
 
-/* The canvas is a positioned element at `z-index: 0`, which paints above
-   ordinary in-flow content. Lifting every sibling to `z-index: 1` puts the
-   sections back on top of it — the copy and the buttons have to be readable
-   through it, and the mask keeps the glow off them anyway.
-
-   The channel marks are the exception: they belong BEHIND the strands, lit by
-   them. They get there from inside the section (see floating-glass-icons.css),
-   not by being moved out of it. */
+/* The section is positioned but deliberately has NO z-index, so it does not
+   become a stacking context. That is what lets the channel marks inside it
+   take their own place in THIS box's order — some below the canvas and some
+   above it — instead of being trapped together beneath whatever z-index the
+   section itself carried. The copy sits below the canvas, which costs nothing:
+   the layer blends as light and the mask keeps the glow off it. */
 .tubes-zone > *:not(.tubes-cursor) {
   position: relative;
-  z-index: 1;
 }

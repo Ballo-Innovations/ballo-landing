@@ -41,6 +41,12 @@ type FloatingIcon = {
   left: string;
   /** Rendered width; height follows the art's own aspect. */
   size: number;
+  /**
+   * Which side of the strands this one sits on. Mixing the two is what gives
+   * the set depth: the light passes in front of some marks and behind others,
+   * so they read as objects standing in it rather than stickers on it.
+   */
+  depth: "behind" | "front";
   /** Seconds. Deliberately uneven so the set never falls into lockstep. */
   duration: number;
   delay: number;
@@ -48,10 +54,10 @@ type FloatingIcon = {
 };
 
 const ICONS: FloatingIcon[] = [
-  { src: iconMessages, name: "messaging", top: "20%", left: "30%", size: 132, duration: 11, delay: 0, drift: "16px" },
-  { src: iconEmail, name: "email", top: "44%", left: "72%", size: 112, duration: 13, delay: -3.5, drift: "-13px" },
-  { src: iconCloud, name: "cloud delivery", top: "70%", left: "32%", size: 120, duration: 15, delay: -7, drift: "19px" },
-  { src: iconShield, name: "security", top: "88%", left: "70%", size: 96, duration: 12, delay: -1.5, drift: "-15px" },
+  { src: iconMessages, name: "messaging", depth: "behind", top: "20%", left: "30%", size: 132, duration: 11, delay: 0, drift: "16px" },
+  { src: iconEmail, name: "email", depth: "front", top: "44%", left: "72%", size: 112, duration: 13, delay: -3.5, drift: "-13px" },
+  { src: iconCloud, name: "cloud delivery", depth: "behind", top: "70%", left: "32%", size: 120, duration: 15, delay: -7, drift: "19px" },
+  { src: iconShield, name: "security", depth: "front", top: "88%", left: "70%", size: 96, duration: 12, delay: -1.5, drift: "-15px" },
 ];
 
 /*
@@ -130,10 +136,10 @@ export function FloatingGlassIcons() {
       role="img"
       aria-label={`BalloAds: ${ICONS.map((i) => i.name).join(", ")}`}
     >
-      {ICONS.map(({ src, name, top, left, size, duration, delay, drift }) => (
+      {ICONS.map(({ src, name, depth, top, left, size, duration, delay, drift }) => (
         <span
           key={name}
-          className="floating-glass__tile"
+          className={`floating-glass__tile floating-glass__tile--${depth}`}
           style={
             {
               "--fg-top": top,
