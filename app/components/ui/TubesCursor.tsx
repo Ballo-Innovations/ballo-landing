@@ -51,6 +51,8 @@ type TubesApp = {
   dispose: () => void;
 };
 
+type BloomOptions = { strength: number; radius: number; threshold: number };
+
 type TubesFactory = (
   canvas: HTMLCanvasElement,
   options: {
@@ -58,6 +60,7 @@ type TubesFactory = (
       colors: string[];
       lights: { intensity: number; colors: string[] };
     };
+    bloom: BloomOptions;
   }
 ) => TubesApp;
 
@@ -93,6 +96,21 @@ const BASE_CAMERA_Z = 5;
 const MODULE_URL =
   "https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js";
 
+/**
+ * The halo around the strands, and the reason it is set here at all.
+ *
+ * The library blooms with `threshold: 0`, which means EVERY lit pixel is fed
+ * into the glow, not just the bright cores — the dim body of each strand glows
+ * as hard as its hot centre, and the result is a wash rather than light coming
+ * off a filament. Lifting the threshold keeps the bloom for what is actually
+ * bright and leaves the rest crisp; the strength comes down to match.
+ *
+ * Strength and threshold trade against each other. Raising the threshold alone
+ * makes the halo smaller but no softer, and dropping the strength alone dims
+ * the whole scene rather than tightening it.
+ */
+const DEFAULT_BLOOM: BloomOptions = { strength: 0.8, radius: 0.5, threshold: 0.22 };
+
 /** Brand palette: the deep blues and cyan the rest of the page is built from. */
 const DEFAULT_TUBE_COLORS = ["#1a3aff", "#3fdbff", "#7c3aed"];
 const DEFAULT_LIGHT_COLORS = ["#3fdbff", "#7c3aed", "#1a3aff", "#00d4ff"];
@@ -113,6 +131,8 @@ export type TubesCursorProps = {
    * that instant than on this number.
    */
   lightIntensity?: number;
+  /** Overrides the halo. See `DEFAULT_BLOOM` for why the library's is not used. */
+  bloom?: BloomOptions;
   /** Re-roll both palettes on click. Off by default: the colours are brand. */
   recolorOnClick?: boolean;
 };
@@ -131,7 +151,8 @@ export function TubesCursor({
   className,
   colors = DEFAULT_TUBE_COLORS,
   lightColors = DEFAULT_LIGHT_COLORS,
-  lightIntensity = 520,
+  lightIntensity = 360,
+  bloom = DEFAULT_BLOOM,
   recolorOnClick = false,
 }: TubesCursorProps) {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -140,8 +161,8 @@ export function TubesCursor({
 
   // Read through refs inside the effect so changing a palette prop never tears
   // the scene down and re-imports the module.
-  const optionsRef = React.useRef({ colors, lightColors, lightIntensity });
-  optionsRef.current = { colors, lightColors, lightIntensity };
+  const optionsRef = React.useRef({ colors, lightColors, lightIntensity, bloom });
+  optionsRef.current = { colors, lightColors, lightIntensity, bloom };
 
   React.useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -179,12 +200,13 @@ export function TubesCursor({
         .then((module: { default: TubesFactory }) => {
           if (cancelled || !canvasRef.current) return;
 
-          const { colors, lightColors, lightIntensity } = optionsRef.current;
+          const { colors, lightColors, lightIntensity, bloom } = optionsRef.current;
           const app = module.default(canvasRef.current, {
             tubes: {
               colors,
               lights: { intensity: lightIntensity, colors: lightColors },
             },
+            bloom,
           });
           appRef.current = app;
 
