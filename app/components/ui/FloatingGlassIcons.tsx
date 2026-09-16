@@ -36,9 +36,6 @@ type FloatingIcon = {
   src: StaticImageData;
   /** Read out as part of the group's label; never rendered as text. */
   name: string;
-  /** Placement of the tile's CENTRE within the column. */
-  top: string;
-  left: string;
   /** Rendered width; height follows the art's own aspect. */
   size: number;
   /**
@@ -53,11 +50,27 @@ type FloatingIcon = {
   drift: string;
 };
 
+/**
+ * Where a mark can stand, as the centre of its box within the field.
+ *
+ * Deliberately irregular and deliberately more slots than marks: an even grid
+ * reads as a layout, and picking four of six means the arrangement differs
+ * between loads rather than only the pairing within a fixed set.
+ */
+const SLOTS: Array<{ top: string; left: string }> = [
+  { top: "16%", left: "26%" },
+  { top: "30%", left: "74%" },
+  { top: "50%", left: "18%" },
+  { top: "58%", left: "70%" },
+  { top: "80%", left: "38%" },
+  { top: "86%", left: "80%" },
+];
+
 const ICONS: FloatingIcon[] = [
-  { src: iconMessages, name: "messaging", depth: "behind", top: "20%", left: "30%", size: 132, duration: 11, delay: 0, drift: "16px" },
-  { src: iconEmail, name: "email", depth: "front", top: "44%", left: "72%", size: 112, duration: 13, delay: -3.5, drift: "-13px" },
-  { src: iconCloud, name: "cloud delivery", depth: "behind", top: "70%", left: "32%", size: 120, duration: 15, delay: -7, drift: "19px" },
-  { src: iconShield, name: "security", depth: "front", top: "88%", left: "70%", size: 96, duration: 12, delay: -1.5, drift: "-15px" },
+  { src: iconMessages, name: "messaging", depth: "behind", size: 132, duration: 13, delay: 0, drift: "34px" },
+  { src: iconEmail, name: "email", depth: "front", size: 112, duration: 17, delay: -4.5, drift: "-27px" },
+  { src: iconCloud, name: "cloud delivery", depth: "behind", size: 120, duration: 15, delay: -9, drift: "38px" },
+  { src: iconShield, name: "security", depth: "front", size: 96, duration: 11, delay: -2, drift: "-30px" },
 ];
 
 /*
@@ -85,6 +98,81 @@ const LIGHT_REACH = 0.95;
 export function FloatingGlassIcons() {
   const fieldRef = React.useRef<HTMLDivElement>(null);
 
+  /**
+   * Which slot each mark stands in.
+   *
+   * Starts as the first four in order, because that is what the server
+   * renders and the first client render has to match it; the shuffle happens
+   * after mount. Same reason the `whoStackSpread` flag is read in an effect
+   * rather than during render.
+   */
+  const [slots, setSlots] = React.useState(() => ICONS.map((_, i) => i));
+  React.useEffect(() => {
+    const field = fieldRef.current;
+    if (!field) return;
+    const box = field.getBoundingClientRect();
+    if (!box.width || !box.height) return;
+
+    /**
+     * Whether a pick keeps the marks off each other.
+     *
+     * Needed because the float is wide enough that neighbouring slots collide:
+     * a shuffle without this produced an overlapping pair roughly one load in
+     * four. Measured against the field's real size rather than guessed in
+     * percentages, since the two axes are not the same length. The 0.8 is
+     * because the artwork does not fill its box — each piece has transparent
+     * margin — so boxes may kiss without the glass appearing to touch.
+     */
+    const clears = (pick: number[]) =>
+      pick.every((slot, i) =>
+        pick.every((other, j) => {
+          if (j <= i) return true;
+          const a = SLOTS[slot];
+          const b = SLOTS[other];
+          const dx = ((parseFloat(a.left) - parseFloat(b.left)) / 100) * box.width;
+          const dy = ((parseFloat(a.top) - parseFloat(b.top)) / 100) * box.height;
+          const needed =
+            ((ICONS[i].size + ICONS[j].size) / 2) * 0.8 +
+            Math.abs(parseFloat(ICONS[i].drift)) +
+            Math.abs(parseFloat(ICONS[j].drift));
+          return Math.hypot(dx, dy) >= needed;
+        })
+      );
+
+    const shuffled = () => {
+      const pool = SLOTS.map((_, i) => i);
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, ICONS.length);
+    };
+
+    // Bounded, and it keeps the roomiest candidate if none clears outright, so
+    // a slot list that cannot satisfy the rule degrades to its best
+    // arrangement instead of looping or throwing.
+    let best = shuffled();
+    let bestScore = -1;
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const pick = shuffled();
+      if (clears(pick)) {
+        setSlots(pick);
+        return;
+      }
+      const score = pick.reduce((acc, slot) => acc + parseFloat(SLOTS[slot].top), 0);
+      if (score > bestScore) {
+        bestScore = score;
+        best = pick;
+      }
+    }
+    setSlots(best);
+  }, []);
+
+  // The pointer handler is installed once but has to read wherever the marks
+  // ended up, so it reads this rather than closing over the initial order.
+  const slotsRef = React.useRef(slots);
+  slotsRef.current = slots;
+
   React.useEffect(() => {
     const field = fieldRef.current;
     if (!field) return;
@@ -104,7 +192,7 @@ export function FloatingGlassIcons() {
       const reach = Math.hypot(box.width, box.height) * LIGHT_REACH;
 
       tiles.forEach((tile, i) => {
-        const { top, left } = ICONS[i];
+        const { top, left } = SLOTS[slotsRef.current[i]];
         const cx = (parseFloat(left) / 100) * box.width;
         const cy = (parseFloat(top) / 100) * box.height;
         // Linear, and deliberately not eased. Squaring it — the first attempt
@@ -136,14 +224,14 @@ export function FloatingGlassIcons() {
       role="img"
       aria-label={`BalloAds: ${ICONS.map((i) => i.name).join(", ")}`}
     >
-      {ICONS.map(({ src, name, depth, top, left, size, duration, delay, drift }) => (
+      {ICONS.map(({ src, name, depth, size, duration, delay, drift }, i) => (
         <span
           key={name}
           className={`floating-glass__tile floating-glass__tile--${depth}`}
           style={
             {
-              "--fg-top": top,
-              "--fg-left": left,
+              "--fg-top": SLOTS[slots[i]].top,
+              "--fg-left": SLOTS[slots[i]].left,
               "--fg-size": `${size}px`,
               "--fg-duration": `${duration}s`,
               "--fg-delay": `${delay}s`,

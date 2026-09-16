@@ -85,6 +85,66 @@
   z-index: 3;
 }
 
+/* A wandering path rather than a bob. Six stops, not four, and the horizontal
+   and vertical terms peak at different points, so the loop does not fold back
+   on itself the way a symmetric four-stop one does — it reads as drifting
+   rather than as a repeating rock. The position is set by `top`/`left` from the
+   slot, so everything here is relative and the same keyframes serve every
+   mark at whatever size and amplitude. */
+@keyframes floating-glass-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  18% {
+    transform: translate3d(calc(var(--fg-drift) * 0.7), calc(var(--fg-drift) * -0.35), 0)
+      rotate(2deg);
+  }
+  36% {
+    transform: translate3d(calc(var(--fg-drift) * 0.25), calc(var(--fg-drift) * -0.95), 0)
+      rotate(-1.5deg);
+  }
+  54% {
+    transform: translate3d(calc(var(--fg-drift) * -0.6), calc(var(--fg-drift) * -0.7), 0)
+      rotate(-3deg);
+  }
+  72% {
+    transform: translate3d(calc(var(--fg-drift) * -0.85), calc(var(--fg-drift) * 0.15), 0)
+      rotate(1deg);
+  }
+  88% {
+    transform: translate3d(calc(var(--fg-drift) * -0.2), calc(var(--fg-drift) * 0.5), 0)
+      rotate(2.5deg);
+  }
+}
+
+/* Without a pointer there is nothing to light them, so they stay at the floor
+   for good. Hold them at full strength instead — the reveal is a flourish, not
+   the only way to see what is there. */
+@media (hover: none), (pointer: coarse) {
+  .floating-glass__tile {
+    --fg-lit: 1;
+  }
+}
+
+.floating-glass__art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Which side of the strands a mark sits on. These numbers are read against the
+   canvas's `z-index: 2` in tubes-cursor.css, in the `.tubes-zone` stacking
+   context — which works only because the section between them no longer makes
+   a stacking context of its own. */
+.floating-glass__tile--behind {
+  z-index: 1;
+}
+
+.floating-glass__tile--front {
+  z-index: 3;
+}
+
 /* Two axes at different rates so the path is a slow figure rather than a
    bob: the vertical term completes twice per cycle, the horizontal once. */
 @keyframes floating-glass-drift {
