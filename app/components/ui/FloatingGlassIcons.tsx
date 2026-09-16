@@ -39,9 +39,10 @@ type FloatingIcon = {
   /** Rendered width; height follows the art's own aspect. */
   size: number;
   /**
-   * Which side of the strands this one sits on. Mixing the two is what gives
-   * the set depth: the light passes in front of some marks and behind others,
-   * so they read as objects standing in it rather than stickers on it.
+   * Which side of the strands this one sits on. All four stand in front of
+   * them today; `"behind"` is kept because it is a one-word edit per mark and
+   * the arrangement has changed more than once. A mark set to it is lit
+   * through the strands instead of occluding them.
    */
   depth: "behind" | "front";
   /** Seconds. Deliberately uneven so the set never falls into lockstep. */
@@ -67,9 +68,9 @@ const SLOTS: Array<{ top: string; left: string }> = [
 ];
 
 const ICONS: FloatingIcon[] = [
-  { src: iconMessages, name: "messaging", depth: "behind", size: 132, duration: 13, delay: 0, drift: "34px" },
+  { src: iconMessages, name: "messaging", depth: "front", size: 132, duration: 13, delay: 0, drift: "34px" },
   { src: iconEmail, name: "email", depth: "front", size: 112, duration: 17, delay: -4.5, drift: "-27px" },
-  { src: iconCloud, name: "cloud delivery", depth: "behind", size: 120, duration: 15, delay: -9, drift: "38px" },
+  { src: iconCloud, name: "cloud delivery", depth: "front", size: 120, duration: 15, delay: -9, drift: "38px" },
   { src: iconShield, name: "security", depth: "front", size: 96, duration: 11, delay: -2, drift: "-30px" },
 ];
 
