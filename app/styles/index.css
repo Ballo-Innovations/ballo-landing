@@ -18,6 +18,7 @@
 @import "./components/logo-cloud.css";
 @import "./components/tubes-cursor.css";
 @import "./components/floating-glass-icons.css";
+@import "./components/draw-line-text.css";
 /* Pages */
 @import "./pages/home.css";
 @import "./pages/business.css";

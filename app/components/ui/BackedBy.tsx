@@ -4,6 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+import { DrawLineText } from "./DrawLineText";
 import type { HomeLogoItem } from "@/app/HomeClient";
 
 /**
@@ -51,28 +52,20 @@ export function BackedBy({
 
   if (count === 0) return null;
 
-  // The caption's rise is the one piece that animates per swap. Under reduced
-  // motion it is a plain crossfade — the cell still swaps, it just does not
-  // travel.
-  // The caption waits for the mark to clear the cell before it arrives. The
-  // two share one box, so running them together left the logo sitting in full
-  // colour on top of the name it was making room for — a third of a second of
-  // the two overlapping, every swap. Leaving is not delayed: the outgoing
-  // caption goes as the incoming one starts, which is what keeps two partners
-  // from being named at once.
-  const captionMotion = reduced
-    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
-    : {
-        initial: { y: 14, opacity: 0 },
-        animate: { y: 0, opacity: 1 },
-        exit: { y: -10, opacity: 0 },
-      };
-
-  const captionTransition = {
-    duration: 0.26,
-    ease: [0.22, 1, 0.36, 1] as const,
-    delay: reduced ? 0.15 : 0.22,
-  };
+  /**
+   * The wrapper only takes the caption OUT. Its entrance is the draw, which
+   * runs in CSS inside `DrawLineText` — fading or lifting the box at the same
+   * time would drag the strokes along with it and wash them out while they are
+   * still being drawn.
+   *
+   * Leaving still has to be a fade: a letter that has finished drawing reads
+   * as written, and running the draw backwards reads as an erase, which is a
+   * second effect nobody asked for. Fast, and undelayed, so moving between
+   * cells never has two partners named at once.
+   */
+  const captionExit = reduced
+    ? { opacity: 0 }
+    : { opacity: 0, y: -8 };
 
   return (
     <div className="backers">
@@ -138,16 +131,31 @@ export function BackedBy({
                         <motion.p
                           key="caption"
                           className="backers__caption-line"
-                          transition={captionTransition}
-                          {...captionMotion}
-                          /* After the spread, so it overrides the exit in it:
-                             same target, but leaving on its own faster clock,
-                             undelayed. */
-                          exit={{ ...captionMotion.exit, transition: { duration: 0.18 } }}
+                          initial={false}
+                          exit={{ ...captionExit, transition: { duration: 0.18 } }}
                         >
-                          <span className="backers__name">{logo.alt}</span>
+                          {/* Drawn on, letter by letter, rather than set. The
+                              wrapper no longer fades the caption in — the draw
+                              IS the entrance, and a fade over the top of it
+                              just greys the strokes while they run. It still
+                              owns the exit, which has to be a fade: there is
+                              no un-drawing a letter that reads as written.
+
+                              The delays are what keep the two lines from
+                              arriving as one block: the name waits for the
+                              mark to clear the cell, and the role follows it
+                              rather than racing it. */}
+                          <DrawLineText
+                            className="backers__name"
+                            text={logo.alt}
+                            delay="0.16s"
+                          />
                           {logo.role ? (
-                            <span className="backers__role">{logo.role}</span>
+                            <DrawLineText
+                              className="backers__role"
+                              text={logo.role}
+                              delay="0.34s"
+                            />
                           ) : null}
                         </motion.p>
                       ) : null}

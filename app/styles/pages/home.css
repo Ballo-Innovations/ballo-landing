@@ -2767,11 +2767,19 @@
 .backers__caption-line {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* Stretched, not centred, and a full-width box. Both lines are now SVG,
+     which has no intrinsic width to centre — they take the cell's width and
+     centre their own glyphs at `x="50%"` instead. Centring here would size
+     them to content, and an SVG at `width: 100%` of nothing is nothing. */
+  align-items: stretch;
+  width: 100%;
   gap: 0.2rem;
   margin: 0;
 }
 
+/* Both lines are `DrawLineText`. The type is set here and the component reads
+   it off `currentColor` and `font: inherit`, so the draw needs no numbers of
+   its own and these keep their clamps. */
 .backers__name {
   font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(1.15rem, 2.6vw, 1.6rem);
@@ -2779,6 +2787,9 @@
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: #fff;
+  /* Hairline against 1.6rem of bold: the stroke is a guide the fill arrives
+     under, not an outline the letter keeps. */
+  --draw-stroke: 1px;
 }
 
 .backers__role {
@@ -2790,6 +2801,12 @@
   /* The one cyan accent in the section: it is what separates what a partner is
      from its name directly above. */
   color: color-mix(in srgb, var(--cyan) 82%, white);
+  /* Thinner and quicker than the name: it is half the type size, so the same
+     stroke would read as bold, and it is twice the letters, so the same
+     stagger would still be drawing after the name had long finished. */
+  --draw-stroke: 0.6px;
+  --draw-stagger: 0.022s;
+  --draw-dur: 0.4s;
 }
 
 /* ── Desktop: one row of cells ─────────────────────────────────────────── */

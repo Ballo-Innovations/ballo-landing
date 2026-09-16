@@ -1,0 +1,82 @@
+/* =============================================================
+   Draw-line text
+   File: app/components/ui/DrawLineText.tsx
+
+   Each letter is stroked with a dash exactly as long as the whole glyph and
+   offset by that same length, so nothing shows; bringing the offset to zero
+   walks the dash along the outline, which reads as the letter being drawn. The
+   fill then comes up under it.
+
+   Everything is driven off two custom properties so a caller can retime it
+   without touching this file, and off `--i` (the letter's index, set by the
+   component) for the stagger.
+   ============================================================= */
+.draw-text {
+  /* How long one letter takes to draw, and the gap between letters starting.
+     Far tighter than the reference's 2.5s draw and 0.8s stagger: those are for
+     a headline that draws once on a landing, and on a word like "CONNECTIVITY
+     PARTNER" they would run for the better part of twenty seconds. */
+  --draw-dur: 0.5s;
+  --draw-stagger: 0.035s;
+  /* The dash length, as a multiple of the type size. A capital's outline runs
+     roughly 3-4x its own height; over is harmless (the letter simply finishes
+     drawing a little early), under is not — the dash would repeat and the
+     glyph would show up in pieces. */
+  --draw-len: 4em;
+  --draw-stroke: 1px;
+  /* Set by the caller to hold the whole string back; see `delay` on the
+     component. Ahead of the per-letter stagger, not multiplied by it. */
+  --draw-begin: 0s;
+  /* `em` against the font-size the caller sets on this element, so the box
+     tracks the type and neither the component nor JS has to measure it. */
+  height: 1.1em;
+  width: 100%;
+  /* Descenders and the stroke itself sit outside the box this reports. */
+  overflow: visible;
+  user-select: none;
+}
+
+.draw-text__text {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+.draw-text__char {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: var(--draw-stroke);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: var(--draw-len);
+
+  --draw-delay: calc(var(--draw-begin) + var(--i) * var(--draw-stagger));
+  transition:
+    stroke-dashoffset var(--draw-dur) linear var(--draw-delay),
+    /* The fill follows its own letter rather than the whole word, starting
+       when that letter is most of the way drawn. */
+    fill-opacity 0.35s ease calc(var(--draw-delay) + var(--draw-dur) * 0.65);
+}
+
+.draw-text[data-draw="out"] .draw-text__char {
+  stroke-dashoffset: var(--draw-len);
+  fill-opacity: 0;
+}
+
+.draw-text[data-draw="in"] .draw-text__char {
+  stroke-dashoffset: 0;
+  fill-opacity: 1;
+}
+
+/* Reduced motion: the text, plainly. Not a faster draw — the effect IS the
+   motion, so there is nothing to tone down, only to skip. */
+@media (prefers-reduced-motion: reduce) {
+  .draw-text__char {
+    transition: none;
+  }
+
+  .draw-text[data-draw="out"] .draw-text__char,
+  .draw-text[data-draw="in"] .draw-text__char {
+    stroke-dashoffset: 0;
+    fill-opacity: 1;
+  }
+}

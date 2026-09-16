@@ -181,6 +181,16 @@ export function TubesCursor({
     if (!probe) return;
     probe.getExtension("WEBGL_lose_context")?.loseContext();
 
+    // Opens the connection to the CDN as soon as this mounts, rather than when
+    // the module is finally wanted. DNS, TCP and TLS to a third-party origin
+    // measured 114ms of the delay on a fast line from here, and that is the
+    // part that grows worst on a slow one. It fetches nothing.
+    const warm = document.createElement("link");
+    warm.rel = "preconnect";
+    warm.href = "https://cdn.jsdelivr.net";
+    warm.crossOrigin = "anonymous";
+    document.head.appendChild(warm);
+
     let cancelled = false;
 
     /** Keeps the tubes the same size on screen however tall the zone is. */
@@ -243,13 +253,19 @@ export function TubesCursor({
 
         start();
       },
-      { rootMargin: "200px" }
+      // Roughly a screen and a half of warning. At 200px the fetch, the WebGL
+      // init and the fade all happened after the section was already on
+      // screen, which is what made the strands look like they arrived late.
+      // The section is several thousand pixels down the page, so this still
+      // costs nothing to anyone who never scrolls that far.
+      { rootMargin: "1400px" }
     );
 
     observer.observe(wrapper);
 
     return () => {
       cancelled = true;
+      warm.remove();
       observer.disconnect();
       window.removeEventListener("resize", frameCamera);
       // Releases the WebGL context and the document-level pointer listeners the
