@@ -24,9 +24,16 @@
   inset: 0;
   /* Above the section, not below it: the channel marks live inside the section
      and have to be lit THROUGH the strands, so the strands paint over them.
-     The canvas is transparent and takes no pointer events, and the mask keeps
-     the glow off the copy, so nothing else in the section is affected. */
+     The canvas takes no pointer events, and the mask keeps the glow off the
+     copy, so nothing else in the section is affected. */
   z-index: 2;
+  /* Blend as light, not as a pane. The canvas is NOT the transparent sheet it
+     appears to be: the bloom leaves a faint wash across the whole frame, and
+     composited normally that wash sits over everything beneath — which made
+     the marks behind it invisible even at full brightness. `screen` maps black
+     to no-op, so the dark of the canvas disappears and only the glow is added,
+     which is also what light actually does. */
+  mix-blend-mode: screen;
   /* Nothing here is interactive and the library listens on document.body, so
      the layer never eats a click meant for the content above it. */
   pointer-events: none;

@@ -35,13 +35,21 @@
   /* Dark glass on a dark page. The floor is low but not zero — a visitor who
      never brings the pointer over the section should still see that something
      is there, rather than an empty column. */
-  opacity: calc(0.16 + 0.84 * var(--fg-lit));
+  /* The resting floor is set by what is actually legible on this page, not by
+     how dark "in the dark" sounds. Measured against the page, peak brightness
+     of a mark at rest: 0.16/0.28 gave 13 of 255 — invisible, which is what it
+     looked like once the bloom was tightened and stopped spilling light onto
+     them. 0.55/0.55 gives 77, but that peak is only the thin rim and the piece
+     still reads as near-black at a glance. 0.82/0.78 gives about 165, which is
+     legible as dark glass, and full light still reaches 254. The reveal is a
+     lift on something already visible rather than the only way to see it. */
+  opacity: calc(0.82 + 0.18 * var(--fg-lit));
   /* Overshoots past 1 at full light. These pieces are DARK glass — what makes
      them legible is a thin prismatic rim, and that is the first thing to go
      when they are dimmed. Pushing past neutral at the top of the range is what
      brings the rim back hard enough to read as the light catching them. */
-  filter: brightness(calc(0.28 + 0.95 * var(--fg-lit)))
-    saturate(calc(0.5 + 0.8 * var(--fg-lit)))
+  filter: brightness(calc(0.78 + 0.45 * var(--fg-lit)))
+    saturate(calc(0.85 + 0.45 * var(--fg-lit)))
     drop-shadow(0 18px 34px rgba(1, 1, 40, 0.55));
   /* Long enough to read as light arriving rather than a hover state, short
      enough to keep up with a moving pointer. */
