@@ -57,13 +57,16 @@
   opacity: 1;
 }
 
-/* The strands keep to the right of the CTA — the column the "Want a feel of
-   BalloAds?" phone used to fill. Only where that column exists: below this
-   width the section is a single centred column, and half a canvas there would
-   just be a glow pinned to one edge of the copy. */
+/* The strands keep to the right of the CTA — the side the "Want a feel of
+   BalloAds?" phone used to fill. Wider than that column actually is: the glow
+   is soft-edged and reads as a field rather than a panel, so giving it room to
+   spread left of the icons makes the scene, while the mask keeps it from ever
+   reaching the copy. Only where the two-column layout exists — below this
+   width the section is a single centred column, and a part-width canvas there
+   would just be a glow pinned to one edge of the copy. */
 @media (min-width: 901px) {
   .tubes-cursor {
-    left: 55%;
+    left: 38%;
   }
 }
 
