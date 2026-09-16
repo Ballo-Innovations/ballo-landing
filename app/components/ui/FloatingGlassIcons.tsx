@@ -5,6 +5,7 @@ import Image, { type StaticImageData } from "next/image";
 import iconCloud from "@/public/Assets/glass-icon-cloud.png";
 import iconEmail from "@/public/Assets/glass-icon-email.png";
 import iconMessages from "@/public/Assets/glass-icon-messeges.png";
+import iconShield from "@/public/Assets/glass-icon-shield.png";
 
 /**
  * The glass marks drifting in the closing CTA's right-hand column.
@@ -42,17 +43,19 @@ type FloatingIcon = {
 const ICONS: FloatingIcon[] = [
   { src: iconMessages, name: "messaging", top: "20%", left: "30%", size: 132, duration: 11, delay: 0, drift: "16px" },
   { src: iconEmail, name: "email", top: "44%", left: "72%", size: 112, duration: 13, delay: -3.5, drift: "-13px" },
-  { src: iconCloud, name: "cloud delivery", top: "74%", left: "38%", size: 124, duration: 15, delay: -7, drift: "19px" },
+  { src: iconCloud, name: "cloud delivery", top: "70%", left: "32%", size: 120, duration: 15, delay: -7, drift: "19px" },
+  { src: iconShield, name: "security", top: "88%", left: "70%", size: 96, duration: 12, delay: -1.5, drift: "-15px" },
 ];
 
 /*
- * glass-icon-shield.png is deliberately not in that list. Unlike the other
- * three it has no alpha channel at all — it was exported with the editor's
- * transparency checkerboard flattened into the pixels, so it renders as a grey
- * chequered box around the shield. Keying the background out afterwards eats
- * into the art's own soft edges, so the fix is a re-export with transparency,
- * not a patch here. Once the file has an alpha channel, adding it back is one
- * line above.
+ * glass-icon-shield.png arrived without an alpha channel — exported with the
+ * editor's transparency checkerboard flattened into the pixels, so it rendered
+ * as a grey chequered box. The file in this repo has had that background keyed
+ * out: the checker is neutral and bright (234 and 254, R=G=B) while the art is
+ * saturated or dark, so a flood fill inward from the frame removes it without
+ * touching the shield's own white highlights, which are enclosed by it. If the
+ * piece is ever re-exported from source with real transparency, that file is
+ * better than this recovery and should simply replace it.
  */
 
 export function FloatingGlassIcons() {

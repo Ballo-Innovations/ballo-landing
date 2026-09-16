@@ -76,18 +76,20 @@ export function LogoCloud({
                 <Image
                   src={logo.src}
                   alt={logo.alt}
-                  width={128}
-                  height={64}
+                  width={256}
+                  height={128}
                   loading="lazy"
-                  sizes="128px"
+                  sizes="180px"
                   onError={() => markLogoBroken(logo.alt)}
-                  className="h-12 w-auto object-contain sm:h-16"
+                  /* Sized by `.logo-cloud__mark img`, not here: every mark is
+                     fitted into one shared box rather than set to a height of
+                     its own. See the note in logo-cloud.css. */
                   style={{
                     filter: logo.invert ? "brightness(0) invert(1)" : undefined,
                   }}
                 />
               ) : (
-                <span className="logo-cloud__wordmark text-base font-semibold tracking-wide text-white/70 sm:text-2xl">
+                <span className="logo-cloud__wordmark text-sm font-semibold tracking-wide text-white/70 sm:text-lg">
                   {logo.alt}
                 </span>
               )}

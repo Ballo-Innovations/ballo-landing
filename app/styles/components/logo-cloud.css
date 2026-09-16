@@ -14,23 +14,35 @@
   padding-inline: 1rem;
 }
 
+/* An even grid at every width, never a wrapping flex row.
+
+   The row used to be `flex-wrap` with each mark at its natural width, which is
+   what made the section look scattered: every row broke at a different point,
+   no two marks shared a left edge, and the last row centred itself under
+   columns that were not there. A fixed column count per breakpoint puts every
+   mark in the same box as its neighbours, so the eye reads columns. */
 .logo-cloud__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  place-items: center;
-  gap: 2rem 1rem;
-  max-width: 64rem;
+  align-items: center;
+  justify-items: center;
+  gap: clamp(1.5rem, 4vw, 2.5rem) 1rem;
+  max-width: 68rem;
   margin: 2.5rem auto 0;
 }
 
 @media (min-width: 640px) {
   .logo-cloud__grid {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem 2.5rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2.5rem 1.5rem;
     margin-top: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .logo-cloud__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 2.75rem 2rem;
   }
 }
 
@@ -38,38 +50,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   min-width: 0;
   transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (min-width: 640px) {
-  .logo-cloud__item {
-    flex: 0 0 auto;
-    padding-inline: 0.5rem;
-  }
 }
 
 .logo-cloud__item:hover {
   transform: scale(1.07);
 }
 
+/* One box for every mark, and each mark fitted inside it.
+
+   Sizing by height alone (the old `h-12`/`h-16` on the image) is what made
+   these read as different sizes: a 4:1 wordmark like "ZHTC — Zambia Hands On
+   Training Centre" and a square mark like FI set to the same height differ by
+   four times in area, so the wordmarks dominated and the square marks looked
+   like an afterthought. A fixed box with object-contain lets the wide ones be
+   limited by width and the tall ones by height, which normalises them
+   optically without a per-logo size to maintain — and holds for whatever the
+   CMS uploads next. */
 .logo-cloud__mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* The marks are sized by height (h-12/h-16) with an auto width, so a wide
-     one — a long wordmark like "ZHTC Zambia Hands On Training Centre" — would
-     otherwise run out of its grid column on a phone. Capping the width lets
-     object-contain scale it down instead. */
-  max-width: 100%;
+  width: 100%;
+  height: clamp(2.5rem, 7vw, 3.5rem);
 }
 
 .logo-cloud__mark img {
+  max-height: 100%;
   max-width: 100%;
+  width: auto;
+  object-fit: contain;
 }
 
-/* The same cap for rows with no usable image, which render the partner's name
-   instead: it wraps rather than pushing out of the column. */
+/* The same box for rows with no usable image, which render the partner's name
+   instead: it wraps and shrinks rather than pushing out of the column. */
 .logo-cloud__wordmark {
   max-width: 100%;
   text-align: center;

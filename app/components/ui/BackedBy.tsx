@@ -21,7 +21,9 @@ import type { HomeLogoItem } from "@/app/HomeClient";
  * That meant the section named the same partner twice at the same moment, and
  * the large copy had to be sized to the longest name the CMS might ever hold
  * so a swap could not reflow the page. Naming each mark on the mark drops the
- * duplicate and the sizing hack with it, and the label above is now fixed copy.
+ * duplicate and the sizing hack with it, and the label above is now just the
+ * "Backed by" pill — the headline that sat under it named nothing the pill
+ * and the marks do not already say.
  *
  * The cycle is the baseline and the pointer is the override: hovering the band
  * stops the advance and reveals whichever mark is under the cursor, and
@@ -36,11 +38,9 @@ const DWELL_MS = 2800;
 export function BackedBy({
   logos,
   eyebrow = "Backed by",
-  headline = "The networks, platforms and institutions behind BalloAds.",
 }: {
   logos: HomeLogoItem[];
   eyebrow?: string;
-  headline?: string;
 }) {
   const reduced = useReducedMotion();
   const [active, setActive] = React.useState(0);
@@ -95,7 +95,6 @@ export function BackedBy({
     <div className="backers">
       <div className="backers__label">
         <p className="backers__eyebrow">{eyebrow}</p>
-        <p className="backers__headline">{headline}</p>
       </div>
 
       {/* The band. `onMouseLeave` hands the section back to the cycle rather

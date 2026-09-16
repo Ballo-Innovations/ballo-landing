@@ -2624,17 +2624,6 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-.backers__headline {
-  margin: 0;
-  max-width: 34ch;
-  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.4rem, 3.4vw, 2.25rem);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: #fff;
-}
-
 /* ── The band ──────────────────────────────────────────────────────────── */
 
 .backers__band {
@@ -2720,8 +2709,14 @@
 }
 
 /* Hover on a cell that is not the lit one still de-greys its mark, so the
-   pointer has something to follow between swaps. */
-.backers__item:hover .backers__logo {
+   pointer has something to follow between swaps.
+
+   `:not([data-active])` is load-bearing, not a tidy-up. Hovering a cell makes
+   it the active one, so without it this rule matched the lit cell too — same
+   specificity as the rule above and later in the file, so it won, and the mark
+   came back to full opacity mid-swap and sat in colour on top of the caption
+   it was supposed to have cleared out for. */
+.backers__item:not([data-active]):hover .backers__logo {
   opacity: 1;
   filter: grayscale(0);
 }
@@ -3130,21 +3125,15 @@
 /* ── Backed by ─────────────────────────────────────────────────────────── */
 
 .backers__eyebrow,
-.backers__headline,
 .backers__cell {
   transition:
     opacity 0.7s ease var(--enter-delay, 0s),
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
 }
 
-.backers-reveal[data-fur="out"] .backers__eyebrow,
-.backers-reveal[data-fur="out"] .backers__headline {
+.backers-reveal[data-fur="out"] .backers__eyebrow {
   opacity: 0;
   transform: translate3d(0, 16px, 0);
-}
-
-.backers-reveal[data-fur="out"] .backers__headline {
-  --enter-delay: 0.08s;
 }
 
 /* The cell, not the `<li>` and not the mark inside it. The `<li>` carries the
@@ -3209,12 +3198,10 @@
    arm in utilities.css does the same for its wrapper. */
 @media (prefers-reduced-motion: reduce) {
   .backers__eyebrow,
-  .backers__headline,
   .backers__cell,
   .who-cta__copy > *,
   .who-cta__rows > .mq,
   .backers-reveal[data-fur="out"] .backers__eyebrow,
-  .backers-reveal[data-fur="out"] .backers__headline,
   .backers-reveal[data-fur="out"] .backers__cell,
   .who-cta__copy-reveal[data-fur="out"] .who-cta__copy > *,
   .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(1),
