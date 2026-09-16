@@ -7,14 +7,13 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { HomeLogoItem } from "@/app/HomeClient";
 
 /**
- * "Backed by", as one partner at a time.
+ * "Backed by": the marks, and what each one is to BalloAds on hover.
  *
  * The logos were a static row that said nothing about who any of them were: a
- * reader either recognised a mark or did not. Here one partner is always lit,
- * and what it is to BalloAds is printed in place of its logo — the mark slides
- * up and out of its cell and the name and role come up from under it — so the
- * marks become legible as names without printing a caption under every one of
- * them.
+ * reader either recognised a mark or did not. Hovering a cell prints what that
+ * partner is in place of its logo — the mark slides up and out and the name
+ * and role come up from under it — so the marks become legible as names
+ * without a caption printed under every one of them.
  *
  * The swap is in the cell, not in a headline beside the rail. It used to be
  * both: a large cycling name sat next to the rail while the marks only lit up.
@@ -25,15 +24,17 @@ import type { HomeLogoItem } from "@/app/HomeClient";
  * "Backed by" pill — the headline that sat under it named nothing the pill
  * and the marks do not already say.
  *
- * The cycle is the baseline and the pointer is the override: hovering the band
- * stops the advance and reveals whichever mark is under the cursor, and
- * leaving it hands the section back to the cycle. That ordering is the whole
- * reason this is not a hover effect — most of this page's traffic is touch,
- * where a hover-only reveal means the roles are never shown at all.
+ * The resting state is every mark visible, and the pointer is the only thing
+ * that changes it. This used to cycle on a timer, lighting one partner at a
+ * time for 2.8s whenever the band was on screen — which meant one of the four
+ * marks was always missing from a row whose job is to show all four, and the
+ * section moved on its own while the reader was elsewhere on it.
+ *
+ * What the cycle bought was the roles on touch, where there is no hover. That
+ * is now carried by the visually-hidden list in each cell instead: a screen
+ * reader still gets every name and role, in order. A sighted touch reader sees
+ * the marks and not the roles, which is the trade this shape accepts.
  */
-
-/** How long each partner holds the light. */
-const DWELL_MS = 2800;
 
 export function BackedBy({
   logos,
@@ -43,40 +44,10 @@ export function BackedBy({
   eyebrow?: string;
 }) {
   const reduced = useReducedMotion();
-  const [active, setActive] = React.useState(0);
-  /** Set while the pointer owns the band; suspends the cycle. */
-  const [pinned, setPinned] = React.useState(false);
-  const [onScreen, setOnScreen] = React.useState(false);
-  const bandRef = React.useRef<HTMLDivElement>(null);
+  /** The cell under the pointer, or `null` — the resting state, all marks up. */
+  const [active, setActive] = React.useState<number | null>(null);
 
   const count = logos.length;
-
-  // Only run the cycle when it can actually be seen, and never against the
-  // reader: a pointer in the band pins it, and reduced motion stops it
-  // outright (the first mark stays revealed, and hover still moves the light).
-  const cycling = onScreen && !pinned && !reduced && count > 1;
-
-  React.useEffect(() => {
-    const el = bandRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setOnScreen(entry.isIntersecting),
-      { rootMargin: "0px 0px -10% 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  React.useEffect(() => {
-    if (!cycling) return;
-    const id = setInterval(() => setActive((i) => (i + 1) % count), DWELL_MS);
-    return () => clearInterval(id);
-  }, [cycling, count]);
-
-  // Keep the active index in range if the CMS list shrinks under it.
-  React.useEffect(() => {
-    if (active >= count) setActive(0);
-  }, [active, count]);
 
   if (count === 0) return null;
 
@@ -109,14 +80,11 @@ export function BackedBy({
         <p className="backers__eyebrow">{eyebrow}</p>
       </div>
 
-      {/* The band. `onMouseLeave` hands the section back to the cycle rather
-          than leaving the reveal parked wherever the pointer left it. */}
-      <div
-        ref={bandRef}
-        className="backers__band"
-        onMouseEnter={() => setPinned(true)}
-        onMouseLeave={() => setPinned(false)}
-      >
+      {/* `onMouseLeave` is on the band, not on each cell: leaving one cell for
+          the next must not clear the reveal between them, and leaving the band
+          altogether must return it to all-marks-up rather than park the
+          caption wherever the pointer left it. */}
+      <div className="backers__band" onMouseLeave={() => setActive(null)}>
         <ul className="backers__items">
           {logos.map((logo, i) => {
             const isActive = i === active;
@@ -163,7 +131,7 @@ export function BackedBy({
                       The name and role are in the document for every partner
                       regardless — see the visually-hidden copy below — so a
                       screen reader reads the full list once, in order, rather
-                      than re-announcing whichever cell the cycle has reached. */}
+                      than depending on a pointer it does not have. */}
                   <div className="backers__caption" aria-hidden="true">
                     <AnimatePresence initial={false}>
                       {isActive ? (

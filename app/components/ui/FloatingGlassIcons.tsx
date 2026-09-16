@@ -123,21 +123,32 @@ export function FloatingGlassIcons() {
      * because the artwork does not fill its box — each piece has transparent
      * margin — so boxes may kiss without the glass appearing to touch.
      */
-    const clears = (pick: number[]) =>
-      pick.every((slot, i) =>
-        pick.every((other, j) => {
-          if (j <= i) return true;
-          const a = SLOTS[slot];
-          const b = SLOTS[other];
+    /**
+     * The worst clearance in a pick: how much room the tightest pair has,
+     * beyond what they need at the extremes of their drift. Negative means
+     * they can touch.
+     *
+     * Full half-widths, no fudge factor. An earlier version allowed a fifth of
+     * that on the grounds that the artwork does not fill its box, and marks
+     * duly overlapped on about one load in three.
+     */
+    const clearance = (pick: number[]) => {
+      let worst = Infinity;
+      for (let i = 0; i < pick.length; i++) {
+        for (let j = i + 1; j < pick.length; j++) {
+          const a = SLOTS[pick[i]];
+          const b = SLOTS[pick[j]];
           const dx = ((parseFloat(a.left) - parseFloat(b.left)) / 100) * box.width;
           const dy = ((parseFloat(a.top) - parseFloat(b.top)) / 100) * box.height;
           const needed =
-            ((ICONS[i].size + ICONS[j].size) / 2) * 0.8 +
+            (ICONS[i].size + ICONS[j].size) / 2 +
             Math.abs(parseFloat(ICONS[i].drift)) +
             Math.abs(parseFloat(ICONS[j].drift));
-          return Math.hypot(dx, dy) >= needed;
-        })
-      );
+          worst = Math.min(worst, Math.hypot(dx, dy) - needed);
+        }
+      }
+      return worst;
+    };
 
     const shuffled = () => {
       const pool = SLOTS.map((_, i) => i);
@@ -148,20 +159,17 @@ export function FloatingGlassIcons() {
       return pool.slice(0, ICONS.length);
     };
 
-    // Bounded, and it keeps the roomiest candidate if none clears outright, so
-    // a slot list that cannot satisfy the rule degrades to its best
-    // arrangement instead of looping or throwing.
+    // Bounded, and it keeps the genuinely roomiest candidate if none clears
+    // outright — scored by that same worst-pair clearance, so a slot list that
+    // cannot satisfy the rule degrades to its least bad arrangement rather
+    // than looping, throwing, or picking one by a number that means nothing.
     let best = shuffled();
-    let bestScore = -1;
-    for (let attempt = 0; attempt < 40; attempt++) {
+    let bestClearance = clearance(best);
+    for (let attempt = 0; attempt < 60 && bestClearance < 0; attempt++) {
       const pick = shuffled();
-      if (clears(pick)) {
-        setSlots(pick);
-        return;
-      }
-      const score = pick.reduce((acc, slot) => acc + parseFloat(SLOTS[slot].top), 0);
-      if (score > bestScore) {
-        bestScore = score;
+      const room = clearance(pick);
+      if (room > bestClearance) {
+        bestClearance = room;
         best = pick;
       }
     }
