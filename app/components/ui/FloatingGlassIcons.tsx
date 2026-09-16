@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Image, { type StaticImageData } from "next/image";
 
 import iconCloud from "@/public/Assets/glass-icon-cloud.png";
@@ -20,7 +21,13 @@ import iconShield from "@/public/Assets/glass-icon-shield.png";
  * a second pane behind it would only mute it. So the tiles have no background,
  * no border and no blur; they are the image and a shadow to seat it.
  *
- * Nothing animates on a timer or in JS: each tile is one infinite CSS
+ * They sit BEHIND the strands and are lit by them: dark glass on a dark page
+ * until the light comes near, then the glass takes it. The light's position is
+ * the pointer's — the strands converge on it, so it is where they are, and
+ * reading it costs one event listener instead of a per-frame hand-off out of
+ * the WebGL scene.
+ *
+ * The drift animates on no timer and in no JS: each tile is one infinite CSS
  * transform, and `.cta-mq` carries `useAnimateWhenVisible`, so the set parks
  * with `animation-play-state` the moment the section scrolls away.
  */
@@ -58,9 +65,67 @@ const ICONS: FloatingIcon[] = [
  * better than this recovery and should simply replace it.
  */
 
+/**
+ * How far the light carries, as a fraction of the layer's diagonal.
+ *
+ * Generous on purpose. The strands converge ON the pointer, so a mark at the
+ * pointer is the one they are covering — if only that mark lit, the light
+ * would reveal exactly what it hides. A wide reach with a gentle falloff lights
+ * the marks the strands are passing NEAR, which is what reads as a light
+ * sweeping through them.
+ */
+const LIGHT_REACH = 0.95;
+
 export function FloatingGlassIcons() {
+  const fieldRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const field = fieldRef.current;
+    if (!field) return;
+    const tiles = Array.from(
+      field.querySelectorAll<HTMLElement>(".floating-glass__tile")
+    );
+
+    const light = (event: PointerEvent) => {
+      // One rect read for the whole set, not one per tile: each tile's centre
+      // is already known as a percentage of this box, so the rest is
+      // arithmetic. Reading four rects per pointer event would interleave
+      // layout reads with the style writes below.
+      const box = field.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      const px = event.clientX - box.left;
+      const py = event.clientY - box.top;
+      const reach = Math.hypot(box.width, box.height) * LIGHT_REACH;
+
+      tiles.forEach((tile, i) => {
+        const { top, left } = ICONS[i];
+        const cx = (parseFloat(left) / 100) * box.width;
+        const cy = (parseFloat(top) / 100) * box.height;
+        // Linear, and deliberately not eased. Squaring it — the first attempt
+        // — made the falloff so sharp that only the mark directly under the
+        // strands ever lit, which is the one they are covering.
+        const lit = Math.max(0, 1 - Math.hypot(px - cx, py - cy) / reach);
+        tile.style.setProperty("--fg-lit", lit.toFixed(3));
+      });
+    };
+
+    const douse = () => tiles.forEach((t) => t.style.setProperty("--fg-lit", "0"));
+
+    window.addEventListener("pointermove", light, { passive: true });
+    // The pointer can leave through the top of the page or into devtools, where
+    // no `pointerleave` arrives on any element we own.
+    document.addEventListener("pointerleave", douse);
+    window.addEventListener("blur", douse);
+    return () => {
+      window.removeEventListener("pointermove", light);
+      document.removeEventListener("pointerleave", douse);
+      window.removeEventListener("blur", douse);
+    };
+  }, []);
+
   return (
     <div
+      ref={fieldRef}
       className="floating-glass"
       role="img"
       aria-label={`BalloAds: ${ICONS.map((i) => i.name).join(", ")}`}
