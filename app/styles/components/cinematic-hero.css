@@ -544,4 +544,14 @@
      a strip of type. */
   height: clamp(9rem, 26vh, 16rem);
   margin-inline: auto;
+  /* Long enough to be a departure rather than a cut, short enough that the
+     band is gone by the time "What We're About" has finished arriving. */
+  transition: opacity 520ms ease;
+}
+
+/* Off the stage for "What We're About" and "Why Choose BalloAds" (see
+   `bandHidden` in HeroMarquee.tsx). Faded, not unmounted: the field would
+   otherwise re-sample thousands of particles on the way back up. */
+.hero-marquee-canvas--out {
+  opacity: 0;
 }

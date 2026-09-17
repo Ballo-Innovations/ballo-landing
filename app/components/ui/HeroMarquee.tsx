@@ -6,25 +6,22 @@ import { useMotionValue, useMotionValueEvent } from "framer-motion";
 
 import { useOptionalContainerScrollContext } from "./AnimatedVideoOnScroll";
 import { CursorDrivenParticleTypography } from "./cursor-driven-particles-typography";
-import { BAND_WORDMARK, PHONE_CONTENT, TEXT_SWAP } from "./HeroSideExit";
-import { useDustMirror } from "./DustMirror";
-import { buildTimeline, features } from "@/app/components/sections/WhyScrollSection";
-import { at } from "@/lib/cinematic";
+import { BAND_WORDMARK } from "./HeroSideExit";
+import { cn } from "@/lib/utils";
 
 /**
  * The hero's background band: "YOUR DIGITAL MARKETING ASSISTANT", scrolling,
  * made of particles that scatter away from the pointer and settle back.
  *
- * Through "What We're About" it comes to rest as "BalloAds" rather than
- * running the tagline past it: the copy beside the device is what should be
- * read there, and a second line of moving type behind it was competing for
- * the same attention.
+ * It belongs to the hero and only to the hero. Once "What We're About"
+ * arrives it fades out and does not come back for the rest of the pin: that
+ * scene and "Why Choose BalloAds?" are a device beside a column of copy, and
+ * anything in the background there is a third thing competing with them.
  *
- * Once the pin reaches "Why Choose BalloAds?" the line stops travelling and
- * the same dust re-forms into one word per feature card — AI, SCALE, INSIGHT
- * — so the background is saying what the card in front of it says instead of
- * repeating the tagline behind it. The words come from the cards themselves
- * (`features[].word`); the morph is `morphTo` on the particle field.
+ * It used to settle into "BalloAds" and then into one word per feature card,
+ * which was an attempt at the same problem from the other side — say what the
+ * scene says rather than talk over it. Quieter than a travelling line, but
+ * still a word the size of the stage behind a scene that did not need one.
  *
  * The size has to be computed rather than left to CSS. The particle field is
  * sampled from text rendered into a canvas, so the face size is a number the
@@ -33,9 +30,6 @@ import { at } from "@/lib/cinematic";
  */
 
 const TEXT = "YOUR DIGITAL MARKETING ASSISTANT";
-
-/** What the dust settles into through "What We're About". */
-const WORDMARK = "BalloAds";
 
 /**
  * The lattice of boxes the band becomes once the last feature card has had its
@@ -75,46 +69,25 @@ const SPEED_PX_PER_SEC = 140;
 const HOVER_FROM = 0.004;
 
 /**
- * The card sequence's own timeline, in the same units `WhyCardSequence` uses.
- * The band changes word at each swap's midpoint: the cards snap, so the scroll
- * cannot rest mid-swap, and the midpoint is where the incoming card has taken
- * the screen.
- */
-const { swaps: CARD_SWAPS, total: CARD_TOTAL } = buildTimeline(features.length);
-
-/**
- * Which word the band is holding at this scroll position, or null while it is
- * still the travelling line.
+ * Whether the band is off the stage at this scroll position.
  *
- * It starts at the end of the copy swap, not at the first card: "Why Choose"
- * 's heading is in by then and the phone is already showing card 01, so the
- * band arriving late would be the only thing still talking about the hero.
- */
-function wordAt(p: number) {
-  // Act two: the dust settles into the wordmark while "What We're About" is
-  // being read beside the phone.
-  if (p >= BAND_WORDMARK[0] && p < BAND_WORDMARK[1]) return WORDMARK;
-  if (p < TEXT_SWAP[1]) return null;
-  const t = at(p, PHONE_CONTENT);
-  let i = 0;
-  for (const swap of CARD_SWAPS) {
-    if (t >= (swap.start + swap.end) / 2 / CARD_TOTAL) i++;
-  }
-  return features[Math.min(i, features.length - 1)].word;
-}
-
-/**
- * How far left of centre a held word sits, as a fraction of the band's width.
+ * It holds a word through "What We're About" and "Why Choose BalloAds" no
+ * longer: it leaves. Those two scenes are a device and a column of copy, and
+ * a word behind them — at any size, in beads or in dust — was a third thing
+ * competing for the same attention.
  *
- * Only where the layout is side by side. Above 900px the phone stands left of
- * centre and the copy column owns the right, so a word centred on the band ran
- * under copy nobody could read it through; pulled left, it spans the open
- * margin, the device, and the gap between them, with almost nothing left under
- * the text. Below that breakpoint the copy sits *under* the phone rather than
- * beside it, the middle of the band is clear, and centred is correct.
+ * It fades rather than unmounts. Unmounting would tear down the field and
+ * re-sample thousands of particles the moment it came back, and the fade also
+ * has to be reversible: scrolling back up returns the band to a hero that is
+ * still on screen.
+ *
+ * The travelling line does NOT resume underneath. That was the arrangement
+ * before the wordmark existed and it is what the wordmark was introduced to
+ * fix — moving type behind the copy is the loudest version of this problem,
+ * not the quietest. `wordAt` is gone with it; the band never holds a word now.
  */
-function marqueeWordShift(w: number) {
-  return w > 900 ? -0.14 : 0;
+function bandHidden(p: number) {
+  return p >= BAND_WORDMARK[0];
 }
 
 function marqueeFontPx(w: number, h: number) {
@@ -130,23 +103,17 @@ function marqueeFontPx(w: number, h: number) {
 
 export function HeroMarquee() {
   const [fontPx, setFontPx] = React.useState(200);
-  const [wordShift, setWordShift] = React.useState(0);
   // Undefined on the reduced-motion path, where the band renders in plain flow
   // with no scroll track above it. No track, no zoom-out, no scatter.
   const track = useOptionalContainerScrollContext();
   const [hover, setHover] = React.useState(false);
-  const [word, setWord] = React.useState<string | null>(null);
-  // The phone's screen, if this band is on a pin that has one. The field draws
-  // the held word into it as well, in register — the device is standing in
-  // front of the band, and what it covers is what it shows.
-  const mirror = useDustMirror();
+  const [hidden, setHidden] = React.useState(false);
   // `useMotionValueEvent` needs a MotionValue on every render, track or not.
   const idle = useMotionValue(0);
 
   React.useEffect(() => {
     const apply = () => {
       setFontPx(marqueeFontPx(window.innerWidth, window.innerHeight));
-      setWordShift(marqueeWordShift(window.innerWidth));
     };
     apply();
     // Settled rather than live, and not for tidiness: `fontPx` is a dependency
@@ -171,18 +138,18 @@ export function HeroMarquee() {
   }, []);
 
   useMotionValueEvent(track?.scrollYProgress ?? idle, "change", (p) => {
-    const next = p > HOVER_FROM;
-    setHover((prev) => (prev === next ? prev : next));
-    // Only the band's own track drives the words. Without a pin there is no
-    // card sequence to echo, and the line simply keeps running.
+    const armed = p > HOVER_FROM;
+    setHover((prev) => (prev === armed ? prev : armed));
+    // Only the band's own track can take it off the stage. Without a pin
+    // there are no scenes to make way for, and the line simply keeps running.
     if (!track) return;
-    const nextWord = wordAt(p);
-    setWord((prev) => (prev === nextWord ? prev : nextWord));
+    const out = bandHidden(p);
+    setHidden((prev) => (prev === out ? prev : out));
   });
 
   return (
     <CursorDrivenParticleTypography
-      className="hero-marquee-canvas"
+      className={cn("hero-marquee-canvas", hidden && "hero-marquee-canvas--out")}
       text={TEXT}
       fontSize={fontPx}
       fontFamily='var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif'
@@ -190,23 +157,17 @@ export function HeroMarquee() {
       // glyphs at the same alpha — there is space between them — so this is
       // lifted a little to land at the same weight on the page.
       color="rgba(255, 255, 255, 0.1)"
-      /* Coarser and chunkier than it was (4 and 2). The dots were packed
-         tightly enough to read as a smooth wash rather than as dust; at this
-         step they are visibly separate, and squares at whole-pixel positions
-         make the held word read as pixel type. It is also cheaper — the field
-         samples roughly a third of the points it used to. */
-      /* Coarser again now that each particle is a bead of glass rather than a
-         flat dot (`dotShape="glass"`). A bead carries a glow, and at the old
-         7px step the glows overlapped into one lit wash with no beads visible
-         in it — the thing that makes them read as glass is the dark between
-         them. Bigger, and fewer. */
-      /* The step stays close to what the flat dust used: a held word ("AI",
-         "SCALE", "INSIGHT") is sampled at this same step, and coarsening it
-         to keep the glows apart left the word as a handful of scattered beads
-         with no letterform in them. The glow was narrowed instead. */
+      /* The step and the size the beads want. Coarser than the flat dust
+         started at (4 and 2): packed that tightly the dots read as a smooth
+         wash rather than as dust, and a bead carries a glow on top of that —
+         what makes beads read as glass is the dark between them. Coarser
+         still overlapped less but cost the beads their footing on the
+         lattice, so the glow was narrowed instead (see `buildBead`). */
       particleDensity={8}
       particleSize={2.4}
       dotShape="glass"
+      // Scatter stays armed for the whole time the band is on the stage.
+      interactive={hover && !hidden}
       dispersionStrength={18}
       returnSpeed={0.08}
       marquee
@@ -215,26 +176,6 @@ export function HeroMarquee() {
       // The band is pointer-events:none so it can never eat a click on the
       // hero, which means the canvas itself never sees a mousemove.
       trackPointer="window"
-      // Off again once the band is holding a word. Up to that point the line
-      // is atmosphere and answering the pointer is the point of it; from
-      // "Why Choose" on it is a statement standing behind the copy, and dust
-      // that scatters under a passing cursor turns reading the section into
-      // an interruption. It also means the word the phone is showing cannot
-      // be knocked out of register by the pointer.
-      // Off while the band is holding a word. Dust that scatters under a
-      // passing cursor turns reading the copy beside it into an interruption,
-      // and it would knock the held word out of register with the part of it
-      // the phone is mirroring.
-      interactive={hover && word === null}
-      morphTo={word}
-      mirror={mirror}
-      morphOffsetX={wordShift}
-      /* The held words sit behind the phone on "What We're About" and "Why
-         Choose BalloAds", and at full size the word ran the width of the
-         scene with the device parked in the middle of it and beads crowding
-         the copy column. Smaller, it is still legible and it is background
-         again, which is what a word standing behind a phone is for. */
-      morphSizeScale={0.6}
     />
   );
 }
