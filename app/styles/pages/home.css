@@ -2084,6 +2084,28 @@
   }
 }
 
+/* Phones: one column, not two. At 390px a 46vw column is about 175px wide,
+   which broke every quote across eight short lines before the five-line clamp
+   cut it off, and ellipsised both the name and the role in the byline — the
+   wall read as a grid of grey stripes rather than as anything quotable. One
+   column at readable width says more, and the vertical drift still carries the
+   set past. */
+@media (max-width: 520px) {
+  .t3d__col {
+    width: min(86vw, 22rem);
+  }
+
+  .t3d__col:nth-child(n + 2) {
+    display: none;
+  }
+
+  /* With a single column the side fades cover a quarter of every card. */
+  .t3d__fade--l,
+  .t3d__fade--r {
+    display: none;
+  }
+}
+
 @keyframes t3d-up {
   to {
     transform: translate3d(0, -50%, 0);
@@ -2547,6 +2569,17 @@
   position: relative;
   justify-self: stretch;
   min-height: min(26rem, 52vh);
+}
+
+/* The tiles inside are hidden below this width (see floating-glass-icons.css:
+   they would sit on top of the centred copy), and the column has nothing else
+   in it — so the min-height above was reserving half a screen of empty page
+   between the store badges and the footer. Take the column out of the grid
+   entirely there rather than leaving an empty row. */
+@media (max-width: 900px) {
+  .cta-mq__visual {
+    display: none;
+  }
 }
 
 @media (min-width: 901px) {
