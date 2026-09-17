@@ -16,6 +16,12 @@ export type PartnerLogo = {
   isPublished: boolean;
   /** True = "Backed by" strip; false = "Trusted by the very best" marquee. */
   isBacker: boolean;
+  /**
+   * What this partner is to BalloAds, revealed when its mark is hovered in the
+   * "Backed by" strip. Null on marquee rows, and on any backer row published
+   * before the field existed — those reveal the name alone.
+   */
+  role: string | null;
   createdAt: string;
   updatedAt: string;
 };

@@ -101,15 +101,23 @@ const FALLBACK_PARTNER_LOGOS: HomeLogoItem[] = [
 // partner's name, so it is the section's actual content rather than a caption —
 // a mark with no role here reveals as a bare name.
 //
-// Keyed by name so a CMS row gets its role too: the partner-logo API has no
-// role field yet, and without this a seeded "Backed by" row would replace a
-// named fallback with an unnamed one. Names are matched case-insensitively and
-// an unknown name simply has no role.
+// This is now only the FALLBACK wording. The partner-logo table carries a
+// `role` per row, so the live copy is edited in the CMS; this map is what the
+// section says before the CMS has rows, and what fills in a seeded row whose
+// role was left empty. Names match case-insensitively; an unknown name simply
+// has no role.
+//
+// The wording is deliberately descriptive rather than relational. "Digital
+// partner" and "Technology provider" said nothing a reader could use, and
+// under a "Backed by" heading they read as claims of endorsement by companies
+// that have not made one — which Meta's brand terms in particular do not allow.
+// Naming what each organisation IS carries the same recognition without
+// borrowing anyone's approval.
 const BACKER_ROLES: Record<string, string> = {
-  Airtel: "Connectivity partner",
-  MTN: "Digital partner",
-  Meta: "Technology provider",
-  ZICTA: "ICT innovation programme",
+  Airtel: "Mobile network",
+  MTN: "Mobile network",
+  Meta: "WhatsApp Business Platform",
+  ZICTA: "ICT regulator",
 };
 
 function roleFor(name: string): string | undefined {
@@ -163,7 +171,9 @@ export default async function Home() {
       ? cmsBackers.map((p) => ({
           src: p.logoUrl,
           alt: p.name,
-          role: roleFor(p.name),
+          // The row's own role, then the fallback map for rows seeded before
+          // the field existed or left empty in the CMS.
+          role: p.role ?? roleFor(p.name),
         }))
       : FALLBACK_BACKER_LOGOS;
 
