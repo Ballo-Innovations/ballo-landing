@@ -22,10 +22,22 @@ import iconShield from "@/public/Assets/glass-icon-shield.png";
  * no border and no blur; they are the image and a shadow to seat it.
  *
  * They sit BEHIND the strands and are lit by them: dark glass on a dark page
- * until the light comes near, then the glass takes it. The light's position is
- * the pointer's — the strands converge on it, so it is where they are, and
- * reading it costs one event listener instead of a per-frame hand-off out of
- * the WebGL scene.
+ * until the light comes near, then the glass takes it.
+ *
+ * The light's position is the STRANDS', not the pointer's. The two are not the
+ * same place: the strands chase the pointer with a lag, so they are strung out
+ * along where it has just been, and when it stops they keep drifting around it
+ * rather than parking. Lighting from the raw pointer therefore lit whatever
+ * the pointer was over while the visible light was somewhere else, and the
+ * marks went dark the moment the pointer stopped moving — exactly when the
+ * strands are still sweeping over them.
+ *
+ * Rather than reach into the WebGL scene for per-frame positions (the library
+ * is a minified CDN bundle and exposes none), `strandPath` reproduces that
+ * motion here: an eased head that trails the pointer, an idle orbit for when
+ * the pointer is still, and the recent heads kept as the body. A mark is lit
+ * by its distance to the NEAREST point on that path, so the light arrives as a
+ * strand sweeps past and leaves with it.
  *
  * The drift animates on no timer and in no JS: each tile is one infinite CSS
  * transform, and `.cta-mq` carries `useAnimateWhenVisible`, so the set parks
@@ -88,13 +100,30 @@ const ICONS: FloatingIcon[] = [
 /**
  * How far the light carries, as a fraction of the layer's diagonal.
  *
- * Generous on purpose. The strands converge ON the pointer, so a mark at the
- * pointer is the one they are covering — if only that mark lit, the light
- * would reveal exactly what it hides. A wide reach with a gentle falloff lights
- * the marks the strands are passing NEAR, which is what reads as a light
- * sweeping through them.
+ * Tighter than the 0.95 this used when the pointer was the light source. That
+ * number was generous to cover for a single point standing in for a whole
+ * strand: a mark AT the pointer is the one the strands are covering, so a
+ * narrow falloff there lit only what was already hidden. Now the whole path is
+ * sampled and a mark lights off the nearest part of it, so the reach can be
+ * what a strand's glow actually covers — at 0.95 every mark sat half-lit all
+ * the time and nothing read as a sweep.
  */
-const LIGHT_REACH = 0.95;
+const LIGHT_REACH = 0.55;
+
+/**
+ * How the modelled strand moves. All of it is eyeballed against the running
+ * scene rather than derived from the library — it only has to agree with what
+ * is on screen, which is soft, bloomed light with no hard edge to line up to.
+ */
+/** Per-frame fraction of the remaining distance the head closes on the pointer. */
+const HEAD_EASE = 0.085;
+/** Heads kept as the body. At 60fps this is about half a second of travel. */
+const TRAIL_LENGTH = 32;
+/** How far the head wanders around a resting pointer, in px, and how fast. */
+const IDLE_RADIUS = 120;
+const IDLE_PERIOD = 7000;
+/** Pointer still for this long (ms) before the orbit is at full radius. */
+const IDLE_ONSET = 500;
 
 export function FloatingGlassIcons() {
   const fieldRef = React.useRef<HTMLDivElement>(null);
@@ -189,38 +218,120 @@ export function FloatingGlassIcons() {
       field.querySelectorAll<HTMLElement>(".floating-glass__tile")
     );
 
-    const light = (event: PointerEvent) => {
-      // One rect read for the whole set, not one per tile: each tile's centre
-      // is already known as a percentage of this box, so the rest is
-      // arithmetic. Reading four rects per pointer event would interleave
-      // layout reads with the style writes below.
+    // The scene this follows is not rendered at all under either of these (see
+    // TubesCursor), and the CSS already pins the marks to full light there, so
+    // there is nothing to track and no reason to run a frame loop.
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      return;
+    }
+
+    // Pointer in field coordinates, and when it last moved. Null until the
+    // first move: before that there is no strand anywhere near this section.
+    let target: { x: number; y: number } | null = null;
+    let movedAt = 0;
+    // The modelled strand: [0] is the head, the rest is the body trailing it.
+    const trail: Array<{ x: number; y: number }> = [];
+    let frame = 0;
+
+    const onMove = (event: PointerEvent) => {
       const box = field.getBoundingClientRect();
       if (!box.width || !box.height) return;
-      const px = event.clientX - box.left;
-      const py = event.clientY - box.top;
+      target = { x: event.clientX - box.left, y: event.clientY - box.top };
+      movedAt = performance.now();
+    };
+
+    /** Advances the head one frame and pushes it onto the trail. */
+    const step = (now: number) => {
+      if (!target) return;
+      // The library's tubes do not stop when the pointer does; they keep
+      // circling it. Ramped in over IDLE_ONSET so a pointer that pauses for a
+      // frame between moves is not thrown into an orbit.
+      const idle = Math.min(1, Math.max(0, (now - movedAt - IDLE_ONSET) / 900));
+      const angle = (now / IDLE_PERIOD) * Math.PI * 2;
+      const aim = {
+        x: target.x + Math.cos(angle) * IDLE_RADIUS * idle,
+        y: target.y + Math.sin(angle * 0.7) * IDLE_RADIUS * idle,
+      };
+
+      const head = trail[0] ?? aim;
+      trail.unshift({
+        x: head.x + (aim.x - head.x) * HEAD_EASE,
+        y: head.y + (aim.y - head.y) * HEAD_EASE,
+      });
+      if (trail.length > TRAIL_LENGTH) trail.length = TRAIL_LENGTH;
+    };
+
+    const paint = () => {
+      // One rect read for the whole set, not one per tile: each tile's centre
+      // is already known as a percentage of this box, so the rest is
+      // arithmetic. Reading four rects per frame would interleave layout reads
+      // with the style writes below.
+      const box = field.getBoundingClientRect();
+      if (!box.width || !box.height) return;
       const reach = Math.hypot(box.width, box.height) * LIGHT_REACH;
 
       tiles.forEach((tile, i) => {
         const { top, left } = SLOTS[slotsRef.current[i]];
         const cx = (parseFloat(left) / 100) * box.width;
         const cy = (parseFloat(top) / 100) * box.height;
-        // Linear, and deliberately not eased. Squaring it — the first attempt
-        // — made the falloff so sharp that only the mark directly under the
-        // strands ever lit, which is the one they are covering.
-        const lit = Math.max(0, 1 - Math.hypot(px - cx, py - cy) / reach);
+        // Nearest point on the strand wins. Taking the head alone would light
+        // only what the pointer has just reached; summing the samples would
+        // make a bunched-up strand — which is what it does when the pointer
+        // rests — brighter than a strand actually passing over the mark.
+        let nearest = Infinity;
+        for (const point of trail) {
+          nearest = Math.min(nearest, Math.hypot(point.x - cx, point.y - cy));
+        }
+        // Linear, and deliberately not eased. Squaring it made the falloff so
+        // sharp that a mark lit only while a strand was directly on it, which
+        // is the moment it is hidden behind one.
+        const lit = trail.length ? Math.max(0, 1 - nearest / reach) : 0;
         tile.style.setProperty("--fg-lit", lit.toFixed(3));
       });
     };
 
-    const douse = () => tiles.forEach((t) => t.style.setProperty("--fg-lit", "0"));
+    const tick = (now: number) => {
+      frame = requestAnimationFrame(tick);
+      step(now);
+      paint();
+    };
 
-    window.addEventListener("pointermove", light, { passive: true });
+    // Same rule as the drift animation: nothing runs while the section is off
+    // screen. The scene it follows has stopped rendering there too, so the
+    // trail is rebuilt from the pointer's current position on the way back in
+    // rather than resuming from a stale path.
+    const visibility = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!frame) frame = requestAnimationFrame(tick);
+        } else if (frame) {
+          cancelAnimationFrame(frame);
+          frame = 0;
+          trail.length = 0;
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    visibility.observe(field);
+
+    const douse = () => {
+      // The pointer is gone, so the strands coast to where it was last seen
+      // and idle there; the trail is left alone and simply stops being fed.
+      target = null;
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
     // The pointer can leave through the top of the page or into devtools, where
     // no `pointerleave` arrives on any element we own.
     document.addEventListener("pointerleave", douse);
     window.addEventListener("blur", douse);
     return () => {
-      window.removeEventListener("pointermove", light);
+      if (frame) cancelAnimationFrame(frame);
+      visibility.disconnect();
+      window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerleave", douse);
       window.removeEventListener("blur", douse);
     };

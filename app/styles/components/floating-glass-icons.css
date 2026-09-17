@@ -51,9 +51,12 @@
   filter: brightness(calc(0.78 + 0.45 * var(--fg-lit)))
     saturate(calc(0.85 + 0.45 * var(--fg-lit)))
     drop-shadow(0 18px 34px rgba(1, 1, 40, 0.55));
-  /* Long enough to read as light arriving rather than a hover state, short
-     enough to keep up with a moving pointer. */
-  transition: opacity 260ms ease-out, filter 260ms ease-out;
+  /* --fg-lit is now written every frame from the strands' own position, so
+     this is only there to take the step out of it, not to carry the reveal.
+     At the 260ms it used when a pointer move set the value outright, the
+     transition never finished before the next frame retargeted it and the
+     glass lit a visible beat after the strand had already gone past. */
+  transition: opacity 90ms linear, filter 90ms linear;
   animation: floating-glass-drift var(--fg-duration) ease-in-out var(--fg-delay) infinite;
   will-change: transform, filter;
 }

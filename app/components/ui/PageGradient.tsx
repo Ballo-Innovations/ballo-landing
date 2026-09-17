@@ -48,6 +48,31 @@ function colorAt(t: number) {
 
 const rgb = (c: number[]) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
+// Document offset at which the header's darkening finishes. The last screenful
+// or so of the page cannot reach the top of the viewport, so running to 1.0
+// would mean the ramp never actually completes.
+const DEPTH_END = 0.85;
+
+/**
+ * How far the header's glass should have darkened at document offset `t`, as
+ * 0 (the ramp's opening blue) to 1 (fully veiled).
+ *
+ * Deliberately NOT the background's own luminance curve. That curve is brutally
+ * front-loaded — the ramp sheds over half its brightness in the first 8% of the
+ * page and then crawls — so matching it made the bar snap to dark almost as
+ * soon as you started scrolling. Instead this travels with the scroll and eases
+ * with a smoothstep, so the bar leaves its opening blue slowly, does most of
+ * its darkening across the middle of the page, and settles gently at the end.
+ *
+ * The consequence is that the bar is a little lighter than the page behind it
+ * through the upper middle of the document. That reads correctly: it is glass
+ * catching light, not a patch of background.
+ */
+const depthAt = (t: number) => {
+  const p = Math.min(1, Math.max(0, t / DEPTH_END));
+  return p * p * (3 - 2 * p);
+};
+
 function sliceGradient(t0: number, t1: number) {
   const span = t1 - t0;
   if (!(span > 0)) return rgb(colorAt(t0));
@@ -83,6 +108,13 @@ export function PageGradient() {
       const t0 = -rect.top / rect.height;
       const t1 = (-rect.top + window.innerHeight) / rect.height;
       el.style.backgroundImage = sliceGradient(t0, t1);
+      // Published for the fixed header, whose glass pills darken in step with
+      // the page behind them. t0 is the ramp position at the top of the
+      // viewport, which is exactly where the header sits — so this is both how
+      // far down the ramp the bar is, and the exact colour behind it.
+      const root = document.documentElement.style;
+      root.setProperty("--page-scroll-depth", depthAt(t0).toFixed(3));
+      root.setProperty("--page-scroll-color", rgb(colorAt(t0)));
     };
 
     // Coalesce to one paint per frame; a fling fires scroll far more often.
@@ -104,6 +136,8 @@ export function PageGradient() {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       observer.disconnect();
+      document.documentElement.style.removeProperty("--page-scroll-depth");
+      document.documentElement.style.removeProperty("--page-scroll-color");
     };
   }, []);
 

@@ -800,6 +800,118 @@
   .header__mobile-sheet {
     display: none;
   }
+
+  /* Desktop bar: all three islands (logo, centre nav, sign-in) are painted by
+     the same glass bitmap (nav-glass-pill.png) instead of the CSS glass recipe,
+     so they read as one cut of material rather than three similar gradients.
+
+     It is drawn as a 9-slice border-image so the two end caps keep their real
+     curvature and only the middle band stretches with each island's width —
+     scaling the whole bitmap would squash the caps into ellipses, and the three
+     islands are very different widths (the sign-in pill is barely wider than
+     its own two caps). Source is 2077x222 with a 111px cap radius, and all three
+     islands share --header-pill-h, so the slice and the border-image-width are
+     the same fraction of each (see the note on the slice below).
+     border-image-width paints inward without adding to layout, so the boxes
+     stay the size the grid expects and border-width stays 0. */
+  .header__pill--nav.glass-surface-nav,
+  .header__pill--logo.header-glass-pill,
+  .header__auth-signin {
+    background: none;
+    border: 0 solid transparent;
+    border-image-source: url("/Assets/nav-glass-pill.png");
+    /* 104, not 111 (= half of the source's 222px height). Slicing at exactly
+       half leaves the 9-slice's middle row zero pixels tall in the SOURCE, so
+       whenever the rendered middle row came out a fraction of a pixel high --
+       which it does, because 3.4rem and its two 1.7rem halves do not round to
+       the same number of device pixels -- there was nothing to stretch into it
+       and a hairline transparent seam ran along the pill. Slicing above the
+       midline leaves a real 14px band to stretch, so the seam cannot open.
+       The width is that same fraction of the island height, keeping the caps
+       in proportion. */
+    border-image-slice: 104 fill;
+    border-image-width: calc(var(--header-pill-h) * 104 / 222);
+    border-image-repeat: stretch;
+    /* The bitmap carries its own rim and specular highlight; keeping the CSS
+       inset rims on top double-lights the edge. Only the cast shadow stays. */
+    box-shadow:
+      0 2px 8px rgba(1, 1, 40, 0.22),
+      0 24px 70px rgba(1, 1, 40, 0.34);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Clear the island content of the cap curvature. */
+  .header__pill--nav.glass-surface-nav {
+    padding: 0.35rem 1.15rem;
+  }
+
+  .header__pill--logo.header-glass-pill {
+    padding: 0 1.15rem;
+  }
+
+  /* Same reason as the box-shadow above: the PNG already carries the sheen
+     pooling in its top-left and its own rim, so the CSS sheen pseudos and the
+     logo pill's distortion layer would all paint a second time. */
+  .header__pill--nav.glass-surface-nav::before,
+  .header__auth-signin::before,
+  .header__pill--logo .header-glass-pill__refract {
+    display: none;
+  }
+
+  /* Scroll-darkening veil.
+
+     The page gradient runs #153D87 -> #000000 down the document, so a pill that
+     kept the bitmap's own brightness would drift from a tint of the background
+     near the top to a lit slab against black further down. This lays a veil
+     over the bitmap, driven by two values PageGradient publishes each frame for
+     the ramp position at the top of the viewport, which is where this fixed bar
+     sits.
+
+     The veil is tinted --page-scroll-color, the gradient's actual colour behind
+     the bar, NOT black. Veiling with black was the mistake in the first cut: it
+     drove the pills past the background into near-black while the page itself
+     was still navy, so the bar read as a dark hole punched in a blue page.
+     Tinting with the background colour means the pill converges ON the page
+     rather than overshooting it, and it cannot be darker than its own backdrop
+     at any scroll position.
+
+     0.88 rather than 1 leaves the rim and speculars reading at the bottom of
+     the page, so it still looks like glass once everything is black.
+
+     It has to be a veil over the bitmap, not a filter on the pill: the image is
+     painted as a border-image, so filtering the element would darken the nav
+     text and the logo with it.
+
+     Stacking: `isolation` makes each pill a stacking context, so the veil's
+     negative z-index puts it above the pill's own border-image but below the
+     in-flow content. Without that it would either sit behind the bitmap or
+     paint over the labels. The logo pill instead reuses its existing rim span,
+     which already sits on the right layer (rim 1, content 2). */
+  .header__pill--nav.glass-surface-nav,
+  .header__auth-signin {
+    isolation: isolate;
+  }
+
+  .header__pill--nav.glass-surface-nav::after,
+  .header__auth-signin::after,
+  .header__pill--logo .header-glass-pill__rim {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background: var(--page-scroll-color, #000);
+    box-shadow: none;
+    opacity: calc(var(--page-scroll-depth, 0) * 0.88);
+  }
+
+  /* The rim span is a real element inside a context the pill already
+     establishes, so it takes the positive layer rather than -1. */
+  .header__pill--logo .header-glass-pill__rim {
+    z-index: 1;
+  }
 }
 
 @media (max-width: 640px) {
