@@ -113,8 +113,17 @@ const BAND_SCALE: Range = [1, 1.3];
    section below, which is what lets the copy be placed against the phone
    instead of waiting for a separate section to scroll up under it. */
 
-/** The phone drifts out of the middle to make room. */
-const PHONE_ASIDE: Range = hand([0.6, 0.7]);
+/**
+ * The phone drifts out of the middle to make room, and it goes first.
+ *
+ * Opened earlier than it was (0.6) to buy the band somewhere to leave. The
+ * order of this beat is the device moving, then the tagline going, then the
+ * copy arriving — three things one after another rather than two of them
+ * happening over each other. Nothing else in the beat had room to give: the
+ * copy has to be settled before `TEXT_SWAP`, so the space came from starting
+ * the move sooner.
+ */
+const PHONE_ASIDE: Range = hand([0.54, 0.66]);
 /** As a percentage of the stage, so it holds at any viewport width. */
 const PHONE_ASIDE_X = -26;
 const PHONE_ASIDE_SCALE = 0.86;
@@ -124,29 +133,32 @@ const PHONE_ASIDE_SCALE = 0.86;
  *
  * Settles well before `TEXT_SWAP` starts, so there is a stretch where "What
  * We're About" is simply sitting there readable rather than arriving and
- * leaving in one movement.
+ * leaving in one movement. The end is what that depends on, so the end is what
+ * held still when the start moved out to 0.64 to let `BAND_EXIT` finish first.
  */
-const ASIDE_IN: Range = hand([0.62, 0.72]);
+const ASIDE_IN: Range = hand([0.64, 0.72]);
 
 /**
- * The band leaves, and it is gone before the copy starts arriving.
+ * The band leaves: after the phone has started moving, before the copy lands.
  *
  * It used to fade across `BAND_WORDMARK`, which opens at 0.62 — the same
- * instant `ASIDE_IN` does. The two therefore overlapped: "YOUR DIGITAL
+ * instant `ASIDE_IN` did. The two therefore overlapped: "YOUR DIGITAL
  * MARKETING ASSISTANT" was still legible across the stage while "What We're
  * About" was reading beside the phone, which is the one thing the band leaving
  * was meant to prevent.
  *
- * So it goes with the phone's move instead of with the copy's arrival: out
- * over the stretch the device is drifting aside, finished at 0.6, clear of
- * 0.62. One thing leaves, then the next arrives.
+ * It then went out ahead of the phone instead, which traded one wrong order
+ * for another — the tagline vanishing off a stage nothing had begun to leave.
+ * Sitting inside `PHONE_ASIDE` (0.54–0.66) and ending before `ASIDE_IN`
+ * (0.64), it now reads as the consequence of the device moving rather than as
+ * its own event.
  *
  * Not to be confused with `BAND_OUT` below, which dims the band to `BAND_DIM`
  * late in the pin. That now runs against a band that left long before, and is
  * left in place only because it is part of this file's timeline rather than
  * the band's own.
  */
-export const BAND_EXIT: Range = hand([0.5, 0.6]);
+export const BAND_EXIT: Range = hand([0.57, 0.63]);
 
 /**
  * Act three: "What We're About" hands off to "Why Choose BalloAds" in place,
