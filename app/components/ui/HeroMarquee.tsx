@@ -229,6 +229,12 @@ export function HeroMarquee() {
       morphTo={word}
       mirror={mirror}
       morphOffsetX={wordShift}
+      /* The held words sit behind the phone on "What We're About" and "Why
+         Choose BalloAds", and at full size the word ran the width of the
+         scene with the device parked in the middle of it and beads crowding
+         the copy column. Smaller, it is still legible and it is background
+         again, which is what a word standing behind a phone is for. */
+      morphSizeScale={0.6}
     />
   );
 }

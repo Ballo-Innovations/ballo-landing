@@ -99,6 +99,16 @@ export interface CursorDrivenParticleTypographyProps {
    */
   morphOffsetX?: number;
   /**
+   * The held word's face, as a fraction of the size it would take on its own.
+   *
+   * Left to itself a held word fills the band, on the reasoning that one word
+   * standing in for a whole scrolling sentence should command the same space.
+   * Behind the phone that is too much: the word runs the full width of the
+   * scene, the device sits in the middle of it, and the beads crowd the copy
+   * on the right. Scaled down it stays a legible word and reads as background.
+   */
+  morphSizeScale?: number;
+  /**
    * Square dots instead of round ones. Squares on a lattice read as pixels;
    * circles read as bokeh however far apart they are spaced.
    *
@@ -288,6 +298,7 @@ export function CursorDrivenParticleTypography({
   dotShape = "circle",
   mirror = null,
   morphOffsetX = 0,
+  morphSizeScale = 1,
 }: CursorDrivenParticleTypographyProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -507,7 +518,7 @@ export function CursorDrivenParticleTypography({
             // Cap height is about 0.72em, so a face the height of the band
             // still sits inside it.
             height,
-          ),
+          ) * morphSizeScale,
         ),
       );
 
@@ -884,6 +895,7 @@ export function CursorDrivenParticleTypography({
     marqueeGapPx,
     trackPointer,
     morphOffsetX,
+    morphSizeScale,
     dotShape,
   ]);
 
