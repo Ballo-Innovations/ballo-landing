@@ -555,3 +555,102 @@
 .hero-marquee-canvas--out {
   opacity: 0;
 }
+
+/* The gradient band (see `GradientMarquee.tsx`). The root carries the face and
+   clips the track; the track is the thing that travels. */
+.gradient-marquee {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  /* It sits behind the hero and must never eat a click on it. */
+  pointer-events: none;
+}
+
+.gradient-marquee__track {
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+
+.gradient-marquee__cell {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  /* The word space. It is a gap rather than a real space because each word is
+     its own element now, and an inline space between two inline-flex boxes
+     collapses unpredictably at this size. */
+  gap: 0.28em;
+}
+
+/* The filled glyphs.
+
+   Four orbs of colour drifting behind the letters, painted as radial gradients
+   in the element's own background and clipped to the glyphs. The vendored
+   `gradient-text-fill.tsx` does this with sibling boxes and `mix-blend-lighten`
+   instead, which works only over a white page — see the note in
+   `GradientMarquee.tsx` for why that could not be made to work here.
+
+   The last layer is the base the orbs sit on: near-white, because the band is
+   held back to background weight by opacity on the whole thing. Dimming the
+   fill instead would take the orbs down with it.
+
+   `background-position` is animated as one comma-separated list, which is the
+   only way to drive four layers from a single set of keyframes. The positions
+   are the same wander the component's `gradient-1`..`gradient-4` describe —
+   each orb crossing its own quadrant on its own path, none of them in step. */
+.gradient-marquee__run {
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(closest-side circle, var(--orb-1) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-2) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-3) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-4) 0%, transparent 100%),
+    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92));
+  background-size:
+    90% 260%,
+    80% 240%,
+    95% 250%,
+    85% 230%,
+    100% 100%;
+  animation: gradient-marquee-orbs 12s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-marquee-orbs {
+  0% {
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0 0;
+  }
+  25% {
+    background-position: 35% 70%, 70% 25%, 25% 45%, 60% 80%, 0 0;
+  }
+  50% {
+    background-position: 65% 25%, 40% 85%, 55% 10%, 25% 45%, 0 0;
+  }
+  75% {
+    background-position: 90% 65%, 15% 45%, 80% 70%, 45% 20%, 0 0;
+  }
+  100% {
+    background-position: 100% 100%, 0% 100%, 100% 0%, 0% 0%, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-marquee__run {
+    animation: none;
+  }
+}
+
+/* Background weight. The fill has to stay bright for the orbs to read, so the
+   whole band is taken down here instead. */
+.gradient-marquee {
+  opacity: 0.32;
+}
