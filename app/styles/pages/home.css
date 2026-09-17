@@ -1925,22 +1925,52 @@
      its own; the section below brings its own top padding. */
 }
 
+/* Painted by the glass bitmap (`chip-glass-pill.png`, cut and toned by
+   scripts/build-chip-glass.py) rather than by a CSS recipe, so the chips are
+   the same material as the header's islands instead of a second, similar
+   glass.
+
+   A 9-slice border-image, for the same reason the nav uses one: the end caps
+   have to keep their real curvature while only the middle band stretches, and
+   these chips run from "Bulk SMS" to "Real-time analytics". Scaling the whole
+   bitmap would squash the caps into ellipses on the short ones.
+
+   The height has to be a known number for the slice to stay in proportion, so
+   it is set rather than left to the padding -- hence `--chip-h` and the
+   padding-block of 0. `border-image-width` paints inward without adding to
+   layout, so the box stays the size the row expects and `border-width` is 0. */
 .cta-chip {
+  --chip-h: 2.2rem;
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.5rem 0.9rem;
+  height: var(--chip-h);
+  padding: 0 1rem;
   border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
   white-space: nowrap;
+  background: none;
+  border: 0 solid transparent;
+  border-image-source: url("/Assets/chip-glass-pill.png");
+  /* 124, not 132 (= half of the source's 265px height). Slicing at exactly the
+     midline leaves the middle row zero pixels tall in the SOURCE, so any
+     rendered middle row that lands on a fraction of a device pixel has nothing
+     to stretch into it and opens a hairline seam along the pill. See the same
+     note on the header's islands. */
+  border-image-slice: 124 fill;
+  border-image-width: calc(var(--chip-h) * 124 / 265);
+  border-image-repeat: stretch;
+  /* The bitmap carries its own rim and speculars; a CSS inset rim on top
+     double-lights the edge. Only the cast shadow stays. */
+  box-shadow: 0 1px 6px rgba(1, 1, 40, 0.28);
 }
 
 .cta-chip svg {
-  color: var(--cyan-bright);
+  /* Near-white on the glass. `--cyan-bright` was chosen against a near-black
+     chip; on this blue it is the same colour as what it sits on. */
+  color: rgba(255, 255, 255, 0.9);
   flex-shrink: 0;
 }
 
