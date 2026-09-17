@@ -133,7 +133,10 @@ export interface CursorDrivenParticleTypographyProps {
  *
  * The blues are sampled from the nav bar's own glass (`nav-glass-pill.png`),
  * down its vertical centre: #2658AA on the top rim, #13337D through the body,
- * #6186CC where the light bounces back up off the bottom edge. They were cyan,
+ * #6186CC where the light bounces back up off the bottom edge, then taken a
+ * step down from there: sampled exactly, the beads sat brighter than the pill
+ * they were matched to, because a bead is a lit ring around a small dark
+ * centre and the ring is most of what the eye gets at this size. They were cyan,
  * which is the brand accent but not the material — two pieces of glass on one
  * page reading as two different substances. The specular stays white: a
  * highlight is the light source, not the thing it is falling on.
@@ -160,9 +163,9 @@ function buildBead(radius: number, dpr: number): HTMLCanvasElement {
   // The glow it sits in. Cyan rather than white: white reads as a blur on the
   // bead, a hue reads as light leaving it.
   const halo = g.createRadialGradient(cx, cy, radius * 0.6, cx, cy, pad);
-  halo.addColorStop(0, "rgba(97, 134, 204, 0.38)");
-  halo.addColorStop(0.55, "rgba(60, 110, 195, 0.12)");
-  halo.addColorStop(1, "rgba(38, 88, 170, 0)");
+  halo.addColorStop(0, "rgba(62, 92, 158, 0.34)");
+  halo.addColorStop(0.55, "rgba(40, 78, 145, 0.1)");
+  halo.addColorStop(1, "rgba(24, 60, 125, 0)");
   g.fillStyle = halo;
   g.beginPath();
   g.arc(cx, cy, pad, 0, Math.PI * 2);
@@ -172,17 +175,17 @@ function buildBead(radius: number, dpr: number): HTMLCanvasElement {
   // a sphere of glass actually reads — the long path through the rim is where
   // the light collects.
   const body = g.createRadialGradient(cx, cy, 0, cx, cy, radius);
-  body.addColorStop(0, "rgba(38, 88, 170, 0.34)");
-  body.addColorStop(0.62, "rgba(60, 113, 198, 0.42)");
-  body.addColorStop(0.9, "rgba(150, 183, 235, 0.78)");
-  body.addColorStop(1, "rgba(186, 209, 245, 0.6)");
+  body.addColorStop(0, "rgba(22, 56, 124, 0.36)");
+  body.addColorStop(0.62, "rgba(38, 85, 158, 0.44)");
+  body.addColorStop(0.9, "rgba(108, 142, 200, 0.76)");
+  body.addColorStop(1, "rgba(140, 170, 220, 0.58)");
   g.fillStyle = body;
   g.beginPath();
   g.arc(cx, cy, radius, 0, Math.PI * 2);
   g.fill();
 
   // The lit edge.
-  g.strokeStyle = "rgba(163, 194, 240, 0.88)";
+  g.strokeStyle = "rgba(122, 155, 210, 0.85)";
   g.lineWidth = Math.max(0.5, radius * 0.22);
   g.beginPath();
   g.arc(cx, cy, radius * 0.92, 0, Math.PI * 2);
@@ -192,7 +195,7 @@ function buildBead(radius: number, dpr: number): HTMLCanvasElement {
   const hx = cx - radius * 0.34;
   const hy = cy - radius * 0.36;
   const spec = g.createRadialGradient(hx, hy, 0, hx, hy, radius * 0.5);
-  spec.addColorStop(0, "rgba(238, 244, 255, 0.95)");
+  spec.addColorStop(0, "rgba(214, 226, 248, 0.85)");
   spec.addColorStop(1, "rgba(255, 255, 255, 0)");
   g.fillStyle = spec;
   g.beginPath();
