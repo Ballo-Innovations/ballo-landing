@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from "framer-motion";
 
 import { Phone3D } from "./Phone3D";
+import { StoreBadge } from "./StoreBadge";
 import { PhoneOnboardingScreen } from "./PhoneOnboardingScreen";
 import {
   ContainerScroll,
@@ -103,7 +104,7 @@ const PHONE_RISE = 1;
  * Tied to the end of the phone's arrival, so the line settles as the device
  * does. It read as a separate animation when it finished earlier than the rest.
  */
-const BAND_RISE: Range = [0, PHONE_IN[1]];
+export const BAND_RISE: Range = [0, PHONE_IN[1]];
 const BAND_TOP: Range = [86, 50];
 const BAND_SCALE: Range = [1, 1.3];
 
@@ -137,6 +138,63 @@ const PHONE_ASIDE_SCALE = 0.86;
  * held still when the start moved out to 0.64 to let `BAND_EXIT` finish first.
  */
 const ASIDE_IN: Range = hand([0.64, 0.72]);
+
+/**
+ * The store badges come in on the phone as it steps aside.
+ *
+ * Spanning the move and the copy's arrival rather than following them: the
+ * device travelling left is what opens the space beside it, and the badges are
+ * what the device is offering once it has stopped being the whole stage. They
+ * are staggered, so the two do not arrive as one block.
+ *
+ * Written against `PHONE_ASIDE` and `ASIDE_IN` rather than as its own tuned
+ * pair of numbers, because "while the phone moves and the copy lands" is the
+ * whole specification — if either of those beats is retimed this should follow
+ * it, not be renumbered after the fact.
+ */
+const BADGES_IN: Range = [PHONE_ASIDE[0], ASIDE_IN[1]];
+/** Fraction of the group's progress one badge waits behind the one above it. */
+const BADGE_STAGGER = 0.28;
+
+/**
+ * How far round a badge is swung when it is stowed, in degrees.
+ *
+ * The badges do not slide in from the side; they swing out from behind the
+ * device on a hinge at their own right edge — which sits 60px inside the
+ * phone's left edge (see `.hero-store-badges`) — and fold back the same way
+ * when the phone hands over to "Why Choose". Past 90 the badge is not merely
+ * edge-on but tipped back beyond it, so the last of the movement is still
+ * visibly a swing rather than a card appearing out of nothing at its edge.
+ *
+ * Because the hinge is inside the phone's silhouette and the whole rig is one
+ * `preserve-3d` context, a badge at this angle is genuinely BEHIND the phone's
+ * own faces — it is occluded by the device rather than hidden by us.
+ */
+const BADGE_SWING = -104;
+/** How far the badge is tucked toward the phone's middle when stowed, in px. */
+const BADGE_TUCK = 30;
+/**
+ * Depth, stowed and out, in px along the rig's Z.
+ *
+ * Part of the swing rather than a constant lift on the group. The hinge is a
+ * vertical axis, so a badge turned near edge-on has half its length in front
+ * of that axis: with the group held at a constant +40 that half was in front
+ * of the phone's screen, and a badge that should have been hidden behind the
+ * device showed as a bright sliver down the middle of it. Starting well behind
+ * the phone's own body and travelling forward as it turns keeps the whole badge
+ * behind the device until it is far enough round to be clear of it.
+ */
+const BADGE_Z = [-90, 40];
+/**
+ * The share of the swing over which the badge fades.
+ *
+ * Only insurance. The occlusion above is what hides a stowed badge, and it is
+ * what the effect is built on; this covers the case where the phone's faces do
+ * not sort against it, and it is short so that on every browser where sorting
+ * does work the badge is already at full strength while still mostly hidden
+ * behind the device.
+ */
+const BADGE_FADE = 0.3;
 
 /**
  * The band leaves: after the phone has started moving, before the copy lands.
@@ -174,6 +232,16 @@ export const BAND_EXIT: Range = hand([0.57, 0.63]);
  */
 /** The copy goes first, and finishes before the phone's screen starts. */
 export const TEXT_SWAP: Range = hand([0.76, 0.86]);
+
+/**
+ * And they go back the way they came, as "Why Choose" takes over the column.
+ *
+ * `TEXT_SWAP` is where the copy beside the phone changes and, just after it,
+ * where the phone's own screen turns over to the feature cards. The badges
+ * belong to the onboarding mock and to "What We're About", so they leave with
+ * that beat rather than riding on into a section about the product's features.
+ */
+const BADGES_OUT: Range = TEXT_SWAP;
 
 /**
  * While the band holds the wordmark instead of the travelling line.
@@ -293,6 +361,73 @@ function useReducedMotion() {
     return () => mql.removeEventListener("change", apply);
   }, []);
   return reduced;
+}
+
+/**
+ * The App Store and Google Play badges, on the phone.
+ *
+ * They ride inside `Phone3D`'s `floating` slot, which sits in the tilt rig's
+ * `preserve-3d` space — so they lean with the device rather than sliding
+ * across a flat pane in front of it, which is what the pointer tilt would make
+ * of a sibling layer.
+ *
+ * Placed and faded straight to the DOM from a scroll subscription, the way
+ * `HeroAside` and `HeroBand` are: this is on a pin, so React state here would
+ * re-render the phone and both of its screens on every scroll frame.
+ */
+function HeroStoreBadges() {
+  const { scrollYProgress } = useContainerScrollContext();
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  const place = React.useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const p = scrollYProgress.get();
+    const groupIn = at(p, BADGES_IN);
+    const groupOut = at(p, BADGES_OUT);
+    const badges = el.children;
+    for (let i = 0; i < badges.length; i++) {
+      const badge = badges[i] as HTMLElement;
+      const count = badges.length;
+      // One number for how far out this badge is, arrived at from both ends:
+      // it swings out over BADGES_IN and back over BADGES_OUT. Multiplying
+      // rather than branching keeps the two continuous where they meet, and
+      // there is a long hold between them where the first is 1 and the second
+      // is still 0.
+      const swungOut = easeOut(staggered(groupIn, i, count, BADGE_STAGGER));
+      const stowed = easeInOut(staggered(groupOut, i, count, BADGE_STAGGER));
+      const t = swungOut * (1 - stowed);
+      // The hinge is `transform-origin: right center` in the CSS, so this one
+      // rotation is the whole arc: the badge sweeps out from behind the device
+      // rather than translating out from under it.
+      const angle = lerp(BADGE_SWING, 0, t);
+      const tuck = lerp(BADGE_TUCK, 0, t);
+      const z = lerp(BADGE_Z[0], BADGE_Z[1], t);
+      badge.style.transform =
+        `translate3d(${tuck.toFixed(1)}px, 0, ${z.toFixed(1)}px) rotateY(${angle.toFixed(2)}deg)`;
+      badge.style.opacity = clamp01(t / BADGE_FADE).toFixed(3);
+      badge.style.willChange = t > 0.001 && t < 0.999 ? "transform, opacity" : "auto";
+    }
+  }, [scrollYProgress]);
+
+  React.useEffect(() => {
+    const unsub = scrollYProgress.on("change", place);
+    place();
+    return unsub;
+  }, [scrollYProgress, place]);
+
+  return (
+    <div ref={ref} className="hero-store-badges">
+      {/* Opacity 0 inline, not only from `place`: the server renders this and
+          the first paint happens before the subscription above has run. */}
+      <span className="hero-store-badges__item" style={{ opacity: 0 }}>
+        <StoreBadge store="apple" decorative />
+      </span>
+      <span className="hero-store-badges__item" style={{ opacity: 0 }}>
+        <StoreBadge store="play" decorative />
+      </span>
+    </div>
+  );
 }
 
 /**
@@ -439,7 +574,7 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           land on the phone's screen rect and could not follow a rotating
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
-      <Phone3D>
+      <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card
             preview) is what it hands off to. Absolute-on-relative rather than

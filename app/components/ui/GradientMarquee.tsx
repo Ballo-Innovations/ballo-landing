@@ -39,6 +39,14 @@ export interface GradientMarqueeProps {
   speedPxPerSec?: number;
   /** Space between repeats of the line, in px. */
   gapPx?: number;
+  /**
+   * Where the palette travels to as the band rises, same format as `colors`.
+   *
+   * The band opens pale behind a hero that is still being read and deepens
+   * once it is the thing on the stage; the crossfade between the two is driven
+   * by `--band-rich` in the stylesheet, not here.
+   */
+  deepColors?: string;
   /** Merged into the root — the caller's scroll-linked fade rides here. */
   style?: React.CSSProperties;
   /**
@@ -56,6 +64,7 @@ export function GradientMarquee({
   speedPxPerSec = 140,
   gapPx = 40,
   colors = "#3fdbff, #1a3aff, #6186cc, #7c3aed",
+  deepColors = "#0b6f96, #101d8c, #2d4a86, #3c1a78",
   style,
 }: GradientMarqueeProps) {
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -73,14 +82,22 @@ export function GradientMarquee({
   const words = React.useMemo(() => text.split(/\s+/).filter(Boolean), [text]);
 
   const orbs = React.useMemo(() => {
-    const list = colors.split(",").map((c) => c.trim()).filter(Boolean);
+    // `--orb-1` .. `--orb-4` are where the band opens, `--orb-1-deep` .. where
+    // it ends up; the stylesheet mixes between them by `--band-rich`.
+    const parse = (input: string, suffix: string) => {
+      const list = input.split(",").map((c) => c.trim()).filter(Boolean);
+      return {
+        [`--orb-1${suffix}`]: list[0],
+        [`--orb-2${suffix}`]: list[1] ?? list[0],
+        [`--orb-3${suffix}`]: list[2] ?? list[0],
+        [`--orb-4${suffix}`]: list[3] ?? list[1] ?? list[0],
+      };
+    };
     return {
-      ["--orb-1" as string]: list[0],
-      ["--orb-2" as string]: list[1] ?? list[0],
-      ["--orb-3" as string]: list[2] ?? list[0],
-      ["--orb-4" as string]: list[3] ?? list[1] ?? list[0],
+      ...parse(colors, ""),
+      ...parse(deepColors, "-deep"),
     } as React.CSSProperties;
-  }, [colors]);
+  }, [colors, deepColors]);
 
   React.useLayoutEffect(() => {
     const measure = () => {

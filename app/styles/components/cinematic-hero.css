@@ -115,6 +115,72 @@
   will-change: transform, opacity;
 }
 
+/* The store badges on the device, brought in as it steps aside (see
+   `HeroStoreBadges`). Positioned against the tilt rig inside Phone3D, which is
+   the 256x516 frame's own box, and lifted off it in the rig's 3D space so they
+   lean with the phone instead of sliding over it. */
+.hero-store-badges {
+  position: absolute;
+  /* Anchored by the right edge so the stack hangs off the phone's left side
+     and overlaps it by the last 60px, as in the reference. Anchoring by `left`
+     instead would have the two different-width badges fan out from a shared
+     left edge, and the pair reads as a stack only when they line up under
+     each other on the side they overlap. */
+  /* Low on the device, across the artwork card and the Next button, rather
+     than up by the logo: that is where the reference puts them, and it is also
+     the half of the screen the onboarding mock has least going on in. */
+  top: 62%;
+  right: 196px;
+  display: flex;
+  flex-direction: column;
+  /* One width for both, set here rather than left to each badge's own words —
+     "Get it on the / App Store" is wider than "Get it on / Google Play", and
+     two pills of different lengths stacked on a shared right edge read as
+     ragged rather than as a pair. It also means both hinge on the same axis,
+     so they swing out as one piece of geometry. */
+  width: 176px;
+  gap: 14px;
+  /* The stage above is already `pointer-events: none`; this is here so the
+     rule survives the badges being moved somewhere that isn't. */
+  pointer-events: none;
+  /* No `translateZ` here on purpose: depth is part of the swing and is written
+     per badge by `HeroStoreBadges`. A constant lift on the group put a badge's
+     near half in FRONT of the screen at the edge-on end of its rotation, so a
+     badge that was supposed to be tucked behind the device showed as a bright
+     sliver across it. */
+  transform-style: preserve-3d;
+}
+
+.hero-store-badges__item {
+  display: block;
+  /* The hinge the badges swing out on. It is at their own right edge, which
+     the `right: 196px` above puts 60px inside the phone's silhouette — so the
+     stowed badge is folded back BEHIND the device and is occluded by it,
+     rather than being hidden by an opacity we have to time. */
+  transform-origin: right center;
+  transform-style: preserve-3d;
+  /* Without this the rotation is an affine squash: the near edge has to come
+     toward the viewer as the far edge goes back, and that is the difference
+     between a badge curving out from behind the phone and one being unrolled
+     flat against it. The scene's own `perspective: 800px` is what this
+     inherits — see `.phone3d-scene`. */
+  backface-visibility: hidden;
+  /* The pills have their own shadow-less flat fill; on the dark stage they
+     need seating, and it also separates them from the phone's own frame where
+     they cross it. */
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45));
+}
+
+/* Never a hover target here — they are scenery on a scroll track, and the
+   lift the real badges do on hover would fight the stagger they arrive on. */
+.hero-store-badges .store-btn--static {
+  cursor: default;
+  /* Fills the column's fixed width; the text stays left-aligned against the
+     icon rather than centring in whatever room is left over. */
+  width: 100%;
+  justify-content: flex-start;
+}
+
 .hero-parts {
   position: absolute;
   inset: 0;
@@ -173,6 +239,14 @@
   .hero-zoom-phone .phone3d-scene {
     transform: scale(0.76);
     transform-origin: top center;
+  }
+
+  /* The badges hang a further ~150px off the left of a device that is already
+     centred here, which at this width puts them under the page gutter or off
+     it. The copy arrives below the phone rather than beside it, so there is no
+     "as it steps aside" for them to arrive on either. */
+  .hero-store-badges {
+    display: none;
   }
 
   .hero-aside {
@@ -597,16 +671,30 @@
    are the same wander the component's `gradient-1`..`gradient-4` describe —
    each orb crossing its own quadrant on its own path, none of them in step. */
 .gradient-marquee__run {
+  /* Each orb mixed between the pale colour it opens in and a deep one, by
+     `--band-rich` — which `HeroMarquee` runs 0 to 1 across the phone's
+     arrival. Mixed in oklab rather than srgb: a straight srgb ramp from a
+     bright cyan to a deep teal passes through a washed-out grey in the
+     middle, which is exactly the part of the movement the eye is watching. */
+  --orb-1-now: color-mix(in oklab, var(--orb-1-deep) calc(var(--band-rich, 0) * 100%), var(--orb-1));
+  --orb-2-now: color-mix(in oklab, var(--orb-2-deep) calc(var(--band-rich, 0) * 100%), var(--orb-2));
+  --orb-3-now: color-mix(in oklab, var(--orb-3-deep) calc(var(--band-rich, 0) * 100%), var(--orb-3));
+  --orb-4-now: color-mix(in oklab, var(--orb-4-deep) calc(var(--band-rich, 0) * 100%), var(--orb-4));
+  /* The base the orbs sit on goes with them, or the letters stay pale between
+     the orbs and the deepening reads as four coloured patches on white type
+     rather than as the whole band changing material. */
+  --base-now: color-mix(in oklab, #16337d calc(var(--band-rich, 0) * 100%), rgba(255, 255, 255, 0.92));
+
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
   background-repeat: no-repeat;
   background-image:
-    radial-gradient(closest-side circle, var(--orb-1) 0%, transparent 100%),
-    radial-gradient(closest-side circle, var(--orb-2) 0%, transparent 100%),
-    radial-gradient(closest-side circle, var(--orb-3) 0%, transparent 100%),
-    radial-gradient(closest-side circle, var(--orb-4) 0%, transparent 100%),
-    linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92));
+    radial-gradient(closest-side circle, var(--orb-1-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-2-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-3-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-4-now) 0%, transparent 100%),
+    linear-gradient(var(--base-now), var(--base-now));
   background-size:
     90% 260%,
     80% 240%,
@@ -647,5 +735,7 @@
    frame by `HeroMarquee` and runs 1 to 0 across `BAND_EXIT`, which is what
    takes the band off before "What We're About" arrives. */
 .gradient-marquee {
-  opacity: calc(0.32 * var(--band-fade, 1));
+  /* Deepening costs contrast against a navy page, so the band is allowed more
+     presence as it goes — otherwise "rich and deep" just reads as "gone". */
+  opacity: calc((0.32 + 0.24 * var(--band-rich, 0)) * var(--band-fade, 1));
 }

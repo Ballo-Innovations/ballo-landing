@@ -6,7 +6,7 @@ import { useMotionValue, useMotionValueEvent } from "framer-motion";
 
 import { useOptionalContainerScrollContext } from "./AnimatedVideoOnScroll";
 import { GradientMarquee } from "./GradientMarquee";
-import { BAND_EXIT } from "./HeroSideExit";
+import { BAND_EXIT, BAND_RISE } from "./HeroSideExit";
 import { at } from "@/lib/cinematic";
 
 /**
@@ -76,6 +76,22 @@ function bandFade(p: number) {
   return Math.round((1 - at(p, BAND_EXIT)) * 20) / 20;
 }
 
+/**
+ * How far the band has deepened, 0 to 1, across the phone's arrival.
+ *
+ * The band opens in the pale blues it has always had — it is behind a hero
+ * that is still being read, and it has to stay behind it. By the time the
+ * device has landed the hero has gone and the band is the thing on the stage,
+ * so the fill travels to a deeper, more saturated set over exactly the stretch
+ * the phone is arriving and the band is rising (`BAND_RISE` is tied to the end
+ * of `PHONE_IN`). The two movements are one movement.
+ *
+ * Quantised for the same reason `bandFade` is: this runs on every scroll frame.
+ */
+function bandRich(p: number) {
+  return Math.round(at(p, BAND_RISE) * 20) / 20;
+}
+
 function marqueeFontPx(w: number, h: number) {
   // Rounded, and not only for tidiness: the canvas verifies its own font
   // string by looking for `<size>px` in the normalised value the browser
@@ -93,6 +109,7 @@ export function HeroMarquee() {
   // with no scroll track above it. No track, no zoom-out, no scatter.
   const track = useOptionalContainerScrollContext();
   const [fade, setFade] = React.useState(1);
+  const [rich, setRich] = React.useState(0);
   // `useMotionValueEvent` needs a MotionValue on every render, track or not.
   const idle = useMotionValue(0);
 
@@ -126,14 +143,16 @@ export function HeroMarquee() {
     // Only the band's own track can take it off the stage. Without a pin
     // there are no scenes to make way for, and the line simply keeps running.
     if (!track) return;
-    const next = bandFade(p);
-    setFade((prev) => (prev === next ? prev : next));
+    const nextFade = bandFade(p);
+    setFade((prev) => (prev === nextFade ? prev : nextFade));
+    const nextRich = bandRich(p);
+    setRich((prev) => (prev === nextRich ? prev : nextRich));
   });
 
   return (
     <GradientMarquee
       className="hero-marquee-canvas"
-      style={{ ["--band-fade" as string]: fade }}
+      style={{ ["--band-fade" as string]: fade, ["--band-rich" as string]: rich }}
       text={TEXT}
       fontSize={fontPx}
       fontFamily="var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif"
