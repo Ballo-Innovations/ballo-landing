@@ -101,8 +101,12 @@ export interface CursorDrivenParticleTypographyProps {
   /**
    * Square dots instead of round ones. Squares on a lattice read as pixels;
    * circles read as bokeh however far apart they are spaced.
+   *
+   * "glass" is neither: each particle becomes a small bead of glass — a lit
+   * edge, a specular highlight and a body you can see through — blitted from
+   * one cached sprite rather than drawn. See `buildBead`.
    */
-  dotShape?: "circle" | "square";
+  dotShape?: "circle" | "square" | "glass";
   /**
    * Whether the pointer disturbs the field. False leaves the particles at rest
    * — they still drift and settle, they just stop answering the cursor.
@@ -112,6 +116,83 @@ export interface CursorDrivenParticleTypographyProps {
    * away every particle's current position mid-flight.
    */
   interactive?: boolean;
+}
+
+/**
+ * One bead of glass, drawn once into an offscreen canvas and then stamped.
+ *
+ * It has to be a sprite. The look needs three radial gradients and a stroke
+ * per bead, and there are up to 14,000 of them at 60fps — building those
+ * gradients per particle per frame is not something any browser will do in
+ * 16ms. Drawn once, it costs one `drawImage` each instead, and every bead is
+ * identical anyway.
+ *
+ * The highlight sits up and to the left because the light in this scene comes
+ * from there (the hero's gradient is brightest at the top). A specular dot in
+ * the centre reads as a hole rather than as a curved surface.
+ *
+ * Sized well beyond the bead itself: the glow has to have somewhere to fall
+ * off, and a sprite cropped to the bead's own radius gives it a hard edge.
+ */
+function buildBead(radius: number, dpr: number): HTMLCanvasElement {
+  // Enough room for the glow to fall off and no more. It was 2.6 radii, and
+  // the halos then overlapped so heavily at any step fine enough to keep a
+  // held word legible that the word filled in into one lit slab.
+  const pad = radius * 1.8;
+  const size = Math.max(4, Math.ceil(pad * 2 * dpr));
+  const c = document.createElement("canvas");
+  c.width = size;
+  c.height = size;
+  const g = c.getContext("2d");
+  if (!g) return c;
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const cx = pad;
+  const cy = pad;
+
+  // The glow it sits in. Cyan rather than white: white reads as a blur on the
+  // bead, a hue reads as light leaving it.
+  const halo = g.createRadialGradient(cx, cy, radius * 0.6, cx, cy, pad);
+  halo.addColorStop(0, "rgba(63, 219, 255, 0.34)");
+  halo.addColorStop(0.55, "rgba(63, 219, 255, 0.1)");
+  halo.addColorStop(1, "rgba(63, 219, 255, 0)");
+  g.fillStyle = halo;
+  g.beginPath();
+  g.arc(cx, cy, pad, 0, Math.PI * 2);
+  g.fill();
+
+  // The body. Thin through the middle and gathering at the edge, which is how
+  // a sphere of glass actually reads — the long path through the rim is where
+  // the light collects.
+  const body = g.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  body.addColorStop(0, "rgba(186, 240, 255, 0.28)");
+  body.addColorStop(0.62, "rgba(120, 210, 245, 0.34)");
+  body.addColorStop(0.9, "rgba(200, 246, 255, 0.72)");
+  body.addColorStop(1, "rgba(226, 252, 255, 0.55)");
+  g.fillStyle = body;
+  g.beginPath();
+  g.arc(cx, cy, radius, 0, Math.PI * 2);
+  g.fill();
+
+  // The lit edge.
+  g.strokeStyle = "rgba(190, 245, 255, 0.85)";
+  g.lineWidth = Math.max(0.5, radius * 0.22);
+  g.beginPath();
+  g.arc(cx, cy, radius * 0.92, 0, Math.PI * 2);
+  g.stroke();
+
+  // The specular highlight, up and to the left.
+  const hx = cx - radius * 0.34;
+  const hy = cy - radius * 0.36;
+  const spec = g.createRadialGradient(hx, hy, 0, hx, hy, radius * 0.5);
+  spec.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+  spec.addColorStop(1, "rgba(255, 255, 255, 0)");
+  g.fillStyle = spec;
+  g.beginPath();
+  g.arc(hx, hy, radius * 0.5, 0, Math.PI * 2);
+  g.fill();
+
+  return c;
 }
 
 /** Above this the sampling step is coarsened rather than dropping frames. */
@@ -563,19 +644,42 @@ export function CursorDrivenParticleTypography({
       const offsetY = (src.top - dst.top) * (cssH / dst.height);
       const radius = Math.max(0.5, particleSize * scale);
 
-      mctx.fillStyle = textColor;
-      mctx.beginPath();
+      // The same beads as the band, at the phone's scale (see `buildBead`).
+      // Not a cheaper stand-in: the device is standing in front of the band
+      // and what it shows has to be the same glass, or the word visibly
+      // changes material at the edge of the screen.
+      const mBeadSize = beadSize * scale;
+      const mBeadOffset = mBeadSize / 2;
+      if (glass) mctx.globalCompositeOperation = "lighter";
+      else {
+        mctx.fillStyle = textColor;
+        mctx.beginPath();
+      }
       for (let i = 0; i < keptCount; i++) {
         const p = particles[i];
         const mx = p.x * scale + offsetX;
         if (mx < -radius || mx > cssW + radius) continue;
         const my = p.y * scale + offsetY;
         if (my < -radius || my > cssH + radius) continue;
-        mctx.moveTo(mx + radius, my);
-        mctx.arc(mx, my, radius, 0, Math.PI * 2);
+        if (glass) {
+          mctx.drawImage(bead, mx - mBeadOffset, my - mBeadOffset, mBeadSize, mBeadSize);
+        } else {
+          mctx.moveTo(mx + radius, my);
+          mctx.arc(mx, my, radius, 0, Math.PI * 2);
+        }
       }
-      mctx.fill();
+      if (glass) mctx.globalCompositeOperation = "source-over";
+      else mctx.fill();
     };
+
+    // The bead, and the box it is stamped in. Built once per size rather than
+    // per frame; `dpr` so the highlight survives on a retina screen.
+    const glass = dotShape === "glass";
+    const bead = glass
+      ? buildBead(particleSize, window.devicePixelRatio || 1)
+      : null!;
+    const beadSize = particleSize * 3.6;
+    const beadOffset = beadSize / 2;
 
     const tick = (now: number) => {
       frame = null;
@@ -615,8 +719,14 @@ export function CursorDrivenParticleTypography({
       // per-call overhead dominates the actual rasterising. `rect` is cheaper
       // again — no curve to flatten.
       const side = particleSize * 2;
-      const dot =
-        dotShape === "square"
+      const dot = glass
+        ? (p: Particle) => {
+            // Rounded, like the square branch below and for the same reason:
+            // a sprite on a half pixel is resampled, and a resampled specular
+            // highlight is a grey smear.
+            ctx.drawImage(bead, Math.round(p.x) - beadOffset, Math.round(p.y) - beadOffset, beadSize, beadSize);
+          }
+        : dotShape === "square"
           ? (p: Particle) => {
               // Rounded to whole pixels. A square on a half pixel is
               // anti-aliased into a soft grey smudge, which is the one thing
@@ -642,6 +752,10 @@ export function CursorDrivenParticleTypography({
       // `homeX` keeps tracking the line for every particle either way, so the
       // band picks up in the right place when the word lets go.
       const held = want === 0;
+      // Beads are stamped one at a time and lit additively, so overlapping
+      // ones bloom the way glass in a pile does instead of flattening into a
+      // single silhouette. Everything else is one batched path.
+      if (glass) ctx.globalCompositeOperation = "lighter";
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         if (shift) {
@@ -657,16 +771,17 @@ export function CursorDrivenParticleTypography({
         p.update(mx, my, dispersionStrength, returnSpeed);
         if (i < keptCount) dot(p);
       }
-      ctx.fill();
+      if (!glass) ctx.fill();
 
       if (keptCount < particles.length && surplus > 0.004) {
         const prev = ctx.globalAlpha;
         ctx.globalAlpha = surplus;
-        ctx.beginPath();
+        if (!glass) ctx.beginPath();
         for (let i = keptCount; i < particles.length; i++) dot(particles[i]);
-        ctx.fill();
+        if (!glass) ctx.fill();
         ctx.globalAlpha = prev;
       }
+      if (glass) ctx.globalCompositeOperation = "source-over";
 
       drawMirror(src);
 

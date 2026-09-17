@@ -195,9 +195,18 @@ export function HeroMarquee() {
          step they are visibly separate, and squares at whole-pixel positions
          make the held word read as pixel type. It is also cheaper — the field
          samples roughly a third of the points it used to. */
-      particleDensity={7}
-      particleSize={3}
-      dotShape="square"
+      /* Coarser again now that each particle is a bead of glass rather than a
+         flat dot (`dotShape="glass"`). A bead carries a glow, and at the old
+         7px step the glows overlapped into one lit wash with no beads visible
+         in it — the thing that makes them read as glass is the dark between
+         them. Bigger, and fewer. */
+      /* The step stays close to what the flat dust used: a held word ("AI",
+         "SCALE", "INSIGHT") is sampled at this same step, and coarsening it
+         to keep the glows apart left the word as a handful of scattered beads
+         with no letterform in them. The glow was narrowed instead. */
+      particleDensity={8}
+      particleSize={2.4}
+      dotShape="glass"
       dispersionStrength={18}
       returnSpeed={0.08}
       marquee
