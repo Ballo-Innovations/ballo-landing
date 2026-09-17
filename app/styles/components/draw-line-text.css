@@ -15,9 +15,14 @@
   /* How long one letter takes to draw, and the gap between letters starting.
      Far tighter than the reference's 2.5s draw and 0.8s stagger: those are for
      a headline that draws once on a landing, and on a word like "CONNECTIVITY
-     PARTNER" they would run for the better part of twenty seconds. */
-  --draw-dur: 0.5s;
-  --draw-stagger: 0.035s;
+     PARTNER" they would run for the better part of twenty seconds.
+
+     Tightened again. The caption is read off a mark the pointer is already on
+     and is gone the moment it moves, so the draw has to be finished, not
+     finishing — at the old 0.5s and 0.035s a long role ran on well after the
+     eye had arrived at it. */
+  --draw-dur: 0.3s;
+  --draw-stagger: 0.02s;
   /* The dash length, as a multiple of the type size. A capital's outline runs
      roughly 3-4x its own height; over is harmless (the letter simply finishes
      drawing a little early), under is not — the dash would repeat and the
@@ -54,7 +59,7 @@
     stroke-dashoffset var(--draw-dur) linear var(--draw-delay),
     /* The fill follows its own letter rather than the whole word, starting
        when that letter is most of the way drawn. */
-    fill-opacity 0.35s ease calc(var(--draw-delay) + var(--draw-dur) * 0.65);
+    fill-opacity 0.22s ease calc(var(--draw-delay) + var(--draw-dur) * 0.65);
 }
 
 .draw-text[data-draw="out"] .draw-text__char {

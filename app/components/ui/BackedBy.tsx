@@ -148,13 +148,13 @@ export function BackedBy({
                           <DrawLineText
                             className="backers__name"
                             text={logo.alt}
-                            delay="0.16s"
+                            delay="0.1s"
                           />
                           {logo.role ? (
                             <DrawLineText
                               className="backers__role"
                               text={logo.role}
-                              delay="0.34s"
+                              delay="0.2s"
                             />
                           ) : null}
                         </motion.p>
