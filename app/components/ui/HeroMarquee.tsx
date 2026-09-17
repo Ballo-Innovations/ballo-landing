@@ -6,8 +6,8 @@ import { useMotionValue, useMotionValueEvent } from "framer-motion";
 
 import { useOptionalContainerScrollContext } from "./AnimatedVideoOnScroll";
 import { GradientMarquee } from "./GradientMarquee";
-import { BAND_WORDMARK } from "./HeroSideExit";
-import { cn } from "@/lib/utils";
+import { BAND_EXIT } from "./HeroSideExit";
+import { at } from "@/lib/cinematic";
 
 /**
  * The hero's background band: "YOUR DIGITAL MARKETING ASSISTANT", scrolling,
@@ -60,25 +60,20 @@ const TEXT = "YOUR DIGITAL MARKETING ASSISTANT";
 const SPEED_PX_PER_SEC = 140;
 
 /**
- * Whether the band is off the stage at this scroll position.
+ * How much of the band is still on the stage at this scroll position, 1 to 0.
  *
- * It holds a word through "What We're About" and "Why Choose BalloAds" no
- * longer: it leaves. Those two scenes are a device and a column of copy, and
- * a word behind them — at any size, in beads or in dust — was a third thing
- * competing for the same attention.
+ * Scroll-linked rather than a class and a CSS transition, which is what this
+ * was. A transition runs on wall-clock time: fast scrolling put the copy on
+ * screen while the band was still halfway through a 520ms fade, and the exact
+ * overlap depended on how hard the wheel was spun. Tied to progress, the band
+ * is always gone at `BAND_EXIT`'s end and never later, at any scroll speed.
  *
- * It fades rather than unmounts. Unmounting would tear down the field and
- * re-sample thousands of particles the moment it came back, and the fade also
- * has to be reversible: scrolling back up returns the band to a hero that is
- * still on screen.
- *
- * The travelling line does NOT resume underneath. That was the arrangement
- * before the wordmark existed and it is what the wordmark was introduced to
- * fix — moving type behind the copy is the loudest version of this problem,
- * not the quietest. `wordAt` is gone with it; the band never holds a word now.
+ * Quantised before it reaches state: this runs on every scroll frame, and the
+ * band has no business re-rendering 60 times a second to cross a tenth of a
+ * step of opacity.
  */
-function bandHidden(p: number) {
-  return p >= BAND_WORDMARK[0];
+function bandFade(p: number) {
+  return Math.round((1 - at(p, BAND_EXIT)) * 20) / 20;
 }
 
 function marqueeFontPx(w: number, h: number) {
@@ -97,7 +92,7 @@ export function HeroMarquee() {
   // Undefined on the reduced-motion path, where the band renders in plain flow
   // with no scroll track above it. No track, no zoom-out, no scatter.
   const track = useOptionalContainerScrollContext();
-  const [hidden, setHidden] = React.useState(false);
+  const [fade, setFade] = React.useState(1);
   // `useMotionValueEvent` needs a MotionValue on every render, track or not.
   const idle = useMotionValue(0);
 
@@ -131,13 +126,14 @@ export function HeroMarquee() {
     // Only the band's own track can take it off the stage. Without a pin
     // there are no scenes to make way for, and the line simply keeps running.
     if (!track) return;
-    const out = bandHidden(p);
-    setHidden((prev) => (prev === out ? prev : out));
+    const next = bandFade(p);
+    setFade((prev) => (prev === next ? prev : next));
   });
 
   return (
     <GradientMarquee
-      className={cn("hero-marquee-canvas", hidden && "hero-marquee-canvas--out")}
+      className="hero-marquee-canvas"
+      style={{ ["--band-fade" as string]: fade }}
       text={TEXT}
       fontSize={fontPx}
       fontFamily="var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif"

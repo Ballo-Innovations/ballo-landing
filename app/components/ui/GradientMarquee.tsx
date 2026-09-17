@@ -39,6 +39,8 @@ export interface GradientMarqueeProps {
   speedPxPerSec?: number;
   /** Space between repeats of the line, in px. */
   gapPx?: number;
+  /** Merged into the root — the caller's scroll-linked fade rides here. */
+  style?: React.CSSProperties;
   /**
    * Orb palette, as `gradient-text-fill.tsx` takes it: comma-separated CSS
    * colours, four of which are used.
@@ -54,6 +56,7 @@ export function GradientMarquee({
   speedPxPerSec = 140,
   gapPx = 40,
   colors = "#3fdbff, #1a3aff, #6186cc, #7c3aed",
+  style,
 }: GradientMarqueeProps) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const trackRef = React.useRef<HTMLDivElement>(null);
@@ -137,6 +140,7 @@ export function GradientMarquee({
       style={{
         fontSize: `${fontSize}px`,
         ...(fontFamily ? { fontFamily } : null),
+        ...style,
       }}
     >
       <div

@@ -129,6 +129,26 @@ const PHONE_ASIDE_SCALE = 0.86;
 const ASIDE_IN: Range = hand([0.62, 0.72]);
 
 /**
+ * The band leaves, and it is gone before the copy starts arriving.
+ *
+ * It used to fade across `BAND_WORDMARK`, which opens at 0.62 — the same
+ * instant `ASIDE_IN` does. The two therefore overlapped: "YOUR DIGITAL
+ * MARKETING ASSISTANT" was still legible across the stage while "What We're
+ * About" was reading beside the phone, which is the one thing the band leaving
+ * was meant to prevent.
+ *
+ * So it goes with the phone's move instead of with the copy's arrival: out
+ * over the stretch the device is drifting aside, finished at 0.6, clear of
+ * 0.62. One thing leaves, then the next arrives.
+ *
+ * Not to be confused with `BAND_OUT` below, which dims the band to `BAND_DIM`
+ * late in the pin. That now runs against a band that left long before, and is
+ * left in place only because it is part of this file's timeline rather than
+ * the band's own.
+ */
+export const BAND_EXIT: Range = hand([0.5, 0.6]);
+
+/**
  * Act three: "What We're About" hands off to "Why Choose BalloAds" in place,
  * rather than the phone leaving and a second phone arriving beside a second
  * block of copy. The phone that is already on screen stays exactly where it
