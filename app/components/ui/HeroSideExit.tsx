@@ -12,7 +12,7 @@ import {
   useContainerScrollContext,
 } from "./AnimatedVideoOnScroll";
 import { at, clamp01, easeInOut, easeOut, lerp, staggered, type Range } from "@/lib/cinematic";
-import { useLatchedBeat } from "./useLatchedBeat";
+import { LATCH_FLIP, useLatchedBeat } from "./useLatchedBeat";
 import { DustMirrorProvider } from "./DustMirror";
 
 /**
@@ -139,62 +139,27 @@ const PHONE_ASIDE_SCALE = 0.86;
  */
 const ASIDE_IN: Range = hand([0.64, 0.72]);
 
-/**
- * The store badges come in on the phone as it steps aside.
- *
- * Spanning the move and the copy's arrival rather than following them: the
- * device travelling left is what opens the space beside it, and the badges are
- * what the device is offering once it has stopped being the whole stage. They
- * are staggered, so the two do not arrive as one block.
- *
- * Written against `PHONE_ASIDE` and `ASIDE_IN` rather than as its own tuned
- * pair of numbers, because "while the phone moves and the copy lands" is the
- * whole specification — if either of those beats is retimed this should follow
- * it, not be renumbered after the fact.
- */
-const BADGES_IN: Range = [PHONE_ASIDE[0], ASIDE_IN[1]];
 /** Fraction of the group's progress one badge waits behind the one above it. */
 const BADGE_STAGGER = 0.28;
 
 /**
- * How far round a badge is swung when it is stowed, in degrees.
+ * How far past the left edge of the window a badge waits, in px.
  *
- * The badges do not slide in from the side; they swing out from behind the
- * device on a hinge at their own right edge — which sits 60px inside the
- * phone's left edge (see `.hero-store-badges`) — and fold back the same way
- * when the phone hands over to "Why Choose". Past 90 the badge is not merely
- * edge-on but tipped back beyond it, so the last of the movement is still
- * visibly a swing rather than a card appearing out of nothing at its edge.
- *
- * Because the hinge is inside the phone's silhouette and the whole rig is one
- * `preserve-3d` context, a badge at this angle is genuinely BEHIND the phone's
- * own faces — it is occluded by the device rather than hidden by us.
+ * Clearance beyond the measured distance to that edge, not the distance
+ * itself: the badge is gone from view at 0, and this is what keeps it gone
+ * while the phone it is anchored to is still travelling left underneath it.
  */
-const BADGE_SWING = -104;
-/** How far the badge is tucked toward the phone's middle when stowed, in px. */
-const BADGE_TUCK = 30;
+const BADGE_OFFSCREEN_MARGIN = 48;
 /**
- * Depth, stowed and out, in px along the rig's Z.
+ * The share of the travel over which the badge fades up.
  *
- * Part of the swing rather than a constant lift on the group. The hinge is a
- * vertical axis, so a badge turned near edge-on has half its length in front
- * of that axis: with the group held at a constant +40 that half was in front
- * of the phone's screen, and a badge that should have been hidden behind the
- * device showed as a bright sliver down the middle of it. Starting well behind
- * the phone's own body and travelling forward as it turns keeps the whole badge
- * behind the device until it is far enough round to be clear of it.
+ * Short, and only insurance. The badge enters from outside the window, so for
+ * most of this it is not on screen to be faded; it matters only if the measured
+ * distance below comes back short — from a stage mid-layout, say — in which
+ * case a badge appears at the window's edge rather than popping in at full
+ * strength somewhere inside it.
  */
-const BADGE_Z = [-90, 40];
-/**
- * The share of the swing over which the badge fades.
- *
- * Only insurance. The occlusion above is what hides a stowed badge, and it is
- * what the effect is built on; this covers the case where the phone's faces do
- * not sort against it, and it is short so that on every browser where sorting
- * does work the badge is already at full strength while still mostly hidden
- * behind the device.
- */
-const BADGE_FADE = 0.3;
+const BADGE_FADE = 0.15;
 
 /**
  * The band leaves: after the phone has started moving, before the copy lands.
@@ -234,14 +199,42 @@ export const BAND_EXIT: Range = hand([0.57, 0.63]);
 export const TEXT_SWAP: Range = hand([0.76, 0.86]);
 
 /**
- * And they go back the way they came, as "Why Choose" takes over the column.
+ * The store badges travel in, once the phone has finished stepping aside.
  *
- * `TEXT_SWAP` is where the copy beside the phone changes and, just after it,
- * where the phone's own screen turns over to the feature cards. The badges
- * belong to the onboarding mock and to "What We're About", so they leave with
- * that beat rather than riding on into a section about the product's features.
+ * Strictly after `PHONE_ASIDE` rather than across it: the device moving left
+ * and two pills flying in from the same side at the same time is two pieces of
+ * motion crossing each other, and the badges were arriving on a phone that was
+ * still sliding out from under them. They start where the move ends, so the
+ * phone is parked and the badges land on something standing still.
+ *
+ * They finish after the copy does, in the hold before `TEXT_SWAP` — not at
+ * `ASIDE_IN`'s own end, which leaves them about a fifth of the scroll the move
+ * took to cross most of a window, arriving at a sprint.
  */
-const BADGES_OUT: Range = TEXT_SWAP;
+const BADGES_IN: Range = [PHONE_ASIDE[1], lerp(ASIDE_IN[1], TEXT_SWAP[0], 0.6)];
+
+/**
+ * And they go back the way they came, once the card sequence is done with.
+ *
+ * They used to leave at `TEXT_SWAP`, on the reasoning that they belonged to the
+ * onboarding mock and to "What We're About" and had no business riding into a
+ * section about features. That is true of the *screen* they came in with and
+ * not of the badges: where to go and get the thing is as true beside the fifth
+ * feature card as beside the first paragraph, and taking them away mid-pin read
+ * as the page losing its call to action halfway through.
+ *
+ * So they hold for the whole of the card sequence and leave over its last
+ * stretch, once the fifth card has come to rest (0.84 of the sequence) and been
+ * read. Late enough that nothing is still being introduced, early enough to be
+ * gone before the pin releases rather than blinking out with it.
+ *
+ * Written against `HANDOVER_END` rather than `PHONE_CONTENT`, which is the same
+ * span but is declared further down this file.
+ */
+const BADGES_OUT: Range = [
+  lerp(HANDOVER_END, 1, 0.84),
+  lerp(HANDOVER_END, 1, 0.94),
+];
 
 /**
  * While the band holds the wordmark instead of the travelling line.
@@ -263,11 +256,44 @@ const TEXT_SWAP_DISTANCE = 64;
  */
 export const PHONE_CONTENT: Range = [HANDOVER_END, 1];
 /**
- * Just the crossfade — the onboarding mock fading out under the cards. Ends
- * exactly where `PHONE_CONTENT` starts, so the phone is not still fading in
- * while its first card is already dwelling.
+ * Just the crossfade — the onboarding mock fading out under the cards.
+ *
+ * Placed against the point the COPY turns over rather than written as its own
+ * pair of numbers, because that is the thing it has to follow and the two are
+ * easy to mis-set by eye. Both this and `TEXT_SWAP` are latched beats (see
+ * `useLatchedBeat`), and a latched beat turns over at `LATCH_FLIP` of its
+ * range, not at its end — so two ranges that look adjacent can turn over a
+ * long way apart. They did: at hand([0.86, 0.9]) the copy turned over at 0.652
+ * of the track and the screen not until 0.706, and for a quarter of a viewport
+ * of scrolling "Why Choose BalloAds?" was being read beside a phone still
+ * showing the onboarding mock from "What We're About". Moving the range by eye
+ * closed most of that gap and left 65px of it.
+ *
+ * Ending before `PHONE_CONTENT` opens still holds: the phone is never fading
+ * in while its first card is already dwelling. The cards clamp to the first of
+ * them below that range, so what this fades up to is the card the sequence is
+ * about to start on.
  */
-const PHONE_SCREEN_CROSSFADE: Range = hand([0.86, 0.9]);
+/** How long the crossfade's window is, in track progress. */
+const PHONE_SCREEN_SPAN = 0.048;
+/**
+ * How far after the copy turns over the phone's screen does, in track progress.
+ *
+ * Zero: they turn over on the same frame. This beat was designed with the copy
+ * leading, and it still reads that way — the copy's crossfade is 0.45s against
+ * the screen's 0.32s, so the heading is still changing after the screen has
+ * settled — but the LEAD is now in how long each takes rather than in where
+ * each is triggered. Any positive value here is a window, however short, in
+ * which "Why Choose BalloAds?" is being read beside the onboarding mock, which
+ * is the thing this was tuned to get rid of. At 0.005 that window was 20px of
+ * scroll, and a reader stopped inside it still saw the stale screen.
+ */
+const PHONE_SCREEN_LEAD = 0;
+const COPY_FLIP = lerp(TEXT_SWAP[0], TEXT_SWAP[1], LATCH_FLIP);
+const PHONE_SCREEN_CROSSFADE: Range = [
+  COPY_FLIP + PHONE_SCREEN_LEAD - LATCH_FLIP * PHONE_SCREEN_SPAN,
+  COPY_FLIP + PHONE_SCREEN_LEAD + (1 - LATCH_FLIP) * PHONE_SCREEN_SPAN,
+];
 
 /**
  * The band dissolves once the phone has finished moving aside, not while it
@@ -371,6 +397,17 @@ function useReducedMotion() {
  * across a flat pane in front of it, which is what the pointer tilt would make
  * of a sibling layer.
  *
+ * They come in from outside the left edge of the window and leave the same way.
+ * An earlier version had them hinge out from behind the phone itself, which is
+ * a nice piece of geometry and the wrong read: it made the badges something
+ * the device produced, when what they are is the two places to go and get it.
+ *
+ * How far out is measured rather than declared, because the anchor moves: the
+ * phone is travelling left through the whole of their arrival, so the distance
+ * from the badge's resting place to the window's edge is different on every
+ * frame of it, and a fixed number is either short (the badge starts visible)
+ * or wildly long (it arrives late, at a sprint).
+ *
  * Placed and faded straight to the DOM from a scroll subscription, the way
  * `HeroAside` and `HeroBand` are: this is on a pin, so React state here would
  * re-render the phone and both of its screens on every scroll frame.
@@ -386,25 +423,33 @@ function HeroStoreBadges() {
     const groupIn = at(p, BADGES_IN);
     const groupOut = at(p, BADGES_OUT);
     const badges = el.children;
+
+    // Where the badges' own box is on screen right now, which is wherever the
+    // phone has carried it to. `el` has no transform of its own — the badges
+    // inside it do — so its rect is unaffected by the travel being written
+    // below and cannot feed back into itself.
+    const box = el.getBoundingClientRect();
+    // The rect is in window px and the transform is in the rig's local px,
+    // which the phone's `PHONE_ASIDE_SCALE` and the device's 3D perspective
+    // have already shrunk. Dividing by the ratio between the projected box and
+    // the laid-out one converts the distance into the space it is written in;
+    // without it the badges stop short of the edge by whatever the phone has
+    // been scaled to.
+    const scale = box.width && el.offsetWidth ? box.width / el.offsetWidth : 1;
+    const offscreen = (box.right + BADGE_OFFSCREEN_MARGIN) / scale;
+
     for (let i = 0; i < badges.length; i++) {
       const badge = badges[i] as HTMLElement;
       const count = badges.length;
-      // One number for how far out this badge is, arrived at from both ends:
-      // it swings out over BADGES_IN and back over BADGES_OUT. Multiplying
+      // One number for how far in this badge is, arrived at from both ends: it
+      // travels in over BADGES_IN and back out over BADGES_OUT. Multiplying
       // rather than branching keeps the two continuous where they meet, and
       // there is a long hold between them where the first is 1 and the second
       // is still 0.
-      const swungOut = easeOut(staggered(groupIn, i, count, BADGE_STAGGER));
-      const stowed = easeInOut(staggered(groupOut, i, count, BADGE_STAGGER));
-      const t = swungOut * (1 - stowed);
-      // The hinge is `transform-origin: right center` in the CSS, so this one
-      // rotation is the whole arc: the badge sweeps out from behind the device
-      // rather than translating out from under it.
-      const angle = lerp(BADGE_SWING, 0, t);
-      const tuck = lerp(BADGE_TUCK, 0, t);
-      const z = lerp(BADGE_Z[0], BADGE_Z[1], t);
-      badge.style.transform =
-        `translate3d(${tuck.toFixed(1)}px, 0, ${z.toFixed(1)}px) rotateY(${angle.toFixed(2)}deg)`;
+      const arrived = easeOut(staggered(groupIn, i, count, BADGE_STAGGER));
+      const gone = easeInOut(staggered(groupOut, i, count, BADGE_STAGGER));
+      const t = arrived * (1 - gone);
+      badge.style.transform = `translate3d(${(-(1 - t) * offscreen).toFixed(1)}px, 0, 0)`;
       badge.style.opacity = clamp01(t / BADGE_FADE).toFixed(3);
       badge.style.willChange = t > 0.001 && t < 0.999 ? "transform, opacity" : "auto";
     }
@@ -755,6 +800,26 @@ function HeroParts({ children }: { children: React.ReactNode }) {
  * theirs: inside a pinned stage it is in the viewport from the first frame, so
  * a viewport-triggered reveal would fire before the phone had even arrived.
  */
+/**
+ * Puts a copy layer's HEADING into a flip state, or takes it out of one.
+ *
+ * The heading rather than the layer, though the layer is what knows: the CSS
+ * matches characters at any depth, and the "Why Choose" layer also contains
+ * the five per-card sentences, all of them split. Set on the layer, one swap
+ * put 636 characters into the same animation on the same frame — four
+ * paragraphs' worth of which are invisible and belong to a beat that has not
+ * happened yet.
+ *
+ * Written only when the value changes: assigning the same string is a no-op,
+ * but assigning a different one restarts every character.
+ */
+function setFlip(layer: HTMLElement, state: "in" | "out" | undefined) {
+  const heading = layer.querySelector<HTMLElement>(".aside-copy-title");
+  if (!heading || heading.dataset.flip === state) return;
+  if (state) heading.dataset.flip = state;
+  else delete heading.dataset.flip;
+}
+
 function HeroAside({
   children,
   whyHeading,
@@ -779,17 +844,54 @@ function HeroAside({
     const p = scrollYProgress.get();
     const tIn = easeOut(at(p, ASIDE_IN));
     const tSwap = easeInOut(swap.current);
+    // No travel. The column used to slide in from 64px to the right of where
+    // it belongs, which was its entrance; the per-character reveal on the
+    // heading (see `TextReveal`) is the entrance now, and running both meant
+    // the letters rose into place while the block they sat on was still
+    // arriving underneath them — two movements, in two directions, on one
+    // piece of copy.
+    //
+    // The fade stays. It is not the slide: this column is in the viewport from
+    // the pin's first frame, so something has to keep it off the stage until
+    // the phone has moved aside, and the alternative is the block appearing
+    // outright the instant `ASIDE_IN` opens.
     el.style.opacity = String(tIn);
-    el.style.transform = `translate3d(${((1 - tIn) * 64).toFixed(1)}px, 0, 0)`;
     el.style.pointerEvents = tIn > 0.9 && tSwap < 0.1 ? "auto" : "none";
-    el.style.willChange = tIn > 0.001 && tIn < 0.999 ? "transform, opacity" : "auto";
+    el.style.willChange = tIn > 0.001 && tIn < 0.999 ? "opacity" : "auto";
 
     if (oldRef.current) {
+      // Arms the heading's per-character reveal (see `TextReveal`) as the
+      // block arrives, and disarms it if the reader scrolls back out, so the
+      // copy plays again on the way in rather than being spent the first
+      // time. Same write-only-on-change rule as `data-morph` below: a new
+      // value restarts an animation on every character.
+      const reveal = tIn > 0.05 ? "in" : "out";
+      if (oldRef.current.dataset.reveal !== reveal) oldRef.current.dataset.reveal = reveal;
+      // And hinges away again when the swap runs. Set from the latched beat's
+      // own target rather than from a threshold on `tSwap`, so the flip starts
+      // with the beat instead of a fraction of the way into it, and so the two
+      // headings — this one leaving, "Why Choose" arriving — turn on the same
+      // frame. Cleared back to nothing once the beat is fully home, or this
+      // block keeps a spent `forwards` animation holding its characters
+      // edge-on for the rest of the pin.
+      setFlip(oldRef.current, swap.current > 0 && swap.current < 1 ? "out" : undefined);
       oldRef.current.style.opacity = String(1 - tSwap);
       oldRef.current.style.transform =
         `translate3d(${(-tSwap * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
     }
     if (newRef.current) {
+      // One-shot rather than scrubbed: the chips under this heading form as it
+      // turns over (see `chip-morph` in cinematic-hero.css). Written as an
+      // attribute the CSS keys off, and only on the frames it actually
+      // changes — assigning the same value every frame would be a no-op, but
+      // assigning a different one restarts twelve animations, so the two
+      // states are set from the beat's own threshold rather than from tSwap
+      // crossing some number of its own.
+      const morph = swap.current > 0 ? "in" : "out";
+      if (newRef.current.dataset.morph !== morph) newRef.current.dataset.morph = morph;
+      // The other half of the turn: this heading's characters come up out of
+      // the page as the one above falls away from it.
+      setFlip(newRef.current, swap.current > 0 ? "in" : undefined);
       newRef.current.style.opacity = String(tSwap);
       newRef.current.style.transform =
         `translate3d(${((1 - tSwap) * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
