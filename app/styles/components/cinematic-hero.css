@@ -712,44 +712,153 @@
 }
 
 
-/* The glass band (see `GlassBandMarquee.tsx`). The root clips the track; the
-   track is what travels; each line is the artwork. */
-.glass-band {
+/* The gradient band (see `GradientMarquee.tsx`). The root carries the face and
+   clips the track; the track is the thing that travels. */
+.gradient-marquee {
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
   /* It sits behind the hero and must never eat a click on it. */
   pointer-events: none;
-  user-select: none;
-  /* Background weight, times how much of the band is still on the stage.
-     `--band-fade` is written per scroll frame by `HeroMarquee` and runs 1 to 0
-     across `BAND_EXIT`, which is what takes the band off before "What We're
-     About" arrives. */
-  opacity: calc(0.62 * var(--band-fade, 1));
 }
 
-.glass-band__track {
+.gradient-marquee__track {
   display: flex;
   align-items: center;
   will-change: transform;
 }
 
-/* The line, and how it deepens as the phone arrives.
-
-   The artwork cannot be recoloured the way live text could, so the deepening
-   is a filter: down in brightness, up in saturation, driven by `--band-rich`.
-   A picture of glass darkened this way still reads as the same material, which
-   is the point — a hue rotation would make it a different piece of glass. */
-.glass-band__line {
-  display: block;
+.gradient-marquee__cell {
+  display: flex;
   flex: 0 0 auto;
-  filter:
-    brightness(calc(1 - 0.28 * var(--band-rich, 0)))
-    saturate(calc(1 + 0.45 * var(--band-rich, 0)));
+  align-items: center;
+  /* The word space. It is a gap rather than a real space because each word is
+     its own element now, and an inline space between two inline-flex boxes
+     collapses unpredictably at this size. */
+  gap: 0.28em;
 }
 
+/* The filled glyphs.
 
+   Four orbs of colour drifting behind the letters, painted as radial gradients
+   in the element's own background and clipped to the glyphs. The vendored
+   `gradient-text-fill.tsx` does this with sibling boxes and `mix-blend-lighten`
+   instead, which works only over a white page — see the note in
+   `GradientMarquee.tsx` for why that could not be made to work here.
+
+   The last layer is the base the orbs sit on: near-white, because the band is
+   held back to background weight by opacity on the whole thing. Dimming the
+   fill instead would take the orbs down with it.
+
+   `background-position` is animated as one comma-separated list, which is the
+   only way to drive four layers from a single set of keyframes. The positions
+   are the same wander the component's `gradient-1`..`gradient-4` describe —
+   each orb crossing its own quadrant on its own path, none of them in step. */
+.gradient-marquee__run {
+  /* Each orb mixed between the pale colour it opens in and a deep one, by
+     `--band-rich` — which `HeroMarquee` runs 0 to 1 across the phone's
+     arrival. Mixed in oklab rather than srgb: a straight srgb ramp from a
+     bright cyan to a deep teal passes through a washed-out grey in the
+     middle, which is exactly the part of the movement the eye is watching. */
+  --orb-1-now: color-mix(in oklab, var(--orb-1-deep) calc(var(--band-rich, 0) * 100%), var(--orb-1));
+  --orb-2-now: color-mix(in oklab, var(--orb-2-deep) calc(var(--band-rich, 0) * 100%), var(--orb-2));
+  --orb-3-now: color-mix(in oklab, var(--orb-3-deep) calc(var(--band-rich, 0) * 100%), var(--orb-3));
+  --orb-4-now: color-mix(in oklab, var(--orb-4-deep) calc(var(--band-rich, 0) * 100%), var(--orb-4));
+  /* The base the orbs sit on goes with them, or the letters stay pale between
+     the orbs and the deepening reads as four coloured patches on white type
+     rather than as the whole band changing material. */
+  --base-now: color-mix(in oklab, #16337d calc(var(--band-rich, 0) * 100%), rgba(255, 255, 255, 0.92));
+
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: no-repeat;
+  /* Seven layers, front to back: a specular that travels across the run, a
+     static gloss down the top of the glyph, the four orbs, and the base.
+
+     The gloss and the specular are what make this read as glass rather than as
+     coloured type. Both are clipped to the text like everything else here, so
+     the glass is the letterform itself — there is no pane over it. */
+  background-image:
+    linear-gradient(
+      104deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.5) 49%,
+      rgba(236, 252, 255, 0.72) 51%,
+      rgba(255, 255, 255, 0.5) 53%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.14) 32%,
+      transparent 48%,
+      transparent 82%,
+      rgba(255, 255, 255, 0.2) 100%
+    ),
+    radial-gradient(closest-side circle, var(--orb-1-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-2-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-3-now) 0%, transparent 100%),
+    radial-gradient(closest-side circle, var(--orb-4-now) 0%, transparent 100%),
+    linear-gradient(var(--base-now), var(--base-now));
+  background-size:
+    220% 100%,
+    100% 100%,
+    90% 260%,
+    80% 240%,
+    95% 250%,
+    85% 230%,
+    100% 100%;
+  /* The edge and the thickness.
+
+     `paint-order: stroke fill` puts the stroke behind the glyph so only its
+     outer half shows; painted normally it straddles the outline and eats into
+     the letterform, which at this weight closes up the counters.
+
+     The shadows are drawn from the glyph outline, not from the fill, so they
+     still work with `color: transparent` — a dark one under the letter for the
+     thickness it sits on, and a pale one above it for the lit top edge. Both
+     are one pixel: this is a background band, and a deeper bevel turns it into
+     a chrome headline. */
+  -webkit-text-stroke: 1px rgba(214, 238, 255, 0.28);
+  paint-order: stroke fill;
+  text-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.22),
+    0 1px 0 rgba(6, 16, 48, 0.55),
+    0 6px 18px rgba(3, 10, 34, 0.45);
+  animation: gradient-marquee-orbs 12s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-marquee-orbs {
+  0% {
+    background-position: 170% 0, 0 0, 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0 0;
+  }
+  25% {
+    background-position: 105% 0, 0 0, 35% 70%, 70% 25%, 25% 45%, 60% 80%, 0 0;
+  }
+  50% {
+    background-position: 45% 0, 0 0, 65% 25%, 40% 85%, 55% 10%, 25% 45%, 0 0;
+  }
+  75% {
+    background-position: -15% 0, 0 0, 90% 65%, 15% 45%, 80% 70%, 45% 20%, 0 0;
+  }
+  100% {
+    background-position: -75% 0, 0 0, 100% 100%, 0% 100%, 100% 0%, 0% 0%, 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-marquee__run {
+    animation: none;
+  }
+}
 
 /* Background weight, times how much of the band is still on the stage.
 
