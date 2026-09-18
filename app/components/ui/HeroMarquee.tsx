@@ -5,18 +5,13 @@ import * as React from "react";
 import { useMotionValue, useMotionValueEvent } from "framer-motion";
 
 import { useOptionalContainerScrollContext } from "./AnimatedVideoOnScroll";
-import { GradientMarquee } from "./GradientMarquee";
-import { BAND_EXIT, BAND_RISE } from "./HeroSideExit";
+import { CursorDrivenParticleTypography } from "./cursor-driven-particles-typography";
+import { BAND_EXIT } from "./HeroSideExit";
 import { at } from "@/lib/cinematic";
 
 /**
  * The hero's background band: "YOUR DIGITAL MARKETING ASSISTANT", scrolling,
- * its glyphs filled by coloured orbs drifting behind them (`GradientText`).
- *
- * It was a field of particles, and before that flat CSS type. The particles
- * answered the pointer, which is the one thing a fill cannot do — the scatter
- * is gone with them. What it buys is light that moves through the letters
- * instead of light painted on them, on a band that is already travelling.
+ * made of particles that scatter away from the pointer and settle back.
  *
  * It belongs to the hero and only to the hero. Once "What We're About"
  * arrives it fades out and does not come back for the rest of the pin: that
@@ -60,36 +55,34 @@ const TEXT = "YOUR DIGITAL MARKETING ASSISTANT";
 const SPEED_PX_PER_SEC = 140;
 
 /**
+ * The scatter stays off until the page has actually been scrolled.
+ *
+ * At rest the band is background: the hero owns the screen, and letters
+ * blowing apart under a cursor that is on its way to the Sign Up button is a
+ * distraction from the thing being clicked. Once the zoom-out is under way the
+ * band is rising into the middle of the stage on its own terms, and answering
+ * the pointer is then the point.
+ *
+ * Not exactly zero — `scrollYProgress` can sit a hair above it at the top of
+ * the document, and this must not arm on a page nobody has touched.
+ */
+const HOVER_FROM = 0.004;
+
+/**
  * How much of the band is still on the stage at this scroll position, 1 to 0.
  *
  * Scroll-linked rather than a class and a CSS transition, which is what this
  * was. A transition runs on wall-clock time: fast scrolling put the copy on
- * screen while the band was still halfway through a 520ms fade, and the exact
+ * screen while the band was still halfway through its fade, and the exact
  * overlap depended on how hard the wheel was spun. Tied to progress, the band
  * is always gone at `BAND_EXIT`'s end and never later, at any scroll speed.
  *
  * Quantised before it reaches state: this runs on every scroll frame, and the
- * band has no business re-rendering 60 times a second to cross a tenth of a
- * step of opacity.
+ * band has no business re-rendering 60 times a second to cross a twentieth of
+ * a step of opacity.
  */
 function bandFade(p: number) {
   return Math.round((1 - at(p, BAND_EXIT)) * 20) / 20;
-}
-
-/**
- * How far the band has deepened, 0 to 1, across the phone's arrival.
- *
- * The band opens in the pale blues it has always had — it is behind a hero
- * that is still being read, and it has to stay behind it. By the time the
- * device has landed the hero has gone and the band is the thing on the stage,
- * so the fill travels to a deeper, more saturated set over exactly the stretch
- * the phone is arriving and the band is rising (`BAND_RISE` is tied to the end
- * of `PHONE_IN`). The two movements are one movement.
- *
- * Quantised for the same reason `bandFade` is: this runs on every scroll frame.
- */
-function bandRich(p: number) {
-  return Math.round(at(p, BAND_RISE) * 20) / 20;
 }
 
 function marqueeFontPx(w: number, h: number) {
@@ -108,8 +101,8 @@ export function HeroMarquee() {
   // Undefined on the reduced-motion path, where the band renders in plain flow
   // with no scroll track above it. No track, no zoom-out, no scatter.
   const track = useOptionalContainerScrollContext();
+  const [hover, setHover] = React.useState(false);
   const [fade, setFade] = React.useState(1);
-  const [rich, setRich] = React.useState(0);
   // `useMotionValueEvent` needs a MotionValue on every render, track or not.
   const idle = useMotionValue(0);
 
@@ -140,29 +133,45 @@ export function HeroMarquee() {
   }, []);
 
   useMotionValueEvent(track?.scrollYProgress ?? idle, "change", (p) => {
+    const armed = p > HOVER_FROM;
+    setHover((prev) => (prev === armed ? prev : armed));
     // Only the band's own track can take it off the stage. Without a pin
     // there are no scenes to make way for, and the line simply keeps running.
     if (!track) return;
-    const nextFade = bandFade(p);
-    setFade((prev) => (prev === nextFade ? prev : nextFade));
-    const nextRich = bandRich(p);
-    setRich((prev) => (prev === nextRich ? prev : nextRich));
+    const next = bandFade(p);
+    setFade((prev) => (prev === next ? prev : next));
   });
 
   return (
-    <GradientMarquee
+    <CursorDrivenParticleTypography
       className="hero-marquee-canvas"
-      style={{ ["--band-fade" as string]: fade, ["--band-rich" as string]: rich }}
+      style={{ ["--band-fade" as string]: fade }}
       text={TEXT}
       fontSize={fontPx}
-      fontFamily="var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif"
-      speedPxPerSec={SPEED_PX_PER_SEC}
-      gapPx={40}
-      /* The brand's own blues and violet in place of the component's default
-         magenta-through-yellow. Those are for a studio wordmark on white; on
-         this hero they were five colours the page does not otherwise contain,
-         sitting behind copy that is trying to be read. */
-      colors="#3fdbff, #1a3aff, #6186cc, #7c3aed, #2273af"
+      fontFamily='var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif'
+      // The old band was `text-white/5`. Particles read lighter than solid
+      // glyphs at the same alpha — there is space between them — so this is
+      // lifted a little to land at the same weight on the page.
+      color="rgba(255, 255, 255, 0.1)"
+      /* The step and the size the beads want. Coarser than the flat dust
+         started at (4 and 2): packed that tightly the dots read as a smooth
+         wash rather than as dust, and a bead carries a glow on top of that —
+         what makes beads read as glass is the dark between them. Coarser
+         still overlapped less but cost the beads their footing on the
+         lattice, so the glow was narrowed instead (see `buildBead`). */
+      particleDensity={8}
+      particleSize={2.4}
+      dotShape="glass"
+      // Scatter stays armed for the whole time the band is on the stage.
+      interactive={hover && fade > 0}
+      dispersionStrength={18}
+      returnSpeed={0.08}
+      marquee
+      marqueeSpeedPxPerSec={SPEED_PX_PER_SEC}
+      marqueeGapPx={40}
+      // The band is pointer-events:none so it can never eat a click on the
+      // hero, which means the canvas itself never sees a mousemove.
+      trackPointer="window"
     />
   );
 }

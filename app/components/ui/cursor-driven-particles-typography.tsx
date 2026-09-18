@@ -35,6 +35,8 @@ import type { DustMirror } from "./DustMirror";
 
 export interface CursorDrivenParticleTypographyProps {
   className?: string;
+  /** Merged onto the canvas — the caller's scroll-linked fade rides here. */
+  style?: React.CSSProperties;
   text: string;
   fontSize?: number;
   fontFamily?: string;
@@ -281,6 +283,7 @@ class Particle {
 
 export function CursorDrivenParticleTypography({
   className,
+  style,
   text,
   fontSize = 120,
   fontFamily = "Inter, sans-serif",
@@ -909,6 +912,7 @@ export function CursorDrivenParticleTypography({
     <div
       ref={containerRef}
       className={cn("relative flex h-full w-full items-center justify-center touch-none", className)}
+      style={style}
     >
       <canvas ref={canvasRef} className="block h-full w-full" />
     </div>
