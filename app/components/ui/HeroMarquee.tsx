@@ -5,18 +5,18 @@ import * as React from "react";
 import { useMotionValue, useMotionValueEvent } from "framer-motion";
 
 import { useOptionalContainerScrollContext } from "./AnimatedVideoOnScroll";
-import { GradientMarquee } from "./GradientMarquee";
+import { GlassBandMarquee } from "./GlassBandMarquee";
 import { BAND_EXIT, BAND_RISE } from "./HeroSideExit";
 import { at } from "@/lib/cinematic";
 
 /**
  * The hero's background band: "YOUR DIGITAL MARKETING ASSISTANT", scrolling,
- * its glyphs filled by coloured orbs drifting behind them (`GradientText`).
+ * set in glass — artwork rather than type (see `GlassBandMarquee`).
  *
- * It was a field of particles, and before that flat CSS type. The particles
- * answered the pointer, which is the one thing a fill cannot do — the scatter
- * is gone with them. What it buys is light that moves through the letters
- * instead of light painted on them, on a band that is already travelling.
+ * It was a field of particles before that, and flat CSS type before that. The
+ * particles answered the pointer, which is the one thing a picture cannot do;
+ * the scatter went with them. What it buys is glass that actually looks like
+ * glass, which three passes at building it in CSS did not.
  *
  * It belongs to the hero and only to the hero. Once "What We're About"
  * arrives it fades out and does not come back for the rest of the pin: that
@@ -150,19 +150,15 @@ export function HeroMarquee() {
   });
 
   return (
-    <GradientMarquee
+    <GlassBandMarquee
       className="hero-marquee-canvas"
       style={{ ["--band-fade" as string]: fade, ["--band-rich" as string]: rich }}
       text={TEXT}
-      fontSize={fontPx}
-      fontFamily="var(--font-ubuntu), Ubuntu, ui-sans-serif, sans-serif"
+      /* `marqueeFontPx` still speaks in font sizes, which is what every
+         breakpoint in this file was tuned in; a cap is about 0.72 of one. */
+      capHeightPx={Math.round(fontPx * 0.72)}
       speedPxPerSec={SPEED_PX_PER_SEC}
       gapPx={40}
-      /* The brand's own blues and violet in place of the component's default
-         magenta-through-yellow. Those are for a studio wordmark on white; on
-         this hero they were five colours the page does not otherwise contain,
-         sitting behind copy that is trying to be read. */
-      colors="#3fdbff, #1a3aff, #6186cc, #7c3aed, #2273af"
     />
   );
 }
