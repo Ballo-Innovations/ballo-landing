@@ -133,38 +133,30 @@
   right: 196px;
   display: flex;
   flex-direction: column;
-  /* One width for both, set here rather than left to each badge's own words —
-     "Get it on the / App Store" is wider than "Get it on / Google Play", and
-     two pills of different lengths stacked on a shared right edge read as
-     ragged rather than as a pair. It also means both hinge on the same axis,
-     so they swing out as one piece of geometry. */
-  width: 176px;
+  /* One width for both, and that width is the wider badge's own — "Get it on
+     the / App Store" sets it and "Get it on / Google Play" is stretched to
+     match, because two pills of different lengths stacked on a shared right
+     edge read as ragged rather than as a pair, and it means both hinge on the
+     same axis so they swing out as one piece of geometry.
+     `max-content` rather than a number: a fixed width has to be guessed wide
+     enough for the longer wordmark at whatever the page's font ends up being,
+     and the guess showed as a band of empty pill to the right of the type. */
+  width: max-content;
   gap: 14px;
   /* The stage above is already `pointer-events: none`; this is here so the
      rule survives the badges being moved somewhere that isn't. */
   pointer-events: none;
-  /* No `translateZ` here on purpose: depth is part of the swing and is written
-     per badge by `HeroStoreBadges`. A constant lift on the group put a badge's
-     near half in FRONT of the screen at the edge-on end of its rotation, so a
-     badge that was supposed to be tucked behind the device showed as a bright
-     sliver across it. */
-  transform-style: preserve-3d;
+  /* Lifted clear of the phone's own faces, so a badge crossing the device is
+     in front of it rather than sorted into its frame. A constant is enough
+     again now that the badges arrive flat from the side: while they hinged out
+     from behind the phone this had to be animated, because a badge turned
+     near edge-on had half its length in front of the hinge. */
+  transform: translateZ(40px);
 }
 
 .hero-store-badges__item {
   display: block;
-  /* The hinge the badges swing out on. It is at their own right edge, which
-     the `right: 196px` above puts 60px inside the phone's silhouette — so the
-     stowed badge is folded back BEHIND the device and is occluded by it,
-     rather than being hidden by an opacity we have to time. */
-  transform-origin: right center;
-  transform-style: preserve-3d;
-  /* Without this the rotation is an affine squash: the near edge has to come
-     toward the viewer as the far edge goes back, and that is the difference
-     between a badge curving out from behind the phone and one being unrolled
-     flat against it. The scene's own `perspective: 800px` is what this
-     inherits — see `.phone3d-scene`. */
-  backface-visibility: hidden;
+
   /* The pills have their own shadow-less flat fill; on the dark stage they
      need seating, and it also separates them from the phone's own frame where
      they cross it. */
@@ -474,6 +466,105 @@
   padding-right: 0.5rem;
 }
 
+/* ── The chips morphing in ──────────────────────────────────────────────
+   "Why Choose" arrives as a crossfade, and a crossfade brings twelve finished
+   pills in at once: the rows read as a block of furniture that was always
+   there and has just been revealed. They condense instead — each chip comes
+   up out of a blur at half size, one after another along the row.
+
+   Driven by a `data-morph` attribute on the copy layer rather than by scroll
+   progress, because this is a one-shot entrance rather than something to
+   scrub: `HeroAside` sets it from the same latched beat that swaps the copy,
+   so the chips form as the heading turns over and re-form if the reader
+   scrolls back out and in again.
+
+   Scoped to `[data-morph]`, so the same chips used outside the pin — the
+   standalone "Why Choose" section, the closing CTA — are untouched and simply
+   render as they always have. */
+@keyframes chip-morph {
+  from {
+    opacity: 0;
+    /* Scaled about its own middle and blurred: the pill reads as coming
+       together out of the page rather than flying in from anywhere, which is
+       the one thing a chip on a marquee cannot do — it is already travelling. */
+    transform: scale(0.55);
+    filter: blur(10px);
+  }
+  60% {
+    opacity: 1;
+    /* Just past its size, so the pill settles rather than arriving. Small: at
+       1.1 twelve of them overlapping their neighbours mid-row read as a
+       wobble rather than as pills firming up. */
+    transform: scale(1.04);
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip {
+  /* `backwards` is what holds the chip at the `from` frame through its own
+     delay; without it the later chips in a row sit there fully formed, waiting
+     for their turn to animate from a state they are already past. */
+  animation: chip-morph 620ms cubic-bezier(0.2, 0.8, 0.25, 1) backwards;
+}
+
+/* The stagger, as delays rather than as a custom property set per chip: the
+   rows are six chips each (`ROW_A`/`ROW_B` split the list in two) and the
+   marquee renders each row twice, so `nth-child` inside a group addresses the
+   chip AND its own duplicate with one rule — which is what keeps a chip and
+   the copy of it coming round behind identical. The 6th value also catches
+   anything past six, so adding a channel to `CHIPS` cannot leave a chip with
+   no animation at all. */
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(1) {
+  animation-delay: 0ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(2) {
+  animation-delay: 55ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(3) {
+  animation-delay: 110ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(4) {
+  animation-delay: 165ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(5) {
+  animation-delay: 220ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip:nth-child(n + 6) {
+  animation-delay: 275ms;
+}
+
+/* The second row follows the first rather than racing it, so the pair reads as
+   one wave crossing the block. */
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip {
+  animation-delay: 140ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip:nth-child(2) {
+  animation-delay: 195ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip:nth-child(3) {
+  animation-delay: 250ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip:nth-child(4) {
+  animation-delay: 305ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip:nth-child(5) {
+  animation-delay: 360ms;
+}
+.hero-aside-layer[data-morph="in"] .aside-copy-rows .mq--row-b .cta-chip:nth-child(n + 6) {
+  animation-delay: 415ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aside-layer[data-morph="in"] .aside-copy-rows .cta-chip {
+    animation: none;
+  }
+}
+
 /* One row under the phone, where the copy is bottom-anchored and the measure
    is the full column. */
 @media (max-width: 900px) {
@@ -689,36 +780,77 @@
   -webkit-background-clip: text;
   background-clip: text;
   background-repeat: no-repeat;
+  /* Seven layers, front to back: a specular that travels across the run, a
+     static gloss down the top of the glyph, the four orbs, and the base.
+
+     The gloss and the specular are what make this read as glass rather than as
+     coloured type. Both are clipped to the text like everything else here, so
+     the glass is the letterform itself — there is no pane over it. */
   background-image:
+    linear-gradient(
+      104deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.5) 49%,
+      rgba(236, 252, 255, 0.72) 51%,
+      rgba(255, 255, 255, 0.5) 53%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.14) 32%,
+      transparent 48%,
+      transparent 82%,
+      rgba(255, 255, 255, 0.2) 100%
+    ),
     radial-gradient(closest-side circle, var(--orb-1-now) 0%, transparent 100%),
     radial-gradient(closest-side circle, var(--orb-2-now) 0%, transparent 100%),
     radial-gradient(closest-side circle, var(--orb-3-now) 0%, transparent 100%),
     radial-gradient(closest-side circle, var(--orb-4-now) 0%, transparent 100%),
     linear-gradient(var(--base-now), var(--base-now));
   background-size:
+    220% 100%,
+    100% 100%,
     90% 260%,
     80% 240%,
     95% 250%,
     85% 230%,
     100% 100%;
+  /* The edge and the thickness.
+
+     `paint-order: stroke fill` puts the stroke behind the glyph so only its
+     outer half shows; painted normally it straddles the outline and eats into
+     the letterform, which at this weight closes up the counters.
+
+     The shadows are drawn from the glyph outline, not from the fill, so they
+     still work with `color: transparent` — a dark one under the letter for the
+     thickness it sits on, and a pale one above it for the lit top edge. Both
+     are one pixel: this is a background band, and a deeper bevel turns it into
+     a chrome headline. */
+  -webkit-text-stroke: 1px rgba(214, 238, 255, 0.28);
+  paint-order: stroke fill;
+  text-shadow:
+    0 -1px 0 rgba(255, 255, 255, 0.22),
+    0 1px 0 rgba(6, 16, 48, 0.55),
+    0 6px 18px rgba(3, 10, 34, 0.45);
   animation: gradient-marquee-orbs 12s ease-in-out infinite alternate;
 }
 
 @keyframes gradient-marquee-orbs {
   0% {
-    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0 0;
+    background-position: 170% 0, 0 0, 0% 0%, 100% 0%, 0% 100%, 100% 100%, 0 0;
   }
   25% {
-    background-position: 35% 70%, 70% 25%, 25% 45%, 60% 80%, 0 0;
+    background-position: 105% 0, 0 0, 35% 70%, 70% 25%, 25% 45%, 60% 80%, 0 0;
   }
   50% {
-    background-position: 65% 25%, 40% 85%, 55% 10%, 25% 45%, 0 0;
+    background-position: 45% 0, 0 0, 65% 25%, 40% 85%, 55% 10%, 25% 45%, 0 0;
   }
   75% {
-    background-position: 90% 65%, 15% 45%, 80% 70%, 45% 20%, 0 0;
+    background-position: -15% 0, 0 0, 90% 65%, 15% 45%, 80% 70%, 45% 20%, 0 0;
   }
   100% {
-    background-position: 100% 100%, 0% 100%, 100% 0%, 0% 0%, 0 0;
+    background-position: -75% 0, 0 0, 100% 100%, 0% 100%, 100% 0%, 0% 0%, 0 0;
   }
 }
 
