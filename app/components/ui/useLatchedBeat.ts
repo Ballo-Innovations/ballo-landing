@@ -33,6 +33,16 @@ import { clamp01, type Range } from "@/lib/cinematic";
  * that the scroll subscription calls. The beat is not a MotionValue precisely
  * because its callers write styles straight to the DOM.
  */
+/**
+ * Where in its range a latched beat decides which end it is heading for.
+ *
+ * Exported because it is the beat's REAL timing: a caller lining one beat up
+ * against another has to line up the points they turn over at, not the ranges
+ * they occupy, and two ranges that look adjacent can turn over a long way
+ * apart. `1 - LATCH_FLIP` is the other side of the dead zone below.
+ */
+export const LATCH_FLIP = 0.55;
+
 export function useLatchedBeat(
   progress: MotionValue<number>,
   range: Range,
@@ -102,7 +112,7 @@ export function useLatchedBeat(
       // A dead zone around the midpoint, so a reader idling right on the
       // threshold gets one decision rather than a flutter of them.
       const t = (p - from) / (to - from);
-      const next = t > 0.55 ? 1 : t < 0.45 ? 0 : target.current;
+      const next = t > LATCH_FLIP ? 1 : t < 1 - LATCH_FLIP ? 0 : target.current;
       if (next === target.current && value.current === next) return;
       target.current = next;
       if (reduced) settle(next);

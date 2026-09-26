@@ -32,24 +32,18 @@
   /* 0 in the dark, 1 with the light on it. Written by the component from the
      pointer's distance; the values below are what that number drives. */
   --fg-lit: 0;
-  /* Dark glass on a dark page. The floor is low but not zero — a visitor who
-     never brings the pointer over the section should still see that something
-     is there, rather than an empty column. */
-  /* The resting floor is set by what is actually legible on this page, not by
-     how dark "in the dark" sounds. Measured against the page, peak brightness
-     of a mark at rest: 0.16/0.28 gave 13 of 255 — invisible, which is what it
-     looked like once the bloom was tightened and stopped spilling light onto
-     them. 0.55/0.55 gives 77, but that peak is only the thin rim and the piece
-     still reads as near-black at a glance. 0.82/0.78 gives about 165, which is
-     legible as dark glass, and full light still reaches 254. The reveal is a
-     lift on something already visible rather than the only way to see it. */
-  opacity: calc(0.82 + 0.18 * var(--fg-lit));
-  /* Overshoots past 1 at full light. These pieces are DARK glass — what makes
-     them legible is a thin prismatic rim, and that is the first thing to go
-     when they are dimmed. Pushing past neutral at the top of the range is what
-     brings the rim back hard enough to read as the light catching them. */
-  filter: brightness(calc(0.78 + 0.45 * var(--fg-lit)))
-    saturate(calc(0.85 + 0.45 * var(--fg-lit)))
+  /* The marks are fully legible at rest. The reveal used to carry the whole
+     range — at rest they sat at 0.82 opacity / 0.78 brightness (about 165 of
+     255 at their brightest rim) and only reached full strength as a strand
+     passed. That meant a visitor had to move the pointer over them before the
+     glass read as glass. The lit values are now the resting values, and
+     --fg-lit adds a small lift on top rather than doing the work. */
+  opacity: 1;
+  /* Well past neutral even at rest. These pieces are DARK glass — what makes
+     them legible is a thin prismatic rim, and that rim is the first thing to
+     go when they are dimmed, so the base has to overshoot to bring it out. */
+  filter: brightness(calc(1.23 + 0.12 * var(--fg-lit)))
+    saturate(calc(1.3 + 0.12 * var(--fg-lit)))
     drop-shadow(0 18px 34px rgba(1, 1, 40, 0.55));
   /* --fg-lit is now written every frame from the strands' own position, so
      this is only there to take the step out of it, not to carry the reveal.

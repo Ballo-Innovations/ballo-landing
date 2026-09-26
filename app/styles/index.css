@@ -19,6 +19,7 @@
 @import "./components/tubes-cursor.css";
 @import "./components/floating-glass-icons.css";
 @import "./components/draw-line-text.css";
+@import "./components/text-reveal.css";
 /* Pages */
 @import "./pages/home.css";
 @import "./pages/business.css";

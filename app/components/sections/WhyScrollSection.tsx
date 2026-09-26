@@ -21,6 +21,7 @@ import phoneFrame from "@/public/Assets/phone-frame.png";
 import BalloLoader from "@/app/components/ui/BalloLoader";
 import { useWaitlist } from "@/app/components/waitlist/WaitlistProvider";
 import { WhyFeatureChips } from "@/app/components/ui/FeatureChips";
+import { TextReveal } from "@/app/components/ui/TextReveal";
 import { useDustMirror } from "@/app/components/ui/DustMirror";
 import {
   useContainerScrollContext,
@@ -415,13 +416,23 @@ export function WhyStepBlurb({
         if (t >= midpoints[i]) index = i + 1;
       }
       if (index === active.current) return;
+      const previous = active.current;
       active.current = index;
 
       nodes.current.forEach((node, i) => {
         if (!node) return;
         const on = i === index;
         node.style.opacity = on ? "1" : "0";
-        node.style.transform = on ? "none" : "translate3d(0, 0.75rem, 0)";
+        // No slide. The sentence turns over a character at a time instead:
+        // the one arriving hinges up out of the page, the one leaving falls
+        // away from the reader (`depth-flip-in`/`-out` in text-reveal.css).
+        // Only the paragraph that is actually going — the previous index —
+        // plays the outgoing half; the other three are already gone and
+        // replaying a flip on them would put four invisible paragraphs'
+        // worth of animation on the frame the copy changes.
+        if (on) node.dataset.flip = "in";
+        else if (i === previous) node.dataset.flip = "out";
+        else delete node.dataset.flip;
         // Opacity alone leaves the other four readable to a screen reader, so
         // only the one on screen is in the accessibility tree.
         node.setAttribute("aria-hidden", on ? "false" : "true");
@@ -442,12 +453,21 @@ export function WhyStepBlurb({
           }}
           className="landing-body aside-copy-body why-step-blurb__line"
           aria-hidden={i === 0 ? "false" : "true"}
-          style={{
-            opacity: i === 0 ? 1 : 0,
-            transform: i === 0 ? "none" : "translate3d(0, 0.75rem, 0)",
-          }}
+          /* The first sentence is on screen before any swap has happened, and
+             a split character's resting opacity is 0 — the animation is what
+             brings it up. Without this it is the one blurb of the five that
+             never plays, so the copy under "Why Choose BalloAds?" is simply
+             missing until the reader reaches card two. The effect below
+             overwrites this the moment the index moves. */
+          data-flip={i === 0 ? "in" : undefined}
+          style={{ opacity: i === 0 ? 1 : 0 }}
         >
-          {feature.blurb}
+          {/* A sentence is an order of magnitude more characters than a
+              heading, so the stagger is a fraction of the default: at the
+              heading's rate a ~125-character blurb would still be turning over
+              well after the card it belongs to had settled. At this one it is
+              in within about 0.7s. */}
+          <TextReveal text={feature.blurb} stagger={0.0025} />
         </p>
       ))}
     </div>

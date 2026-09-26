@@ -139,28 +139,6 @@ const PHONE_ASIDE_SCALE = 0.86;
  */
 const ASIDE_IN: Range = hand([0.64, 0.72]);
 
-/** Fraction of the group's progress one badge waits behind the one above it. */
-const BADGE_STAGGER = 0.28;
-
-/**
- * How far past the left edge of the window a badge waits, in px.
- *
- * Clearance beyond the measured distance to that edge, not the distance
- * itself: the badge is gone from view at 0, and this is what keeps it gone
- * while the phone it is anchored to is still travelling left underneath it.
- */
-const BADGE_OFFSCREEN_MARGIN = 48;
-/**
- * The share of the travel over which the badge fades up.
- *
- * Short, and only insurance. The badge enters from outside the window, so for
- * most of this it is not on screen to be faded; it matters only if the measured
- * distance below comes back short — from a stage mid-layout, say — in which
- * case a badge appears at the window's edge rather than popping in at full
- * strength somewhere inside it.
- */
-const BADGE_FADE = 0.15;
-
 /**
  * The band leaves: after the phone has started moving, before the copy lands.
  *
@@ -199,42 +177,26 @@ export const BAND_EXIT: Range = hand([0.57, 0.63]);
 export const TEXT_SWAP: Range = hand([0.76, 0.86]);
 
 /**
- * The store badges travel in, once the phone has finished stepping aside.
+ * Where the store badges animate in: once the phone has finished stepping aside.
  *
- * Strictly after `PHONE_ASIDE` rather than across it: the device moving left
- * and two pills flying in from the same side at the same time is two pieces of
- * motion crossing each other, and the badges were arriving on a phone that was
- * still sliding out from under them. They start where the move ends, so the
- * phone is parked and the badges land on something standing still.
+ * Not before: the device moving left and two pills arriving from the same side
+ * at the same time is two pieces of motion crossing each other. Past this
+ * point the phone is parked and the badges land on something standing still.
  *
- * They finish after the copy does, in the hold before `TEXT_SWAP` — not at
- * `ASIDE_IN`'s own end, which leaves them about a fifth of the scroll the move
- * took to cross most of a window, arriving at a sprint.
+ * A trigger, not a range. The badges used to be scrubbed across the scroll
+ * between here and `TEXT_SWAP`, which left them wherever the reader stopped,
+ * half on and half off the window. Now scroll only decides whether they are
+ * shown; the animation itself runs on its own clock (a CSS transition — see
+ * `.hero-store-badges` in cinematic-hero.css).
  */
-const BADGES_IN: Range = [PHONE_ASIDE[1], lerp(ASIDE_IN[1], TEXT_SWAP[0], 0.6)];
-
-/**
- * And they go back the way they came, once the card sequence is done with.
- *
- * They used to leave at `TEXT_SWAP`, on the reasoning that they belonged to the
- * onboarding mock and to "What We're About" and had no business riding into a
- * section about features. That is true of the *screen* they came in with and
- * not of the badges: where to go and get the thing is as true beside the fifth
- * feature card as beside the first paragraph, and taking them away mid-pin read
- * as the page losing its call to action halfway through.
- *
- * So they hold for the whole of the card sequence and leave over its last
- * stretch, once the fifth card has come to rest (0.84 of the sequence) and been
- * read. Late enough that nothing is still being introduced, early enough to be
- * gone before the pin releases rather than blinking out with it.
- *
- * Written against `HANDOVER_END` rather than `PHONE_CONTENT`, which is the same
- * span but is declared further down this file.
+const BADGES_SHOW_AT = PHONE_ASIDE[1];
+/*
+ * There is no matching point where they animate out. They used to leave at
+ * `TEXT_SWAP`, then after the fifth feature card; both read as the page losing
+ * its call to action. They now stay on the phone through the last card and
+ * scroll away with it when the pin releases. The only way they animate out is
+ * scrolling back up past `BADGES_SHOW_AT`.
  */
-const BADGES_OUT: Range = [
-  lerp(HANDOVER_END, 1, 0.84),
-  lerp(HANDOVER_END, 1, 0.94),
-];
 
 /**
  * While the band holds the wordmark instead of the travelling line.
@@ -247,7 +209,16 @@ const BADGES_OUT: Range = [
  * where `TEXT_SWAP` does, which is where the per-card words take over.
  */
 export const BAND_WORDMARK: Range = hand([0.62, 0.86]);
-const TEXT_SWAP_DISTANCE = 64;
+/*
+ * The copy swap used to slide too: the outgoing block left 64px to the left
+ * and the incoming one arrived from 64px to the right, which is what
+ * `TEXT_SWAP_DISTANCE` was. Both are gone. The headings turn over character by
+ * character now (`data-flip`), and a block travelling sideways underneath
+ * letters that are hinging in place is two transitions playing over each
+ * other — the same reason `ASIDE_IN` no longer slides the column in.
+ * What is left on these two layers is the crossfade, which is what keeps one
+ * from being legible through the other.
+ */
 /**
  * The whole rest of the track: the five-card sequence (see `WhyCardSequence`)
  * runs here, four swaps and their dwells, holding on the last card until the
@@ -280,7 +251,7 @@ const PHONE_SCREEN_SPAN = 0.048;
  * How far after the copy turns over the phone's screen does, in track progress.
  *
  * Zero: they turn over on the same frame. This beat was designed with the copy
- * leading, and it still reads that way — the copy's crossfade is 0.45s against
+ * leading, and it still reads that way — the copy's swap is 0.9s against
  * the screen's 0.32s, so the heading is still changing after the screen has
  * settled — but the LEAD is now in how long each takes rather than in where
  * each is triggered. Any positive value here is a window, however short, in
@@ -397,78 +368,38 @@ function useReducedMotion() {
  * across a flat pane in front of it, which is what the pointer tilt would make
  * of a sibling layer.
  *
- * They come in from outside the left edge of the window and leave the same way.
- * An earlier version had them hinge out from behind the phone itself, which is
- * a nice piece of geometry and the wrong read: it made the badges something
- * the device produced, when what they are is the two places to go and get it.
+ * Scroll triggers them but does not scrub them. From `BADGES_SHOW_AT` on, the
+ * group carries `data-shown`, and CSS transitions take them in (or out, if the
+ * reader scrolls back up) on their own clock, so there is no scroll position
+ * that leaves a badge frozen halfway across the stage.
  *
- * How far out is measured rather than declared, because the anchor moves: the
- * phone is travelling left through the whole of their arrival, so the distance
- * from the badge's resting place to the window's edge is different on every
- * frame of it, and a fixed number is either short (the badge starts visible)
- * or wildly long (it arrives late, at a sprint).
- *
- * Placed and faded straight to the DOM from a scroll subscription, the way
- * `HeroAside` and `HeroBand` are: this is on a pin, so React state here would
- * re-render the phone and both of its screens on every scroll frame.
+ * The attribute is written straight to the DOM from the scroll subscription,
+ * the way `HeroAside` and `HeroBand` write their styles. It changes at most
+ * once per pass, so it would be cheap as React state too; the DOM write just
+ * keeps this component out of React's render cycle entirely.
  */
 function HeroStoreBadges() {
   const { scrollYProgress } = useContainerScrollContext();
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const place = React.useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    const p = scrollYProgress.get();
-    const groupIn = at(p, BADGES_IN);
-    const groupOut = at(p, BADGES_OUT);
-    const badges = el.children;
-
-    // Where the badges' own box is on screen right now, which is wherever the
-    // phone has carried it to. `el` has no transform of its own — the badges
-    // inside it do — so its rect is unaffected by the travel being written
-    // below and cannot feed back into itself.
-    const box = el.getBoundingClientRect();
-    // The rect is in window px and the transform is in the rig's local px,
-    // which the phone's `PHONE_ASIDE_SCALE` and the device's 3D perspective
-    // have already shrunk. Dividing by the ratio between the projected box and
-    // the laid-out one converts the distance into the space it is written in;
-    // without it the badges stop short of the edge by whatever the phone has
-    // been scaled to.
-    const scale = box.width && el.offsetWidth ? box.width / el.offsetWidth : 1;
-    const offscreen = (box.right + BADGE_OFFSCREEN_MARGIN) / scale;
-
-    for (let i = 0; i < badges.length; i++) {
-      const badge = badges[i] as HTMLElement;
-      const count = badges.length;
-      // One number for how far in this badge is, arrived at from both ends: it
-      // travels in over BADGES_IN and back out over BADGES_OUT. Multiplying
-      // rather than branching keeps the two continuous where they meet, and
-      // there is a long hold between them where the first is 1 and the second
-      // is still 0.
-      const arrived = easeOut(staggered(groupIn, i, count, BADGE_STAGGER));
-      const gone = easeInOut(staggered(groupOut, i, count, BADGE_STAGGER));
-      const t = arrived * (1 - gone);
-      badge.style.transform = `translate3d(${(-(1 - t) * offscreen).toFixed(1)}px, 0, 0)`;
-      badge.style.opacity = clamp01(t / BADGE_FADE).toFixed(3);
-      badge.style.willChange = t > 0.001 && t < 0.999 ? "transform, opacity" : "auto";
-    }
-  }, [scrollYProgress]);
-
   React.useEffect(() => {
+    const place = () => {
+      const el = ref.current;
+      if (!el) return;
+      const p = scrollYProgress.get();
+      el.toggleAttribute("data-shown", p >= BADGES_SHOW_AT);
+    };
     const unsub = scrollYProgress.on("change", place);
     place();
     return unsub;
-  }, [scrollYProgress, place]);
+  }, [scrollYProgress]);
 
   return (
     <div ref={ref} className="hero-store-badges">
-      {/* Opacity 0 inline, not only from `place`: the server renders this and
-          the first paint happens before the subscription above has run. */}
-      <span className="hero-store-badges__item" style={{ opacity: 0 }}>
+      <span className="hero-store-badges__item">
         <StoreBadge store="apple" decorative />
       </span>
-      <span className="hero-store-badges__item" style={{ opacity: 0 }}>
+      <span className="hero-store-badges__item">
         <StoreBadge store="play" decorative />
       </span>
     </div>
@@ -820,6 +751,17 @@ function setFlip(layer: HTMLElement, state: "in" | "out" | undefined) {
   else delete heading.dataset.flip;
 }
 
+/**
+ * The copy swap is sequenced, not crossfaded: "What We're About" leaves over
+ * the first `SWAP_HALF` of the beat and "Why Choose" arrives over the rest, so
+ * the two are never on screen at once. They share one grid cell, and when they
+ * overlapped, two headings flipping and two blocks of body copy fading through
+ * each other read as noise. Twice the old 0.45s crossfade, so each half keeps
+ * roughly the time the whole swap used to have.
+ */
+const SWAP_SECONDS = 0.9;
+const SWAP_HALF = 0.5;
+
 function HeroAside({
   children,
   whyHeading,
@@ -837,13 +779,28 @@ function HeroAside({
   // beat rather than the scroll for the swap, so stopping mid-scroll cannot
   // leave both blocks of copy legible at once.
   const swap = React.useRef(0);
+  // Which way the swap last moved, so each heading can turn the right way:
+  // on the way back up "What We're About" has to come IN while "Why Choose"
+  // goes out, not replay the forward flips under a crossfade running the
+  // other way.
+  const lastSwap = React.useRef(0);
+  const swapDir = React.useRef<1 | -1>(1);
 
   const place = React.useCallback(() => {
     const el = ref.current;
     if (!el) return;
     const p = scrollYProgress.get();
     const tIn = easeOut(at(p, ASIDE_IN));
-    const tSwap = easeInOut(swap.current);
+    const s = swap.current;
+    if (s !== lastSwap.current) {
+      swapDir.current = s > lastSwap.current ? 1 : -1;
+      lastSwap.current = s;
+    }
+    const forward = swapDir.current > 0;
+    // How far the outgoing block is gone, and the incoming one arrived: one
+    // half of the beat each.
+    const tOut = easeInOut(clamp01(s / SWAP_HALF));
+    const tIn2 = easeInOut(clamp01((s - SWAP_HALF) / (1 - SWAP_HALF)));
     // No travel. The column used to slide in from 64px to the right of where
     // it belongs, which was its entrance; the per-character reveal on the
     // heading (see `TextReveal`) is the entrance now, and running both meant
@@ -856,7 +813,7 @@ function HeroAside({
     // the phone has moved aside, and the alternative is the block appearing
     // outright the instant `ASIDE_IN` opens.
     el.style.opacity = String(tIn);
-    el.style.pointerEvents = tIn > 0.9 && tSwap < 0.1 ? "auto" : "none";
+    el.style.pointerEvents = tIn > 0.9 && tOut < 0.1 ? "auto" : "none";
     el.style.willChange = tIn > 0.001 && tIn < 0.999 ? "opacity" : "auto";
 
     if (oldRef.current) {
@@ -867,17 +824,22 @@ function HeroAside({
       // value restarts an animation on every character.
       const reveal = tIn > 0.05 ? "in" : "out";
       if (oldRef.current.dataset.reveal !== reveal) oldRef.current.dataset.reveal = reveal;
-      // And hinges away again when the swap runs. Set from the latched beat's
-      // own target rather than from a threshold on `tSwap`, so the flip starts
-      // with the beat instead of a fraction of the way into it, and so the two
-      // headings — this one leaving, "Why Choose" arriving — turn on the same
-      // frame. Cleared back to nothing once the beat is fully home, or this
-      // block keeps a spent `forwards` animation holding its characters
+      const oldTitle = oldRef.current.querySelector<HTMLElement>(".aside-copy-title");
+      // And hinges away when the swap starts — the first half of the beat is
+      // this heading's. Cleared once that half is over and the layer is
+      // transparent, or it keeps a spent animation holding its characters
       // edge-on for the rest of the pin.
-      setFlip(oldRef.current, swap.current > 0 && swap.current < 1 ? "out" : undefined);
-      oldRef.current.style.opacity = String(1 - tSwap);
-      oldRef.current.style.transform =
-        `translate3d(${(-tSwap * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
+      //
+      // Scrolling back it turns IN over the second half of the reverse, once
+      // "Why Choose" has gone, and keeps that state when the beat is back at
+      // 0: clearing it there would hand the characters back to the rise and
+      // replay it on copy that is already on screen. It is cleared when the
+      // block itself leaves (`reveal` out), so the rise plays again on the
+      // next way in.
+      if (s > 0 && s < SWAP_HALF) setFlip(oldRef.current, forward ? "out" : "in");
+      else if (s >= SWAP_HALF || reveal === "out") setFlip(oldRef.current, undefined);
+      else if (oldTitle?.dataset.flip === "out") setFlip(oldRef.current, undefined);
+      oldRef.current.style.opacity = String(1 - tOut);
     }
     if (newRef.current) {
       // One-shot rather than scrubbed: the chips under this heading form as it
@@ -887,19 +849,21 @@ function HeroAside({
       // assigning a different one restarts twelve animations, so the two
       // states are set from the beat's own threshold rather than from tSwap
       // crossing some number of its own.
-      const morph = swap.current > 0 ? "in" : "out";
+      const morph = s > SWAP_HALF ? "in" : "out";
       if (newRef.current.dataset.morph !== morph) newRef.current.dataset.morph = morph;
-      // The other half of the turn: this heading's characters come up out of
-      // the page as the one above falls away from it.
-      setFlip(newRef.current, swap.current > 0 ? "in" : undefined);
-      newRef.current.style.opacity = String(tSwap);
-      newRef.current.style.transform =
-        `translate3d(${((1 - tSwap) * TEXT_SWAP_DISTANCE).toFixed(1)}px, 0, 0)`;
-      newRef.current.style.pointerEvents = tSwap > 0.9 ? "auto" : "none";
+      // The second half of the turn: this heading's characters come up out of
+      // the page once the one above has fallen away. Scrolling back, it falls
+      // away first, before "What We're About" turns up.
+      setFlip(
+        newRef.current,
+        s > SWAP_HALF && s < 1 ? (forward ? "in" : "out") : s >= 1 ? "in" : undefined,
+      );
+      newRef.current.style.opacity = String(tIn2);
+      newRef.current.style.pointerEvents = tIn2 > 0.9 ? "auto" : "none";
     }
   }, [scrollYProgress]);
 
-  useLatchedBeat(scrollYProgress, TEXT_SWAP, swap, place);
+  useLatchedBeat(scrollYProgress, TEXT_SWAP, swap, place, SWAP_SECONDS);
 
   React.useEffect(() => {
     const unsub = scrollYProgress.on("change", place);
@@ -984,6 +948,7 @@ function HeroBand({ children }: { children: React.ReactNode }) {
 export function HeroSideExit({
   children,
   backdrop,
+  glow,
   aside,
   whyHeading,
   phoneScreen,
@@ -991,6 +956,16 @@ export function HeroSideExit({
   children: React.ReactNode;
   /** Background band on the pin, behind everything. */
   backdrop?: React.ReactNode;
+  /**
+   * Background washes, above the band and BEHIND the phone.
+   *
+   * They used to live in the hero section itself, but `children` render in
+   * `HeroParts`, which is stacked in front of the phone so the hero can leave
+   * across it. A wash there tints the device: the mid-left bloom sits where the
+   * phone steps aside to, and turned its white onboarding screen greyish blue.
+   * From here it lights the stage around the phone and never covers it.
+   */
+  glow?: React.ReactNode;
   /** Copy that arrives beside the phone once it has stepped aside. */
   aside?: React.ReactNode;
   /**
@@ -1032,6 +1007,11 @@ export function HeroSideExit({
       <DustMirrorProvider>
         <ContainerSticky className="ch-stage h-svh w-full">
           {backdrop ? <HeroBand>{backdrop}</HeroBand> : null}
+          {glow ? (
+            <div className="hero-glow" aria-hidden="true">
+              {glow}
+            </div>
+          ) : null}
           <HeroPhone screen={phoneScreen} />
           {aside ? <HeroAside whyHeading={whyHeading}>{aside}</HeroAside> : null}
           <HeroParts>{children}</HeroParts>

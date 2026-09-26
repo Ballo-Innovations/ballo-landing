@@ -1,0 +1,200 @@
+/* ============================================
+   Per-character reveal — see components/ui/TextReveal.tsx.
+
+   Each character starts a line below where it belongs and rises into it, one
+   after another. The mask is per WORD, not on the block: a word box can clip
+   its own characters' rise without a block-level `overflow: hidden` cutting
+   the descenders off the line below it.
+   ============================================ */
+
+.reveal-word {
+  display: inline-block;
+  /* Clips the characters' rise. `clip` rather than `hidden` so this never
+     becomes a scroll container — the same reason <main> uses it. */
+  overflow: clip;
+  /* Room for descenders inside the clip, given back as negative margin so the
+     line box is unchanged. Without it "y" and "g" are shaved flat. */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  /* The padding above would otherwise push the box off the baseline its
+     neighbours sit on. */
+  vertical-align: top;
+}
+
+/* A gradient heading paints its letters by clipping its own background to its
+   own text — and that clip covers DESCENDANT text too. Splitting the heading
+   breaks it: every character is now a transformed, inline-block box, so where
+   the heading clips its background no longer lines up with where the glyphs
+   are drawn, and the whole thing collapsed into an unreadable pile of letters
+   in one corner of its box.
+
+   So the heading stops painting the ramp and each character paints it instead,
+   clipped to its own glyph. The ramp travels as `--text-gradient` (see
+   utilities.css) rather than as `background: inherit`, because `inherit` takes
+   the PARENT's background — for a character that is the word, which has none —
+   and because leaving the heading's own clip in place left its broken pile
+   showing through underneath the characters. Custom properties inherit all the
+   way down on their own. The ramp is vertical and a character's box is one
+   line tall, so each letter samples very nearly the part of the heading's ramp
+   it occupied before. */
+.reveal-text {
+  background-image: none;
+}
+
+[class*="text-gradient"] .reveal-char {
+  background-image: var(--text-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.reveal-char {
+  display: inline-block;
+  /* Hidden until triggered, and what it returns to if the reveal is re-armed.
+
+     No `will-change`, and every animation below fills `backwards` onto a
+     STATIC end state rather than holding its end frame with `forwards` or
+     `both`. Either of those keeps a letter on a compositor layer of its own
+     for as long as it is on the page, finished or not — and the hero's copy is
+     ~950 letters, most of them long since still. With both, "What We're
+     About" alone put 1,125 layers on every scroll frame; without, ~250. A
+     letter is promoted while it actually moves and dropped when it stops. */
+  opacity: 0;
+}
+
+[data-reveal="in"] .reveal-char {
+  /* Ease-out, not ease-in-out: with a symmetric curve each letter sat almost
+     still for the first third of its run, and across a staggered line that
+     read as the whole reveal dragging. */
+  opacity: 1;
+  animation: text-reveal-rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s) backwards;
+}
+
+@keyframes text-reveal-rise {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Nothing rises, but the text is still text: the characters are simply there.
+   An `animation: none` alone would leave them at the `opacity: 0` above. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-char {
+    opacity: 1;
+  }
+
+  [data-reveal="in"] .reveal-char {
+    animation: none;
+  }
+}
+
+/* ── Depth flip ───────────────────────────────────────────────────────────
+   The same characters, hinged instead of raised: each one turns about a
+   horizontal axis set BEHIND the glyph, so the outgoing text falls away from
+   the reader while the incoming text turns up into its place. Adapted from the
+   Hyperiux "depth flip" component, which drives it with GSAP SplitText and a
+   timeline; the split already exists here (`TextReveal`) and so does the
+   timeline (the hero's pin), so this is the transform and nothing else.
+
+   Two states, both set by whatever owns the transition — `HeroAside` for the
+   copy swap, `WhyStepBlurb` for the per-card sentences. `out` is the text
+   leaving, `in` the text arriving; they run at the same time on the two
+   different blocks, which is what makes it read as one surface turning over.
+
+   The hinge is at `-0.5em` on Z, about half a line behind the face. At 0deg
+   that resolves to the identity transform, so a character at rest sits exactly
+   on its own layout box and nothing shifts when the animation is removed. */
+[data-flip] .reveal-word {
+  /* The rise is clipped to the word box; the flip must not be, or the glyph
+     is sheared off as it turns out of the page's plane. */
+  overflow: visible;
+}
+
+[data-flip] .reveal-char {
+  transform-origin: 50% 50% -0.5em;
+  backface-visibility: hidden;
+}
+
+[data-flip="in"] .reveal-char {
+  /* The resting opacity is 0 — the reveal is what brings a letter up — so
+     the end state is restated here rather than held by the animation, or the
+     heading would vanish the moment the flip finished. */
+  opacity: 1;
+  /* Decelerating into place, and held back a beat so the outgoing text below
+     is edge-on before the first incoming letter is. */
+  animation: depth-flip-in 0.4s cubic-bezier(0.33, 1, 0.68, 1)
+    calc(var(--reveal-delay, 0s) + 0.12s) backwards;
+}
+
+/* All at once and quickly, not staggered. The two halves share one grid cell,
+   so an outgoing wave as long as the incoming one had both texts half-legible
+   on top of each other for most of the swap. And it must fill `backwards`:
+   with `forwards` every letter still waiting out its delay dropped to the
+   resting `opacity: 0`, so the old copy blinked out and then came back a
+   letter at a time just to fall away — over the new copy. The end state is
+   the static `opacity: 0` below, not a held frame. */
+[data-flip="out"] .reveal-char {
+  opacity: 0;
+  animation: depth-flip-out 0.22s cubic-bezier(0.32, 0, 0.67, 0) backwards;
+}
+
+/* The hero's heading swap runs its halves in sequence (see `SWAP_HALF` in
+   HeroSideExit.tsx), so neither heading needs to get out of the other's way:
+   the outgoing one falls away in a wave like the incoming one rises, and the
+   incoming one drops the hold-back above. Both fit inside their half of the
+   beat (0.45s). */
+.aside-copy-title[data-flip="out"] .reveal-char {
+  animation: depth-flip-out 0.3s cubic-bezier(0.32, 0, 0.67, 0)
+    calc(var(--reveal-delay, 0s) * 0.6) backwards;
+}
+
+.aside-copy-title[data-flip="in"] .reveal-char {
+  animation-delay: var(--reveal-delay, 0s);
+}
+
+@keyframes depth-flip-in {
+  from {
+    /* The perspective is on the character rather than on an ancestor: the
+       heading's ancestors are a grid stack and a layer whose transform is
+       rewritten every scroll frame, and a `perspective` on either would make
+       the vanishing point move with them. */
+    transform: perspective(1200px) rotateX(-90deg);
+    opacity: 0;
+  }
+  to {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes depth-flip-out {
+  from {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: perspective(1200px) rotateX(90deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-flip="in"] .reveal-char,
+  [data-flip="out"] .reveal-char,
+  .aside-copy-title[data-flip] .reveal-char {
+    animation: none;
+  }
+
+  [data-flip="in"] .reveal-char {
+    opacity: 1;
+  }
+
+  [data-flip="out"] .reveal-char {
+    opacity: 0;
+  }
+}

@@ -178,7 +178,16 @@ export function GradientMarquee({
             aria-hidden={i > 0 || undefined}
           >
             {words.map((word, w) => (
-              <span key={w} className="gradient-marquee__run" style={orbs}>
+              // `data-text` is the same word again, for the rim layer the
+              // stylesheet draws behind the glyphs (`::before`). A pseudo
+              // element cannot read its parent's text content, and a real
+              // second span would be read out twice.
+              <span
+                key={w}
+                className="gradient-marquee__run"
+                style={orbs}
+                data-text={word}
+              >
                 {word}
               </span>
             ))}

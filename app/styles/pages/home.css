@@ -235,6 +235,15 @@
   border-radius: 22px;
 }
 
+/* On the hero's phone the cards are top-aligned under the camera cutout rather
+   than centred. The store badges hang across the lower part of that screen
+   (see `.hero-store-badges` in cinematic-hero.css), and centred copy ran down
+   behind them. 4.25rem clears the dynamic island. */
+.why-scroll-items--flush .why-scroll-item {
+  justify-content: flex-start;
+  padding-top: 4.25rem;
+}
+
 /* The band's own particles, drawn a second time onto the phone's screen (see
    `DustMirror` and `drawMirror` in cursor-driven-particles-typography.tsx).
    Above the screen surface, below the cards. */

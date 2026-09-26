@@ -104,6 +104,19 @@
    clipped and none of them opaque, which is why the band is simply visible
    throughout. */
 
+/* The hero's background washes (the `glow` slot on `HeroSideExit`), between
+   the band and the phone. A full-stage box clipped the way the hero section
+   is, so `.prlx-hero-1`'s oversized, masked gradient lands exactly where it
+   did when it lived inside that section. Same z-index as the band and later
+   in the DOM, so it paints over the band, as it did before. */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .hero-zoom-phone {
   position: absolute;
   inset: 0;
@@ -115,10 +128,10 @@
   will-change: transform, opacity;
 }
 
-/* The store badges on the device, brought in as it steps aside (see
+/* The store badges on the device, brought in once it has stepped aside (see
    `HeroStoreBadges`). Positioned against the tilt rig inside Phone3D, which is
-   the 256x516 frame's own box, and lifted off it in the rig's 3D space so they
-   lean with the phone instead of sliding over it. */
+   the 256x516 frame's own box, and placed in the rig's 3D space so they lean
+   with the phone instead of sliding over it. */
 .hero-store-badges {
   position: absolute;
   /* Anchored by the right edge so the stack hangs off the phone's left side
@@ -126,52 +139,72 @@
      instead would have the two different-width badges fan out from a shared
      left edge, and the pair reads as a stack only when they line up under
      each other on the side they overlap. */
-  /* Low on the device, across the artwork card and the Next button, rather
-     than up by the logo: that is where the reference puts them, and it is also
-     the half of the screen the onboarding mock has least going on in. */
-  top: 62%;
+  /* Low on the device, just above the onboarding mock's Next button, rather
+     than up by the logo. Measured from the bottom so the stack ends there
+     whatever the badges' own height. It used to sit at top: 62%, which put it
+     across the middle of the feature cards' copy; the cards are top-aligned
+     on this phone now (see `.why-scroll-items--flush` in home.css) and end
+     above this. */
+  bottom: 12%;
   right: 196px;
   display: flex;
   flex-direction: column;
-  /* One width for both, set here rather than left to each badge's own words —
-     "Get it on the / App Store" is wider than "Get it on / Google Play", and
+  /* One width for both, set here rather than left to each badge's own words:
      two pills of different lengths stacked on a shared right edge read as
-     ragged rather than as a pair. It also means both hinge on the same axis,
-     so they swing out as one piece of geometry. */
-  width: 176px;
+     ragged rather than as a pair. Between the two widths tried — 176px left
+     ~35px of empty fill past the text, and the wider badge's own width
+     (125px) left none and read as cramped. */
+  width: 150px;
   gap: 14px;
   /* The stage above is already `pointer-events: none`; this is here so the
      rule survives the badges being moved somewhere that isn't. */
   pointer-events: none;
-  /* No `translateZ` here on purpose: depth is part of the swing and is written
-     per badge by `HeroStoreBadges`. A constant lift on the group put a badge's
-     near half in FRONT of the screen at the edge-on end of its rotation, so a
-     badge that was supposed to be tucked behind the device showed as a bright
-     sliver across it. */
+  /* Lifted in front of the device. The frame's front face (`.phone3d-bezel`)
+     sits at translateZ(1px) in the same 3D space, so at z=0 the badges sorted
+     BEHIND it and the phone covered the 60px they overlap it by. Both share the
+     tilt rig, so the gap holds at any lean: 16px is clear of the 1px face with
+     room to spare, and small enough that perspective enlarges them by only ~2%. */
+  transform: translateZ(16px);
   transform-style: preserve-3d;
 }
 
 .hero-store-badges__item {
   display: block;
-  /* The hinge the badges swing out on. It is at their own right edge, which
-     the `right: 196px` above puts 60px inside the phone's silhouette — so the
-     stowed badge is folded back BEHIND the device and is occluded by it,
-     rather than being hidden by an opacity we have to time. */
-  transform-origin: right center;
-  transform-style: preserve-3d;
-  /* Without this the rotation is an affine squash: the near edge has to come
-     toward the viewer as the far edge goes back, and that is the difference
-     between a badge curving out from behind the phone and one being unrolled
-     flat against it. The scene's own `perspective: 800px` is what this
-     inherits — see `.phone3d-scene`. */
-  backface-visibility: hidden;
+  /* Hidden until `HeroStoreBadges` sets `data-shown` on the group, then taken
+     in and out by these transitions rather than by scroll. Hidden in CSS, not
+     only by the script, so the server-rendered first paint has them hidden
+     too. */
+  opacity: 0;
+  transform: translate3d(-40px, 0, 0);
+  transition:
+    opacity 320ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
   /* The pills have their own shadow-less flat fill; on the dark stage they
      need seating, and it also separates them from the phone's own frame where
      they cross it. */
   filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45));
 }
 
-/* Never a hover target here — they are scenery on a scroll track, and the
+.hero-store-badges[data-shown] .hero-store-badges__item {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Staggered both ways: the second follows the first in, and leaves first. */
+.hero-store-badges[data-shown] .hero-store-badges__item:nth-child(2),
+.hero-store-badges:not([data-shown]) .hero-store-badges__item:first-child {
+  transition-delay: 90ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-store-badges__item {
+    transform: none;
+    transition: opacity 200ms ease;
+    transition-delay: 0ms !important;
+  }
+}
+
+/* Never a hover target here — they are scenery on a pinned stage, and the
    lift the real badges do on hover would fight the stagger they arrive on. */
 .hero-store-badges .store-btn--static {
   cursor: default;
@@ -400,7 +433,7 @@
 .why-step-blurb__line {
   grid-area: 1 / 1;
   margin: 0;
-  transition: opacity 420ms ease, transform 420ms ease;
+  transition: opacity 420ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

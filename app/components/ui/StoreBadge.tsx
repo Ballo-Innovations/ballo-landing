@@ -37,8 +37,36 @@ const STORES = {
   play: { Icon: GooglePlayIcon, lead: "Get it on", name: "Google Play" },
 } as const;
 
-export function StoreBadge({ store }: { store: keyof typeof STORES }) {
+export function StoreBadge({
+  store,
+  /**
+   * Render as a span rather than a button.
+   *
+   * For the copy on the hero's phone, which lives inside an `aria-hidden`,
+   * `pointer-events: none` stage: a real button there is unclickable but still
+   * a tab stop, so keyboard focus would land on a badge nobody can see moving
+   * past on a scroll track. Neither badge does anything on click anywhere yet,
+   * so the interactive one stays interactive only where it is the section's
+   * own content.
+   */
+  decorative = false,
+}: {
+  store: keyof typeof STORES;
+  decorative?: boolean;
+}) {
   const { Icon, lead, name } = STORES[store];
+
+  if (decorative) {
+    return (
+      <span className="store-btn store-btn--static" aria-hidden="true">
+        <Icon />
+        <span className="store-btn__text">
+          <span className="s1">{lead}</span>
+          <span className="s2">{name}</span>
+        </span>
+      </span>
+    );
+  }
 
   return (
     <button type="button" className="store-btn">

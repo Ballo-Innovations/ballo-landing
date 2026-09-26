@@ -7,6 +7,7 @@ import { PageGradient } from "./components/ui/PageGradient";
 import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
 import { WhyFeatureChips } from "./components/ui/FeatureChips";
+import { TextReveal } from "./components/ui/TextReveal";
 
 import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
 import { WhoStackSection } from "./components/sections/WhoStackSection";
@@ -205,6 +206,10 @@ export default function HomeClient({
         /* On the pin, behind the hero, unaffected by the exits: it keeps
            scrolling at its own size and rises as the items go. */
         backdrop={<HeroMarquee />}
+        /* The hero's mid-left bloom, on its own layer behind the phone. In the
+           hero section below it covered the device, because the hero is
+           stacked in front of the phone so it can leave across it. */
+        glow={<div className="prlx-hero-1" />}
         /* Act two. This copy used to sit in the section below, beside a second
            phone mockup; now that the hero's own phone arrives and steps aside
            for it, that pairing happens up here and the section keeps only its
@@ -219,16 +224,38 @@ export default function HomeClient({
              different component arriving rather than the same one changing
              its words. */
           <div className="aside-copy">
-            <h2 className="aside-copy-title font-black text-gradient-silver">
-              What We&apos;re About
-            </h2>
+            {/* One character at a time, rising into place, once the block
+                itself arrives — `HeroAside` is what says when (see
+                `data-reveal`), because up here there is no scroll progress to
+                read and a mount-time animation would play while this is still
+                invisible. Only the heading: a per-character reveal on the
+                paragraph below would be 400-odd spans and would read as a
+                machine typing rather than as a title arriving. */}
+            <TextReveal
+              as="h2"
+              className="aside-copy-title font-black text-gradient-silver"
+              text="What We're About"
+            />
+            {/* Revealed like the heading above it, and on the same trigger —
+                the block's entrance is the copy arriving, so the paragraph
+                cannot simply fade in underneath letters that are rising.
+                A far smaller stagger than the heading's: this is ~290
+                characters against fourteen, and at the heading's 0.012s the
+                last word would land three and a half seconds after the first.
+                At this rate the sentence is fully in in under a second, which
+                is the same wave crossing a longer line. */}
             <p className="landing-body aside-copy-body">
-              BalloAds is an AI-powered digital advertising platform designed to
-              help businesses and organisations connect with the right audience
-              through bulk SMS, targeted message ads, and data-driven campaign
-              management. Whether you&apos;re a startup, an enterprise, or a
-              service provider, BalloAds gives you the tools to launch impactful
-              marketing campaigns with ease.
+              <TextReveal
+                text={
+                  "BalloAds is an AI-powered digital advertising platform designed to " +
+                  "help businesses and organisations connect with the right audience " +
+                  "through bulk SMS, targeted message ads, and data-driven campaign " +
+                  "management. Whether you\u2019re a startup, an enterprise, or a " +
+                  "service provider, BalloAds gives you the tools to launch impactful " +
+                  "marketing campaigns with ease."
+                }
+                stagger={0.0015}
+              />
             </p>
             <div className="hero-actions aside-copy-cta">
               <button type="button" onClick={openWaitlist} className="btn-primary group">
@@ -251,9 +278,15 @@ export default function HomeClient({
                 column was doing: at 850px it filled 280px of a 786px column
                 and pushed the body copy most of a viewport down. It wraps to
                 the column now, balanced. */}
-            <h2 className="aside-copy-title font-black text-gradient-silver">
-              Why Choose BalloAds?
-            </h2>
+            {/* Split like "What We're About" beside it, because the two are
+                the two halves of one transition: the outgoing heading hinges
+                away and this one turns up into its place, character for
+                character (`data-flip`, set by `HeroAside`). */}
+            <TextReveal
+              as="h2"
+              className="aside-copy-title font-black text-gradient-silver"
+              text="Why Choose BalloAds?"
+            />
             {/* Not one fixed paragraph: it re-writes itself as the phone
                 beside it turns over its five cards, so the copy is always
                 about the feature being shown. */}
@@ -281,8 +314,9 @@ export default function HomeClient({
             backgroundPosition: "center",
           }}
         >
-          {/* Parallax depth layers — behind all content */}
-          <div className="prlx-hero-1" aria-hidden="true" />
+          {/* Parallax depth layers — behind all content. The mid-left bloom
+              (.prlx-hero-1) is not here: it is the `glow` prop above, so it
+              sits behind the phone rather than in front of it. */}
           <div className="prlx-hero-2" aria-hidden="true" />
 
           {/* Background Pattern */}
