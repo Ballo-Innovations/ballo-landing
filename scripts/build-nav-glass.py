@@ -1,42 +1,75 @@
-"""Cut the nav glass pill out of the source render, darken it, and pull its
-blues onto the header's own palette.
+"""Cut the header's glass pills out of their source renders, darken them, and
+pull their blues onto the header's own palette.
 
-`public/Assets/nav-bg-3.png` does carry alpha, but its cutout is ragged: a
-noisy halo of semi-transparent grey fringing surrounds the pill and would be
-visible over the hero. So its alpha channel is discarded and rebuilt here --
-crop to the pill (2077x222 at a 111px cap radius) and lay down a clean
-rounded-rect mask, inset 2px to clear the fringe that hugs the silhouette.
-Then recolour the result.
+Builds every pill in SOURCES. They are separate renders with different
+proportions -- the bar's three islands share one long pill, the sign-in button
+uses a stubbier one whose caps are much rounder relative to its height -- but
+they get the identical tone and colour treatment, so the header still reads as
+one material.
 
-Two passes, in order:
+Neither render can be used as shipped:
+
+- `glass-pill.png` is opaque RGB. Its "transparency" checkerboard is baked in
+  as real pixels, so using it directly would paint a grey checker around the
+  pill.
+- `nav-bg-3.png` does carry alpha, but its cutout is ragged: a noisy halo of
+  semi-transparent grey fringing surrounds the pill and would show over the
+  hero.
+
+Either way the alpha is built here rather than trusted -- crop to the pill and
+lay down a clean rounded-rect mask, inset a couple of px to clear whatever
+fringe hugs the silhouette.
+
+Then two passes, in order:
 
 1. Tone. Darkening is gamma-based rather than a flat multiply: gamma pulls the
    midtones down hard while leaving the near-white rim and specular highlights
-   almost untouched, which is what keeps the pill reading as glass instead of a
+   almost untouched, which is what keeps a pill reading as glass instead of a
    flat navy slab. A CSS filter would not work here, because the image is
    painted via border-image and a filter on the element would darken the nav
    text too.
 
-2. Colour. The render's own blue is a cooler, more electric cyan-blue than the
-   header's --glass-nav-sheen (#2765c0 / #0f2873 / #628ce1). Its *hue* is
-   already close (~214 vs 216-225); what differs is that the render runs its
-   highlights toward cyan while the sheen stays indigo. So this maps luminance
-   through a ramp built from the sheen's own stops, rather than rotating hue --
-   a hue rotation would move the whole image including the neutral speculars.
-   RAMP's top stop is white so those speculars survive the map, and the result
-   is blended back over the toned original at BLEND rather than replacing it,
-   which keeps the warm chromatic fringes in the end caps. At BLEND = 1.0 the
-   pill is exactly on-palette but those fringes are gone and it reads flatter.
+2. Colour. The renders' own blue is a pale, iridescent periwinkle, far lighter
+   than the header's --glass-nav-sheen (#2765c0 / #0f2873 / #628ce1). So this
+   maps luminance through a ramp built from the sheen's own stops, rather than
+   rotating hue -- a hue rotation would move the whole image including the
+   neutral speculars. RAMP's top stop is white so those speculars survive the
+   map, and the result is blended back over the toned original at BLEND rather
+   than replacing it, which keeps the warm chromatic fringes in the end caps.
+   At BLEND = 1.0 a pill is exactly on-palette but those fringes are gone and
+   it reads flatter.
+
+The CSS consumes these as 9-slice border-images. It needs each source's height
+and cap radius to pick its border-image-slice, and this prints both on every
+run -- see the slice note in app/styles/components/header.css, which explains
+why the slice must sit ABOVE the midline rather than exactly on it.
 
 Usage: python3 scripts/build-nav-glass.py
 """
+
 from PIL import Image, ImageDraw
 
-SRC = "public/Assets/nav-bg-3.png"
-OUT = "public/Assets/nav-glass-pill.png"
-BOX = (49, 264, 2126, 486)  # pill bounds in the source render (2077x222)
+# (source, output, crop box). The crop box is the pill's bounds in the source
+# render, found by scanning for pixels that are neither grey nor near-white.
+SOURCES = [
+    # The bar's three islands: logo, centre nav, and (before the sign-in button
+    # got its own render) everything else.
+    (
+        "public/Assets/nav-bg-3.png",
+        "public/Assets/nav-glass-pill.png",
+        (49, 264, 2126, 486),
+    ),
+    # Sign-in button: stubbier, with much rounder caps.
+    (
+        "public/Assets/glass-pill.png",
+        "public/Assets/nav-glass-pill-signin.png",
+        (246, 380, 1293, 645),
+    ),
+]
+
 GAMMA, GAIN = 1.8, 0.9
 BLEND = 0.85  # how far toward RAMP; see the note on chromatic fringes above
+INSET = 2  # px trimmed off the silhouette, to drop the source's edge fringe
 SS = 4  # mask supersampling, for a clean antialiased cap edge
 
 # Stops lifted from --glass-nav-sheen in app/styles/components/header.css, with
@@ -50,21 +83,6 @@ RAMP = [
     (1.00, (0xFF, 0xFF, 0xFF)),
 ]
 
-src = Image.open(SRC).convert("RGB").crop(BOX)
-w, h = src.size
-
-mask = Image.new("L", (w * SS, h * SS), 0)
-# 1px inset drops the checkerboard fringe at the silhouette edge.
-ImageDraw.Draw(mask).rounded_rectangle(
-    [2 * SS, 2 * SS, w * SS - 1 - 2 * SS, h * SS - 1 - 2 * SS],
-    radius=(h * SS) // 2,
-    fill=255,
-)
-mask = mask.resize((w, h), Image.LANCZOS)
-
-lut = [min(255, round(255 * ((i / 255) ** GAMMA) * GAIN)) for i in range(256)]
-toned = src.point(lut * 3)
-
 
 def ramp_at(t):
     for (a, ca), (b, cb) in zip(RAMP, RAMP[1:]):
@@ -74,13 +92,33 @@ def ramp_at(t):
     return RAMP[-1][1]
 
 
-table = [ramp_at(i / 255) for i in range(256)]
-lum = toned.convert("L")
-mapped = Image.merge(
-    "RGB", [lum.point([table[i][k] for i in range(256)]) for k in range(3)]
-)
+TABLE = [ramp_at(i / 255) for i in range(256)]
+LUT = [min(255, round(255 * ((i / 255) ** GAMMA) * GAIN)) for i in range(256)]
 
-out = Image.blend(toned, mapped, BLEND)
-out.putalpha(mask)
-out.save(OUT)
-print(f"wrote {OUT} {out.size}")
+
+def build(src_path, out_path, box):
+    src = Image.open(src_path).convert("RGB").crop(box)
+    w, h = src.size
+
+    mask = Image.new("L", (w * SS, h * SS), 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [INSET * SS, INSET * SS, w * SS - 1 - INSET * SS, h * SS - 1 - INSET * SS],
+        radius=(h * SS) // 2,
+        fill=255,
+    )
+    mask = mask.resize((w, h), Image.LANCZOS)
+
+    toned = src.point(LUT * 3)
+    lum = toned.convert("L")
+    mapped = Image.merge(
+        "RGB", [lum.point([TABLE[i][k] for i in range(256)]) for k in range(3)]
+    )
+
+    out = Image.blend(toned, mapped, BLEND)
+    out.putalpha(mask)
+    out.save(out_path)
+    print(f"wrote {out_path} {w}x{h}, cap radius {h / 2:g}")
+
+
+for spec in SOURCES:
+    build(*spec)

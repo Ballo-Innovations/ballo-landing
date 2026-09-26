@@ -474,23 +474,50 @@
   border-radius: 1.15rem;
 }
 
-/* The panels read as the nav island's material continued downward: same sheen
-   and tint. They only add a modest deep scrim and a touch more blur, because
-   they overlay page content (photography, light cards) rather than the hero
-   backdrop, and the bar's own translucency alone lets that content read
-   straight through the labels. */
+/* Painted by a glass bitmap (`dropdown-glass.png`, cut and toned by
+   scripts/build-dropdown-glass.py onto the nav pills' palette), so the panels
+   are the same material as the islands they hang off rather than a CSS
+   imitation of it.
+
+   A 9-slice border-image for the same reason the islands use one: the corners
+   keep their real curvature and rim while the middle stretches to each
+   panel's size, which varies with its links. The source is 531x530 with its
+   corners curving over ~110px; slicing at 120 keeps the whole curve and rim in
+   the corner cells, and 1.75rem draws that as a ~1.6rem radius, which the
+   border-radius matches so the cast shadow follows the glass. The bitmap is
+   near-opaque, so there is nothing for a backdrop blur to show through. */
 .header__dropdown.glass-surface-nav {
-  background:
-    var(--glass-nav-sheen),
-    var(--glass-nav-tint),
-    /* a frost veil rather than a solid floor: white haze first so the panel
-       reads as thick glass, over a lighter deep scrim than before */
-    linear-gradient(180deg, rgba(2, 46, 150, 0.433), rgb(20, 68, 157)),
-    linear-gradient(180deg, rgba(17, 62, 240, 0.667), rgba(15, 29, 102, 0.487));
-  /* Heavy blur plus a slight brightness lift is what sells depth of material —
-     detail behind dissolves into colour instead of staying legible. */
-  backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
-  -webkit-backdrop-filter: blur(56px) saturate(180%) brightness(1.08);
+  background: none;
+  border: 0 solid transparent;
+  border-radius: 1.6rem;
+  border-image-source: url("/Assets/dropdown-glass.png");
+  border-image-slice: 120 fill;
+  border-image-width: 1.75rem;
+  border-image-repeat: stretch;
+  /* The bitmap carries its own rim and speculars; the CSS inset rims would
+     double-light the edge. Only the cast shadow stays. */
+  box-shadow:
+    0 2px 8px rgba(1, 1, 40, 0.22),
+    0 24px 70px rgba(1, 1, 40, 0.34);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* For the veil below: above the bitmap, below the links. */
+  isolation: isolate;
+}
+
+/* The bitmap already has the sheen pooling in its top-left. */
+.header__dropdown.glass-surface-nav::before {
+  display: none;
+}
+
+/* The same scroll-darkening veil as the islands (see the note on it in the
+   desktop block below), so a panel stays the same depth as the bar it hangs
+   from instead of glowing bright blue off a bar that has darkened to the page. */
+.header__dropdown.glass-surface-nav::after {
+  z-index: -1;
+  background: var(--page-scroll-color, #000);
+  box-shadow: none;
+  opacity: calc(var(--page-scroll-depth, 0) * 0.88);
 }
 
 .header__dropdown-link {
@@ -828,7 +855,8 @@
        and a hairline transparent seam ran along the pill. Slicing above the
        midline leaves a real 14px band to stretch, so the seam cannot open.
        The width is that same fraction of the island height, keeping the caps
-       in proportion. */
+       in proportion. The sign-in button below follows the same rule against
+       its own source's dimensions. */
     border-image-slice: 104 fill;
     border-image-width: calc(var(--header-pill-h) * 104 / 222);
     border-image-repeat: stretch;
@@ -839,6 +867,18 @@
       0 24px 70px rgba(1, 1, 40, 0.34);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  /* The sign-in button has its own render: a stubbier pill whose caps are much
+     rounder relative to its height (1047x265, so a 132.5px cap radius against
+     the bar's 111px). Stretching the bar's long pill down to this button's
+     width would have worked, but the two shapes are deliberately different.
+     Same treatment, same palette, same above-the-midline slice rule -- just
+     measured against 265 instead of 222. */
+  .header__auth-signin {
+    border-image-source: url("/Assets/nav-glass-pill-signin.png");
+    border-image-slice: 124 fill;
+    border-image-width: calc(var(--header-pill-h) * 124 / 265);
   }
 
   /* Clear the island content of the cap curvature. */
