@@ -1,0 +1,203 @@
+/* =============================================================
+   Landing pill-button system.
+   Matches the header Sign In / Sign Up geometry so buttons across
+   the public landing page share the same size, shape, and rhythm.
+   ============================================================= */
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.phone-next-btn,
+.store-btn {
+  height: 2.65rem;
+  min-height: 2.65rem;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.btn-primary,
+.btn-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: fit-content;
+  overflow: hidden;
+}
+
+.btn-primary > *,
+.btn-secondary > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-primary {
+  isolation: isolate;
+  background: var(--btn-cta-bg);
+  border: 1px solid var(--btn-cta-border);
+  color: var(--btn-cta-text);
+  box-shadow: var(--btn-cta-shadow);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.3s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
+}
+
+/* Hover gradient overlay — matches the header "Sign Up" button */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--btn-cta-bg-hover);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--btn-cta-shadow-hover);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+.btn-secondary {
+  color: rgba(255, 255, 255, 0.88);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.23);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease;
+}
+
+.btn-secondary:hover {
+  color: #fff;
+  transform: translateY(-1px);
+  border-color: rgba(139, 225, 255, 0.52);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(98, 197, 255, 0.1));
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+.store-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(100, 120, 255, 0.15);
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.22s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.store-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(26, 58, 255, 0.15);
+  border-color: var(--blue);
+}
+
+.store-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.store-btn .s1 {
+  display: block;
+  font-size: 9px;
+  line-height: 1.2;
+  color: #8892b0;
+}
+
+.store-btn .s2 {
+  display: block;
+  font-size: 13px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #fff;
+}
+
+.phone-next-btn {
+  background: linear-gradient(135deg, var(--blue), var(--cyan-bright));
+  border: none;
+  color: #fff;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.phone-next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--glow-blue);
+}
+
+.phone-next-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.phone-next-btn:focus-visible {
+  outline: 2px solid var(--cyan-bright);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .phone-next-btn:hover,
+  .store-btn:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-actions {
+    gap: 0.55rem;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .phone-next-btn,
+  .store-btn {
+    height: 2.35rem;
+    min-height: 2.35rem;
+    padding: 0 0.72rem;
+    font-size: clamp(0.78rem, 3.3vw, 0.88rem);
+  }
+}

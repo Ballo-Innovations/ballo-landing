@@ -4,6 +4,7 @@ import "./styles/index.css";
 import "./globals.css";
 import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
+import { WaitlistModal } from "./components/ui/WaitlistModal";
 
 const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en" className={`${ubuntu.variable} ${ubuntuMono.variable}`}>
       <body className="font-sans antialiased">
         <Header />
+        <WaitlistModal />
         {children}
         <Footer />
       </body>
