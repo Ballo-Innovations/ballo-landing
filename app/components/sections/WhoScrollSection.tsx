@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useRef } from "react";
-import { StaticImageData } from "next/image";
-import dynamic from "next/dynamic";
+import Image, { StaticImageData } from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -21,11 +20,6 @@ import buildingNonprofit from "@/public/Assets/49.png";
 import buildingRetail from "@/public/Assets/51.png";
 import buildingHealthcare from "@/public/Assets/53.png";
 import buildingEducation from "@/public/Assets/57.png";
-
-const SpiralGallery = dynamic(
-  () => import("../ui/SpiralGallery").then(m => m.SpiralGallery),
-  { ssr: false }
-);
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -84,7 +78,6 @@ const useCases: UseCase[] = [
 
 export function WhoScrollSection() {
   const containerRef = useRef<HTMLElement>(null);
-  const whoProgressRef = useRef(0);
 
   useGSAP(() => {
     const outer = containerRef.current;
@@ -92,16 +85,22 @@ export function WhoScrollSection() {
 
     const stickyEl = outer.querySelector<HTMLElement>(".who-scroll-sticky");
     const listItems = Array.from(outer.querySelectorAll<HTMLElement>(".who-list-item"));
+    const imageItems = Array.from(outer.querySelectorAll<HTMLElement>(".who-image-item"));
     if (!stickyEl || listItems.length === 0) return;
 
     const numItems = listItems.length;
 
     gsap.set(listItems, { opacity: 0.25 });
     gsap.set(listItems[0], { opacity: 1 });
+    gsap.set(imageItems, { opacity: 0, xPercent: 12 });
+    gsap.set(imageItems[0], { opacity: 1, xPercent: 0 });
 
     const tl = gsap.timeline();
     for (let i = 1; i < numItems; i++) {
-      tl.to(listItems[i], { opacity: 1, duration: 0.5 });
+      tl.to(listItems[i - 1], { opacity: 0.25, duration: 0.5 }, i - 1)
+        .to(imageItems[i - 1], { opacity: 0, xPercent: -12, duration: 0.5 }, i - 1)
+        .to(listItems[i], { opacity: 1, duration: 0.5 }, i - 1)
+        .to(imageItems[i], { opacity: 1, xPercent: 0, duration: 0.5 }, i - 1);
     }
 
     ScrollTrigger.create({
@@ -112,9 +111,6 @@ export function WhoScrollSection() {
       pinSpacing: true,
       animation: tl,
       scrub: 0.8,
-      onUpdate: (self) => {
-        whoProgressRef.current = self.progress;
-      },
     });
   });
 
@@ -142,7 +138,19 @@ export function WhoScrollSection() {
                 </div>
               ))}
             </div>
-            <SpiralGallery progressRef={whoProgressRef} />
+            <div className="who-image-stack">
+              {useCases.map((item) => (
+                <div key={item.id} className="who-image-item">
+                  <Image
+                    src={item.image}
+                    alt={item.text}
+                    placeholder="blur"
+                    sizes="(max-width: 768px) 90vw, 40vw"
+                    priority={false}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
