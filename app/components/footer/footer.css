@@ -84,6 +84,13 @@
   color: white;
 }
 
+.footer__link-disabled {
+  color: #cbd5e1;
+  font-size: 16px;
+  cursor: default;
+  user-select: none;
+}
+
 /* Socials */
 .footer__socials-grid {
   display: flex;

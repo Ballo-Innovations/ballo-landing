@@ -43,12 +43,12 @@ const Footer = () => {
           <div className="footer__column">
             <h3 className="footer__column-title">Information</h3>
             <ul className="footer__link-list">
-              <li><Link href="/features">Features</Link></li>
-              <li><Link href="/how-it-works">How it works</Link></li>
-              <li><Link href="/pricing">Pricing</Link></li>
-              <li><Link href="/blog">Blog</Link></li>
-              <li><Link href="/faq">FAQ</Link></li>
-              <li><Link href="/careers">Careers</Link></li>
+              <li><span className="footer__link-disabled">Features</span></li>
+              <li><span className="footer__link-disabled">How it works</span></li>
+              <li><span className="footer__link-disabled">Pricing</span></li>
+              <li><span className="footer__link-disabled">Blog</span></li>
+              <li><span className="footer__link-disabled">FAQ</span></li>
+              <li><span className="footer__link-disabled">Careers</span></li>
             </ul>
           </div>
 
@@ -56,11 +56,11 @@ const Footer = () => {
           <div className="footer__column">
             <h3 className="footer__column-title">Help & Support</h3>
             <ul className="footer__link-list">
-              <li><Link href="/knowledge-base">Knowledge Base</Link></li>
-              <li><Link href="/live-chat">Live Chat</Link></li>
-              <li><Link href="/privacy-policy">Privacy Policy</Link></li>
-              <li><Link href="/resources">Resources</Link></li>
-              <li><Link href="/whats-new">What&apos;s New</Link></li>
+              <li><span className="footer__link-disabled">Knowledge Base</span></li>
+              <li><span className="footer__link-disabled">Live Chat</span></li>
+              <li><span className="footer__link-disabled">Privacy Policy</span></li>
+              <li><span className="footer__link-disabled">Resources</span></li>
+              <li><span className="footer__link-disabled">What&apos;s New</span></li>
             </ul>
           </div>
 
