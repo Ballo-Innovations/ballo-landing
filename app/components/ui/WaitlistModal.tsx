@@ -1,222 +1,301 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
 
-type FormState = "idle" | "loading" | "success" | "error";
+const GoogleIcon = (
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <path fill="#4285F4" d="M23.06 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h6.2a5.3 5.3 0 0 1-2.3 3.48v2.89h3.72c2.18-2 3.44-4.96 3.44-8.38z" />
+    <path fill="#34A853" d="M12 24c3.1 0 5.7-1.03 7.6-2.78l-3.72-2.89c-1.03.69-2.35 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.98A11.5 11.5 0 0 0 12 24z" />
+    <path fill="#FBBC05" d="M5.6 14.71a6.9 6.9 0 0 1 0-4.42V7.31H1.76a11.5 11.5 0 0 0 0 9.38l3.84-2.98z" />
+    <path fill="#EA4335" d="M12 4.75c1.68 0 3.19.58 4.38 1.72l3.28-3.28C17.7 1.2 15.1 0 12 0 7.42 0 3.46 2.62 1.76 6.62l3.84 2.98C6.5 6.76 9.02 4.75 12 4.75z" />
+  </svg>
+);
+
+const XIcon = (
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+    <path d="M18.9 1.5h3.5l-7.63 8.72L23.75 22.5h-7.03l-5.5-7.2-6.3 7.2H1.4l8.16-9.33L.75 1.5h7.2l4.98 6.58L18.9 1.5z" />
+  </svg>
+);
+
+type Status =
+  | { type: "idle" }
+  | { type: "error"; message: string }
+  | { type: "success"; message: string };
+
+const ANIM_MS = 300;
 
 export function WaitlistModal() {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [formState, setFormState] = useState<FormState>("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [status, setStatus] = useState<Status>({ type: "idle" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
 
-  const openModal = useCallback(() => setOpen(true), []);
-  const closeModal = useCallback(() => {
-    setOpen(false);
-    // reset after close animation
-    setTimeout(() => {
-      setFormState("idle");
-      setErrorMsg("");
-      setName("");
-      setEmail("");
-      setPhone("");
-    }, 300);
-  }, []);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const lastActiveRef = useRef<HTMLElement | null>(null);
+
+  const openModal = useCallback(() => setIsOpen(true), []);
+  const closeModal = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
     window.addEventListener("open-waitlist", openModal);
     return () => window.removeEventListener("open-waitlist", openModal);
   }, [openModal]);
 
-  // close on Escape
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") closeModal(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, closeModal]);
+    if (isOpen) {
+      lastActiveRef.current = document.activeElement as HTMLElement | null;
+      setMounted(true);
+      document.body.style.overflow = "hidden";
+      const raf = requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          setAnimateIn(true);
+          firstFieldRef.current?.focus();
+        })
+      );
+      return () => cancelAnimationFrame(raf);
+    }
+    if (mounted) {
+      setAnimateIn(false);
+      const t = setTimeout(() => {
+        setMounted(false);
+        document.body.style.overflow = "";
+        setStatus({ type: "idle" });
+        setFormData({ name: "", email: "", phone: "" });
+        lastActiveRef.current?.focus?.();
+      }, ANIM_MS);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setFormState("loading");
-    setErrorMsg("");
-
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), phone: phone.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setErrorMsg(data?.error || "Something went wrong. Please try again.");
-        setFormState("error");
+  useEffect(() => {
+    if (!mounted) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        closeModal();
         return;
       }
-      setFormState("success");
-    } catch {
-      setErrorMsg("Network error. Please check your connection and try again.");
-      setFormState("error");
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
+  }, [mounted, closeModal]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setStatus({ type: "idle" });
+
+    try {
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to join waitlist");
+      }
+      setFormData({ name: "", email: "", phone: "" });
+      setStatus({
+        type: "success",
+        message: "Thank you for joining the waitlist! We'll be in touch soon.",
+      });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to join waitlist. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }
+  };
+
+  if (!mounted) return null;
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[200] bg-black/75"
-            onClick={closeModal}
-          />
-
-          {/* Panel */}
-          <motion.div
-            key="panel"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="fixed inset-0 z-[201] flex items-center justify-center p-4"
-            aria-modal="true"
-            role="dialog"
-          >
-            <div className="relative w-full max-w-md rounded-2xl border border-white/10 bg-[#070858] shadow-2xl p-6 md:p-8">
-              {/* Close */}
-              <button
-                onClick={closeModal}
-                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition"
-                aria-label="Close"
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-
-              <AnimatePresence mode="wait">
-                {formState === "success" ? (
-                  <SuccessState key="success" name={name} onClose={closeModal} />
-                ) : (
-                  <motion.div
-                    key="form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <div className="mb-6">
-                      <span className="inline-block rounded-full border border-[var(--cyan)]/40 bg-[var(--cyan)]/10 px-3 py-0.5 text-xs font-semibold uppercase tracking-widest text-[var(--cyan)] mb-3">
-                        Early Access
-                      </span>
-                      <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
-                        Be first in line
-                      </h2>
-                      <p className="mt-2 text-white/55 text-sm leading-relaxed">
-                        Join the waitlist and get early access to the platform
-                        redefining digital marketing in Africa.
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <FormField label="Full Name" type="text" value={name} onChange={setName}
-                        placeholder="Jane Mwale" disabled={formState === "loading"} required />
-                      <FormField label="Email Address" type="email" value={email} onChange={setEmail}
-                        placeholder="jane@company.com" disabled={formState === "loading"} required />
-                      <FormField label="Phone Number" type="tel" value={phone} onChange={setPhone}
-                        placeholder="+260 97 123 4567" disabled={formState === "loading"} required />
-
-                      {formState === "error" && (
-                        <p className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-                          {errorMsg}
-                        </p>
-                      )}
-
-                      <button
-                        type="submit"
-                        disabled={formState === "loading"}
-                        className="w-full rounded-full bg-[var(--brand-color-1)] py-3.5 text-sm font-semibold text-white transition hover:bg-[var(--brand-color-2)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-                      >
-                        {formState === "loading" ? (
-                          <><Spinner />Joining…</>
-                        ) : (
-                          "Join the Waitlist"
-                        )}
-                      </button>
-
-                      <p className="text-center text-xs text-white/35">
-                        No spam. We&apos;ll only contact you about your access.
-                      </p>
-                    </form>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function FormField({ label, type, value, onChange, placeholder, disabled, required }: {
-  label: string; type: string; value: string;
-  onChange: (v: string) => void; placeholder: string;
-  disabled: boolean; required?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-white/55 uppercase tracking-wider">{label}</label>
-      <input
-        type={type} value={value} onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder} disabled={disabled} required={required}
-        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-[var(--cyan)]/50 focus:ring-1 focus:ring-[var(--cyan)]/30 disabled:opacity-50 transition"
+    <div className="fixed inset-0 z-[9999]">
+      <div
+        onClick={closeModal}
+        className={`wl-backdrop transition-opacity duration-300 ease-out ${
+          animateIn ? "opacity-100" : "opacity-0"
+        }`}
+        aria-hidden="true"
       />
-    </div>
-  );
-}
-
-function SuccessState({ name, onClose }: { name: string; onClose: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="py-6 text-center"
-    >
-      <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--cyan)]/30 bg-[var(--cyan)]/10">
-        <svg className="h-7 w-7 text-[var(--cyan)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      <h3 className="text-2xl font-bold text-white mb-2">
-        You&apos;re on the list{name ? `, ${name.split(" ")[0]}` : ""}!
-      </h3>
-      <p className="text-white/55 text-sm leading-relaxed max-w-xs mx-auto mb-6">
-        We&apos;ll reach out as soon as your early access is ready. Keep an eye on your inbox.
-      </p>
-      <button
-        onClick={onClose}
-        className="rounded-full border border-white/20 bg-white/5 px-6 py-2.5 text-sm text-white hover:bg-white/10 transition"
+      <div
+        className={`fixed inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none transition-all duration-[400ms] ${
+          animateIn
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 translate-y-12 scale-95"
+        }`}
+        style={{ transitionTimingFunction: "cubic-bezier(0.68, -0.55, 0.265, 1.55)" }}
       >
-        Close
-      </button>
-    </motion.div>
-  );
-}
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="waitlist-title"
+          aria-describedby="waitlist-desc"
+          className="wl-card pointer-events-auto"
+        >
+          <div className="wl-card__aurora" aria-hidden="true" />
+          <button onClick={closeModal} className="wl-close" aria-label="Close waitlist form">
+            ×
+          </button>
 
-function Spinner() {
-  return (
-    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-    </svg>
+          <div className="wl-card__inner">
+            <h2 id="waitlist-title" className="wl-title">
+              Join the Waitlist
+            </h2>
+            <p id="waitlist-desc" className="wl-subtitle">
+              Be the first to know when we launch.
+            </p>
+
+            {status.type === "success" ? (
+              <div role="status" className="wl-success">
+                <span className="wl-success__check" aria-hidden="true">
+                  <Check size={22} strokeWidth={3} />
+                </span>
+                {status.message}
+              </div>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="wl-form">
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-email" className="wl-field__label">
+                        Email
+                      </label>
+                      <input
+                        ref={firstFieldRef}
+                        type="email"
+                        id="waitlist-email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="email"
+                        className="wl-field__input"
+                        placeholder="you@company.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-name" className="wl-field__label">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        id="waitlist-name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="name"
+                        className="wl-field__input"
+                        placeholder="Your name"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="wl-field">
+                    <div className="wl-field__body">
+                      <label htmlFor="waitlist-phone" className="wl-field__label">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        id="waitlist-phone"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        autoComplete="tel"
+                        className="wl-field__input"
+                        placeholder="+260 …"
+                      />
+                    </div>
+                  </div>
+
+                  {status.type === "error" && (
+                    <p role="alert" className="wl-error">
+                      {status.message}
+                    </p>
+                  )}
+
+                  <button type="submit" className="wl-submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Joining…" : "Join the Waitlist"}
+                    {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
+                  </button>
+                </form>
+
+                <div className="wl-or">OR</div>
+
+                <div className="wl-socials">
+                  <button
+                    type="button"
+                    className="wl-social"
+                    disabled
+                    aria-disabled="true"
+                    title="Social sign-in is coming soon"
+                  >
+                    <span className="wl-social__icon">{GoogleIcon}</span>
+                    Continue with Google
+                    <span className="wl-social__soon">Soon</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="wl-social"
+                    disabled
+                    aria-disabled="true"
+                    title="Social sign-in is coming soon"
+                  >
+                    <span className="wl-social__icon">{XIcon}</span>
+                    Continue with X
+                    <span className="wl-social__soon">Soon</span>
+                  </button>
+                </div>
+
+                <p className="wl-footer">
+                  Have questions?{" "}
+                  <Link href="/live-chat" onClick={closeModal}>
+                    Talk to us
+                  </Link>
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
