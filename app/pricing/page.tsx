@@ -127,7 +127,11 @@ const PricingCard: React.FC<PricingCardProps> = ({ tier, initialMessages, maxMes
         </div>
       </div>
 
-      <button className="w-full bg-blue-900 text-white py-3 rounded-full font-semibold hover:bg-blue-800 transition-colors mb-8">
+      <button
+        type="button"
+        onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+        className="w-full bg-blue-900 text-white py-3 rounded-full font-semibold hover:bg-blue-800 transition-colors mb-8"
+      >
         Sign Up
       </button>
 

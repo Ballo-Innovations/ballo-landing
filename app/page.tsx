@@ -325,9 +325,10 @@ export default function Home() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <Link
-                href="#learn-more"
-                className="inline-flex items-center gap-3 w-fit bg-white text-[var(--dark-blue-2)] px-5 py-2 rounded-full font-bold text-2xl md:text-3xl leading-none hover:bg-white/90 transition-all group shadow-sm"
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+                className="inline-flex items-center gap-3 w-fit bg-white text-[var(--dark-blue-2)] px-5 py-2 rounded-full font-bold text-2xl md:text-3xl leading-none hover:bg-white/90 transition-all group shadow-sm cursor-pointer"
               >
                 Try it now
                 <div className="w-8 h-8 rounded-full bg-[var(--dark-blue-2)]/15 flex items-center justify-center group-hover:bg-[var(--dark-blue-2)]/25 transition-colors">
@@ -335,7 +336,7 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
-              </Link>
+              </button>
               {/* Pagination Dots */}
               <div className="flex items-center gap-3 mt-3">
                 {features.map((_, index) => (
@@ -444,7 +445,7 @@ export default function Home() {
                   className="absolute hidden md:flex flex-col gap-2.5"
                   style={{ left: "-60px", top: "56%", transform: "translateZ(40px)" }}
                 >
-                  <button type="button" className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2">
+                  <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))} className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2 cursor-pointer">
                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-black shrink-0" aria-hidden="true">
                       <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.49 0-2.534-1.31-3.529-2.65-1.305-1.74-2.337-4.44-2.337-6.99 0-4.16 2.685-6.36 5.27-6.36 1.4 0 2.566.93 3.45.93.84 0 2.145-.98 3.81-.98.62 0 2.795.06 4.265 2.13-.13.08-2.508 1.46-2.483 4.37.03 3.4 2.965 4.53 3.002 4.55z" />
                     </svg>
@@ -453,7 +454,7 @@ export default function Home() {
                       <span className="text-[11px] font-bold text-zinc-900">App Store</span>
                     </div>
                   </button>
-                  <button type="button" className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2">
+                  <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))} className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2 cursor-pointer">
                     <Image src={googlePlayIcon} alt="Google Play" width={20} height={20} className="w-5 h-5 shrink-0" />
                     <div className="flex flex-col items-start leading-tight px-0.5">
                       <span className="text-[9px] text-zinc-600">Get it on</span>
@@ -619,7 +620,11 @@ export default function Home() {
           </div>
 
           <div className="flex justify-center mt-12">
-            <Link href="#signup" className="glow-button group">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+              className="glow-button group cursor-pointer"
+            >
               <span className="glow-button__text">Join waitlist</span>
               <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/20 transition-all relative z-10">
                 <svg
@@ -632,7 +637,7 @@ export default function Home() {
                 </svg>
               </div>
               <div className="glow-button__glow-core" />
-            </Link>
+            </button>
           </div>
         </div>
       </section>

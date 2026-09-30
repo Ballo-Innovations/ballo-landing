@@ -58,7 +58,7 @@ const BalloAdsDemo = () => {
   }, [isFormOpen]);
 
   const handleOpenForm = () => {
-    setIsFormOpen(true);
+    window.dispatchEvent(new CustomEvent("open-waitlist"));
   };
 
   const handleCloseForm = () => {
@@ -154,23 +154,23 @@ const BalloAdsDemo = () => {
             id="phone"
           />
 
-          <Link href="#" className="cursor-pointer">
+          <button type="button" onClick={handleOpenForm} className="cursor-pointer bg-transparent border-0 p-0 absolute top-[48%] left-[10%] w-1/4 sm:w-1/3">
             <Image
               src={appleStore}
               alt="Available on Apple Store"
               quality={100}
-              className="mobile-app-1 opacity-100 absolute top-[48%] left-[10%] w-1/4 sm:w-1/3 rounded-xl"
+              className="mobile-app-1 opacity-100 w-full rounded-xl"
             />
-          </Link>
+          </button>
 
-          <Link href="#" className="cursor-pointer">
+          <button type="button" onClick={handleOpenForm} className="cursor-pointer bg-transparent border-0 p-0 absolute top-[62%] left-[10%] w-1/4 sm:w-1/3">
             <Image
               src={playStore}
-              alt="Available on Paly Store"
+              alt="Available on Play Store"
               quality={100}
-              className="mobile-app-2 opacity-100 absolute top-[62%] left-[10%] w-1/4 sm:w-1/3 rounded-xl"
+              className="mobile-app-2 opacity-100 w-full rounded-xl"
             />
-          </Link>
+          </button>
         </div>
 
         <button
