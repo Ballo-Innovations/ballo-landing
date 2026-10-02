@@ -1,23 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
-
-const GoogleIcon = (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-    <path fill="#4285F4" d="M23.06 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h6.2a5.3 5.3 0 0 1-2.3 3.48v2.89h3.72c2.18-2 3.44-4.96 3.44-8.38z" />
-    <path fill="#34A853" d="M12 24c3.1 0 5.7-1.03 7.6-2.78l-3.72-2.89c-1.03.69-2.35 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.98A11.5 11.5 0 0 0 12 24z" />
-    <path fill="#FBBC05" d="M5.6 14.71a6.9 6.9 0 0 1 0-4.42V7.31H1.76a11.5 11.5 0 0 0 0 9.38l3.84-2.98z" />
-    <path fill="#EA4335" d="M12 4.75c1.68 0 3.19.58 4.38 1.72l3.28-3.28C17.7 1.2 15.1 0 12 0 7.42 0 3.46 2.62 1.76 6.62l3.84 2.98C6.5 6.76 9.02 4.75 12 4.75z" />
-  </svg>
-);
-
-const XIcon = (
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
-    <path d="M18.9 1.5h3.5l-7.63 8.72L23.75 22.5h-7.03l-5.5-7.2-6.3 7.2H1.4l8.16-9.33L.75 1.5h7.2l4.98 6.58L18.9 1.5z" />
-  </svg>
-);
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 type Status =
   | { type: "idle" }
@@ -25,6 +9,41 @@ type Status =
   | { type: "success"; message: string };
 
 const ANIM_MS = 300;
+const TOTAL_STEPS = 5;
+
+const STEP_LABELS = [
+  "About your business",
+  "What you do",
+  "Your biggest headache",
+  "Your audience",
+  "Get your playbook",
+];
+
+const INDUSTRIES = [
+  "Retail or e-commerce",
+  "Health or clinic",
+  "School or training",
+  "Church or NGO",
+  "Finance or lending",
+  "Events or hospitality",
+  "Logistics or delivery",
+  "Something else",
+];
+
+const PAINS = [
+  { v: "customers going quiet after they enquire", label: "Customers go quiet after they enquire" },
+  { v: "no-shows and missed appointments", label: "No-shows and missed appointments" },
+  { v: "sending every message by hand", label: "Sending every message by hand" },
+  { v: "chasing late payments", label: "Chasing late payments" },
+  { v: "launching to an audience that never hears about it", label: "Launches nobody hears about" },
+];
+
+const SIZES = [
+  { v: "under 500", label: "Under 500" },
+  { v: "500 to 5,000", label: "500 – 5k" },
+  { v: "5,000 to 50,000", label: "5k – 50k" },
+  { v: "over 50,000", label: "50k+" },
+];
 
 export function WaitlistModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +51,19 @@ export function WaitlistModal() {
   const [animateIn, setAnimateIn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<Status>({ type: "idle" });
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
+  const [step, setStep] = useState(1);
+  const [hint, setHint] = useState("");
+
+  const [biz, setBiz] = useState("");
+  const [loc, setLoc] = useState("");
+  const [ind, setInd] = useState(INDUSTRIES[0]);
+  const [dow, setDow] = useState("");
+  const [pain, setPain] = useState("");
+  const [size, setSize] = useState("");
+  const [more, setMore] = useState("");
+  const [mail, setMail] = useState("");
 
   const dialogRef = useRef<HTMLDivElement>(null);
-  const firstFieldRef = useRef<HTMLInputElement>(null);
   const lastActiveRef = useRef<HTMLElement | null>(null);
 
   const openModal = useCallback(() => setIsOpen(true), []);
@@ -52,10 +80,7 @@ export function WaitlistModal() {
       setMounted(true);
       document.body.style.overflow = "hidden";
       const raf = requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          setAnimateIn(true);
-          firstFieldRef.current?.focus();
-        })
+        requestAnimationFrame(() => setAnimateIn(true))
       );
       return () => cancelAnimationFrame(raf);
     }
@@ -65,7 +90,10 @@ export function WaitlistModal() {
         setMounted(false);
         document.body.style.overflow = "";
         setStatus({ type: "idle" });
-        setFormData({ name: "", email: "", phone: "" });
+        setStep(1);
+        setHint("");
+        setBiz(""); setLoc(""); setInd(INDUSTRIES[0]); setDow("");
+        setPain(""); setSize(""); setMore(""); setMail("");
         lastActiveRef.current?.focus?.();
       }, ANIM_MS);
       return () => clearTimeout(t);
@@ -82,7 +110,7 @@ export function WaitlistModal() {
       }
       if (e.key === "Tab" && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -100,30 +128,61 @@ export function WaitlistModal() {
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [mounted, closeModal]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const validate = (): boolean => {
+    if (step === 1 && (!biz.trim() || !loc.trim())) {
+      setHint("Add your business name and location to continue.");
+      return false;
+    }
+    if (step === 2 && !dow.trim()) {
+      setHint("Tell us in a few words what you do.");
+      return false;
+    }
+    if (step === 3 && !pain) {
+      setHint("Pick the one that costs you most.");
+      return false;
+    }
+    if (step === 4 && !size) {
+      setHint("Choose an audience size.");
+      return false;
+    }
+    if (step === 5 && !/.+@.+\..+/.test(mail.trim())) {
+      setHint("Enter an email we can send it to.");
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const next = async () => {
+    if (!validate()) return;
+    setHint("");
+    if (step < TOTAL_STEPS) {
+      setStep(step + 1);
+      return;
+    }
     setIsSubmitting(true);
     setStatus({ type: "idle" });
-
     try {
       const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: biz.trim(),
+          email: mail.trim(),
+          location: loc.trim(),
+          industry: ind,
+          activity: dow.trim(),
+          biggestProblem: pain,
+          audienceSize: size,
+          extraContext: more.trim() || undefined,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Failed to join waitlist");
       }
-      setFormData({ name: "", email: "", phone: "" });
       setStatus({
         type: "success",
-        message: "Thank you for joining the waitlist! We'll be in touch soon.",
+        message: `Your playbook is on its way to ${mail.trim()}. You're also first in line for launch.`,
       });
     } catch (error) {
       setStatus({
@@ -138,7 +197,16 @@ export function WaitlistModal() {
     }
   };
 
+  const back = () => {
+    if (step > 1) {
+      setStep(step - 1);
+      setHint("");
+    }
+  };
+
   if (!mounted) return null;
+
+  const pct = Math.round((step / TOTAL_STEPS) * 100);
 
   return (
     <div className="fixed inset-0 z-[9999]">
@@ -162,7 +230,6 @@ export function WaitlistModal() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="waitlist-title"
-          aria-describedby="waitlist-desc"
           className="wl-card pointer-events-auto"
         >
           <div className="wl-card__aurora" aria-hidden="true" />
@@ -171,126 +238,144 @@ export function WaitlistModal() {
           </button>
 
           <div className="wl-card__inner">
-            <h2 id="waitlist-title" className="wl-title">
-              Join the Waitlist
-            </h2>
-            <p id="waitlist-desc" className="wl-subtitle">
-              Be the first to know when we launch.
-            </p>
-
             {status.type === "success" ? (
-              <div role="status" className="wl-success">
-                <span className="wl-success__check" aria-hidden="true">
-                  <Check size={22} strokeWidth={3} />
-                </span>
-                {status.message}
-              </div>
+              <>
+                <h2 id="waitlist-title" className="wl-title">You&apos;re in</h2>
+                <div role="status" className="wl-success">
+                  <span className="wl-success__check" aria-hidden="true">
+                    <Check size={22} strokeWidth={3} />
+                  </span>
+                  {status.message}
+                </div>
+              </>
             ) : (
               <>
-                <form onSubmit={handleSubmit} className="wl-form">
-                  <div className="wl-field">
-                    <div className="wl-field__body">
-                      <label htmlFor="waitlist-email" className="wl-field__label">
-                        Email
-                      </label>
-                      <input
-                        ref={firstFieldRef}
-                        type="email"
-                        id="waitlist-email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                        autoComplete="email"
-                        className="wl-field__input"
-                        placeholder="you@company.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="wl-field">
-                    <div className="wl-field__body">
-                      <label htmlFor="waitlist-name" className="wl-field__label">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="waitlist-name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleInputChange}
-                        required
-                        autoComplete="name"
-                        className="wl-field__input"
-                        placeholder="Your name"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="wl-field">
-                    <div className="wl-field__body">
-                      <label htmlFor="waitlist-phone" className="wl-field__label">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        id="waitlist-phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        required
-                        autoComplete="tel"
-                        className="wl-field__input"
-                        placeholder="+260 …"
-                      />
-                    </div>
-                  </div>
-
-                  {status.type === "error" && (
-                    <p role="alert" className="wl-error">
-                      {status.message}
-                    </p>
-                  )}
-
-                  <button type="submit" className="wl-submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Joining…" : "Join the Waitlist"}
-                    {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
-                  </button>
-                </form>
-
-                <div className="wl-or">OR</div>
-
-                <div className="wl-socials">
-                  <button
-                    type="button"
-                    className="wl-social"
-                    disabled
-                    aria-disabled="true"
-                    title="Social sign-in is coming soon"
-                  >
-                    <span className="wl-social__icon">{GoogleIcon}</span>
-                    Continue with Google
-                    <span className="wl-social__soon">Soon</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="wl-social"
-                    disabled
-                    aria-disabled="true"
-                    title="Social sign-in is coming soon"
-                  >
-                    <span className="wl-social__icon">{XIcon}</span>
-                    Continue with X
-                    <span className="wl-social__soon">Soon</span>
-                  </button>
+                <div className="wl-steps__meta">
+                  <span>Step {step} of {TOTAL_STEPS}</span>
+                  <span>{STEP_LABELS[step - 1]}</span>
+                </div>
+                <div className="wl-steps__track" aria-hidden="true">
+                  <div className="wl-steps__bar" style={{ width: `${pct}%` }} />
                 </div>
 
-                <p className="wl-footer">
-                  Have questions?{" "}
-                  <Link href="/live-chat" onClick={closeModal}>
-                    Talk to us
-                  </Link>
-                </p>
+                {step === 1 && (
+                  <div>
+                    <h2 id="waitlist-title" className="wl-step__q">First, who are we writing this for?</h2>
+                    <p className="wl-step__sub">Your name and city go on the cover, and shape the examples inside.</p>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-biz" className="wl-field__label">Business name</label>
+                        <input id="wl-biz" type="text" className="wl-field__input" placeholder="Kabwata Fresh Foods"
+                          value={biz} onChange={(e) => setBiz(e.target.value)} autoFocus />
+                      </div>
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-loc" className="wl-field__label">Where you operate</label>
+                        <input id="wl-loc" type="text" className="wl-field__input" placeholder="Lusaka, Zambia"
+                          value={loc} onChange={(e) => setLoc(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div>
+                    <h2 id="waitlist-title" className="wl-step__q">What line of work are you in?</h2>
+                    <p className="wl-step__sub">Be specific — this is what makes the playbook yours and not a template.</p>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-ind" className="wl-field__label">Industry</label>
+                        <select id="wl-ind" className="wl-field__input wl-field__select" value={ind}
+                          onChange={(e) => setInd(e.target.value)}>
+                          {INDUSTRIES.map((x) => <option key={x} value={x}>{x}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-dow" className="wl-field__label">What you actually do</label>
+                        <input id="wl-dow" type="text" className="wl-field__input"
+                          placeholder="deliver farm produce to homes every Saturday"
+                          value={dow} onChange={(e) => setDow(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div>
+                    <h2 id="waitlist-title" className="wl-step__q">What is costing you the most right now?</h2>
+                    <p className="wl-step__sub">Pick the one that stings. Your playbook opens with a fix for it.</p>
+                    <div className="wl-choice-list">
+                      {PAINS.map((p) => (
+                        <button key={p.v} type="button"
+                          className={`wl-choice ${pain === p.v ? "wl-choice--active" : ""}`}
+                          onClick={() => { setPain(p.v); setHint(""); }}>
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <div>
+                    <h2 id="waitlist-title" className="wl-step__q">How many people are you trying to reach?</h2>
+                    <p className="wl-step__sub">Rough is fine. It sets the send volumes and pacing we recommend.</p>
+                    <div className="wl-choice-row">
+                      {SIZES.map((s) => (
+                        <button key={s.v} type="button"
+                          className={`wl-choice wl-choice--chip ${size === s.v ? "wl-choice--active" : ""}`}
+                          onClick={() => { setSize(s.v); setHint(""); }}>
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-more" className="wl-field__label">Anything else we should know? (optional)</label>
+                        <textarea id="wl-more" rows={3} className="wl-field__input wl-field__textarea"
+                          placeholder="Three years old, mostly word of mouth, everything sent from one phone."
+                          value={more} onChange={(e) => setMore(e.target.value)} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 5 && (
+                  <div>
+                    <h2 id="waitlist-title" className="wl-step__q">Where should we send it?</h2>
+                    <p className="wl-step__sub">Early adopters get the playbook free, plus first access at launch.</p>
+                    <div className="wl-recap">
+                      {biz || "Your business"} in {loc || "your city"} — {dow || "what you do"}.
+                      Fixing: {pain || "your biggest headache"}. Reaching {size || "your"} people.
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-mail" className="wl-field__label">Email</label>
+                        <input id="wl-mail" type="email" className="wl-field__input" placeholder="name@company.com"
+                          value={mail} onChange={(e) => setMail(e.target.value)} autoComplete="email" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {status.type === "error" && (
+                  <p role="alert" className="wl-error">{status.message}</p>
+                )}
+
+                <div className="wl-steps__nav">
+                  <button type="button" onClick={back} className="wl-step-btn"
+                    style={{ visibility: step === 1 ? "hidden" : "visible" }}>
+                    <ArrowLeft size={16} aria-hidden="true" /> Back
+                  </button>
+                  <button type="button" onClick={next} disabled={isSubmitting} className="wl-submit wl-submit--step">
+                    {isSubmitting ? "Sending…" : step === TOTAL_STEPS ? "Send my playbook" : "Continue"}
+                    {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
+                  </button>
+                </div>
+                {hint && <p className="wl-hint">{hint}</p>}
               </>
             )}
           </div>

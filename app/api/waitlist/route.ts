@@ -4,11 +4,11 @@ import { getPublicBackendBaseUrl } from '@/lib/serverBackendApi'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone } = body
+    const { name, email, phone, location, industry, activity, biggestProblem, audienceSize, extraContext } = body
 
-    if (!name || !email || !phone) {
+    if (!name || !email) {
       return NextResponse.json(
-        { error: 'Name, email, and phone are required' },
+        { error: 'Name and email are required' },
         { status: 400 }
       )
     }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const res = await fetch(`${base}/v1/waitlist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone }),
+      body: JSON.stringify({ name, email, phone, location, industry, activity, biggestProblem, audienceSize, extraContext }),
     })
     const text = await res.text()
     const data = text ? JSON.parse(text) : null
