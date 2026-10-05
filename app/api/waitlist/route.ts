@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPublicBackendBaseUrl } from '@/lib/serverBackendApi'
 
+const GENERIC_ERROR = 'Failed to join waitlist. Please try again.'
+
+function parseJson(text: string): Record<string, unknown> | null {
+  if (!text) return null
+  try {
+    const parsed: unknown = JSON.parse(text)
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null
+  } catch {
+    return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, phone, location, industry, activity, biggestProblem, audienceSize, extraContext } = body
+    const {
+      name, email, phone, businessName, location, industry, activity,
+      biggestProblem, audienceSize, extraContext,
+    } = body
 
     if (!name || !email) {
       return NextResponse.json(
@@ -25,13 +40,23 @@ export async function POST(request: NextRequest) {
     const res = await fetch(`${base}/v1/waitlist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone, location, industry, activity, biggestProblem, audienceSize, extraContext }),
+      body: JSON.stringify({
+        name, email, phone, businessName, location, industry, activity,
+        biggestProblem, audienceSize, extraContext,
+      }),
     })
     const text = await res.text()
-    const data = text ? JSON.parse(text) : null
+    const data = parseJson(text)
     if (!res.ok) {
-      const message = data?.error || data?.message || 'Failed to join waitlist. Please try again.'
-      return NextResponse.json({ error: message }, { status: res.status })
+      // The backend may answer with a non-JSON body (a proxy 404, an HTML error page);
+      // never let that turn into a 500 from this route.
+      console.error('Waitlist upstream error', res.status, text.slice(0, 200))
+      const upstreamMessage =
+        typeof data?.error === 'string' ? data.error
+        : typeof data?.message === 'string' ? data.message
+        : null
+      const message = res.status < 500 && upstreamMessage ? upstreamMessage : GENERIC_ERROR
+      return NextResponse.json({ error: message }, { status: res.status >= 500 || res.status === 404 ? 502 : res.status })
     }
 
     return NextResponse.json(
@@ -48,7 +73,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating waitlist entry:', error)
     return NextResponse.json(
-      { error: 'Failed to join waitlist. Please try again.' },
+      { error: GENERIC_ERROR },
       { status: 500 }
     )
   }

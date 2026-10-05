@@ -1,9 +1,14 @@
 import type { NextRequest } from "next/server";
 
+// Server-side calls go to the full "app-api[-env]" surface. The path-restricted developer
+// surface (api[-env].balloads.com) does not route /v1/waitlist and answers with Traefik's
+// plain-text "404 page not found", which is what produced the 500s on the waitlist form.
+// NEXT_PUBLIC_*_API_URL is deliberately not used here: on Vercel it points at that
+// developer surface.
 const DEV_API_BASE =
-  process.env.NEXT_PUBLIC_DEV_API_URL ?? "https://dev-api.balloads.com";
+  process.env.BACKEND_APP_API_DEV_URL ?? "https://app-api-dev.balloads.com";
 const PROD_API_BASE =
-  process.env.NEXT_PUBLIC_PROD_API_URL ?? "https://api.balloads.com";
+  process.env.BACKEND_APP_API_URL ?? "https://app-api.balloads.com";
 
 function normalizeBase(url: string): string {
   return url.replace(/\/+$/, "");

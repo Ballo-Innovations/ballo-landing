@@ -9,14 +9,15 @@ type Status =
   | { type: "success"; message: string };
 
 const ANIM_MS = 300;
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 const STEP_LABELS = [
+  "Join the waitlist",
   "About your business",
   "What you do",
-  "Your biggest headache",
+  "Your biggest headaches",
   "Your audience",
-  "Get your playbook",
+  "Your playbook",
 ];
 
 const INDUSTRIES = [
@@ -30,12 +31,27 @@ const INDUSTRIES = [
   "Something else",
 ];
 
+/** Example "what you actually do" line per industry, shown as the placeholder. */
+const ACTIVITY_EXAMPLES: Record<string, string> = {
+  "Retail or e-commerce": "sell phone accessories online and deliver across Lusaka",
+  "Health or clinic": "run a dental clinic with walk-ins and booked appointments",
+  "School or training": "run weekend coding classes for teenagers",
+  "Church or NGO": "coordinate weekly services and community outreach",
+  "Finance or lending": "offer short-term loans to salaried workers",
+  "Events or hospitality": "host weddings and corporate events at our venue",
+  "Logistics or delivery": "deliver farm produce to homes every Saturday",
+  "Something else": "describe what you do in one line",
+};
+
+const PAIN_OTHER = "other";
+
 const PAINS = [
   { v: "customers going quiet after they enquire", label: "Customers go quiet after they enquire" },
   { v: "no-shows and missed appointments", label: "No-shows and missed appointments" },
   { v: "sending every message by hand", label: "Sending every message by hand" },
   { v: "chasing late payments", label: "Chasing late payments" },
   { v: "launching to an audience that never hears about it", label: "Launches nobody hears about" },
+  { v: PAIN_OTHER, label: "Something else" },
 ];
 
 const SIZES = [
@@ -44,6 +60,20 @@ const SIZES = [
   { v: "5,000 to 50,000", label: "5k – 50k" },
   { v: "over 50,000", label: "50k+" },
 ];
+
+/** "a", "a and b", "a, b and c" */
+function joinNatural(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+function isValidEmail(value: string): boolean {
+  return /.+@.+\..+/.test(value.trim());
+}
+
+function isValidPhone(value: string): boolean {
+  return value.replace(/\D/g, "").length >= 9;
+}
 
 export function WaitlistModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,14 +84,21 @@ export function WaitlistModal() {
   const [step, setStep] = useState(1);
   const [hint, setHint] = useState("");
 
+  // Stage 1 — contact details, submitted on their own.
+  const [name, setName] = useState("");
+  const [mail, setMail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [joined, setJoined] = useState(false);
+
+  // Stage 2 — the playbook questions.
   const [biz, setBiz] = useState("");
   const [loc, setLoc] = useState("");
   const [ind, setInd] = useState(INDUSTRIES[0]);
   const [dow, setDow] = useState("");
-  const [pain, setPain] = useState("");
+  const [pains, setPains] = useState<string[]>([]);
+  const [painOther, setPainOther] = useState("");
   const [size, setSize] = useState("");
   const [more, setMore] = useState("");
-  const [mail, setMail] = useState("");
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const lastActiveRef = useRef<HTMLElement | null>(null);
@@ -92,8 +129,9 @@ export function WaitlistModal() {
         setStatus({ type: "idle" });
         setStep(1);
         setHint("");
+        setName(""); setMail(""); setPhone(""); setJoined(false);
         setBiz(""); setLoc(""); setInd(INDUSTRIES[0]); setDow("");
-        setPain(""); setSize(""); setMore(""); setMail("");
+        setPains([]); setPainOther(""); setSize(""); setMore("");
         lastActiveRef.current?.focus?.();
       }, ANIM_MS);
       return () => clearTimeout(t);
@@ -128,85 +166,145 @@ export function WaitlistModal() {
     return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [mounted, closeModal]);
 
+  const painSummary = (): string =>
+    joinNatural(
+      pains.map((p) => (p === PAIN_OTHER ? painOther.trim() : p)).filter(Boolean)
+    );
+
+  const togglePain = (v: string) => {
+    setPains((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
+    setHint("");
+  };
+
   const validate = (): boolean => {
-    if (step === 1 && (!biz.trim() || !loc.trim())) {
+    if (step === 1) {
+      if (!name.trim()) { setHint("Tell us your name."); return false; }
+      if (!isValidEmail(mail)) { setHint("Enter an email we can reach you on."); return false; }
+      if (!isValidPhone(phone)) { setHint("Enter a phone number we can reach you on."); return false; }
+      return true;
+    }
+    if (step === 2 && (!biz.trim() || !loc.trim())) {
       setHint("Add your business name and location to continue.");
       return false;
     }
-    if (step === 2 && !dow.trim()) {
+    if (step === 3 && !dow.trim()) {
       setHint("Tell us in a few words what you do.");
       return false;
     }
-    if (step === 3 && !pain) {
-      setHint("Pick the one that costs you most.");
-      return false;
+    if (step === 4) {
+      if (pains.length === 0) { setHint("Pick at least one."); return false; }
+      if (pains.includes(PAIN_OTHER) && !painOther.trim()) {
+        setHint("Tell us what else is costing you.");
+        return false;
+      }
     }
-    if (step === 4 && !size) {
+    if (step === 5 && !size) {
       setHint("Choose an audience size.");
-      return false;
-    }
-    if (step === 5 && !/.+@.+\..+/.test(mail.trim())) {
-      setHint("Enter an email we can send it to.");
       return false;
     }
     return true;
   };
 
-  const next = async () => {
+  const postWaitlist = async (payload: Record<string, unknown>) => {
+    const response = await fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to join waitlist");
+    }
+    return data;
+  };
+
+  const errorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : "Something went wrong. Please try again.";
+
+  /** Stage 1: register the contact straight away. */
+  const join = async () => {
     if (!validate()) return;
     setHint("");
-    if (step < TOTAL_STEPS) {
-      setStep(step + 1);
+    if (joined) {
+      setStep(2);
       return;
     }
     setIsSubmitting(true);
     setStatus({ type: "idle" });
     try {
-      const response = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: biz.trim(),
-          email: mail.trim(),
-          location: loc.trim(),
-          industry: ind,
-          activity: dow.trim(),
-          biggestProblem: pain,
-          audienceSize: size,
-          extraContext: more.trim() || undefined,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to join waitlist");
-      }
-      setStatus({
-        type: "success",
-        message: `Your playbook is on its way to ${mail.trim()}. You're also first in line for launch.`,
-      });
+      await postWaitlist({ name: name.trim(), email: mail.trim(), phone: phone.trim() });
+      setJoined(true);
+      setStep(2);
     } catch (error) {
-      setStatus({
-        type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Failed to join waitlist. Please try again.",
-      });
+      setStatus({ type: "error", message: errorMessage(error) });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  /** Stage 2: send the playbook answers. */
+  const sendPlaybook = async () => {
+    setIsSubmitting(true);
+    setStatus({ type: "idle" });
+    try {
+      await postWaitlist({
+        name: name.trim(),
+        email: mail.trim(),
+        phone: phone.trim(),
+        businessName: biz.trim(),
+        location: loc.trim(),
+        industry: ind,
+        activity: dow.trim(),
+        biggestProblem: painSummary(),
+        audienceSize: size,
+        extraContext: more.trim() || undefined,
+      });
+      setStatus({
+        type: "success",
+        message: `Your playbook is on its way to ${mail.trim()}. You're also first in line for launch.`,
+      });
+    } catch (error) {
+      setStatus({ type: "error", message: errorMessage(error) });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const next = async () => {
+    if (step === 1) {
+      await join();
+      return;
+    }
+    if (!validate()) return;
+    setHint("");
+    setStatus({ type: "idle" });
+    if (step < TOTAL_STEPS) {
+      setStep(step + 1);
+      return;
+    }
+    await sendPlaybook();
+  };
+
   const back = () => {
-    if (step > 1) {
+    // Step 2 cannot go back to the contact step once it has been submitted.
+    if (step > 2 || (step === 2 && !joined)) {
       setStep(step - 1);
       setHint("");
+      setStatus({ type: "idle" });
     }
   };
 
   if (!mounted) return null;
 
   const pct = Math.round((step / TOTAL_STEPS) * 100);
+  const canGoBack = step > 2;
+  const primaryLabel = isSubmitting
+    ? "Sending…"
+    : step === 1
+      ? "Join the waitlist"
+      : step === TOTAL_STEPS
+        ? "Send my playbook"
+        : "Continue";
 
   return (
     <div className="fixed inset-0 z-[9999]">
@@ -260,13 +358,47 @@ export function WaitlistModal() {
 
                 {step === 1 && (
                   <div>
-                    <h2 id="waitlist-title" className="wl-step__q">First, who are we writing this for?</h2>
-                    <p className="wl-step__sub">Your name and city go on the cover, and shape the examples inside.</p>
+                    <h2 id="waitlist-title" className="wl-step__q">Join the BalloAds waitlist</h2>
+                    <p className="wl-step__sub">Get first access at launch. Then, if you like, answer five quick questions and we&apos;ll email you a playbook written for your business.</p>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-name" className="wl-field__label">Your name</label>
+                        <input id="wl-name" type="text" className="wl-field__input" placeholder="Mutale Banda"
+                          value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" autoFocus />
+                      </div>
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-mail" className="wl-field__label">Email</label>
+                        <input id="wl-mail" type="email" className="wl-field__input" placeholder="name@company.com"
+                          value={mail} onChange={(e) => setMail(e.target.value)} autoComplete="email" />
+                      </div>
+                    </div>
+                    <div className="wl-field">
+                      <div className="wl-field__body">
+                        <label htmlFor="wl-phone" className="wl-field__label">Phone</label>
+                        <input id="wl-phone" type="tel" className="wl-field__input" placeholder="+260 97 000 0000"
+                          value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div>
+                    {joined && (
+                      <div className="wl-banner" role="status">
+                        <span className="wl-banner__check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
+                        You&apos;re on the list, {name.trim().split(" ")[0] || "friend"}. Five quick questions and your playbook is on its way.
+                      </div>
+                    )}
+                    <h2 id="waitlist-title" className="wl-step__q">Who are we writing this for?</h2>
+                    <p className="wl-step__sub">Your business name and city go on the cover, and shape the examples inside.</p>
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-biz" className="wl-field__label">Business name</label>
                         <input id="wl-biz" type="text" className="wl-field__input" placeholder="Kabwata Fresh Foods"
-                          value={biz} onChange={(e) => setBiz(e.target.value)} autoFocus />
+                          value={biz} onChange={(e) => setBiz(e.target.value)} autoComplete="organization" autoFocus />
                       </div>
                     </div>
                     <div className="wl-field">
@@ -279,7 +411,7 @@ export function WaitlistModal() {
                   </div>
                 )}
 
-                {step === 2 && (
+                {step === 3 && (
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">What line of work are you in?</h2>
                     <p className="wl-step__sub">Be specific — this is what makes the playbook yours and not a template.</p>
@@ -296,30 +428,46 @@ export function WaitlistModal() {
                       <div className="wl-field__body">
                         <label htmlFor="wl-dow" className="wl-field__label">What you actually do</label>
                         <input id="wl-dow" type="text" className="wl-field__input"
-                          placeholder="deliver farm produce to homes every Saturday"
+                          placeholder={ACTIVITY_EXAMPLES[ind] ?? ACTIVITY_EXAMPLES["Something else"]}
                           value={dow} onChange={(e) => setDow(e.target.value)} />
                       </div>
                     </div>
                   </div>
                 )}
 
-                {step === 3 && (
+                {step === 4 && (
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">What is costing you the most right now?</h2>
-                    <p className="wl-step__sub">Pick the one that stings. Your playbook opens with a fix for it.</p>
-                    <div className="wl-choice-list">
-                      {PAINS.map((p) => (
-                        <button key={p.v} type="button"
-                          className={`wl-choice ${pain === p.v ? "wl-choice--active" : ""}`}
-                          onClick={() => { setPain(p.v); setHint(""); }}>
-                          {p.label}
-                        </button>
-                      ))}
+                    <p className="wl-step__sub">Pick everything that stings. Your playbook opens with a fix for the first one you choose.</p>
+                    <div className="wl-choice-list" role="group" aria-label="Your biggest headaches">
+                      {PAINS.map((p) => {
+                        const active = pains.includes(p.v);
+                        return (
+                          <button key={p.v} type="button" role="checkbox" aria-checked={active}
+                            className={`wl-choice wl-choice--multi ${active ? "wl-choice--active" : ""}`}
+                            onClick={() => togglePain(p.v)}>
+                            <span>{p.label}</span>
+                            <span className="wl-choice__box" aria-hidden="true">
+                              {active && <Check size={13} strokeWidth={3} />}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
+                    {pains.includes(PAIN_OTHER) && (
+                      <div className="wl-field">
+                        <div className="wl-field__body">
+                          <label htmlFor="wl-pain-other" className="wl-field__label">What else is costing you?</label>
+                          <input id="wl-pain-other" type="text" className="wl-field__input"
+                            placeholder="stock sitting unsold after promotions"
+                            value={painOther} onChange={(e) => { setPainOther(e.target.value); setHint(""); }} autoFocus />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {step === 4 && (
+                {step === 5 && (
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">How many people are you trying to reach?</h2>
                     <p className="wl-step__sub">Rough is fine. It sets the send volumes and pacing we recommend.</p>
@@ -343,21 +491,17 @@ export function WaitlistModal() {
                   </div>
                 )}
 
-                {step === 5 && (
+                {step === 6 && (
                   <div>
-                    <h2 id="waitlist-title" className="wl-step__q">Where should we send it?</h2>
-                    <p className="wl-step__sub">Early adopters get the playbook free, plus first access at launch.</p>
-                    <div className="wl-recap">
-                      {biz || "Your business"} in {loc || "your city"} — {dow || "what you do"}.
-                      Fixing: {pain || "your biggest headache"}. Reaching {size || "your"} people.
-                    </div>
-                    <div className="wl-field">
-                      <div className="wl-field__body">
-                        <label htmlFor="wl-mail" className="wl-field__label">Email</label>
-                        <input id="wl-mail" type="email" className="wl-field__input" placeholder="name@company.com"
-                          value={mail} onChange={(e) => setMail(e.target.value)} autoComplete="email" />
-                      </div>
-                    </div>
+                    <h2 id="waitlist-title" className="wl-step__q">Ready to send your playbook?</h2>
+                    <p className="wl-step__sub">Here&apos;s what we&apos;ll write it around. Go back to change anything.</p>
+                    <dl className="wl-recap">
+                      <div><dt>Business</dt><dd>{biz} in {loc}</dd></div>
+                      <div><dt>What you do</dt><dd>{dow}</dd></div>
+                      <div><dt>Fixing first</dt><dd>{painSummary()}</dd></div>
+                      <div><dt>Reaching</dt><dd>{size} people</dd></div>
+                      <div><dt>Sending to</dt><dd>{mail.trim()}</dd></div>
+                    </dl>
                   </div>
                 )}
 
@@ -366,12 +510,19 @@ export function WaitlistModal() {
                 )}
 
                 <div className="wl-steps__nav">
-                  <button type="button" onClick={back} className="wl-step-btn"
-                    style={{ visibility: step === 1 ? "hidden" : "visible" }}>
-                    <ArrowLeft size={16} aria-hidden="true" /> Back
-                  </button>
+                  {canGoBack ? (
+                    <button type="button" onClick={back} className="wl-step-btn">
+                      <ArrowLeft size={16} aria-hidden="true" /> Back
+                    </button>
+                  ) : step === 2 && joined ? (
+                    <button type="button" onClick={closeModal} className="wl-step-btn wl-step-btn--quiet">
+                      Maybe later
+                    </button>
+                  ) : (
+                    <span />
+                  )}
                   <button type="button" onClick={next} disabled={isSubmitting} className="wl-submit wl-submit--step">
-                    {isSubmitting ? "Sending…" : step === TOTAL_STEPS ? "Send my playbook" : "Continue"}
+                    {primaryLabel}
                     {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
                   </button>
                 </div>
