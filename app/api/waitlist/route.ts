@@ -3,6 +3,10 @@ import { getPublicBackendBaseUrl } from '@/lib/serverBackendApi'
 
 const GENERIC_ERROR = 'Failed to join waitlist. Please try again.'
 
+// The playbook step waits on the backend while BrutusAI writes a sample message for the business
+// (up to 30 s) and the PDF is built. Allow the function a full minute so it isn't cut off first.
+export const maxDuration = 60
+
 function parseJson(text: string): Record<string, unknown> | null {
   if (!text) return null
   try {
