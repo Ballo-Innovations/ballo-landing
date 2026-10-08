@@ -39,6 +39,15 @@
     0 44px 100px -34px rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(30px) saturate(150%);
   -webkit-backdrop-filter: blur(30px) saturate(150%);
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.wl-card::-webkit-scrollbar {
+  display: none;
 }
 
 /* Aurora glow bleeding from the top-left corner (blue → cyan → violet). */
@@ -103,6 +112,13 @@
   background: rgba(255, 255, 255, 0.14);
 }
 
+.wl-close:focus-visible,
+.wl-choice:focus-visible,
+.wl-step-btn:focus-visible {
+  outline: 2px solid var(--cyan, #3fdbff);
+  outline-offset: 2px;
+}
+
 /* Header */
 .wl-title {
   margin: 0;
@@ -134,7 +150,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.5rem 0.5rem 1.15rem;
+  padding: 0.6rem 1.15rem;
   border-radius: 1.2rem;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -142,9 +158,20 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.wl-field + .wl-field,
+.wl-choice-list + .wl-field,
+.wl-choice-row + .wl-field {
+  margin-top: 0.85rem;
+}
+
 .wl-field:focus-within {
   border-color: rgba(63, 219, 255, 0.55);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 3px rgba(63, 219, 255, 0.16);
+}
+
+.wl-field:has([aria-invalid="true"]) {
+  border-color: rgba(255, 196, 120, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 0 0 3px rgba(255, 196, 120, 0.16);
 }
 
 .wl-field__body {
@@ -156,10 +183,11 @@
 }
 
 .wl-field__label {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.62);
+  margin-bottom: 0.15rem;
 }
 
 .wl-field__input {
@@ -175,7 +203,7 @@
 }
 
 .wl-field__input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.34);
 }
 
 /* Primary submit — full width so it reads as the action for the whole form
@@ -301,7 +329,7 @@
 
 /* Status messages */
 .wl-error {
-  margin: 0.2rem 0.4rem 0;
+  margin: 0.85rem 0 0;
   font-size: 0.82rem;
   color: #ff9d9d;
 }
@@ -344,6 +372,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+  padding-right: 2.4rem;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.65);
   margin-bottom: 10px;
@@ -398,17 +428,21 @@
   min-height: 64px;
 }
 
+.wl-field__textarea--fixed {
+  resize: none;
+  min-height: 0;
+}
+
 .wl-choice-list {
   display: grid;
   gap: 8px;
-  margin-bottom: 0.5rem;
 }
 
+/* Audience sizes: an even 2 × 2 grid, so no chip is left alone on a row. */
 .wl-choice-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
 }
 
 .wl-choice {
@@ -429,8 +463,6 @@
 }
 
 .wl-choice--chip {
-  flex: 1;
-  min-width: 104px;
   text-align: center;
 }
 
@@ -564,8 +596,40 @@
 }
 
 .wl-hint {
-  margin: 10px 0 0;
-  font-size: 0.82rem;
-  color: rgba(255, 220, 160, 0.9);
-  text-align: right;
+  margin: 0.85rem 0 0;
+  padding: 0.55rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgb(255, 222, 170);
+  background: rgba(255, 196, 120, 0.1);
+  border: 1px solid rgba(255, 196, 120, 0.3);
+}
+
+.wl-submit--step {
+  white-space: nowrap;
+}
+
+.wl-submit--done {
+  margin-top: 1rem;
+}
+
+@media (max-width: 400px) {
+  .wl-step-btn {
+    padding: 10px 14px;
+  }
+
+  .wl-submit--step {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .wl-submit--step svg {
+    display: none;
+  }
+
+  .wl-recap > div {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
 }

@@ -122,7 +122,7 @@ export function WhoScrollSection() {
             Who can use BalloAds?
           </h2>
           <div className="who-content-grid">
-            <div className="who-left-list absolute">
+            <div className="who-left-list">
               {useCases.map((item) => (
                 <div key={item.id} className="who-list-item">
                   <div className="who-list-icon">

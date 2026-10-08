@@ -83,6 +83,7 @@ export function WaitlistModal() {
   const [status, setStatus] = useState<Status>({ type: "idle" });
   const [step, setStep] = useState(1);
   const [hint, setHint] = useState("");
+  const [invalidField, setInvalidField] = useState<string | null>(null);
 
   // Stage 1 — contact details, submitted on their own.
   const [name, setName] = useState("");
@@ -129,6 +130,7 @@ export function WaitlistModal() {
         setStatus({ type: "idle" });
         setStep(1);
         setHint("");
+        setInvalidField(null);
         setName(""); setMail(""); setPhone(""); setJoined(false);
         setBiz(""); setLoc(""); setInd(INDUSTRIES[0]); setDow("");
         setPains([]); setPainOther(""); setSize(""); setMore("");
@@ -173,34 +175,44 @@ export function WaitlistModal() {
 
   const togglePain = (v: string) => {
     setPains((prev) => (prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]));
+    clearHint();
+  };
+
+  /** Show the hint, and if it is about one field, highlight and focus that field. */
+  const fail = (message: string, fieldId?: string): false => {
+    setHint(message);
+    setInvalidField(fieldId ?? null);
+    if (fieldId) document.getElementById(fieldId)?.focus();
+    return false;
+  };
+
+  const clearHint = () => {
     setHint("");
+    setInvalidField(null);
   };
 
   const validate = (): boolean => {
     if (step === 1) {
-      if (!name.trim()) { setHint("Tell us your name."); return false; }
-      if (!isValidEmail(mail)) { setHint("Enter an email we can reach you on."); return false; }
-      if (!isValidPhone(phone)) { setHint("Enter a phone number we can reach you on."); return false; }
+      if (!name.trim()) return fail("Tell us your name.", "wl-name");
+      if (!isValidEmail(mail)) return fail("Enter an email we can reach you on.", "wl-mail");
+      if (!isValidPhone(phone)) return fail("Enter a phone number we can reach you on.", "wl-phone");
       return true;
     }
-    if (step === 2 && (!biz.trim() || !loc.trim())) {
-      setHint("Add your business name and location to continue.");
-      return false;
+    if (step === 2) {
+      if (!biz.trim()) return fail("Add your business name to continue.", "wl-biz");
+      if (!loc.trim()) return fail("Add where you operate to continue.", "wl-loc");
     }
     if (step === 3 && !dow.trim()) {
-      setHint("Tell us in a few words what you do.");
-      return false;
+      return fail("Tell us in a few words what you do.", "wl-dow");
     }
     if (step === 4) {
-      if (pains.length === 0) { setHint("Pick at least one."); return false; }
+      if (pains.length === 0) return fail("Pick at least one.");
       if (pains.includes(PAIN_OTHER) && !painOther.trim()) {
-        setHint("Tell us what else is costing you.");
-        return false;
+        return fail("Tell us what else is costing you.", "wl-pain-other");
       }
     }
     if (step === 5 && !size) {
-      setHint("Choose an audience size.");
-      return false;
+      return fail("Choose an audience size.");
     }
     return true;
   };
@@ -224,7 +236,7 @@ export function WaitlistModal() {
   /** Stage 1: register the contact straight away. */
   const join = async () => {
     if (!validate()) return;
-    setHint("");
+    clearHint();
     if (joined) {
       setStep(2);
       return;
@@ -276,7 +288,7 @@ export function WaitlistModal() {
       return;
     }
     if (!validate()) return;
-    setHint("");
+    clearHint();
     setStatus({ type: "idle" });
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
@@ -289,7 +301,7 @@ export function WaitlistModal() {
     // Step 2 cannot go back to the contact step once it has been submitted.
     if (step > 2 || (step === 2 && !joined)) {
       setStep(step - 1);
-      setHint("");
+      clearHint();
       setStatus({ type: "idle" });
     }
   };
@@ -329,6 +341,7 @@ export function WaitlistModal() {
           aria-modal="true"
           aria-labelledby="waitlist-title"
           className="wl-card pointer-events-auto"
+          data-lenis-prevent
         >
           <div className="wl-card__aurora" aria-hidden="true" />
           <button onClick={closeModal} className="wl-close" aria-label="Close waitlist form">
@@ -345,6 +358,9 @@ export function WaitlistModal() {
                   </span>
                   {status.message}
                 </div>
+                <button type="button" onClick={closeModal} className="wl-submit wl-submit--done">
+                  Done
+                </button>
               </>
             ) : (
               <>
@@ -356,6 +372,12 @@ export function WaitlistModal() {
                   <div className="wl-steps__bar" style={{ width: `${pct}%` }} />
                 </div>
 
+                <form
+                  noValidate
+                  onSubmit={(e) => { e.preventDefault(); if (!isSubmitting) next(); }}
+                  onChange={() => { if (hint) clearHint(); }}
+                >
+
                 {step === 1 && (
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">Join the BalloAds waitlist</h2>
@@ -363,21 +385,21 @@ export function WaitlistModal() {
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-name" className="wl-field__label">Your name</label>
-                        <input id="wl-name" type="text" className="wl-field__input" placeholder="Mutale Banda"
+                        <input id="wl-name" aria-invalid={invalidField === "wl-name"} type="text" className="wl-field__input" placeholder="Mutale Banda"
                           value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" autoFocus />
                       </div>
                     </div>
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-mail" className="wl-field__label">Email</label>
-                        <input id="wl-mail" type="email" className="wl-field__input" placeholder="name@company.com"
+                        <input id="wl-mail" aria-invalid={invalidField === "wl-mail"} type="email" className="wl-field__input" placeholder="name@company.com"
                           value={mail} onChange={(e) => setMail(e.target.value)} autoComplete="email" />
                       </div>
                     </div>
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-phone" className="wl-field__label">Phone</label>
-                        <input id="wl-phone" type="tel" className="wl-field__input" placeholder="+260 97 000 0000"
+                        <input id="wl-phone" aria-invalid={invalidField === "wl-phone"} type="tel" className="wl-field__input" placeholder="+260 97 000 0000"
                           value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
                       </div>
                     </div>
@@ -397,14 +419,14 @@ export function WaitlistModal() {
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-biz" className="wl-field__label">Business name</label>
-                        <input id="wl-biz" type="text" className="wl-field__input" placeholder="Kabwata Fresh Foods"
+                        <input id="wl-biz" aria-invalid={invalidField === "wl-biz"} type="text" className="wl-field__input" placeholder="Kabwata Fresh Foods"
                           value={biz} onChange={(e) => setBiz(e.target.value)} autoComplete="organization" autoFocus />
                       </div>
                     </div>
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-loc" className="wl-field__label">Where you operate</label>
-                        <input id="wl-loc" type="text" className="wl-field__input" placeholder="Lusaka, Zambia"
+                        <input id="wl-loc" aria-invalid={invalidField === "wl-loc"} type="text" className="wl-field__input" placeholder="Lusaka, Zambia"
                           value={loc} onChange={(e) => setLoc(e.target.value)} />
                       </div>
                     </div>
@@ -427,9 +449,16 @@ export function WaitlistModal() {
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-dow" className="wl-field__label">What you actually do</label>
-                        <input id="wl-dow" type="text" className="wl-field__input"
+                        <textarea id="wl-dow" rows={2} aria-invalid={invalidField === "wl-dow"}
+                          className="wl-field__input wl-field__textarea wl-field__textarea--fixed"
                           placeholder={ACTIVITY_EXAMPLES[ind] ?? ACTIVITY_EXAMPLES["Something else"]}
-                          value={dow} onChange={(e) => setDow(e.target.value)} />
+                          value={dow} onChange={(e) => setDow(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              e.currentTarget.form?.requestSubmit();
+                            }
+                          }} />
                       </div>
                     </div>
                   </div>
@@ -458,9 +487,9 @@ export function WaitlistModal() {
                       <div className="wl-field">
                         <div className="wl-field__body">
                           <label htmlFor="wl-pain-other" className="wl-field__label">What else is costing you?</label>
-                          <input id="wl-pain-other" type="text" className="wl-field__input"
+                          <input id="wl-pain-other" aria-invalid={invalidField === "wl-pain-other"} type="text" className="wl-field__input"
                             placeholder="stock sitting unsold after promotions"
-                            value={painOther} onChange={(e) => { setPainOther(e.target.value); setHint(""); }} autoFocus />
+                            value={painOther} onChange={(e) => setPainOther(e.target.value)} autoFocus />
                         </div>
                       </div>
                     )}
@@ -471,11 +500,11 @@ export function WaitlistModal() {
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">How many people are you trying to reach?</h2>
                     <p className="wl-step__sub">Rough is fine. It sets the send volumes and pacing we recommend.</p>
-                    <div className="wl-choice-row">
+                    <div className="wl-choice-row" role="radiogroup" aria-label="Audience size">
                       {SIZES.map((s) => (
-                        <button key={s.v} type="button"
+                        <button key={s.v} type="button" role="radio" aria-checked={size === s.v}
                           className={`wl-choice wl-choice--chip ${size === s.v ? "wl-choice--active" : ""}`}
-                          onClick={() => { setSize(s.v); setHint(""); }}>
+                          onClick={() => { setSize(s.v); clearHint(); }}>
                           {s.label}
                         </button>
                       ))}
@@ -508,6 +537,7 @@ export function WaitlistModal() {
                 {status.type === "error" && (
                   <p role="alert" className="wl-error">{status.message}</p>
                 )}
+                {hint && <p role="alert" className="wl-hint">{hint}</p>}
 
                 <div className="wl-steps__nav">
                   {canGoBack ? (
@@ -521,12 +551,12 @@ export function WaitlistModal() {
                   ) : (
                     <span />
                   )}
-                  <button type="button" onClick={next} disabled={isSubmitting} className="wl-submit wl-submit--step">
+                  <button type="submit" disabled={isSubmitting} className="wl-submit wl-submit--step">
                     {primaryLabel}
                     {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
                   </button>
                 </div>
-                {hint && <p className="wl-hint">{hint}</p>}
+                </form>
               </>
             )}
           </div>

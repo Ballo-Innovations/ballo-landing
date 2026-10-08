@@ -578,7 +578,7 @@ export default function Home() {
       <section ref={testimonialsSectionRef} className="py-20 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-5xl font-bold text-center mb-12">
-            <span className="text-gradient-cyan block">
+            <span className="text-gradient-silver block">
               HEAR FROM THOSE WHO HAVE<br />TRIED AND TESTED
             </span>
           </h2>

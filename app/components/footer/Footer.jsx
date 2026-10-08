@@ -76,20 +76,20 @@ const Footer = () => {
           </div>
 
           {/* Contact Us Column */}
-          <div className="footer__column">
+          <div className="footer__column footer__column--contact">
             <h3 className="footer__column-title">Contact us</h3>
             <div className="footer__contact-info">
               <div className="footer__contact-item">
                 <div className="footer__contact-icon-wrapper">
                   <Phone size={14} className="footer__contact-icon-inner" />
                 </div>
-                <span>+260979611334</span>
+                <a href="tel:+260979611334">+260 97 961 1334</a>
               </div>
               <div className="footer__contact-item">
                 <div className="footer__contact-icon-wrapper">
                   <Mail size={14} className="footer__contact-icon-inner" />
                 </div>
-                <span>hello@balloads.com</span>
+                <a href="mailto:hello@balloads.com">hello@balloads.com</a>
               </div>
             </div>
           </div>

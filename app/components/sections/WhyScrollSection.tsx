@@ -2,7 +2,6 @@
 
 import React, { useRef } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -76,17 +75,18 @@ export function WhyScrollSection() {
             <p className="mt-4 text-white text-base leading-relaxed" style={{ maxWidth: "22rem" }}>
               The digital marketing platform built for your growth.
             </p>
-            <Link
-              href="#signup"
-              className="mt-8 inline-flex items-center gap-4 bg-white text-[#020055] px-8 py-2 rounded-full font-black text-lg hover:bg-white/90 transition-all group"
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
+              className="mt-8 inline-flex items-center gap-4 bg-white text-[#020055] px-8 py-2 rounded-full font-black text-lg hover:bg-white/90 transition-all group cursor-pointer"
             >
-              Sign up for free today
+              Join the waitlist
               <div className="w-8 h-8 rounded-full bg-[#020055] flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
                 </svg>
               </div>
-            </Link>
+            </button>
           </div>
 
           <div className="why-right-area">

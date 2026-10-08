@@ -123,6 +123,16 @@
   margin-bottom: 12px;
 }
 
+.footer__contact-item a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer__contact-item a:hover {
+  color: white;
+}
+
 .footer__contact-icon-wrapper {
   background-color: white;
   width: 24px;
@@ -143,15 +153,43 @@
     grid-template-columns: 1fr 1fr;
     gap: 60px 40px;
   }
+
+  .footer__logo-section {
+    grid-column: 1 / -1;
+    height: 96px;
+  }
 }
 
+/* Phones: small logo on top, then the columns in pairs. */
 @media (max-width: 640px) {
   .footer__grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px 24px;
+  }
+
+  .footer__logo-section {
+    height: 72px;
+  }
+
+  .footer__column--contact {
+    grid-column: 1 / -1;
+  }
+
+  .footer__column-title {
+    font-size: 17px;
+    margin-bottom: 16px;
+  }
+
+  .footer__link-list li {
+    margin-bottom: 10px;
+  }
+
+  .footer__link-disabled,
+  .footer__contact-item {
+    font-size: 15px;
   }
 
   .footer {
-    padding: 60px 0;
+    padding: 48px 0;
   }
 }
