@@ -343,7 +343,7 @@ export default function Home() {
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full border border-white/85 transition-all ${index === currentSlide
+                    className={`tap-dot w-3 h-3 rounded-full border border-white/85 transition-all ${index === currentSlide
                       ? "bg-white"
                       : "bg-transparent hover:bg-white/25"
                       }`}
@@ -442,7 +442,7 @@ export default function Home() {
             <div className="relative">
               <Phone3D floating={
                 <div
-                  className="absolute hidden md:flex flex-col gap-2.5"
+                  className="absolute hidden lg:flex flex-col gap-2.5"
                   style={{ left: "-60px", top: "56%", transform: "translateZ(40px)" }}
                 >
                   <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))} className="flex items-center gap-2 bg-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.28)] rounded-2xl px-3 py-2 cursor-pointer">
@@ -608,7 +608,7 @@ export default function Home() {
                   <button
                     key={i}
                     onClick={() => setTestimonialIndex(i)}
-                    className={`transition-all duration-300 rounded-full ${i === testimonialIndex
+                    className={`tap-dot transition-all duration-300 rounded-full ${i === testimonialIndex
                       ? "w-6 h-3 bg-white"
                       : "w-3 h-3 bg-white/30 hover:bg-white/60"
                       }`}

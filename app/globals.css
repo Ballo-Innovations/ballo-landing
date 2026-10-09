@@ -798,3 +798,13 @@ table.letter-of-consent-doc-table tbody td {
 .admin-shell table.letter-of-consent-doc-table tbody tr:hover td {
   background-color: transparent !important;
 }
+/* Carousel dots stay small but get a finger-sized tap area (about 44px). */
+.tap-dot {
+  position: relative;
+}
+
+.tap-dot::after {
+  content: "";
+  position: absolute;
+  inset: -16px -6px;
+}
