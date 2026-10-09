@@ -522,6 +522,17 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
     0.32,
   );
 
+  // The halo behind the settled phone ("What We're About"): rings and a cyan
+  // bloom that come up as the device steps aside, and stay while it shows the
+  // feature cards. Inside the phone's own layer, so it travels and scales with
+  // it rather than being placed against the stage.
+  const haloOpacity = useTransform(
+    scrollYProgress,
+    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
+    [0, 0, 1, 1],
+    { ease: easeOut },
+  );
+
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
     const apply = () => {
@@ -550,6 +561,7 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           land on the phone's screen rect and could not follow a rotating
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
+      <motion.div className="hero-phone-halo" style={{ opacity: haloOpacity }} />
       <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card
