@@ -2,29 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import React, { useRef } from "react";
 import { usePathname } from "next/navigation";
-import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import logo_1 from "@/public/BalloAds Logo New/BalloAds-logo.png";
 import logo_2 from "@/public/BalloAds Logo New/BalloAds-logo-full.png";
 
 const Header = () => {
   const pathname = usePathname();
-  const { scrollY } = useScroll();
-  const [isHidden, setIsHidden] = React.useState(false);
-  const lastScrollY = useRef(0);
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = lastScrollY.current;
-
-    if (latest > previous && latest > 80) {
-      setIsHidden(true);
-    } else if (latest < previous) {
-      setIsHidden(false);
-    }
-
-    lastScrollY.current = latest;
-  });
 
   if (pathname.startsWith("/admin")) {
     return null;
@@ -32,24 +15,11 @@ const Header = () => {
 
   return (
     <header className="header header--sticky">
-      <motion.nav
-        variants={{
-          visible: { y: 0, x: "-50%" },
-          hidden: { y: "-130%", x: "-50%" },
-        }}
-        animate={isHidden ? "hidden" : "visible"}
-        initial="visible"
-        transition={{
-          duration: 0.3,
-          ease: [0.4, 0, 0.2, 1],
-        }}
+      <nav
         className="header__nav glass-surface-nav"
-        style={{ zIndex: 100 }}
+        style={{ zIndex: 100, transform: "translateX(-50%)" }}
         aria-label="Primary navigation"
       >
-        <div className="glass-surface-nav__glow glass-surface-nav__glow--left" aria-hidden="true" />
-        <div className="glass-surface-nav__glow glass-surface-nav__glow--right" aria-hidden="true" />
-
         <Link href="/" className="header__logo" aria-label="BalloAds home">
           <div className="header__logo-container">
             <div className="header__logo-icon">
@@ -81,7 +51,7 @@ const Header = () => {
             Join Waitlist
           </button>
         </div>
-      </motion.nav>
+      </nav>
     </header>
   );
 };
