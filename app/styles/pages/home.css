@@ -1116,12 +1116,26 @@
 .wc-dot.is-active { width: 1.6rem; background: #3fdbff; }
 .wc-count { font-variant-numeric: tabular-nums; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
 
+.wc-card { display: none; }
+
 @media (max-width: 768px) {
   .wc-section { padding: 3.5rem 1.25rem; }
-  .wc-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-  .wc-stage { order: -1; }
-  .wc-frame { aspect-ratio: 16 / 11; }
-  .wc-tab { padding: 0.8rem 1rem; }
-  /* phones: only the active tab shows its description */
-  .wc-tab:not(.is-active) .wc-tab__sub { display: none; }
+  .who-scroll-heading-text { margin-bottom: 1.5rem; }
+  .wc-grid { grid-template-columns: 1fr; gap: 0; }
+  .wc-tabs, .wc-caption { display: none; }
+  .wc-stage { gap: 0; }
+  .wc-frame { aspect-ratio: 4 / 3; border-radius: 1.5rem 1.5rem 0 0; border-bottom: none; touch-action: pan-y; }
+  .wc-card {
+    display: block; position: relative; padding: 1.1rem 1.25rem 1.5rem;
+    border: 1px solid rgba(57,195,242,0.35); border-top: none; border-radius: 0 0 1.5rem 1.5rem;
+    background: rgba(57,195,242,0.09);
+  }
+  .wc-card__body { display: flex; gap: 0.9rem; align-items: flex-start; min-height: 4.4rem; animation: fade-swap-in 0.4s ease-out both; }
+  .wc-card__icon { color: #3fdbff; margin-top: 0.1rem; flex-shrink: 0; }
+  .wc-card__title { display: block; font-size: 1.2rem; font-weight: 700; line-height: 1.25; }
+  .wc-card__sub { display: block; margin-top: 0.25rem; font-size: 0.95rem; line-height: 1.45; color: rgba(255,255,255,0.75); }
+  .wc-card__progress { left: 1.25rem; right: 1.25rem; bottom: 0.7rem; }
+  .wc-controls { margin-top: 1rem; }
 }
+.wc-count { white-space: nowrap; }
+@media (max-width: 359px) { .wc-count { display: none; } }

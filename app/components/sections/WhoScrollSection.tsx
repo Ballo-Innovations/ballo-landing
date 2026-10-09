@@ -93,6 +93,7 @@ export function WhoScrollSection() {
   }, [active, paused, reduced, count]);
 
   const go = useCallback((i: number) => setActive(((i % count) + count) % count), [count]);
+  const [touchX, setTouchX] = useState<number | null>(null);
   const current = useCases[active];
 
   return (
@@ -146,13 +147,47 @@ export function WhoScrollSection() {
         </div>
 
         <div className="wc-stage" id="wc-panel" role="tabpanel" aria-live="polite">
-          <div className="wc-frame">
+          <div
+            className="wc-frame"
+            onTouchStart={(e) => { setTouchX(e.touches[0].clientX); setPaused(true); }}
+            onTouchEnd={(e) => {
+              if (touchX !== null) {
+                const dx = e.changedTouches[0].clientX - touchX;
+                if (Math.abs(dx) > 40) go(active + (dx < 0 ? 1 : -1));
+              }
+              setTouchX(null);
+              setPaused(false);
+            }}
+          >
             {useCases.map((item, i) => (
               <div key={item.id} className={`wc-slide${i === active ? " is-active" : ""}`} aria-hidden={i !== active}>
                 <Image src={item.image} alt={item.text} placeholder="blur" sizes="(max-width: 768px) 90vw, 45vw" />
               </div>
             ))}
             <span className="wc-caption">{current.text}</span>
+          </div>
+
+          {/* Phones: the active item's details, attached to the photo. */}
+          <div className="wc-card" aria-hidden="true">
+            <div key={active} className="wc-card__body">
+              <span className="wc-card__icon">
+                {React.cloneElement(current.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
+                  className: "w-6 h-6",
+                  strokeWidth: 1.6,
+                })}
+              </span>
+              <span>
+                <span className="wc-card__title">{current.text}</span>
+                <span className="wc-card__sub">{current.subtext}</span>
+              </span>
+            </div>
+            <span className="wc-tab__progress wc-card__progress">
+              <span
+                key={`${active}-${paused}`}
+                className={`wc-tab__bar${paused || reduced ? " is-paused" : ""}`}
+                style={{ animationDuration: `${SLIDE_MS}ms` }}
+              />
+            </span>
           </div>
 
           <div className="wc-controls">
