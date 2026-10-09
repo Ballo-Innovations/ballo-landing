@@ -1064,3 +1064,16 @@
 .glow-button:hover::after {
   opacity: 1;
 }
+/* Lightweight replacements for the old GSAP timelines: the active item fades in. */
+.why-scroll-item { transition: opacity 0.6s ease; }
+.why-scroll-item.is-active { opacity: 1; }
+.who-list-item { transition: opacity 0.4s ease; }
+.who-list-item.is-active { opacity: 1; }
+.who-image-item { opacity: 0; transition: opacity 0.6s ease; }
+.who-image-item.is-active { opacity: 1; }
+.why-scroll-sticky, .who-scroll-sticky { height: auto; min-height: 0; padding-top: 6rem; padding-bottom: 6rem; }
+
+/* Slide/testimonial changes: a short CSS fade instead of framer-motion. */
+.fade-swap { animation: fade-swap-in 0.45s ease-out both; }
+@keyframes fade-swap-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .fade-swap { animation: none; } }

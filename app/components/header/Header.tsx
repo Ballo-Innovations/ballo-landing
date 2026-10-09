@@ -20,6 +20,9 @@ const Header = () => {
         style={{ zIndex: 100, transform: "translateX(-50%)" }}
         aria-label="Primary navigation"
       >
+        <div className="glass-surface-nav__glow glass-surface-nav__glow--left" aria-hidden="true" />
+        <div className="glass-surface-nav__glow glass-surface-nav__glow--right" aria-hidden="true" />
+
         <Link href="/" className="header__logo" aria-label="BalloAds home">
           <div className="header__logo-container">
             <div className="header__logo-icon">
