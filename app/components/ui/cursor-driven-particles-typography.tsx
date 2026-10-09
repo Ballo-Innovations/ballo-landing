@@ -779,6 +779,8 @@ export function CursorDrivenParticleTypography({
       // Beads are stamped one at a time and lit additively, so overlapping
       // ones bloom the way glass in a pile does instead of flattening into a
       // single silhouette. Everything else is one batched path.
+      const drawMinX = -beadSize;
+      const drawMaxX = width + beadSize;
       if (glass) ctx.globalCompositeOperation = "lighter";
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -793,7 +795,11 @@ export function CursorDrivenParticleTypography({
           }
         }
         p.update(mx, my, dispersionStrength, returnSpeed);
-        if (i < keptCount) dot(p);
+        // Drawn only inside the canvas. The marquee track runs several tiles
+        // past both edges so it can recycle out of sight, and most of it is
+        // out of frame at any moment: stamping those beads was most of the
+        // band's cost per frame, for pixels the canvas then threw away.
+        if (i < keptCount && p.x > drawMinX && p.x < drawMaxX) dot(p);
       }
       if (!glass) ctx.fill();
 
@@ -801,7 +807,10 @@ export function CursorDrivenParticleTypography({
         const prev = ctx.globalAlpha;
         ctx.globalAlpha = surplus;
         if (!glass) ctx.beginPath();
-        for (let i = keptCount; i < particles.length; i++) dot(particles[i]);
+        for (let i = keptCount; i < particles.length; i++) {
+          const p = particles[i];
+          if (p.x > drawMinX && p.x < drawMaxX) dot(p);
+        }
         if (!glass) ctx.fill();
         ctx.globalAlpha = prev;
       }
