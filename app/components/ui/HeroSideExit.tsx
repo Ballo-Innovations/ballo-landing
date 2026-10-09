@@ -139,6 +139,9 @@ const PHONE_ASIDE_SCALE = 0.86;
  */
 const ASIDE_IN: Range = hand([0.64, 0.72]);
 
+/** The halo behind the phone: up only once "What We're About" has arrived. */
+const HALO_IN: Range = [ASIDE_IN[1], ASIDE_IN[1] + (ASIDE_IN[1] - ASIDE_IN[0])];
+
 /**
  * The band leaves: after the phone has started moving, before the copy lands.
  *
@@ -522,16 +525,23 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
     0.32,
   );
 
-  // The halo behind the settled phone ("What We're About"): rings and a cyan
-  // bloom that come up as the device steps aside, and stay while it shows the
-  // feature cards. Inside the phone's own layer, so it travels and scales with
-  // it rather than being placed against the stage.
-  const haloOpacity = useTransform(
-    scrollYProgress,
-    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
-    [0, 0, 1, 1],
-    { ease: easeOut },
-  );
+  // The halo behind the settled phone: rings and a cyan bloom that come up
+  // only once "What We're About" has fully arrived beside it (the end of
+  // `ASIDE_IN`), and stay while it shows the feature cards. Inside the phone's
+  // own layer, so it travels and scales with it.
+  //
+  // Written to the DOM by hand rather than passed as a motion value: a
+  // scroll-linked opacity gets hardware-accelerated onto a native scroll
+  // timeline, which measures the window rather than this pin, and the halo
+  // sat at full strength from the first frame.
+  const haloRef = React.useRef<HTMLDivElement>(null);
+  const placeHalo = React.useCallback((p: number) => {
+    if (haloRef.current) {
+      haloRef.current.style.opacity = String(easeOut(at(p, HALO_IN)));
+    }
+  }, []);
+  useMotionValueEvent(scrollYProgress, "change", placeHalo);
+  React.useEffect(() => placeHalo(scrollYProgress.get()), [placeHalo, scrollYProgress]);
 
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
@@ -561,7 +571,7 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           land on the phone's screen rect and could not follow a rotating
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
-      <motion.div className="hero-phone-halo" style={{ opacity: haloOpacity }} />
+      <div ref={haloRef} className="hero-phone-halo" />
       <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card
