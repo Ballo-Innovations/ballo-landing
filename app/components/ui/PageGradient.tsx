@@ -112,7 +112,13 @@ export function PageGradient() {
       // the page behind them. t0 is the ramp position at the top of the
       // viewport, which is exactly where the header sits — so this is both how
       // far down the ramp the bar is, and the exact colour behind it.
-      const root = document.documentElement.style;
+      //
+      // Set on the header, the only thing that reads them, not on <html>:
+      // a custom property changed on the root invalidates the style of every
+      // element in the document, and this runs on every scroll frame.
+      const header = document.querySelector<HTMLElement>("header.header");
+      if (!header) return;
+      const root = header.style;
       root.setProperty("--page-scroll-depth", depthAt(t0).toFixed(3));
       root.setProperty("--page-scroll-color", rgb(colorAt(t0)));
     };
@@ -136,8 +142,9 @@ export function PageGradient() {
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       observer.disconnect();
-      document.documentElement.style.removeProperty("--page-scroll-depth");
-      document.documentElement.style.removeProperty("--page-scroll-color");
+      const header = document.querySelector<HTMLElement>("header.header");
+      header?.style.removeProperty("--page-scroll-depth");
+      header?.style.removeProperty("--page-scroll-color");
     };
   }, []);
 
