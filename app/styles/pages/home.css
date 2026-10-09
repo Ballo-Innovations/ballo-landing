@@ -1077,3 +1077,51 @@
 .fade-swap { animation: fade-swap-in 0.45s ease-out both; }
 @keyframes fade-swap-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .fade-swap { animation: none; } }
+
+/* ── Who can use BalloAds: tabbed carousel ─────────────────────────── */
+.wc-section { max-width: 1300px; margin: 0 auto; padding: 6rem 4rem; }
+.wc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 3rem; align-items: center; }
+.wc-tabs { display: flex; flex-direction: column; gap: 0.5rem; }
+.wc-tab {
+  position: relative; display: flex; gap: 1rem; align-items: flex-start; width: 100%;
+  padding: 1rem 1.25rem; border-radius: 1.1rem; border: 1px solid transparent;
+  background: none; color: rgba(255,255,255,0.45); text-align: left; cursor: pointer; overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+.wc-tab:hover { color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.03); }
+.wc-tab.is-active { color: #fff; background: rgba(57,195,242,0.09); border-color: rgba(57,195,242,0.35); }
+.wc-tab:focus-visible { outline: 2px solid #3fdbff; outline-offset: 2px; }
+.wc-tab__icon { flex-shrink: 0; margin-top: 0.15rem; }
+.wc-tab.is-active .wc-tab__icon { color: #3fdbff; }
+.wc-tab__text { display: flex; flex-direction: column; gap: 0.2rem; }
+.wc-tab__title { font-size: clamp(1rem, 1.7vw, 1.35rem); font-weight: 700; line-height: 1.2; }
+.wc-tab__sub { font-size: clamp(0.8rem, 1.1vw, 0.95rem); opacity: 0.8; }
+.wc-tab__progress { position: absolute; left: 1.25rem; right: 1.25rem; bottom: 0.45rem; height: 3px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
+.wc-tab__bar { display: block; height: 100%; width: 100%; transform-origin: left; background: linear-gradient(90deg, #2273af, #3fdbff); animation: wc-fill linear both; }
+.wc-tab__bar.is-paused { animation-play-state: paused; }
+@keyframes wc-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.wc-stage { display: flex; flex-direction: column; gap: 1.25rem; }
+.wc-frame { position: relative; aspect-ratio: 4 / 3.4; border-radius: 1.75rem; overflow: hidden; background: radial-gradient(80% 70% at 50% 40%, #0d1557, #03031f); border: 1px solid rgba(255,255,255,0.08); }
+.wc-slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(1.03); transition: opacity 0.6s ease, transform 0.6s ease; }
+.wc-slide.is-active { opacity: 1; transform: none; }
+.wc-slide img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; transform: scale(1.35); }
+.wc-caption { position: absolute; left: 1rem; bottom: 1rem; padding: 0.4rem 0.85rem; border-radius: 999px; background: rgba(2,0,85,0.75); border: 1px solid rgba(255,255,255,0.15); font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(6px); }
+
+.wc-controls { display: flex; align-items: center; gap: 0.9rem; }
+.wc-arrow { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); color: #fff; background: none; cursor: pointer; transition: background 0.2s ease, border-color 0.2s ease; }
+.wc-arrow:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); }
+.wc-dots { display: flex; gap: 0.5rem; flex: 1; }
+.wc-dot { width: 0.6rem; height: 0.6rem; border-radius: 999px; border: none; padding: 0; background: rgba(255,255,255,0.3); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
+.wc-dot.is-active { width: 1.6rem; background: #3fdbff; }
+.wc-count { font-variant-numeric: tabular-nums; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+
+@media (max-width: 768px) {
+  .wc-section { padding: 3.5rem 1.25rem; }
+  .wc-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .wc-stage { order: -1; }
+  .wc-frame { aspect-ratio: 16 / 11; }
+  .wc-tab { padding: 0.8rem 1rem; }
+  /* phones: only the active tab shows its description */
+  .wc-tab:not(.is-active) .wc-tab__sub { display: none; }
+}

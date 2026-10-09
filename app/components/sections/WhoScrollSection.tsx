@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image, { StaticImageData } from "next/image";
-import { useRotatingIndex } from "./useRotatingIndex";
 import {
   Building,
   Landmark,
@@ -10,6 +9,8 @@ import {
   ShoppingCart,
   Heart,
   GraduationCap,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 import building from "@/public/Assets/46.png";
@@ -73,46 +74,108 @@ const useCases: UseCase[] = [
   },
 ];
 
+const SLIDE_MS = 4000;
+
 export function WhoScrollSection() {
-  const active = useRotatingIndex(useCases.length, 3000);
+  const count = useCases.length;
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  useEffect(() => {
+    if (paused || reduced) return;
+    const t = setTimeout(() => setActive((v) => (v + 1) % count), SLIDE_MS);
+    return () => clearTimeout(t);
+  }, [active, paused, reduced, count]);
+
+  const go = useCallback((i: number) => setActive(((i % count) + count) % count), [count]);
+  const current = useCases[active];
 
   return (
-    <section className="who-scroll-outer">
-      <div className="who-scroll-sticky">
-        <div className="who-scroll-inner">
-          <h2 className="who-scroll-heading-text">
-            Who can use BalloAds?
-          </h2>
-          <div className="who-content-grid">
-            <div className="who-left-list">
+    <section
+      className="wc-section"
+      aria-roledescription="carousel"
+      aria-label="Who can use BalloAds"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      <h2 className="who-scroll-heading-text">Who can use BalloAds?</h2>
+
+      <div className="wc-grid">
+        <div className="wc-tabs" role="tablist" aria-label="Business types">
+          {useCases.map((item, i) => {
+            const on = i === active;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                aria-controls="wc-panel"
+                onClick={() => go(i)}
+                className={`wc-tab${on ? " is-active" : ""}`}
+              >
+                <span className="wc-tab__icon" aria-hidden="true">
+                  {React.cloneElement(item.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
+                    className: "w-5 h-5 md:w-6 md:h-6",
+                    strokeWidth: 1.6,
+                  })}
+                </span>
+                <span className="wc-tab__text">
+                  <span className="wc-tab__title">{item.text}</span>
+                  <span className="wc-tab__sub">{item.subtext}</span>
+                </span>
+                {on && (
+                  <span className="wc-tab__progress" aria-hidden="true">
+                    <span
+                      key={`${active}-${paused}`}
+                      className={`wc-tab__bar${paused || reduced ? " is-paused" : ""}`}
+                      style={{ animationDuration: `${SLIDE_MS}ms` }}
+                    />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="wc-stage" id="wc-panel" role="tabpanel" aria-live="polite">
+          <div className="wc-frame">
+            {useCases.map((item, i) => (
+              <div key={item.id} className={`wc-slide${i === active ? " is-active" : ""}`} aria-hidden={i !== active}>
+                <Image src={item.image} alt={item.text} placeholder="blur" sizes="(max-width: 768px) 90vw, 45vw" />
+              </div>
+            ))}
+            <span className="wc-caption">{current.text}</span>
+          </div>
+
+          <div className="wc-controls">
+            <button type="button" className="wc-arrow" onClick={() => go(active - 1)} aria-label="Previous">
+              <ChevronLeft size={20} />
+            </button>
+            <div className="wc-dots">
               {useCases.map((item, i) => (
-                <div key={item.id} className={`who-list-item${i === active ? " is-active" : ""}`}>
-                  <div className="who-list-icon">
-                    {React.cloneElement(item.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>, {
-                      className: "w-5 h-5 md:w-7 md:h-7",
-                      strokeWidth: 1.5,
-                    })}
-                  </div>
-                  <div className="who-list-text">
-                    <span className="who-list-title">{item.text}</span>
-                    <span className="who-list-subtext">{item.subtext}</span>
-                  </div>
-                </div>
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => go(i)}
+                  className={`wc-dot tap-dot${i === active ? " is-active" : ""}`}
+                  aria-label={`Show ${item.text}`}
+                />
               ))}
             </div>
-            <div className="who-image-stack">
-              {useCases.map((item, i) => (
-                <div key={item.id} className={`who-image-item${i === active ? " is-active" : ""}`}>
-                  <Image
-                    src={item.image}
-                    alt={item.text}
-                    placeholder="blur"
-                    sizes="(max-width: 768px) 90vw, 40vw"
-                    priority={false}
-                  />
-                </div>
-              ))}
-            </div>
+            <span className="wc-count" aria-hidden="true">
+              {String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+            </span>
+            <button type="button" className="wc-arrow" onClick={() => go(active + 1)} aria-label="Next">
+              <ChevronRight size={20} />
+            </button>
           </div>
         </div>
       </div>
