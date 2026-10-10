@@ -220,6 +220,37 @@ function buildBead(radius: number, dpr: number): HTMLCanvasElement {
 /** Above this the sampling step is coarsened rather than dropping frames. */
 const MAX_PARTICLES = 14000;
 
+/**
+ * A light device: a touch screen, four cores or fewer, 4 GB or less, or Data
+ * Saver on. Each bead is its own `drawImage` every frame, and that is what
+ * this band costs; on those devices it was the main reason the hero lagged.
+ * A wide band gets half the beads it would otherwise (see `LIGHT_SHARE`), at
+ * a coarser step, which reads as the same band a little sparser.
+ */
+function isLightDevice() {
+  if (typeof window === "undefined") return false;
+  const nav = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: { saveData?: boolean };
+  };
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    (nav.hardwareConcurrency || 8) <= 4 ||
+    (nav.deviceMemory ?? 8) <= 4 ||
+    nav.connection?.saveData === true
+  );
+}
+
+const LIGHT_SHARE = 0.5;
+
+/**
+ * ...but never below this many in all. A phone's band is narrow and already
+ * sits around 3,000 beads, under a thousand of them in frame; halving that
+ * pulled the letters apart into loose dots that no longer spelled anything,
+ * for a saving it did not need.
+ */
+const LIGHT_FLOOR = 4000;
+
 const INTERACTION_RADIUS = 120;
 
 
@@ -475,7 +506,11 @@ export function CursorDrivenParticleTypography({
         }
         return n;
       };
-      const budget = marquee ? MAX_PARTICLES / copies : MAX_PARTICLES;
+      let budget = marquee ? MAX_PARTICLES / copies : MAX_PARTICLES;
+      if (isLightDevice()) {
+        const floor = marquee ? LIGHT_FLOOR / copies : LIGHT_FLOOR;
+        budget = Math.min(budget, Math.max(floor, countAt(step) * LIGHT_SHARE));
+      }
       while (countAt(step) > budget) step += Math.max(1, Math.round(dpr));
 
       particles = [];
