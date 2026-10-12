@@ -411,7 +411,7 @@ export function WaitlistModal() {
                     {joined && (
                       <div className="wl-banner" role="status">
                         <span className="wl-banner__check" aria-hidden="true"><Check size={14} strokeWidth={3} /></span>
-                        You&apos;re on the list, {name.trim().split(" ")[0] || "friend"}. Five quick questions and your playbook is on its way.
+                        You&apos;re on the list, {name.trim().split(" ")[0] || "friend"}. Answer five quick questions and we&apos;ll build a marketing playbook tailored to your business.
                       </div>
                     )}
                     <h2 id="waitlist-title" className="wl-step__q">Who are we writing this for?</h2>
