@@ -498,7 +498,7 @@ export function WaitlistModal() {
 
                 {step === 5 && (
                   <div>
-                    <h2 id="waitlist-title" className="wl-step__q">How many people are you trying to reach?</h2>
+                    <h2 id="waitlist-title" className="wl-step__q">How many customers do you have?</h2>
                     <p className="wl-step__sub">Rough is fine. It sets the send volumes and pacing we recommend.</p>
                     <div className="wl-choice-row" role="radiogroup" aria-label="Audience size">
                       {SIZES.map((s) => (
