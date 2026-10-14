@@ -41,20 +41,13 @@ import { ParallaxSetup } from "./components/ui/ParallaxSetup";
 import bank from "@/public/Assets/19.png";
 import glowBg from "@/public/Assets/glow-bg.png";
 
-import logoMakhulu from "@/public/Client Logos/Makhulu High Res Logo white.png";
-import logoParamount from "@/public/Client Logos/paramount-1 white.png";
-import logoOmphile from "@/public/Client Logos/Omphile-White.png";
-import logoInsizwe from "@/public/Client Logos/logo-2 white.png";
-import logoMudenda from "@/public/Client Logos/Mudenda Capital Logo to send-03.png";
-import logoFI from "@/public/Client Logos/Financial Insights Logo white.png";
-import logoTinge from "@/public/Client Logos/Tinge logo white.png";
-import logoIVLounge from "@/public/Client Logos/iv1.png";
-import logoSWR from "@/public/Client Logos/SWR Logo white.png";
-import logoShane from "@/public/Client Logos/Shane Investments logo.png";
+import logoZambeef from "@/public/Client Logos/zambeef-white.png";
+import logoYalelo from "@/public/Client Logos/yalelo-white.png";
+import logoBayport from "@/public/Client Logos/bayport.png";
+import logoZamhatch from "@/public/Client Logos/zamhatch.png";
+import logoInsizwe from "@/public/Client Logos/insizwe-white.png";
 import logoShreeji from "@/public/Client Logos/Shreeji.png";
-import logoBayport from "@/public/Client Logos/bayport color.png";
-import logoSeneca from "@/public/Client Logos/seneca-logo new-02.png";
-import logo9 from "@/public/Client Logos/9.png";
+import logoFI from "@/public/Client Logos/Financial Insights Logo white.png";
 
 function FeatureLabel({
   text,
@@ -529,36 +522,22 @@ export default function Home() {
           <div className="logo-marquee-track">
             {(
               [
-                { src: logoMakhulu, alt: "Makhulu Investments" },
-                { src: logoParamount, alt: "Paramount Logistics" },
-                { src: logoOmphile, alt: "Omphile Visual Direction" },
-                { src: logoInsizwe, alt: "Insizwe" },
-                { src: logoMudenda, alt: "Mudenda Capital" },
-                { src: logoFI, alt: "Financial Insights" },
-                { src: logoTinge, alt: "Tinge Technology" },
-                { src: logoIVLounge, alt: "The IV Lounge" },
-                { src: logoSWR, alt: "SWR" },
-                { src: logoShane, alt: "Shane Investments" },
-                { src: logoShreeji, alt: "Shreeji" },
+                { src: logoZambeef, alt: "Zambeef" },
+                { src: logoYalelo, alt: "Yalelo" },
                 { src: logoBayport, alt: "Bayport" },
-                { src: logoSeneca, alt: "Seneca" },
-                { src: logo9, alt: "Client" },
+                { src: logoZamhatch, alt: "Zamhatch" },
+                { src: logoInsizwe, alt: "Insizwe" },
+                { src: logoShreeji, alt: "Shreeji" },
+                { src: logoFI, alt: "Financial Insights" },
               ]
             ).concat([
-              { src: logoMakhulu, alt: "Makhulu Investments" },
-              { src: logoParamount, alt: "Paramount Logistics" },
-              { src: logoOmphile, alt: "Omphile Visual Direction" },
-              { src: logoInsizwe, alt: "Insizwe" },
-              { src: logoMudenda, alt: "Mudenda Capital" },
-              { src: logoFI, alt: "Financial Insights" },
-              { src: logoTinge, alt: "Tinge Technology" },
-              { src: logoIVLounge, alt: "The IV Lounge" },
-              { src: logoSWR, alt: "SWR" },
-              { src: logoShane, alt: "Shane Investments" },
-              { src: logoShreeji, alt: "Shreeji" },
+              { src: logoZambeef, alt: "Zambeef" },
+              { src: logoYalelo, alt: "Yalelo" },
               { src: logoBayport, alt: "Bayport" },
-              { src: logoSeneca, alt: "Seneca" },
-              { src: logo9, alt: "Client" },
+              { src: logoZamhatch, alt: "Zamhatch" },
+              { src: logoInsizwe, alt: "Insizwe" },
+              { src: logoShreeji, alt: "Shreeji" },
+              { src: logoFI, alt: "Financial Insights" },
             ]).map((logo, i) => (
               <div key={i} className="flex items-center justify-center px-5 shrink-0">
                 <Image
@@ -568,7 +547,6 @@ export default function Home() {
                   loading="lazy"
                   sizes="112px"
                   className="h-28 w-auto object-contain opacity-100 transition-opacity"
-                  style={{ filter: logo.src === logoBayport ? 'brightness(0) invert(1)' : 'none' }}
                 />
               </div>
             ))}
