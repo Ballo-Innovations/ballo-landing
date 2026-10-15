@@ -48,3 +48,11 @@ in the tabs underneath.
   wrote, not customer claims. Review them like any other copy.
 - Whichever design wins, delete the others' sections, components and flags,
   and mark their ADRs superseded.
+
+## Update (2026-10-15): title and image only
+
+The cards now show only the industry name and its photo. The component's new
+`showDetails` prop (default true) hides the description and tags, and the
+section passes `false`. The text stays in `TAGS` and `industries`, and a
+visually-hidden list keeps it for screen readers. Showing it on hover is
+still to be decided.

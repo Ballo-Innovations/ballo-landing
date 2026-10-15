@@ -42,6 +42,9 @@ export interface CalendlyCarouselProps extends HTMLAttributes<HTMLDivElement> {
   pauseOnHover?: boolean;
   /** Render `quote` as a quotation (serif, quote marks). @default true */
   quoted?: boolean;
+  /** Show the quote and the author/role chips. False leaves the title and
+   *  the image only. @default true */
+  showDetails?: boolean;
   ariaLabel?: string;
 }
 
@@ -77,6 +80,7 @@ export function CalendlyCarousel({
   autoPlayInterval = 6000,
   pauseOnHover = false,
   quoted = true,
+  showDetails = true,
   ariaLabel = "Customer stories",
   className,
   ...props
@@ -380,6 +384,8 @@ export function CalendlyCarousel({
                         {item.stat}
                       </h3>
 
+                      {showDetails ? (
+                        <>
                       <div className="relative my-auto w-full min-w-0 py-1">
                         {quoted ? (
                           <>
@@ -434,6 +440,8 @@ export function CalendlyCarousel({
                           </span>
                         </div>
                       </div>
+                        </>
+                      ) : null}
                     </div>
 
                     <div

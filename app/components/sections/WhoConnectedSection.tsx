@@ -52,11 +52,22 @@ export function WhoConnectedSection() {
       <CalendlyCarousel
         items={ITEMS}
         quoted={false}
+        // Title and photo only for now; where the description and tags go
+        // (on hover) is still open. Screen readers get them below.
+        showDetails={false}
         ariaLabel="Industries BalloAds serves"
         autoPlayInterval={6000}
         pauseOnHover
         className="who-connected__carousel"
       />
+
+      <ul className="sr-only">
+        {ITEMS.map((item) => (
+          <li key={item.id}>
+            {item.stat}. {item.quote} {item.author}, {item.role}.
+          </li>
+        ))}
+      </ul>
 
       <div className="who-connected__cta">
         <ShinyButton onClick={openWaitlist}>Start your first campaign</ShinyButton>
