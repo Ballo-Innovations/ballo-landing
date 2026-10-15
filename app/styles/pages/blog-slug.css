@@ -115,6 +115,51 @@
   width: 100%;
 }
 
+/* Media in the article body: uploaded video/audio and third-party players
+   (sanitized in lib/contentFormat.ts). */
+.post-article video,
+.post-article audio,
+.post-article iframe {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 1.75rem 0;
+  border: 0;
+  border-radius: 1rem;
+  color-scheme: dark;
+}
+.post-article video {
+  background: #000;
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+}
+.post-article audio {
+  height: 3.25rem;
+  border-radius: 999px;
+}
+.post-article iframe[src*="youtube"],
+.post-article iframe[data-embed="vimeo"] {
+  height: auto;
+  aspect-ratio: 16 / 9;
+}
+.post-article iframe[data-embed="spotify"] {
+  height: 152px;
+  border-radius: 12px;
+}
+.post-article iframe[src*="/embed/show/"],
+.post-article iframe[src*="/embed/playlist/"],
+.post-article iframe[src*="/embed/album/"] {
+  height: 352px;
+}
+.post-article iframe[data-embed="soundcloud"] {
+  height: 166px;
+  border-radius: 0.75rem;
+}
+.post-article iframe[data-embed="tiktok"] {
+  width: min(100%, 340px);
+  height: 740px;
+  margin-inline: auto;
+}
+
 .post-actions {
   display: flex;
   justify-content: flex-end;

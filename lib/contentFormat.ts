@@ -4,7 +4,7 @@ import sanitizeHtml from "sanitize-html";
 export function isHtmlContent(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed) return false;
-  if (/^<(p|h[1-6]|ul|ol|blockquote|table|figure|img|div|pre)\b/i.test(trimmed)) return true;
+  if (/^<(p|h[1-6]|ul|ol|blockquote|table|figure|img|div|pre|video|audio|iframe)\b/i.test(trimmed)) return true;
   return /<\/?(p|h[1-6]|ul|ol|li|strong|em|a|img|table|blockquote)\b/i.test(trimmed.slice(0, 200));
 }
 
@@ -47,9 +47,45 @@ const ALLOWED_TAGS = [
   "div",
   "span",
   "iframe",
+  "video",
+  "audio",
   "figure",
   "figcaption",
 ];
+
+// Uploaded audio/video must come from our own CMS asset storage — no hotlinked
+// media from arbitrary hosts.
+const MEDIA_HOSTS = new Set(["s3.balloads.com", "assets.balloads.com"]);
+
+// Third-party players the CMS editor can embed (ballo-cms lib/mediaEmbeds.ts).
+const IFRAME_HOSTS = [
+  "www.youtube.com",
+  "youtube.com",
+  "www.youtube-nocookie.com",
+  "youtube-nocookie.com",
+  "player.vimeo.com",
+  "open.spotify.com",
+  "w.soundcloud.com",
+  "www.tiktok.com",
+];
+
+function isOwnMediaUrl(src: string | undefined): boolean {
+  if (!src) return false;
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" && MEDIA_HOSTS.has(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Players always get visible controls and never autoplay.
+const mediaTransform =
+  (extra: Record<string, string>): sanitizeHtml.Transformer =>
+  (tagName, attribs) => ({
+    tagName,
+    attribs: { ...attribs, controls: "", preload: "metadata", ...extra },
+  });
 
 // Text-align is the only inline style TipTap's toolbar emits (via the TextAlign
 // extension, on paragraphs/headings) and column width (via the resizable Table
@@ -77,16 +113,19 @@ export function sanitizeBlogHtml(html: string): string {
       h4: ["style"],
       a: ["href", "target", "rel"],
       img: ["src", "alt", "width", "height"],
-      iframe: ["src", "width", "height", "allow", "allowfullscreen", "frameborder", "referrerpolicy"],
+      iframe: ["src", "width", "height", "allow", "allowfullscreen", "frameborder", "referrerpolicy", "loading", "data-embed"],
+      video: ["src", "controls", "preload", "playsinline", "poster"],
+      audio: ["src", "controls", "preload"],
       th: ["colspan", "rowspan"],
       td: ["colspan", "rowspan"],
       col: ["style", "width"],
     },
     allowedStyles: ALLOWED_STYLES,
     allowedSchemes: ["http", "https", "mailto", "tel"],
-    allowedSchemesByTag: { img: ["http", "https"] },
-    // Only the Youtube extension emits iframes — keep embeds scoped to it.
-    allowedIframeHostnames: ["www.youtube.com", "youtube.com", "www.youtube-nocookie.com", "youtube-nocookie.com"],
+    allowedSchemesByTag: { img: ["http", "https"], video: ["https"], audio: ["https"] },
+    allowedIframeHostnames: IFRAME_HOSTS,
+    exclusiveFilter: (frame) =>
+      (frame.tag === "video" || frame.tag === "audio") && !isOwnMediaUrl(frame.attribs.src),
     disallowedTagsMode: "discard",
     // Force a safe rel on every link regardless of what the editor produced.
     transformTags: {
@@ -94,6 +133,8 @@ export function sanitizeBlogHtml(html: string): string {
         tagName,
         attribs: { ...attribs, rel: "noopener noreferrer" },
       }),
+      video: mediaTransform({ playsinline: "" }),
+      audio: mediaTransform({}),
     },
   });
 }
