@@ -2647,16 +2647,10 @@
    Backed by — the partner band
    File: app/components/ui/BackedBy.tsx
 
-   A bordered band of equal cells, one per partner, split by dashed rules. One
-   cell at a time swaps its logo for the partner's name and role: the mark
-   travels up and out, the caption comes up from under it. Everything that
-   moves here is `opacity` and `translate` on two small elements per cell.
-
-   This replaces a rail whose marks only lit up while a large cycling headline
-   beside them did the naming. That named the same partner twice at once, and
-   the headline had to reserve the width of the longest name the CMS might ever
-   hold so a swap could not reflow the section. Naming each mark in its own
-   cell drops both, and the label above is now fixed copy.
+   A static, centred row of pills, one per partner: the mark on a white disc
+   and the partner's name beside it, in the feature chips' pill face. It used
+   to be a glass band of cells that swapped each logo for a drawn-on name and
+   role on hover; ADR 0002 replaced that so every partner is named at once.
    ============================================================= */
 .backers-section {
   padding: clamp(3.5rem, 9vh, 5.5rem) clamp(1rem, 5vw, 2rem);
@@ -2696,228 +2690,68 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* ── The band ──────────────────────────────────────────────────────────── */
+/* ── The pills ─────────────────────────────────────────────────────────── */
 
-/* Glass, in the same language as the waitlist card (components/waitlist.css):
-   a diagonal sheen over a dark tint, a bright rim on the top edge, and the
-   blur behind it. Lighter than that card at every step — this one sits
-   mid-page over the gradient rather than over a dimmed backdrop, and at the
-   card's weight it read as a modal that had failed to open.
-
-   `isolation: isolate` keeps the ::after rim's `screen` blend inside the band
-   instead of letting it act on the page gradient behind it. All of it is
-   static: nothing here animates, so the blur is rasterised once. */
-.backers__band {
-  position: relative;
-  isolation: isolate;
-  width: 100%;
-  padding: clamp(1rem, 2.5vw, 1.5rem) clamp(0.5rem, 2vw, 1.25rem);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 1.1rem;
-  background:
-    linear-gradient(157deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02) 38%, transparent 66%),
-    linear-gradient(180deg, rgba(11, 15, 62, 0.42), rgba(2, 2, 28, 0.55));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-    inset 0 0 34px rgba(255, 255, 255, 0.035),
-    0 30px 70px -40px rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-}
-
-/* The rim catching light along the top edge. */
-.backers__band::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 18%);
-  mix-blend-mode: screen;
-  opacity: 0.7;
-}
-
-/* Narrow screens get an even two-column grid, not a wrapping flex row: the
-   marks are different widths, so a wrapped row put each one at a different
-   left edge and the four read as scattered rather than as a set. */
-.backers__items {
+/* One static pill per partner, in the face the feature chips wear under "Why
+   Choose" and in the closing CTA (`.aside-copy-rows .cta-chip` in
+   cinematic-hero.css): a white top-of-the-box highlight over the mid-blue
+   gradient, with an inset top edge for the rim. Not a marquee — four partners
+   are too few to loop, and the row should hold still so all of them read at
+   once (ADR 0002). Wraps and centres, so the CMS can publish any count. */
+.backers__pills {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(1rem, 3vw, 1.5rem) 0;
-}
-
-.backers__item {
-  position: relative;
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  padding-inline: clamp(0.5rem, 2vw, 1rem);
+  gap: clamp(0.6rem, 1.6vw, 1rem);
 }
 
-/* The dashed rule between cells. On the item rather than between them so the
-   count is whatever the CMS publishes; `nth-child` picks out the cells that
-   open a row, which are the ones with nothing to their left to divide from. */
-.backers__item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  height: 2.25rem;
-  border-left: 1px dashed rgba(255, 255, 255, 0.16);
-  transform: translateY(-50%);
-}
-
-.backers__item:nth-child(odd)::before {
-  content: none;
-}
-
-/* The cell is the swap's stage: both the mark and the caption are laid over
-   each other in it, and it holds the height so a swap never reflows the band. */
-.backers__cell {
-  position: relative;
-  display: flex;
+.backers__pill {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 3.25rem;
-}
-
-/* One box for every mark; see the note in BackedBy.tsx. Leaves upward as the
-   caption arrives — `opacity` and `transform` only, both composited. */
-.backers__logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  width: min(100%, 7rem);
-  /* The marks are in their own colours and at full strength. They were greyed
-     and dimmed — the convention for a logo wall, and what the 21st.dev band
-     this took its shape from does — but that wall is a dozen marks on white,
-     where grey is what keeps them from competing with the copy. Four marks on
-     near-black is the opposite problem: Airtel's red and MTN's yellow are most
-     of what makes either recognisable at this size, and greyscale left them as
-     dark shapes on a dark ground. The travel is carried by the swap itself, a
-     mark leaving and a name arriving, so the row does not also need dimming.
-
-     Which is also why there is no hover rule here any more: at full colour
-     there is nothing left for a hover to restore. Hovering still moves the
-     swap — that is the component's doing, not this file's. */
-  opacity: 1;
-  transition:
-    opacity 0.3s ease,
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.backers__item[data-active] .backers__logo {
-  opacity: 0;
-  transform: translate3d(0, -2.5rem, 0);
-}
-
-.backers__wordmark {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.72);
-  white-space: nowrap;
-}
-
-/* ── The caption ───────────────────────────────────────────────────────── */
-
-.backers__caption {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.backers__caption-line {
-  display: flex;
-  flex-direction: column;
-  /* Stretched, not centred, and a full-width box. Both lines are now SVG,
-     which has no intrinsic width to centre — they take the cell's width and
-     centre their own glyphs at `x="50%"` instead. Centring here would size
-     them to content, and an SVG at `width: 100%` of nothing is nothing. */
-  align-items: stretch;
-  width: 100%;
-  gap: 0.2rem;
-  margin: 0;
-}
-
-/* Both lines are `DrawLineText`. The type is set here and the component reads
-   it off `currentColor` and `font: inherit`, so the draw needs no numbers of
-   its own and these keep their clamps. */
-.backers__name {
-  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  gap: 0.6rem;
+  padding: 0.5rem 1.25rem 0.5rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
   color: #fff;
-  /* Hairline against 1.6rem of bold: the stroke is a guide the fill arrives
-     under, not an outline the letter keeps. */
-  --draw-stroke: 1px;
-}
-
-.backers__role {
-  font-size: clamp(0.6rem, 1.3vw, 0.7rem);
+  font-size: clamp(0.95rem, 1.6vw, 1.1rem);
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  line-height: 1.3;
-  /* The one cyan accent in the section: it is what separates what a partner is
-     from its name directly above. */
-  color: color-mix(in srgb, var(--cyan) 82%, white);
-  /* Thinner and quicker than the name: it is half the type size, so the same
-     stroke would read as bold, and it is twice the letters, so the same
-     stagger would still be drawing after the name had long finished. */
-  --draw-stroke: 0.6px;
-  --draw-stagger: 0.022s;
-  --draw-dur: 0.4s;
+  white-space: nowrap;
+  background:
+    radial-gradient(120% 140% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 60%),
+    linear-gradient(135deg, var(--brand-color-2), var(--brand-color-3));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    0 8px 16px -10px rgba(2, 0, 85, 0.9);
 }
 
-/* ── Desktop: one row of cells ─────────────────────────────────────────── */
-@media (min-width: 901px) {
-  /* However many partners there are, spread across the band — so this drops
-     the column count rather than fixing one the CMS could outgrow. */
-  .backers__items {
-    display: flex;
-    gap: 0;
-  }
-
-  .backers__item {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  /* Every cell but the first opens a "row" of one, so the odd-child rule that
-     suppresses the divider on narrow screens has to go. */
-  .backers__item:nth-child(odd)::before {
-    content: "";
-  }
-
-  .backers__item:first-child::before {
-    content: none;
-  }
+/* A pill with no uploaded mark is just its name; balance the padding. */
+.backers__pill:not(:has(.backers__pill-mark)) {
+  padding-left: 1.25rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .backers__logo {
-    transition: opacity 0.3s ease;
-  }
-
-  /* The mark still clears the cell for the caption — it just fades rather than
-     travelling. */
-  .backers__item[data-active] .backers__logo {
-    transform: none;
-  }
+/* The mark sits on a white disc: Meta's blue and ZICTA's navy would vanish
+   straight onto the pill's blue, and the disc keeps every brand in its own
+   colours whatever the CMS uploads. */
+.backers__pill-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 -1px 0 rgba(2, 0, 85, 0.15);
 }
 
+.backers__pill-mark[data-light] {
+  background: var(--brand-color-1, #020055);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
 
 /* =============================================================
    Brutus — the pinned film stage
@@ -3238,7 +3072,7 @@
 /* ── Backed by ─────────────────────────────────────────────────────────── */
 
 .backers__eyebrow,
-.backers__cell {
+.backers__pill {
   transition:
     opacity 0.7s ease var(--enter-delay, 0s),
     transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--enter-delay, 0s);
@@ -3249,17 +3083,13 @@
   transform: translate3d(0, 16px, 0);
 }
 
-/* The cell, not the `<li>` and not the mark inside it. The `<li>` carries the
-   dashed divider, which should not arrive with the mark; and the mark's own
-   transform is already spoken for by the swap, so an entrance on the same
-   property would fight it the first time the cycle advanced. */
-.backers-reveal[data-fur="out"] .backers__cell {
+.backers-reveal[data-fur="out"] .backers__pill {
   opacity: 0;
   transform: translate3d(0, 18px, 0) scale(0.92);
 }
 
 /* One after another, off the index the component sets. */
-.backers__item .backers__cell {
+.backers__pill {
   --enter-delay: calc(0.18s + var(--i, 0) * 0.09s);
 }
 
@@ -3311,11 +3141,11 @@
    arm in utilities.css does the same for its wrapper. */
 @media (prefers-reduced-motion: reduce) {
   .backers__eyebrow,
-  .backers__cell,
+  .backers__pill,
   .who-cta__copy > *,
   .who-cta__rows > .mq,
   .backers-reveal[data-fur="out"] .backers__eyebrow,
-  .backers-reveal[data-fur="out"] .backers__cell,
+  .backers-reveal[data-fur="out"] .backers__pill,
   .who-cta__copy-reveal[data-fur="out"] .who-cta__copy > *,
   .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(1),
   .who-cta__rows-reveal[data-fur="out"] .who-cta__rows > .mq:nth-child(2) {
@@ -3444,43 +3274,5 @@
 
   .who-stack__lines p {
     font-size: 0.95rem;
-  }
-}
-
-/* =============================================================
-   The feature pills in the "Backed by" slot (ADR 0002). They borrow
-   `.aside-copy-rows` for the pill face and the marquee spacing; this
-   only widens them to the page and undoes the hero's height budget,
-   which does not apply outside the pin.
-   ============================================================= */
-.aside-copy-rows.backers-chip-rows {
-  display: flex;
-  width: min(72rem, 100%);
-  margin: 0 auto;
-  gap: 0.75rem;
-}
-
-.aside-copy-rows.backers-chip-rows .cta-chip {
-  padding: 0.6rem 1.1rem;
-  font-size: 1rem;
-}
-
-.aside-copy-rows.backers-chip-rows .cta-chip svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.aside-copy-rows.backers-chip-rows .mq__group {
-  gap: 0.75rem;
-  padding-right: 0.75rem;
-}
-
-@media (max-width: 900px) {
-  .aside-copy-rows.backers-chip-rows {
-    margin: 0 auto;
-  }
-
-  .aside-copy-rows.backers-chip-rows .mq--row-b {
-    display: block;
   }
 }

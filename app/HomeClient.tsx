@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { PageGradient } from "./components/ui/PageGradient";
 import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
-import { FeatureChipRows, WhyFeatureChips } from "./components/ui/FeatureChips";
+import { WhyFeatureChips } from "./components/ui/FeatureChips";
 import { TextReveal } from "./components/ui/TextReveal";
 
 import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
@@ -41,12 +41,6 @@ import logoBayport from "@/public/Client Logos/bayport color.png";
 
 /** The scrolling pills under "Why Choose BalloAds?" — archived, see ADR 0001. */
 const SHOW_WHY_CHIPS = false;
-
-/**
- * The "Backed by" logo band — archived in favour of the feature-chip rows in
- * its place, see ADR 0002. Flip to true to restore it as it was.
- */
-const SHOW_BACKED_BY = false;
 
 export type HomeTestimonialItem = {
   quote: string;
@@ -488,18 +482,9 @@ export default function HomeClient({
             off in CSS and the label and each cell animate themselves, so the
             logos arrive one after another instead of the whole band fading in
             as one block. */}
-        {SHOW_BACKED_BY ? (
-          <FadeUpReveal yOffset={0} className="backers-reveal">
-            <BackedBy logos={backerLogos} />
-          </FadeUpReveal>
-        ) : (
-          /* The feature pills archived from "Why Choose" (ADR 0001), in the
-             band's place (ADR 0002). Same rows, same pill face; the section
-             re-sizes them for a full-width stage. */
-          <div className="aside-copy-rows backers-chip-rows">
-            <FeatureChipRows />
-          </div>
-        )}
+        <FadeUpReveal yOffset={0} className="backers-reveal">
+          <BackedBy logos={backerLogos} />
+        </FadeUpReveal>
       </section>
 
       {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
