@@ -2810,6 +2810,82 @@
   opacity: 0.85;
 }
 
+/* ── Logo at rest, name on hover ───────────────────────────────────────
+   Both layers share one grid cell, so the pill is sized by the wider of the
+   two and never changes size on a swap. The logo leaves upward as the name
+   and role come up from below — `opacity` and `transform` only. Focus does
+   the same as hover: keyboard users get the names, and on a phone a tap
+   focuses the pill, which is how touch gets them. */
+.backers__pill[data-swap] {
+  display: inline-grid;
+  place-items: center;
+  padding-inline: 2rem;
+  overflow: hidden;
+  cursor: default;
+  outline: none;
+}
+
+.backers__pill[data-swap] > * {
+  grid-area: 1 / 1;
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Bigger at rest than beside the name: it is the whole pill now. Wide marks
+   (MTN's oval) get the room they need. */
+.backers__pill[data-swap] .backers__pill-mark {
+  width: auto;
+  max-width: calc(var(--chip-h) * 1.6);
+  height: calc(var(--chip-h) * 0.62);
+}
+
+.backers__pill[data-swap] .backers__pill-mark img {
+  height: 100%;
+  width: auto;
+}
+
+.backers__pill[data-swap] .backers__pill-text {
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: translate3d(0, 0.9rem, 0);
+}
+
+.backers__pill[data-swap]:is(:hover, :focus) .backers__pill-mark {
+  opacity: 0;
+  transform: translate3d(0, -0.9rem, 0);
+}
+
+.backers__pill[data-swap]:is(:hover, :focus) .backers__pill-text {
+  opacity: 1;
+  transform: none;
+}
+
+.backers__pill[data-swap]:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.85),
+    0 1px 6px rgba(1, 1, 40, 0.28);
+}
+
+/* Desktop: one row of equal pills, all as wide as the widest caption, so the
+   row reads as a set at rest rather than four logos in odd-sized frames. */
+@media (min-width: 641px) {
+  .backers__pills {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backers__pill[data-swap] > *,
+  .backers__pill[data-swap]:is(:hover, :focus) > * {
+    transform: none;
+  }
+}
+
 /* Two even columns on phones, so the four pills read as a set rather than a
    ragged wrap. */
 @media (max-width: 640px) {

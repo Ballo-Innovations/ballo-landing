@@ -70,6 +70,10 @@ export function BackedBy({
             className={`cta-chip backers__pill${brand ? " backers__pill--brand" : ""}`}
             data-brand={brand ? logo.alt.trim().toLowerCase() : undefined}
             data-ink={brand?.ink}
+            /* Logo at rest; name and role replace it on hover or focus. A
+               partner with no logo just shows its name. */
+            data-swap={logo.src ? "" : undefined}
+            tabIndex={logo.src ? 0 : undefined}
             style={{ ["--i" as string]: i } as React.CSSProperties}
           >
             {logo.src ? (
@@ -84,7 +88,7 @@ export function BackedBy({
                   width={64}
                   height={64}
                   loading="lazy"
-                  sizes="32px"
+                  sizes="96px"
                   className="max-h-full w-auto max-w-full object-contain"
                 />
               </span>

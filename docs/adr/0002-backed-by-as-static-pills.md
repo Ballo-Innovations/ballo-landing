@@ -18,8 +18,11 @@ feature chips. That misread the request and was reverted.)
 
 ## Decision
 
-`BackedBy` renders one static pill per partner: the logo on a small disc, then
-the name. No marquee, no hover swap.
+`BackedBy` renders one static pill per partner (no marquee). At rest a pill
+shows only the partner's logo. Hovering it, focusing it, or tapping it on a
+phone swaps the logo for the name and role. The two share one grid cell, so a
+pill never changes size. On desktop the four are equal width, sized to the
+widest caption.
 
 - Each known partner's pill keeps the glass chip bitmap, recoloured to its
   brand: `public/Assets/chip-glass-pill-{airtel,mtn,meta,zicta}.png`, made by
@@ -32,15 +35,16 @@ the name. No marquee, no hover swap.
   white disc, or a navy disc for marks whose file name contains "white".
 - Pills are sized up for this section (`--chip-h` 4–5rem).
 - The row is centred and wraps, so any count the CMS publishes fits.
-- The role ("Mobile network", "ICT regulator", …) is printed under the name
-  in small cyan caps, so each pill says what the partner is, not just its name.
+- The role ("Mobile network", "ICT regulator", …) is printed under the name in
+  the hover state. Name and role stay in the document, so screen readers read
+  them without hovering. A partner with no logo shows its name at rest.
 - Phones get an even two-column grid instead of a ragged wrap.
 - The staggered entrance stays, now on each pill.
 - Data is unchanged: the same CMS "Backed by" rows and fallbacks in `page.tsx`.
 
 ## Consequences
 
-- Every partner is named, with its role, at once on any device.
+- The row is logos only at rest. Names need a hover, focus or tap, the trade-off we chose for a cleaner band.
 - The drawn-on caption (`DrawLineText`) is no longer used by this section.
 - Adding a backer in the CMS gets the generic blue pill until someone adds it
   to `BRAND_PILLS`, generates its PNG with the script, and adds its
