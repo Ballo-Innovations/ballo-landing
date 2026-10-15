@@ -46,7 +46,7 @@ export function BackedBy({
         {logos.map((logo, i) => (
           <li
             key={`${logo.alt}-${i}`}
-            className="backers__pill"
+            className="cta-chip backers__pill"
             title={logo.role}
             style={{ ["--i" as string]: i } as React.CSSProperties}
           >

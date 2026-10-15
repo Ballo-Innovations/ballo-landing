@@ -2692,12 +2692,11 @@
 
 /* ── The pills ─────────────────────────────────────────────────────────── */
 
-/* One static pill per partner, in the face the feature chips wear under "Why
-   Choose" and in the closing CTA (`.aside-copy-rows .cta-chip` in
-   cinematic-hero.css): a white top-of-the-box highlight over the mid-blue
-   gradient, with an inset top edge for the rim. Not a marquee — four partners
-   are too few to loop, and the row should hold still so all of them read at
-   once (ADR 0002). Wraps and centres, so the CMS can publish any count. */
+/* One static pill per partner, wearing the closing CTA's glass chip
+   (`.cta-chip`: the 9-slice `chip-glass-pill.png`). Taller than those chips so
+   the logo disc fits; `--chip-h` keeps the slice in proportion. Not a marquee:
+   four partners are too few to loop, and the row should hold still so all of
+   them read at once (ADR 0002). Wraps and centres for any CMS count. */
 .backers__pills {
   list-style: none;
   margin: 0;
@@ -2708,28 +2707,17 @@
   gap: clamp(0.6rem, 1.6vw, 1rem);
 }
 
-.backers__pill {
-  display: inline-flex;
-  align-items: center;
+.cta-chip.backers__pill {
+  --chip-h: 3.1rem;
   gap: 0.6rem;
-  padding: 0.5rem 1.25rem 0.5rem 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  color: #fff;
+  padding: 0 1.35rem 0 0.65rem;
   font-size: clamp(0.95rem, 1.6vw, 1.1rem);
-  font-weight: 600;
-  white-space: nowrap;
-  background:
-    radial-gradient(120% 140% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 60%),
-    linear-gradient(135deg, var(--brand-color-2), var(--brand-color-3));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    0 8px 16px -10px rgba(2, 0, 85, 0.9);
+  color: #fff;
 }
 
 /* A pill with no uploaded mark is just its name; balance the padding. */
-.backers__pill:not(:has(.backers__pill-mark)) {
-  padding-left: 1.25rem;
+.cta-chip.backers__pill:not(:has(.backers__pill-mark)) {
+  padding-left: 1.35rem;
 }
 
 /* The mark sits on a white disc: Meta's blue and ZICTA's navy would vanish

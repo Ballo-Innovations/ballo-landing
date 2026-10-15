@@ -21,8 +21,9 @@ feature chips. That misread the request and was reverted.)
 `BackedBy` renders one static pill per partner: the logo on a small disc, then
 the name. No marquee, no hover swap.
 
-- Pill face matches `.aside-copy-rows .cta-chip`: white top highlight over the
-  `--brand-color-2` → `--brand-color-3` gradient, inset rim.
+- Pill face is the closing CTA's glass chip: each pill is a `.cta-chip`
+  (the 9-slice `chip-glass-pill.png`), made taller (`--chip-h: 3.1rem`) so
+  the logo disc fits.
 - The logo sits on a white disc so Meta's and ZICTA's blues don't vanish
   into the pill. A mark whose file name contains "white" (ZICTA's only file is
   `zicta-white.png`) gets a navy disc instead.
