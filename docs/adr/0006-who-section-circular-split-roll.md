@@ -77,3 +77,12 @@ George found the first version too plain. Two changes:
 
   All of it is static CSS, or driven by the same per-frame values: no new
   animations and no new dependencies.
+
+## Update (2026-10-15): text styling only
+
+George kept the title styling and asked for the rest of the decoration to
+go. Removed: the rings, the background light, the beam, the card rim and
+focus glow, and the counter. `decorated` now covers only the silver gradient
+titles and their cyan 01–06 numbers, which still fade in with focus (`--f`).
+Resting on each item (`hold`) stays, because it is what lines each title up
+with its card.

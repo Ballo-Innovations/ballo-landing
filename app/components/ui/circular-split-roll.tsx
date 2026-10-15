@@ -116,7 +116,7 @@ export interface CircularSplitRollProps {
    * @default 0.45
    */
   hold?: number;
-  /** Rings, glow, beam, numbering and the counter. @default true */
+  /** Silver gradient titles with a cyan number above each. @default true */
   decorated?: boolean;
 }
 
@@ -162,8 +162,7 @@ export function CircularSplitRoll({
   // An item is in focus at 0.75 of the way round its circle; this phase puts
   // one exactly there whenever the roll is at rest (0.5 for six items).
   const phase = focusPhase ?? (0.75 * total) % 1;
-  const [active, setActive] = useState(0);
-  const activeRef = useRef(0);
+
   const animated = desktop && !reducedMotion && total > 0;
 
   // The orbit only runs above 1025px; below it the grid shows (as the
@@ -194,13 +193,6 @@ export function CircularSplitRoll({
       const k = Math.floor(steps);
       const t = clamp(0, 1, (steps - k - hold / 2) / (1 - hold));
       const p = (k + t * t * (3 - 2 * t)) / total;
-      const nearest = Math.round(p * total);
-      const focused =
-        (((nearest + Math.round(0.75 * total - phase)) % total) + total) % total;
-      if (focused !== activeRef.current) {
-        activeRef.current = focused;
-        setActive(focused);
-      }
       const width = window.innerWidth;
       const factor =
         width < DESKTOP_WIDTH && width >= TABLET_MIN_WIDTH
@@ -208,7 +200,6 @@ export function CircularSplitRoll({
           : 1;
       const r = radius * factor;
       rootRef.current?.style.setProperty("--csr-card", `${cardSize * factor}px`);
-      rootRef.current?.style.setProperty("--csr-r", `${r}px`);
 
       const place = (
         node: HTMLDivElement | null,
@@ -234,6 +225,7 @@ export function CircularSplitRoll({
         const scale = lerp(sideScale, centerScale, focus);
         node.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0) scale(${scale})`;
         node.style.opacity = String(lerp(sideOpacity, centerOpacity, focus));
+        // Read by the title number, which fades in with focus.
         node.style.setProperty("--f", focus.toFixed(3));
         node.style.zIndex = String(
           Math.round(lerp(Z_INDEX_MIN, depthMax, focus)),
@@ -333,32 +325,6 @@ export function CircularSplitRoll({
           aria-hidden="true"
         >
           {children}
-          {decorated ? (
-            <>
-              {/* Light behind both focus points, so the stage is not a flat
-                  field of navy. Static: nothing here animates. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(38% 46% at 36% 50%, rgba(44,107,255,0.16), transparent 70%), radial-gradient(30% 40% at 66% 50%, rgba(63,219,255,0.12), transparent 70%)",
-                }}
-              />
-              {/* The beam joining the focused title to its card. */}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 h-px -translate-y-1/2"
-                style={{
-                  left: "34%",
-                  right: "34%",
-                  background:
-                    "linear-gradient(90deg, transparent, rgba(63,219,255,0.55) 30%, rgba(63,219,255,0.55) 70%, transparent)",
-                  boxShadow: "0 0 12px rgba(63,219,255,0.45)",
-                }}
-              />
-            </>
-          ) : null}
           <div className="relative mx-auto flex h-full w-full">
             <div
               className="relative flex h-full w-[50vw] items-center justify-center"
@@ -367,17 +333,6 @@ export function CircularSplitRoll({
               }}
             >
               <div className="relative h-[78vh]">
-                {decorated ? (
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{
-                      width: "calc(var(--csr-r) * 2)",
-                      height: "calc(var(--csr-r) * 2)",
-                      border: "1px dashed rgba(255,255,255,0.09)",
-                    }}
-                  />
-                ) : null}
                 {items.map((item, i) => (
                   <div
                     key={item.id ?? i}
@@ -417,17 +372,6 @@ export function CircularSplitRoll({
               }}
             >
               <div className="relative h-[78vh]">
-                {decorated ? (
-                  <div
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-                    style={{
-                      width: "calc(var(--csr-r) * 2)",
-                      height: "calc(var(--csr-r) * 2)",
-                      border: "1px dashed rgba(255,255,255,0.09)",
-                    }}
-                  />
-                ) : null}
                 {items.map((item, i) => (
                   <div
                     key={item.id ?? i}
@@ -441,13 +385,8 @@ export function CircularSplitRoll({
                       className="relative h-full w-full overflow-hidden rounded-[18px]"
                       style={{
                         backgroundColor: cardColor,
-                        border: decorated
-                          ? "1px solid rgba(255,255,255,0.18)"
-                          : undefined,
-                        // The glow grows with focus (`--f`, set per frame).
-                        boxShadow: decorated
-                          ? "0 30px 60px rgba(0,0,0,0.45), 0 0 calc(80px * var(--f, 0)) rgba(44,107,255,calc(0.65 * var(--f, 0))), inset 0 1px 0 rgba(255,255,255,0.25)"
-                          : "0 30px 60px rgba(0,0,0,0.45), 0 8px 20px rgba(0,0,0,0.3)",
+                        boxShadow:
+                          "0 30px 60px rgba(0,0,0,0.45), 0 8px 20px rgba(0,0,0,0.3)",
                       }}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element -- transformed every frame; next/image adds a wrapper for nothing */}
@@ -463,32 +402,6 @@ export function CircularSplitRoll({
               </div>
             </div>
           </div>
-          {decorated ? (
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-[6vh] left-1/2 flex -translate-x-1/2 items-center gap-4 text-sm font-semibold tracking-[0.2em] text-white/70"
-            >
-              <span style={{ color: "var(--cyan, #3fdbff)" }}>
-                {String(active + 1).padStart(2, "0")}
-              </span>
-              <span className="flex gap-1.5">
-                {items.map((item, i) => (
-                  <span
-                    key={item.id ?? i}
-                    className="h-[3px] rounded-full transition-all duration-300"
-                    style={{
-                      width: i === active ? 28 : 10,
-                      background:
-                        i === active
-                          ? "var(--cyan, #3fdbff)"
-                          : "rgba(255,255,255,0.25)",
-                    }}
-                  />
-                ))}
-              </span>
-              <span>{String(total).padStart(2, "0")}</span>
-            </div>
-          ) : null}
         </div>
       ) : null}
 
