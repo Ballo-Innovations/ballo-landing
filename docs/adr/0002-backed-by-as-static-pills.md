@@ -33,7 +33,7 @@ widest caption.
 - A partner not in `BRAND_PILLS` (a new CMS row) falls back to the blue glass
   chip (`.cta-chip`, the 9-slice `chip-glass-pill.png`) with its logo on a
   white disc, or a navy disc for marks whose file name contains "white".
-- Pills are sized up for this section (`--chip-h` 4–5rem).
+- Pills match the header nav pills' height (`--chip-h` 3.375rem = 54px; 3.2rem on phones).
 - The row is centred and wraps, so any count the CMS publishes fits.
 - The role ("Mobile network", "ICT regulator", …) is printed under the name in
   the hover state. Name and role stay in the document, so screen readers read
