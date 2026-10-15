@@ -3446,3 +3446,61 @@
     font-size: 0.95rem;
   }
 }
+
+/* =============================================================
+   Who can use BalloAds? — the curved row (ADR 0003)
+   File: app/components/sections/WhoCurvedSection.tsx
+   Behind `whoCurvedRow`; `WhoCinematicSection` is the fallback.
+   ============================================================= */
+.who-curved {
+  position: relative;
+  padding: clamp(4rem, 10vh, 7rem) 0 clamp(2rem, 6vh, 4rem);
+  overflow: clip;
+}
+
+.who-curved__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+}
+
+.who-curved__h2 {
+  margin-bottom: 0.75rem;
+}
+
+.who-curved__copy > :last-child {
+  margin-top: 1.5rem;
+}
+
+/* The band's height sets the tile size: `tileHeight` is a share of it. */
+.who-curved__band {
+  height: clamp(14rem, 40vw, 30rem);
+  margin-top: clamp(1rem, 4vh, 2.5rem);
+}
+
+/* The industry name on each tile, bent with it (see `label` in
+   tilted-grid-hero.tsx): a dark wash up from the bottom edge, and the
+   name over it, as on the old tiles. */
+.tgh-label {
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 6% 5%;
+  background: linear-gradient(0deg, rgba(2, 0, 30, 0.75), transparent 45%);
+  pointer-events: none;
+}
+
+.tgh-label > span {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.85rem, 1.6cqw, 1.25rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  white-space: nowrap;
+}

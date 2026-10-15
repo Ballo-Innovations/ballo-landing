@@ -11,6 +11,7 @@ import { TextReveal } from "./components/ui/TextReveal";
 
 import { WhoCinematicSection } from "./components/sections/WhoCinematicSection";
 import { WhoStackSection } from "./components/sections/WhoStackSection";
+import { WhoCurvedSection } from "./components/sections/WhoCurvedSection";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { BrutusSection } from "./components/sections/BrutusSection";
 import { Testimonials3D } from "./components/sections/Testimonials3D";
@@ -148,6 +149,8 @@ export default function HomeClient({
   // flag also honours a localStorage override, which only exists client side.
   const [whoStack, setWhoStack] = useState(false);
   useEffect(() => setWhoStack(isFeatureEnabled("whoStackSpread")), []);
+  const [whoCurved, setWhoCurved] = useState(false);
+  useEffect(() => setWhoCurved(isFeatureEnabled("whoCurvedRow")), []);
   // Same read-after-mount shape for the WebGL layer under "Trusted by", so the
   // one heavy dependency on this page can be switched off per environment.
   const [tubesCursor, setTubesCursor] = useState(false);
@@ -491,7 +494,14 @@ export default function HomeClient({
           falling back to the marquee-row section while the flag is dark. The
           flag is read after mount (see below), so the server and the first
           client render always agree on which one is here. */}
-      {whoStack ? <WhoStackSection /> : <WhoCinematicSection />}
+      {/* The curved row (ADR 0003) wins when `whoCurvedRow` is on. */}
+      {whoCurved ? (
+        <WhoCurvedSection />
+      ) : whoStack ? (
+        <WhoStackSection />
+      ) : (
+        <WhoCinematicSection />
+      )}
 
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />

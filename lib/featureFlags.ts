@@ -7,6 +7,7 @@ export type FeatureName =
   | "siteAssistant"
   | "whyFeatureChips"
   | "whoStackSpread"
+  | "whoCurvedRow"
   | "tubesCursor";
 
 const STORAGE_KEY = "balloads.feature-overrides";
@@ -22,6 +23,9 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   stack: "whoStackSpread",
   whostack: "whoStackSpread",
   whostackspread: "whoStackSpread",
+  curved: "whoCurvedRow",
+  whocurved: "whoCurvedRow",
+  whocurvedrow: "whoCurvedRow",
   tubes: "tubesCursor",
   tubescursor: "tubesCursor",
 };
@@ -48,6 +52,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   siteAssistant: process.env.NEXT_PUBLIC_FEATURE_SITE_ASSISTANT,
   whyFeatureChips: process.env.NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS,
   whoStackSpread: process.env.NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD,
+  whoCurvedRow: process.env.NEXT_PUBLIC_FEATURE_WHO_CURVED_ROW,
   tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
 };
 

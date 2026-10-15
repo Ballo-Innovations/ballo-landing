@@ -35,7 +35,7 @@ import { useWaitlist } from "../waitlist/WaitlistProvider";
  * `useAnimateWhenVisible`.
  */
 
-type Industry = {
+export type Industry = {
   id: string;
   name: string;
   description: string;
@@ -47,7 +47,7 @@ type Industry = {
  * render at 12rem, so a 420px source covers a 2x display with nothing to
  * spare.
  */
-const industries: Industry[] = [
+export const industries: Industry[] = [
   {
     id: "sme",
     name: "SMEs & Corporations",
