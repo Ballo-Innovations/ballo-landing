@@ -39,6 +39,9 @@ import { TubesCursor } from "./components/ui/TubesCursor";
 // client-logo images now live in page.tsx alongside FALLBACK_PARTNER_LOGOS.
 import logoBayport from "@/public/Client Logos/bayport color.png";
 
+/** The scrolling pills under "Why Choose BalloAds?" — archived, see ADR 0001. */
+const SHOW_WHY_CHIPS = false;
+
 export type HomeTestimonialItem = {
   quote: string;
   name: string;
@@ -291,7 +294,9 @@ export default function HomeClient({
                 beside it turns over its five cards, so the copy is always
                 about the feature being shown. */}
             <WhyStepBlurb range={PHONE_CONTENT} />
-            <WhyFeatureChips />
+            {/* Archived 2026-10-15 until they have a new home: see
+                docs/adr/0001-archive-why-halo-and-chips.md. */}
+            {SHOW_WHY_CHIPS ? <WhyFeatureChips /> : null}
             <button
               type="button"
               onClick={openWaitlist}

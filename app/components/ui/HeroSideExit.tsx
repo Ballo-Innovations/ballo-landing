@@ -143,6 +143,12 @@ const ASIDE_IN: Range = hand([0.64, 0.72]);
 const HALO_IN: Range = [ASIDE_IN[1], ASIDE_IN[1] + (ASIDE_IN[1] - ASIDE_IN[0])];
 
 /**
+ * Archived 2026-10-15 (docs/adr/0001-archive-why-halo-and-chips.md): the halo
+ * is off until it has a new home. Flip to true to bring it back as it was.
+ */
+const SHOW_PHONE_HALO = false;
+
+/**
  * The band leaves: after the phone has started moving, before the copy lands.
  *
  * It used to fade across `BAND_WORDMARK`, which opens at 0.62 — the same
@@ -571,7 +577,7 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           land on the phone's screen rect and could not follow a rotating
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
-      <div ref={haloRef} className="hero-phone-halo" />
+      {SHOW_PHONE_HALO ? <div ref={haloRef} className="hero-phone-halo" /> : null}
       <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card
