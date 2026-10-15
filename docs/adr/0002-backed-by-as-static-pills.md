@@ -1,8 +1,14 @@
 # ADR 0002: "Backed by" as static pills
 
-- Status: Accepted
+- Status: Reverted (2026-10-15)
 - Date: 2026-10-15
 - Deciders: George M'sapenda
+
+> **Reverted the same day.** After trying it, we restored the original glass
+> band of logo cells with the hover name-and-role swap. Nothing below is on the
+> site any more. The record is kept so the experiment isn't repeated blind. The
+> recoloured pill PNGs and `scripts/recolor-chip-glass.py` were removed, and
+> are in git history (commit `4c4c426`) if wanted again.
 
 ## Context
 
