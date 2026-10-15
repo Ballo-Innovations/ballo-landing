@@ -8,6 +8,7 @@ export type FeatureName =
   | "whyFeatureChips"
   | "whoStackSpread"
   | "whoCurvedRow"
+  | "whoCards"
   | "tubesCursor";
 
 const STORAGE_KEY = "balloads.feature-overrides";
@@ -26,6 +27,8 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   curved: "whoCurvedRow",
   whocurved: "whoCurvedRow",
   whocurvedrow: "whoCurvedRow",
+  cards: "whoCards",
+  whocards: "whoCards",
   tubes: "tubesCursor",
   tubescursor: "tubesCursor",
 };
@@ -53,6 +56,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   whyFeatureChips: process.env.NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS,
   whoStackSpread: process.env.NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD,
   whoCurvedRow: process.env.NEXT_PUBLIC_FEATURE_WHO_CURVED_ROW,
+  whoCards: process.env.NEXT_PUBLIC_FEATURE_WHO_CARDS,
   tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
 };
 
