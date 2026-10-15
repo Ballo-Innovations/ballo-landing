@@ -3504,3 +3504,36 @@
   color: #fff;
   white-space: nowrap;
 }
+
+/* =============================================================
+   Who can use BalloAds? — the connected carousel (ADR 0005)
+   File: app/components/sections/WhoConnectedSection.tsx
+   Behind `whoConnected`; wins over `whoCards` and `whoCurvedRow`.
+   ============================================================= */
+.who-connected {
+  padding: clamp(4rem, 10vh, 7rem) 0;
+  overflow: clip;
+}
+
+.who-connected__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 40rem;
+  margin: 0 auto clamp(1.5rem, 4vh, 2.5rem);
+  padding: 0 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+}
+
+.who-connected__copy > .section-h2 {
+  margin-bottom: 0.75rem;
+}
+
+.who-connected__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+}
