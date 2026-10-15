@@ -58,9 +58,13 @@ const TRANSITION_SPRING = {
 
 /** The site's navy, standing in for the shadcn card/secondary/muted tokens. */
 const PALETTE = {
-  card: "#0d1347",
+  // Glass, same recipe as the testimonial cards (.t3d-card) minus the
+  // backdrop-filter: these cards ride a spring transform, which smears it.
+  card: "linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(120, 140, 220, 0.09) 60%, rgba(255, 255, 255, 0.05))",
+  // The notches can't take a gradient (SVG fill), so they get its mid tone.
+  connector: "rgba(150, 165, 230, 0.16)",
   text: "#ffffff",
-  chip: "#1b2468",
+  chip: "rgba(255, 255, 255, 0.12)",
   chipText: "rgba(255, 255, 255, 0.85)",
   chipMuted: "rgba(255, 255, 255, 0.6)",
   muted: "rgba(255, 255, 255, 0.06)",
@@ -307,11 +311,11 @@ export function CalendlyCarousel({
                 left: "50%",
                 top: "50%",
                 willChange: "transform",
-                backgroundColor: PALETTE.card,
+                background: PALETTE.card,
                 color: PALETTE.text,
               }}
               className={cn(
-                "overflow-visible rounded-[28px] shadow-[0_10px_30px_rgba(0,0,0,0.6),0_4px_12px_rgba(0,0,0,0.4)] sm:rounded-[32px]",
+                "overflow-visible rounded-[28px] border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_0_40px_rgba(255,255,255,0.05),0_18px_40px_-18px_rgba(0,0,0,0.85)] sm:rounded-[32px]",
                 !isActive && "cursor-pointer",
               )}
             >
@@ -512,7 +516,7 @@ function Connector({
         width,
         height,
         margin: "auto 0",
-        color: PALETTE.card,
+        color: PALETTE.connector,
         ...(side === "left" ? { left: "calc(100% - 1px)" } : { right: "calc(100% - 1px)" }),
       }}
     >
