@@ -54,3 +54,26 @@ and Lenis, which moves the real scroll position.
   sticky stage stops pinning (see the note in home.css).
 - At 1440px the outer titles run off the left edge mid-orbit. That matches
   the original's composition (`columnOffsetPx`).
+
+## Update (2026-10-15): resting and decoration
+
+George found the first version too plain. Two changes:
+
+- **Resting on each item (`hold`, default 0.45):** the original rolls
+  continuously, so a title and its card only line up for an instant and
+  usually look mismatched. Now about 45% of each item's scroll holds that
+  pair together at the centre, then a smoothstep carries the roll to the
+  next item. `focusPhase` defaults to whatever puts an item exactly in focus
+  at rest (`0.75 × items mod 1`).
+- **Decoration (`decorated`, default true):**
+  - dashed rings along both orbits;
+  - a soft blue and cyan light behind the two focus points;
+  - a cyan beam joining the focused title to its card;
+  - silver gradient titles, each with a cyan 01–06 number that fades in with
+    focus;
+  - a glass rim on each card, plus a blue glow that grows with focus. The
+    focus value is written per frame as `--f`.
+  - a "03 ─── 06" counter with progress ticks.
+
+  All of it is static CSS, or driven by the same per-frame values: no new
+  animations and no new dependencies.
