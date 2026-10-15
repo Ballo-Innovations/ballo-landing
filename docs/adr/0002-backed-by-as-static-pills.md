@@ -21,11 +21,12 @@ feature chips. That misread the request and was reverted.)
 `BackedBy` renders one static pill per partner: the logo on a small disc, then
 the name. No marquee, no hover swap.
 
-- Each known partner's pill is filled with its own brand colour
-  (`BRAND_PILLS` in `BackedBy.tsx`: Airtel red, MTN yellow, Meta blue, ZICTA
-  navy), with the logo drawn straight onto it in one colour: white, or black
-  on MTN's yellow. No disc. The glass highlights are CSS so the pills still sit
-  with the site's glass chips.
+- Each known partner's pill keeps the glass chip bitmap, recoloured to its
+  brand: `public/Assets/chip-glass-pill-{airtel,mtn,meta,zicta}.png`, made by
+  `scripts/recolor-chip-glass.py`, which maps the original's shading onto the
+  brand colour and its highlights toward white. So the rim and speculars
+  survive. home.css picks the file by `data-brand`. The logo sits straight on
+  the pill in one colour (white, or black on MTN's yellow), with no disc.
 - A partner not in `BRAND_PILLS` (a new CMS row) falls back to the blue glass
   chip (`.cta-chip`, the 9-slice `chip-glass-pill.png`) with its logo on a
   white disc, or a navy disc for marks whose file name contains "white".
@@ -41,8 +42,9 @@ the name. No marquee, no hover swap.
 
 - Every partner is named, with its role, at once on any device.
 - The drawn-on caption (`DrawLineText`) is no longer used by this section.
-- Adding a backer in the CMS gets the generic blue pill until someone adds its
-  colour to `BRAND_PILLS`.
+- Adding a backer in the CMS gets the generic blue pill until someone adds it
+  to `BRAND_PILLS`, generates its PNG with the script, and adds its
+  `data-brand` rule in home.css.
 - The one-colour treatment assumes a single-colour mark. A multi-colour logo
   added to `BRAND_PILLS` would be flattened to a silhouette.
 - A white logo uploaded to the CMS needs "white" in its file name to get the

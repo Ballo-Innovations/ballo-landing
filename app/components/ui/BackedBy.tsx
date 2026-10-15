@@ -19,17 +19,18 @@ import type { HomeLogoItem } from "@/app/HomeClient";
  * the only signal there is without decoding the image.
  */
 /**
- * Each partner's own colour for its pill, with the mark knocked out to one
- * colour on top of it — the way these brands present themselves on a solid
- * ground. `ink` is the text and mark colour: dark on MTN's yellow, white on the
- * rest. A partner not listed here (a new CMS row) keeps the blue glass pill
- * with its mark on a disc.
+ * Partners whose pill is the glass chip recoloured to their brand
+ * (`public/Assets/chip-glass-pill-<key>.png`, picked in home.css by
+ * `data-brand`), with the mark knocked out to one colour on top. `ink` is the
+ * text and mark colour: dark on MTN's yellow, white on the rest. A partner not
+ * listed here (a new CMS row) keeps the blue glass pill with its mark on a
+ * disc. Adding one means adding its recoloured PNG too — see ADR 0002.
  */
-const BRAND_PILLS: Record<string, { bg: string; ink: "light" | "dark" }> = {
-  airtel: { bg: "#e40000", ink: "light" },
-  mtn: { bg: "#ffcb05", ink: "dark" },
-  meta: { bg: "#0866ff", ink: "light" },
-  zicta: { bg: "#0b2a6f", ink: "light" },
+const BRAND_PILLS: Record<string, { ink: "light" | "dark" }> = {
+  airtel: { ink: "light" },
+  mtn: { ink: "dark" },
+  meta: { ink: "light" },
+  zicta: { ink: "light" },
 };
 
 function brandFor(name: string) {
@@ -66,14 +67,10 @@ export function BackedBy({
           return (
           <li
             key={`${logo.alt}-${i}`}
-            className={brand ? "backers__pill backers__pill--brand" : "cta-chip backers__pill"}
+            className={`cta-chip backers__pill${brand ? " backers__pill--brand" : ""}`}
+            data-brand={brand ? logo.alt.trim().toLowerCase() : undefined}
             data-ink={brand?.ink}
-            style={
-              {
-                ["--i" as string]: i,
-                ...(brand ? { ["--pill-bg" as string]: brand.bg } : {}),
-              } as React.CSSProperties
-            }
+            style={{ ["--i" as string]: i } as React.CSSProperties}
           >
             {logo.src ? (
               <span
