@@ -9,8 +9,8 @@ import type { HomeLogoItem } from "@/app/HomeClient";
  *
  * It used to be a glass band of logo cells where hovering a cell swapped the
  * mark for a drawn-on name and role. The names now sit on the pills, so every
- * partner is named at once without a pointer, which also covers touch. The
- * role is kept as a tooltip and in screen-reader text. See ADR 0002.
+ * partner is named at once without a pointer, which also covers touch. Each
+ * pill also prints the partner's role under its name. See ADR 0002.
  */
 
 /**
@@ -47,7 +47,6 @@ export function BackedBy({
           <li
             key={`${logo.alt}-${i}`}
             className="cta-chip backers__pill"
-            title={logo.role}
             style={{ ["--i" as string]: i } as React.CSSProperties}
           >
             {logo.src ? (
@@ -67,10 +66,15 @@ export function BackedBy({
                 />
               </span>
             ) : null}
-            <span className="backers__pill-name">{logo.alt}</span>
-            {logo.role ? (
-              <span className="sr-only">{` — ${logo.role}`}</span>
-            ) : null}
+            <span className="backers__pill-text">
+              <span className="backers__pill-name">{logo.alt}</span>
+              {logo.role ? (
+                <span className="backers__pill-role">
+                  <span className="sr-only"> — </span>
+                  {logo.role}
+                </span>
+              ) : null}
+            </span>
           </li>
         ))}
       </ul>
