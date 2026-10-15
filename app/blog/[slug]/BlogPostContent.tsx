@@ -1,123 +1,165 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
-import { BlogBody } from "@/components/blog/BlogBody";
 
+import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
+import ConcentricRings from "@/app/components/ui/ConcentricRings";
+import { FadeUpReveal } from "@/app/components/ui/FadeUpReveal";
+import { BlogBody } from "@/components/blog/BlogBody";
 import type { BlogPost } from "@/lib/blogApi";
+import { ArrowCircle, ArticleCard } from "../ArticleCard";
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+}
+
+/** Share via the native sheet where there is one, otherwise copy the link. */
+function ShareButton({ title }: { title: string }) {
+  const [copied, setCopied] = useState(false);
+  const share = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* user dismissed the share sheet */
+    }
+  };
+  return (
+    <button type="button" onClick={share} className="post-action" aria-label="Share this article">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12v7a1 1 0 001 1h14a1 1 0 001-1v-7M16 6l-4-4-4 4M12 2v13" />
+      </svg>
+      {copied && <span className="post-action__note">Link copied</span>}
+    </button>
+  );
+}
 
 export default function BlogPostContent({
   post,
   relatedPosts,
+  morePosts,
 }: {
   post: BlogPost;
   relatedPosts: BlogPost[];
+  morePosts: BlogPost[];
 }) {
   const publishedDate = post.publishedAt
-    ? new Date(post.publishedAt).toLocaleDateString(undefined, {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+    ? new Date(post.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : null;
 
+  // The sidebar promo card is the first "more" post that isn't already listed as related.
+  const relatedSlugs = new Set(relatedPosts.map((p) => p.slug));
+  const promoPost = morePosts.find((p) => !relatedSlugs.has(p.slug));
+
   return (
-    <main className="min-h-screen bg-[var(--dark-blue)] text-white">
-      <div className="container mx-auto px-4 md:px-8 py-8">
-        {/* Hero Banner */}
-        <div className="relative h-96 md:h-[500px] rounded-4xl overflow-hidden mb-12 bg-white/5">
-          {post.coverImageUrl && (
-            <Image src={post.coverImageUrl} alt={post.title} fill className="object-cover" priority />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-            <div className="flex items-center gap-4">
-              {post.authorAvatarUrl && (
-                <div className="relative h-12 w-12 rounded-full overflow-hidden border-2 border-white/30">
-                  <Image src={post.authorAvatarUrl} alt={post.authorName} fill className="object-cover" />
-                </div>
-              )}
-              <div className="flex justify-between w-full items-center">
-                <div className="flex flex-col">
-                  <span className="font-semibold">{post.authorName}</span>
-                  {post.authorRole && <span className="text-sm text-white/80">{post.authorRole}</span>}
-                  {publishedDate && <span className="text-sm text-white/70">{publishedDate}</span>}
-                </div>
-                <div>
-                  <div className="flex flex-wrap gap-3 justify-end">
-                    {post.tags.map((tag) => (
-                      <span key={tag} className="rounded-full bg-[var(--brand-color-1)] px-4 py-2 text-sm font-semibold">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+    <main className="blog-page post-page min-h-screen text-white">
+      {/* Hero banner */}
+      <header className="post-hero">
+        {post.coverImageUrl && (
+          <Image src={post.coverImageUrl} alt="" fill priority sizes="100vw" className="object-cover" />
+        )}
+        <div className="post-hero__shade" />
+        <div className="post-hero__inner">
+          <h1 className="post-hero__title">{post.title}</h1>
+          <div className="post-hero__meta">
+            <div className="post-author">
+              <span className="post-author__avatar">
+                {post.authorAvatarUrl ? (
+                  <Image src={post.authorAvatarUrl} alt="" fill sizes="40px" className="object-cover" />
+                ) : (
+                  initials(post.authorName || "Ballo")
+                )}
+              </span>
+              <span className="post-author__text">
+                <span className="post-author__name">{post.authorName}</span>
+                {post.authorRole && <span className="post-author__role">{post.authorRole}</span>}
+              </span>
             </div>
-          </div>
-        </div>
-
-        <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
-          {/* Main Article Content */}
-          <article className="flex flex-col gap-8">
-            <BlogBody body={post.body} />
-          </article>
-
-          {/* Sidebar */}
-          <aside className="flex flex-col gap-8">
-            {relatedPosts.length > 0 && (
-              <div className="flex flex-col gap-6">
-                <h2 className="text-2xl font-bold">Related Articles</h2>
-                <div className="flex flex-col gap-4">
-                  {relatedPosts.map((article) => (
-                    <Link
-                      key={article.id}
-                      href={`/blog/${article.slug}`}
-                      className="flex items-center justify-between gap-4 rounded-xl bg-white/5 p-4 hover:bg-white/10 transition"
-                    >
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1 line-clamp-2">{article.title}</h3>
-                        <p className="text-sm text-white/70">By {article.authorName}</p>
-                      </div>
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+            {post.tags.length > 0 && (
+              <div className="post-hero__tags">
+                {post.tags.map((tag) => (
+                  <Link key={tag} href={`/blog?tag=${encodeURIComponent(tag)}`} className="cta-chip post-tag">
+                    {tag}
+                  </Link>
+                ))}
               </div>
             )}
-            <Link
-              href="/blog"
-              className="inline-flex items-center justify-center rounded-full bg-white/10 px-6 py-3 text-sm font-semibold hover:bg-white/20 transition"
-            >
-              View all
-            </Link>
-          </aside>
+          </div>
+          {publishedDate && <time className="post-hero__date">{publishedDate}</time>}
         </div>
+      </header>
 
-        {/* Bottom CTA */}
-        <div className="mt-16 flex flex-col items-center gap-4 md:flex-row md:justify-center">
-          <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-color-1)] px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-[var(--brand-color-2)]">
-            Get Started
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </WaitlistButton>
-          <Link
-            href="/subscription"
-            className="inline-flex items-center gap-2 rounded-full border-2 border-white/40 bg-transparent px-8 py-4 text-base font-semibold text-white transition hover:border-white hover:bg-white/10"
-          >
-            Subscribe
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
+      <div className="post-layout">
+        <article className="post-article">
+          <BlogBody body={post.body} />
+          <div className="post-actions">
+            <ShareButton title={post.title} />
+            <button type="button" onClick={() => window.print()} className="post-action" aria-label="Save as PDF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3" />
+              </svg>
+            </button>
+          </div>
+        </article>
+
+        <aside className="post-aside">
+          {relatedPosts.length > 0 && (
+            <section>
+              <h2 className="post-aside__title">Related Articles</h2>
+              <div className="post-related">
+                {relatedPosts.map((article) => (
+                  <Link key={article.id} href={`/blog/${article.slug}`} className="post-related__item">
+                    <span className="post-related__name">{article.title}</span>
+                    <span className="post-related__by">
+                      By {article.authorName}
+                      <ArrowCircle />
+                    </span>
+                  </Link>
+                ))}
+                <Link href="/blog" className="post-related__all">
+                  View all
+                </Link>
+              </div>
+            </section>
+          )}
+          {promoPost && <ArticleCard post={promoPost} className="post-aside__card" />}
+        </aside>
+      </div>
+
+      {morePosts.length > 0 && (
+        <section className="post-more">
+          <div className="post-more__rings" aria-hidden="true">
+            <ConcentricRings />
+          </div>
+          <FadeUpReveal yOffset={40} duration={0.7}>
+            <h2 className="post-section-title">More from the blog</h2>
+          </FadeUpReveal>
+          <div className="post-more__grid">
+            {morePosts.map((p) => (
+              <ArticleCard key={p.id} post={p} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="post-ctas">
+        <WaitlistButton className="btn-primary">Get Started</WaitlistButton>
+        <Link href="/subscription" className="btn-secondary">
+          Subscribe
+        </Link>
       </div>
     </main>
   );

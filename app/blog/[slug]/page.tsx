@@ -35,8 +35,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const post = await getPostBySlug(slug);
   if (!post) notFound();
 
-  const { data: related } = await getPublishedPosts({ category: post.category, pageSize: 5 });
+  const [{ data: related }, { data: latest }] = await Promise.all([
+    getPublishedPosts({ category: post.category, pageSize: 5 }),
+    getPublishedPosts({ pageSize: 8 }),
+  ]);
   const relatedPosts = related.filter((p) => p.slug !== post.slug).slice(0, 4);
+  // The API has no view counts, so the bottom grid is simply the latest posts
+  // other than this one.
+  const morePosts = latest.filter((p) => p.slug !== post.slug).slice(0, 6);
 
-  return <BlogPostContent post={post} relatedPosts={relatedPosts} />;
+  return <BlogPostContent post={post} relatedPosts={relatedPosts} morePosts={morePosts} />;
 }

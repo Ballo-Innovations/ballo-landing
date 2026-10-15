@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCarousel";
@@ -9,49 +8,7 @@ import { FadeUpReveal } from "../components/ui/FadeUpReveal";
 import ConcentricRings from "../components/ui/ConcentricRings";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
 import type { BlogPost, BlogPostPagination } from "@/lib/blogApi";
-
-type ArticleCardData = {
-  title: string;
-  excerpt: string;
-  coverImageUrl: string | null;
-  slug: string;
-};
-
-function ArrowCircle({ className = "" }: { className?: string }) {
-  return (
-    <span className={`blog-arrow-circle ${className}`} aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
-      </svg>
-    </span>
-  );
-}
-
-function ArticleCard({ article }: { article: ArticleCardData }) {
-  return (
-    <Link href={`/blog/${article.slug}`} className="blog-card group">
-      {article.coverImageUrl && (
-        <Image
-          src={article.coverImageUrl}
-          alt={article.title}
-          fill
-          sizes="(max-width: 768px) 70vw, 330px"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      )}
-      <div className="blog-card__shade" />
-      <div className="blog-card__body">
-        <h3 className="blog-card__title">{article.title}</h3>
-        <p className="blog-card__excerpt">{article.excerpt}</p>
-      </div>
-      <ArrowCircle className="blog-card__arrow" />
-    </Link>
-  );
-}
-
-function toCard(post: BlogPost): ArticleCardData {
-  return { title: post.title, excerpt: post.excerpt, coverImageUrl: post.coverImageUrl, slug: post.slug };
-}
+import { ArticleCard } from "./ArticleCard";
 
 /** One titled band: big heading, intro line, then a horizontally scrolling row of cards. */
 function ArticleRow({
@@ -76,7 +33,7 @@ function ArticleRow({
       </FadeUpReveal>
       <div className={wrap ? "blog-grid" : "blog-row"}>
         {posts.map((post) => (
-          <ArticleCard key={post.id} article={toCard(post)} />
+          <ArticleCard key={post.id} post={post} />
         ))}
       </div>
     </section>
