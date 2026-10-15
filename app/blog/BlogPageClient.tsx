@@ -17,34 +17,76 @@ type ArticleCardData = {
   slug: string;
 };
 
-function renderArticleCard(article: ArticleCardData, key: React.Key, index = 0) {
+function ArrowCircle({ className = "" }: { className?: string }) {
   return (
-    <FadeUpReveal key={key} yOffset={40} duration={0.7} delay={(index % 4) * 0.08}>
-      <Link
-        href={`/blog/${article.slug}`}
-        className="group relative flex h-64 md:h-72 flex-col justify-end overflow-hidden rounded-2xl bg-white/5"
-      >
-        {article.coverImageUrl && (
-          <Image
-            src={article.coverImageUrl}
-            alt={article.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-        <div className="relative p-5 pr-12">
-          <h3 className="text-base md:text-lg font-bold leading-snug line-clamp-2">{article.title}</h3>
-          <p className="mt-1.5 text-[11px] md:text-xs text-white/70 line-clamp-2">{article.excerpt}</p>
-        </div>
-        <span className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white backdrop-blur-sm transition group-hover:border-white group-hover:bg-white/20">
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
-      </Link>
-    </FadeUpReveal>
+    <span className={`blog-arrow-circle ${className}`} aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
+      </svg>
+    </span>
   );
+}
+
+function ArticleCard({ article }: { article: ArticleCardData }) {
+  return (
+    <Link href={`/blog/${article.slug}`} className="blog-card group">
+      {article.coverImageUrl && (
+        <Image
+          src={article.coverImageUrl}
+          alt={article.title}
+          fill
+          sizes="(max-width: 768px) 70vw, 330px"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      )}
+      <div className="blog-card__shade" />
+      <div className="blog-card__body">
+        <h3 className="blog-card__title">{article.title}</h3>
+        <p className="blog-card__excerpt">{article.excerpt}</p>
+      </div>
+      <ArrowCircle className="blog-card__arrow" />
+    </Link>
+  );
+}
+
+function toCard(post: BlogPost): ArticleCardData {
+  return { title: post.title, excerpt: post.excerpt, coverImageUrl: post.coverImageUrl, slug: post.slug };
+}
+
+/** One titled band: big heading, intro line, then a horizontally scrolling row of cards. */
+function ArticleRow({
+  title,
+  intro,
+  posts,
+  divider,
+  wrap = false,
+}: {
+  title: string;
+  intro: string;
+  posts: BlogPost[];
+  divider: boolean;
+  wrap?: boolean;
+}) {
+  return (
+    <section className="blog-band">
+      {divider && <hr className="blog-band__divider" />}
+      <FadeUpReveal yOffset={40} duration={0.7} className="blog-band__head">
+        <h2 className="blog-band__title">{title}</h2>
+        <p className="blog-band__intro">{intro}</p>
+      </FadeUpReveal>
+      <div className={wrap ? "blog-grid" : "blog-row"}>
+        {posts.map((post) => (
+          <ArticleCard key={post.id} article={toCard(post)} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function categoryIntro(category: string, count: number): string {
+  return `Stories, guides and updates on ${category.toLowerCase()} from the Ballo team — ${count} article${
+    count === 1 ? "" : "s"
+  } to explore, with practical ideas you can put to work in your own campaigns.`;
 }
 
 const supportHighlights = [
@@ -135,10 +177,21 @@ export default function BlogPageClient({
 
   const headingText = activeCategory ? `${activeCategory} articles` : isSearching ? "Search results" : "Latest articles";
 
+  // Default view: one band per category, in the order categories first appear.
+  // Filtered / searching: a single wrapping grid, since the result is one list.
+  const byCategory = new Map<string, BlogPost[]>();
+  for (const p of filteredPosts) {
+    const key = p.category || "More from Ballo";
+    byCategory.set(key, [...(byCategory.get(key) ?? []), p]);
+  }
+  const bands = Array.from(byCategory, ([category, list]) => ({ category, list }));
+  const showBands = isDefaultView && !isSearching;
+
   return (
-    <main className="min-h-screen text-white" style={{ background: "linear-gradient(180deg, #070858 0%, #000000 100%)" }}>
+    <main className="blog-page min-h-screen text-white">
       {carouselItems.length > 0 && (
-        <section className="relative overflow-hidden px-4 pt-32 pb-8 md:px-8">
+        <section className="relative overflow-hidden px-4 pt-32 pb-4 md:px-8">
+          <div className="blog-hero-rings" aria-hidden="true" />
           <div className="relative w-full max-w-[1200px] mx-auto">
             <StackedCardCarousel items={carouselItems} initialCenter={0} />
           </div>
@@ -146,33 +199,25 @@ export default function BlogPageClient({
       )}
 
       {/* Search and Categories */}
-      <section className="px-4 pb-4 pt-16 md:px-8">
-        <FadeUpReveal yOffset={40} duration={0.7} className="container mx-auto flex flex-col items-center gap-3">
-          <div className="relative w-full max-w-md">
-            <svg
-              className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--dark-blue)]/60"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      <section className={`px-4 pb-4 md:px-8 ${carouselItems.length > 0 ? "pt-6" : "pt-32"}`}>
+        <FadeUpReveal yOffset={40} duration={0.7} className="mx-auto flex max-w-[1200px] flex-col items-center gap-10">
+          <label className="blog-search">
+            <span className="blog-search__icon" aria-hidden="true">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-5-5m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
             <input
               type="text"
-              placeholder="Search this page..."
+              placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search articles on this page"
-              className="w-full rounded-full bg-white/90 py-3 pl-12 pr-5 text-sm text-[var(--dark-blue)] placeholder-[var(--dark-blue)]/50 shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--cyan-bright)]"
             />
-          </div>
-          <p className="text-xs text-white/50">
-            Searches only the {posts.length} article{posts.length === 1 ? "" : "s"} shown on this page — use pagination
-            below to browse more.
-          </p>
+          </label>
 
           {categories.length > 0 && (
-            <div className="blog-categories mt-4">
+            <nav className="blog-categories" aria-label="Blog categories">
               <Link
                 href={blogHref({ tag: activeTag })}
                 className={`blog-category-pill ${!activeCategory ? "blog-category-pill--active" : ""}`}
@@ -191,133 +236,116 @@ export default function BlogPageClient({
                   </Link>
                 );
               })}
-            </div>
+            </nav>
           )}
         </FadeUpReveal>
       </section>
 
-      {/* Article grid */}
-      <section className="px-4 py-12 md:px-8">
-        <div className="container mx-auto flex flex-col gap-7">
-          <FadeUpReveal yOffset={40} duration={0.7}>
-            <div className="flex flex-col gap-2 max-w-4xl">
-              <h2 className="text-3xl md:text-5xl font-bold">{headingText}</h2>
-              <p className="text-sm md:text-base text-white/70">
-                {filteredPosts.length} article{filteredPosts.length === 1 ? "" : "s"}
-                {isSearching ? ` matching “${searchQuery.trim()}” on this page` : " on this page"}
-                {pagination.totalPages > 1 ? ` · page ${pagination.page} of ${pagination.totalPages}` : ""}
-              </p>
-            </div>
-          </FadeUpReveal>
-
-          {filteredPosts.length > 0 ? (
-            <div className="grid gap-5 grid-cols-2 lg:grid-cols-4">
-              {filteredPosts.map((post, i) =>
-                renderArticleCard(
-                  { title: post.title, excerpt: post.excerpt, coverImageUrl: post.coverImageUrl, slug: post.slug },
-                  post.id,
-                  i,
-                ),
+      <div className="pb-8">
+        {filteredPosts.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 px-4 py-20 text-center">
+            <p className="text-lg font-semibold text-white">No articles found</p>
+            <p className="text-sm text-white/70">
+              {isSearching ? "Try a different search term." : "Try a different category."}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+              {isSearching && (
+                <button type="button" onClick={() => setSearchQuery("")} className="blog-category-pill blog-category-pill--active">
+                  Clear search
+                </button>
               )}
-            </div>
-          ) : (
-            <FadeUpReveal yOffset={30} duration={0.6}>
-              <div className="flex flex-col items-center gap-3 py-16 text-center">
-                <p className="text-lg font-semibold text-white">No articles found</p>
-                <p className="text-sm text-white/70">
-                  {isSearching ? "Try a different search term." : "Try a different category."}
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-                  {isSearching && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      className="blog-category-pill blog-category-pill--active"
-                    >
-                      Clear search
-                    </button>
-                  )}
-                  {activeCategory && (
-                    <Link href={blogHref({ tag: activeTag })} className="blog-category-pill blog-category-pill--active">
-                      View all categories
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </FadeUpReveal>
-          )}
-
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-4">
-              {pagination.page > 1 ? (
-                <Link
-                  href={blogHref({ page: pagination.page - 1, category: activeCategory, tag: activeTag })}
-                  className="blog-category-pill"
-                >
-                  Previous
+              {activeCategory && (
+                <Link href={blogHref({ tag: activeTag })} className="blog-category-pill blog-category-pill--active">
+                  View all categories
                 </Link>
-              ) : (
-                <span className="blog-category-pill opacity-40 pointer-events-none">Previous</span>
-              )}
-              <span className="text-sm text-white/70">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              {pagination.page < pagination.totalPages ? (
-                <Link
-                  href={blogHref({ page: pagination.page + 1, category: activeCategory, tag: activeTag })}
-                  className="blog-category-pill"
-                >
-                  Next
-                </Link>
-              ) : (
-                <span className="blog-category-pill opacity-40 pointer-events-none">Next</span>
               )}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Subscribe Section */}
-      <section className="relative z-10 overflow-hidden text-white px-4 sm:px-8 md:px-16 lg:px-24 pt-16 pb-20 md:pt-24 md:pb-28">
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full max-w-2xl opacity-20">
-            <ConcentricRings />
           </div>
-        </div>
+        ) : showBands ? (
+          bands.map((band, i) => (
+            <ArticleRow
+              key={band.category}
+              title={`Get the latest on ${band.category}`}
+              intro={categoryIntro(band.category, band.list.length)}
+              posts={band.list}
+              divider={i > 0}
+            />
+          ))
+        ) : (
+          <ArticleRow
+            title={headingText}
+            intro={`${filteredPosts.length} article${filteredPosts.length === 1 ? "" : "s"}${
+              isSearching ? ` matching “${searchQuery.trim()}” on this page` : " on this page"
+            }${pagination.totalPages > 1 ? ` · page ${pagination.page} of ${pagination.totalPages}` : ""}.`}
+            posts={filteredPosts}
+            divider={false}
+            wrap
+          />
+        )}
 
-        <div className="relative z-10 mx-auto max-w-4xl">
-          <FadeUpReveal yOffset={40} duration={0.7}>
-            <h3 className="text-2xl sm:text-3xl md:text-[40px] font-bold text-center leading-tight">
-              Learn more about how we can support your growth
-            </h3>
-          </FadeUpReveal>
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-8">
+            {pagination.page > 1 ? (
+              <Link href={blogHref({ page: pagination.page - 1, category: activeCategory, tag: activeTag })} className="blog-category-pill">
+                Previous
+              </Link>
+            ) : (
+              <span className="blog-category-pill opacity-40 pointer-events-none">Previous</span>
+            )}
+            <span className="text-sm text-white/70">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            {pagination.page < pagination.totalPages ? (
+              <Link href={blogHref({ page: pagination.page + 1, category: activeCategory, tag: activeTag })} className="blog-category-pill">
+                Next
+              </Link>
+            ) : (
+              <span className="blog-category-pill opacity-40 pointer-events-none">Next</span>
+            )}
+          </div>
+        )}
+      </div>
 
-          <FadeUpReveal yOffset={40} duration={0.7} delay={0.1} className="mt-8 md:mt-10 grid gap-6 sm:grid-cols-2">
-            {supportHighlights.map((highlight) => (
-              <div key={highlight.title} className="flex gap-3">
-                <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/60">
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12l4 4L19 6" />
-                  </svg>
-                </span>
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-lg md:text-xl font-semibold">{highlight.title}</h3>
-                  <p className="mt-1 text-sm text-white/70">{highlight.description}</p>
-                </div>
-              </div>
-            ))}
-          </FadeUpReveal>
-
-          <div className="mt-12 md:mt-16 flex flex-col items-center gap-4 md:flex-row md:justify-center">
-            <WaitlistButton className="inline-flex items-center gap-2 rounded-full bg-(--brand-color-1) px-6 py-3 text-sm font-semibold text-white transition hover:bg-(--brand-color-2)">
-              Get Started
+      {/* Subscribe + support */}
+      <section className="blog-support">
+        <div className="blog-support__inner">
+          <FadeUpReveal yOffset={30} duration={0.6} className="blog-subscribe">
+            <h3 className="blog-subscribe__title">Get more on what you like to see right here</h3>
+            <WaitlistButton className="blog-subscribe__btn">
+              Subscribe
+              <ArrowCircle className="blog-arrow-circle--sm" />
             </WaitlistButton>
-            <Link
-              href="/live-chat"
-              className="inline-flex items-center gap-2 rounded-full border bg-white px-6 py-3 text-sm font-semibold text-(--brand-color-1) transition hover:border-white hover:bg-white/10"
-            >
-              Contact us
-            </Link>
+          </FadeUpReveal>
+
+          <div className="blog-support__body">
+            <div className="blog-support__rings" aria-hidden="true">
+              <ConcentricRings />
+            </div>
+            <FadeUpReveal yOffset={40} duration={0.7} delay={0.1} className="blog-support__grid">
+              {supportHighlights.map((highlight) => (
+                <div key={highlight.title} className="blog-support__item">
+                  <svg className="blog-support__check" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                    <path d="M24 16v10H4V6h16" stroke="currentColor" strokeWidth="2.6" strokeLinejoin="round" />
+                    <path d="M9 15l6 6L29 5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <div>
+                    <h4 className="blog-support__item-title">{highlight.title}</h4>
+                    <p className="blog-support__item-text">{highlight.description}</p>
+                  </div>
+                </div>
+              ))}
+            </FadeUpReveal>
+
+            <div className="blog-support__ctas">
+              <WaitlistButton className="blog-cta blog-cta--primary">
+                Get Started
+                <ArrowCircle className="blog-arrow-circle--sm" />
+              </WaitlistButton>
+              <Link href="/live-chat" className="blog-cta blog-cta--light">
+                Contact us
+                <ArrowCircle className="blog-arrow-circle--sm" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
