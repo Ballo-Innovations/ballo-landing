@@ -58,7 +58,7 @@
 .blog-search input::placeholder { color: rgba(11, 11, 94, 0.55); }
 .blog-search:focus-within { box-shadow: 0 0 0 2px var(--cyan-bright), 0 8px 30px rgba(0, 0, 0, 0.3); }
 
-/* Category filter pills — white pills inside one outlined capsule */
+/* Category filter pills */
 .blog-categories {
   display: flex;
   align-items: center;
@@ -67,8 +67,6 @@
   width: 100%;
   max-width: 1220px;
   padding: 0.45rem 0.6rem;
-  border: 1.5px solid rgba(190, 200, 255, 0.75);
-  border-radius: 999px;
   overflow-x: auto;
   scrollbar-width: none;
 }
