@@ -3537,3 +3537,37 @@
   justify-content: center;
   margin-top: clamp(1.5rem, 4vh, 2.5rem);
 }
+
+/* =============================================================
+   Who can use BalloAds? — the circular split roll (ADR 0006)
+   File: app/components/sections/WhoRollSection.tsx
+   Behind `whoRoll`; wins over every earlier trial. No `overflow` on this
+   section: the roll's stage is `position: sticky`, and an ancestor that
+   scrolls or hides overflow would stop it pinning.
+   ============================================================= */
+.who-roll {
+  padding: clamp(4rem, 10vh, 7rem) 0;
+}
+
+.who-roll__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+}
+
+.who-roll__copy > .section-h2 {
+  margin-bottom: 0.75rem;
+}
+
+.who-roll__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(1.5rem, 4vh, 2.5rem);
+}
