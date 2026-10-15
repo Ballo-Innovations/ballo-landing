@@ -122,8 +122,11 @@ export default function BlogPageClient({
   const featuredPosts = useMemo(() => {
     if (!isDefaultView) return [];
     const withCover = posts.filter((p) => p.coverImageUrl);
+    // Featured posts lead; the latest other posts fill the fan up to the
+    // seven cards the design shows (three each side of the centre).
     const featured = withCover.filter((p) => p.featured);
-    return (featured.length > 0 ? featured : withCover).slice(0, 7);
+    const rest = withCover.filter((p) => !p.featured);
+    return [...featured, ...rest].slice(0, 7);
   }, [isDefaultView, posts]);
 
   const carouselItems: StackedCard[] = featuredPosts.map((p) => ({
