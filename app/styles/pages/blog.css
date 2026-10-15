@@ -72,28 +72,29 @@
 }
 .blog-categories::-webkit-scrollbar { display: none; }
 
+/* Glass material comes from .cta-chip (home.css) — the same bitmap pill as
+   the home page's feature chips. These rules only size it for a nav row and
+   mark the active category. */
 .blog-category-pill {
+  --chip-h: 2.4rem;
   flex: none;
   min-width: 6.5rem;
-  text-align: center;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: #fff;
-  padding: 0.38rem 1.2rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #0b0b5e;
-  white-space: nowrap;
+  justify-content: center;
+  padding: 0 1.3rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.22s ease, filter 0.22s ease, box-shadow 0.22s ease;
 }
-.blog-category-pill:hover { background: #dfe4ff; }
+.blog-category-pill:hover {
+  color: #fff;
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
 .blog-category-pill--active {
   color: #fff;
-  background: linear-gradient(180deg, #3a3fb8 0%, #1b1f86 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  filter: brightness(1.25) saturate(1.2);
+  box-shadow: 0 0 0 1px rgba(139, 225, 255, 0.55), 0 6px 22px -6px rgba(93, 215, 255, 0.6);
 }
-.blog-category-pill--active:hover { background: linear-gradient(180deg, #4a50cc 0%, #23289a 100%); }
 .blog-category-pill:focus-visible {
   outline: 2px solid var(--cyan-bright);
   outline-offset: 2px;
@@ -214,10 +215,7 @@
   transition: transform 0.2s ease;
 }
 .blog-arrow-circle svg { width: 0.7rem; height: 0.7rem; }
-.blog-card:hover .blog-arrow-circle,
-.blog-cta:hover .blog-arrow-circle { transform: translateX(3px); }
-.blog-arrow-circle--sm { width: 1.1rem; height: 1.1rem; opacity: 0.8; }
-.blog-arrow-circle--sm svg { width: 0.55rem; height: 0.55rem; }
+.blog-card:hover .blog-arrow-circle { transform: translateX(3px); }
 
 /* Subscribe + support */
 .blog-support {
@@ -238,17 +236,6 @@
 .blog-subscribe__title {
   font-size: clamp(1.3rem, 2.4vw, 2.1rem);
   font-weight: 700;
-}
-.blog-subscribe__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0.9rem 0.4rem 1.1rem;
-  border-radius: 999px;
-  background: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #0b0b5e;
 }
 .blog-support__body {
   position: relative;
@@ -301,26 +288,6 @@
   justify-content: center;
   gap: 1.5rem 3rem;
   margin-top: 5.5rem;
-}
-.blog-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.6rem;
-  padding: 0.85rem 1.4rem 0.85rem 1.8rem;
-  border-radius: 999px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  transition: filter 0.2s ease;
-}
-.blog-cta:hover { filter: brightness(1.12); }
-.blog-cta--primary {
-  color: #fff;
-  background: linear-gradient(90deg, #12146a 0%, #3a3fb8 60%, #6870e0 100%);
-  box-shadow: 0 8px 28px rgba(40, 50, 200, 0.35);
-}
-.blog-cta--light {
-  color: #0b0b5e;
-  background: #fff;
 }
 
 /* Custom Swiper Card Effects */

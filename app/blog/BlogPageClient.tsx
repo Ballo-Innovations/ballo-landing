@@ -220,7 +220,7 @@ export default function BlogPageClient({
             <nav className="blog-categories" aria-label="Blog categories">
               <Link
                 href={blogHref({ tag: activeTag })}
-                className={`blog-category-pill ${!activeCategory ? "blog-category-pill--active" : ""}`}
+                className={`cta-chip blog-category-pill ${!activeCategory ? "blog-category-pill--active" : ""}`}
               >
                 All
               </Link>
@@ -230,7 +230,7 @@ export default function BlogPageClient({
                   <Link
                     key={category}
                     href={active ? blogHref({ tag: activeTag }) : blogHref({ category, tag: activeTag })}
-                    className={`blog-category-pill ${active ? "blog-category-pill--active" : ""}`}
+                    className={`cta-chip blog-category-pill ${active ? "blog-category-pill--active" : ""}`}
                   >
                     {category}
                   </Link>
@@ -250,12 +250,12 @@ export default function BlogPageClient({
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
               {isSearching && (
-                <button type="button" onClick={() => setSearchQuery("")} className="blog-category-pill blog-category-pill--active">
+                <button type="button" onClick={() => setSearchQuery("")} className="cta-chip blog-category-pill blog-category-pill--active">
                   Clear search
                 </button>
               )}
               {activeCategory && (
-                <Link href={blogHref({ tag: activeTag })} className="blog-category-pill blog-category-pill--active">
+                <Link href={blogHref({ tag: activeTag })} className="cta-chip blog-category-pill blog-category-pill--active">
                   View all categories
                 </Link>
               )}
@@ -286,21 +286,21 @@ export default function BlogPageClient({
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 pt-8">
             {pagination.page > 1 ? (
-              <Link href={blogHref({ page: pagination.page - 1, category: activeCategory, tag: activeTag })} className="blog-category-pill">
+              <Link href={blogHref({ page: pagination.page - 1, category: activeCategory, tag: activeTag })} className="cta-chip blog-category-pill">
                 Previous
               </Link>
             ) : (
-              <span className="blog-category-pill opacity-40 pointer-events-none">Previous</span>
+              <span className="cta-chip blog-category-pill opacity-40 pointer-events-none">Previous</span>
             )}
             <span className="text-sm text-white/70">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             {pagination.page < pagination.totalPages ? (
-              <Link href={blogHref({ page: pagination.page + 1, category: activeCategory, tag: activeTag })} className="blog-category-pill">
+              <Link href={blogHref({ page: pagination.page + 1, category: activeCategory, tag: activeTag })} className="cta-chip blog-category-pill">
                 Next
               </Link>
             ) : (
-              <span className="blog-category-pill opacity-40 pointer-events-none">Next</span>
+              <span className="cta-chip blog-category-pill opacity-40 pointer-events-none">Next</span>
             )}
           </div>
         )}
@@ -311,9 +311,8 @@ export default function BlogPageClient({
         <div className="blog-support__inner">
           <FadeUpReveal yOffset={30} duration={0.6} className="blog-subscribe">
             <h3 className="blog-subscribe__title">Get more on what you like to see right here</h3>
-            <WaitlistButton className="blog-subscribe__btn">
+            <WaitlistButton className="btn-secondary">
               Subscribe
-              <ArrowCircle className="blog-arrow-circle--sm" />
             </WaitlistButton>
           </FadeUpReveal>
 
@@ -337,13 +336,11 @@ export default function BlogPageClient({
             </FadeUpReveal>
 
             <div className="blog-support__ctas">
-              <WaitlistButton className="blog-cta blog-cta--primary">
+              <WaitlistButton className="btn-primary">
                 Get Started
-                <ArrowCircle className="blog-arrow-circle--sm" />
               </WaitlistButton>
-              <Link href="/live-chat" className="blog-cta blog-cta--light">
+              <Link href="/live-chat" className="btn-secondary">
                 Contact us
-                <ArrowCircle className="blog-arrow-circle--sm" />
               </Link>
             </div>
           </div>
