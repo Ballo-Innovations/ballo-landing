@@ -21,12 +21,15 @@ feature chips. That misread the request and was reverted.)
 `BackedBy` renders one static pill per partner: the logo on a small disc, then
 the name. No marquee, no hover swap.
 
-- Pill face is the closing CTA's glass chip: each pill is a `.cta-chip`
-  (the 9-slice `chip-glass-pill.png`), sized up for this section
-  (`--chip-h` 4–5rem) so a pill is a real target, not a tag.
-- The logo sits on a white disc so Meta's and ZICTA's blues don't vanish
-  into the pill. A mark whose file name contains "white" (ZICTA's only file is
-  `zicta-white.png`) gets a navy disc instead.
+- Each known partner's pill is filled with its own brand colour
+  (`BRAND_PILLS` in `BackedBy.tsx`: Airtel red, MTN yellow, Meta blue, ZICTA
+  navy), with the logo drawn straight onto it in one colour: white, or black
+  on MTN's yellow. No disc. The glass highlights are CSS so the pills still sit
+  with the site's glass chips.
+- A partner not in `BRAND_PILLS` (a new CMS row) falls back to the blue glass
+  chip (`.cta-chip`, the 9-slice `chip-glass-pill.png`) with its logo on a
+  white disc, or a navy disc for marks whose file name contains "white".
+- Pills are sized up for this section (`--chip-h` 4–5rem).
 - The row is centred and wraps, so any count the CMS publishes fits.
 - The role ("Mobile network", "ICT regulator", …) is printed under the name
   in small cyan caps, so each pill says what the partner is, not just its name.
@@ -38,5 +41,9 @@ the name. No marquee, no hover swap.
 
 - Every partner is named, with its role, at once on any device.
 - The drawn-on caption (`DrawLineText`) is no longer used by this section.
+- Adding a backer in the CMS gets the generic blue pill until someone adds its
+  colour to `BRAND_PILLS`.
+- The one-colour treatment assumes a single-colour mark. A multi-colour logo
+  added to `BRAND_PILLS` would be flattened to a silhouette.
 - A white logo uploaded to the CMS needs "white" in its file name to get the
   dark disc. Otherwise it will be invisible on the white one.

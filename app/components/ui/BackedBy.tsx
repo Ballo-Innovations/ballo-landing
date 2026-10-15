@@ -18,6 +18,24 @@ import type { HomeLogoItem } from "@/app/HomeClient";
  * on the pill's white disc, so it gets a dark one. Known by its file name —
  * the only signal there is without decoding the image.
  */
+/**
+ * Each partner's own colour for its pill, with the mark knocked out to one
+ * colour on top of it — the way these brands present themselves on a solid
+ * ground. `ink` is the text and mark colour: dark on MTN's yellow, white on the
+ * rest. A partner not listed here (a new CMS row) keeps the blue glass pill
+ * with its mark on a disc.
+ */
+const BRAND_PILLS: Record<string, { bg: string; ink: "light" | "dark" }> = {
+  airtel: { bg: "#e40000", ink: "light" },
+  mtn: { bg: "#ffcb05", ink: "dark" },
+  meta: { bg: "#0866ff", ink: "light" },
+  zicta: { bg: "#0b2a6f", ink: "light" },
+};
+
+function brandFor(name: string) {
+  return BRAND_PILLS[name.trim().toLowerCase()];
+}
+
 function isLightMark(src: HomeLogoItem["src"]): boolean {
   const url = typeof src === "string" ? src : src?.src ?? "";
   return /white/i.test(url);
@@ -43,11 +61,19 @@ export function BackedBy({
           mark is. The role stays in the document for screen readers and as a
           tooltip. */}
       <ul className="backers__pills">
-        {logos.map((logo, i) => (
+        {logos.map((logo, i) => {
+          const brand = brandFor(logo.alt);
+          return (
           <li
             key={`${logo.alt}-${i}`}
-            className="cta-chip backers__pill"
-            style={{ ["--i" as string]: i } as React.CSSProperties}
+            className={brand ? "backers__pill backers__pill--brand" : "cta-chip backers__pill"}
+            data-ink={brand?.ink}
+            style={
+              {
+                ["--i" as string]: i,
+                ...(brand ? { ["--pill-bg" as string]: brand.bg } : {}),
+              } as React.CSSProperties
+            }
           >
             {logo.src ? (
               <span
@@ -76,7 +102,8 @@ export function BackedBy({
               ) : null}
             </span>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
