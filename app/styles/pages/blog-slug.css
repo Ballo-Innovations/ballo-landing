@@ -109,7 +109,12 @@
 }
 .post-article {
   min-width: 0;
-  font-size: 1.12rem;
+}
+/* Same body size as the home page's paragraphs (.landing-body). The prose
+   class sets its own 1rem, so this has to target it directly. */
+.post-article .prose {
+  font-size: var(--landing-body-size);
+  line-height: var(--landing-body-leading);
 }
 .post-article img {
   width: 100%;
