@@ -44,3 +44,9 @@ Three rows (`rows={3}`), and no end fades: the rows' own marquee masks are
 turned off inside `.hero-phone-chips`, and the left-edge mask was removed.
 The rows leave the screen on the left and are clipped by the hero stage on
 the right, short of the copy.
+
+## Update (2026-10-17): back to the first version
+
+After trying four and three rows, a left-edge fade, and no fades, George
+chose the first version: two rows with the marquees' own end fades. The
+`rows` prop on `FeatureChipRows` stays (it defaults to two).

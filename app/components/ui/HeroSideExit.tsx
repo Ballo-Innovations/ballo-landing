@@ -583,7 +583,7 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           lean toward the cursor as it does in "What We're About". */}
       {SHOW_PHONE_HALO ? <div ref={haloRef} className="hero-phone-halo" /> : null}
       <div ref={chipsRef} className="aside-copy-rows hero-phone-chips">
-        <FeatureChipRows rows={3} />
+        <FeatureChipRows />
       </div>
       <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
