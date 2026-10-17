@@ -32,3 +32,7 @@ The layer now stays at full opacity and writes `--after-t` and
 `--after-rise` instead. In home.css the heading, lines and button fade with
 `--after-t`, and the carousel (`.who-curved__band`) rises from 70vh below
 with `--after-rise`, at full opacity.
+The heading, lines and button no longer fade. They slide in from the right
+piece by piece, heading first and fastest, like "What We're About" (ADR
+0010). `After` writes `left` on `.who-curved__copy > *` and
+`.who-curved__cta`.

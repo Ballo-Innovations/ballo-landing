@@ -229,6 +229,19 @@ function After({ children }: { children: React.ReactNode }) {
     const t = at(p, AFTER_IN);
     el.style.setProperty("--after-t", t.toFixed(4));
     el.style.setProperty("--after-rise", easeOut(t).toFixed(4));
+    // The copy slides in from the right piece by piece, heading first and
+    // fastest, like "What We're About" (ADR 0010's `slideCopy`).
+    const pieces = el.querySelectorAll<HTMLElement>(
+      ".who-curved__copy > *, .who-curved__cta",
+    );
+    const dist = window.innerWidth;
+    pieces.forEach((piece, i) => {
+      const sp = [1.7, 1.45, 1.25, 1.05][Math.min(i, 3)];
+      const a = easeOut(Math.min(1, Math.max(0, (t - i * 0.05) * sp)));
+      const x = dist * (1 - a);
+      piece.style.position = "relative";
+      piece.style.left = x > 0.5 ? `${x.toFixed(1)}px` : "";
+    });
     el.style.visibility = t > 0 ? "visible" : "hidden";
     el.style.pointerEvents = t > 0.6 ? "auto" : "none";
   }, []);

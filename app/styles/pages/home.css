@@ -3712,12 +3712,8 @@
 }
 
 /* The Who section's entrance on the Brutus stage (ADR 0012): the heading,
-   lines and button fade in; the carousel rises from below the screen. */
-.brutus-stage__after .who-curved__copy,
-.brutus-stage__after .who-curved__cta,
-.brutus-stage__after .who-curved > :not(.who-curved__band) {
-  opacity: var(--after-t, 1);
-}
+   lines and button slide in from the right (BrutusSection `After`); the
+   carousel rises from below the screen. */
 
 .brutus-stage__after .who-curved__band {
   opacity: 1;
