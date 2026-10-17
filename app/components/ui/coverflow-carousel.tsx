@@ -48,6 +48,11 @@ export interface CoverflowCarouselProps {
   showNavigation?: boolean;
   /** Title and subtitle over the card on hover (the front card on touch). */
   showOverlay?: boolean;
+  /**
+   * Advance one card every this many ms; 0 is off. Paused while hovered,
+   * dragged or focused, off-screen, in a hidden tab, and under reduced motion.
+   */
+  autoPlay?: number;
   /** Names the carousel for assistive tech. */
   label?: string;
   className?: string;
@@ -68,6 +73,7 @@ export function CoverflowCarousel({
   showPagination = false,
   showNavigation = false,
   showOverlay = false,
+  autoPlay = 0,
   label = "Cover carousel",
   className,
   cardClassName,
@@ -91,6 +97,9 @@ export function CoverflowCarousel({
   } | null>(null);
 
   const [selected, setSelected] = React.useState(0);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [held, setHeld] = React.useState(false);
+  const [visible, setVisible] = React.useState(false);
 
   /** Nearest whole card, folded back into 0..count-1. */
   const indexAt = React.useCallback(
@@ -240,10 +249,35 @@ export function CoverflowCarousel({
     [],
   );
 
+  // Only run while someone can see it, and never under reduced motion.
+  React.useEffect(() => {
+    const el = rootRef.current;
+    if (!el || !autoPlay) return;
+    const io = new IntersectionObserver(([entry]) =>
+      setVisible(entry.isIntersecting),
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [autoPlay]);
+
+  React.useEffect(() => {
+    if (!autoPlay || held || !visible) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      if (!document.hidden && !dragRef.current) nudge(1);
+    }, autoPlay);
+    return () => window.clearInterval(id);
+  }, [autoPlay, held, visible, nudge]);
+
   const active = slides[selected];
 
   return (
     <div
+      ref={rootRef}
+      onPointerEnter={() => setHeld(true)}
+      onPointerLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)}
+      onBlur={() => setHeld(false)}
       className={cn("w-full", className)}
       style={{ ["--cf-card" as string]: cardWidth }}
       role="region"

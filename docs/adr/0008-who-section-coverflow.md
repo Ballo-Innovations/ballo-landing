@@ -61,3 +61,9 @@ arrows, the dots and clicking a side card still move the ring.
 
 Cards are `clamp(200px, 26vw, 340px)` (were 150–230px). The section is about 740px
 tall at 1440px wide.
+
+## Update (2026-10-17): auto-play
+
+New `autoPlay` prop (ms per card; the section uses 3500). It pauses while the
+carousel is hovered, focused or being dragged, while it is off-screen
+(IntersectionObserver), in a hidden tab, and under reduced motion.

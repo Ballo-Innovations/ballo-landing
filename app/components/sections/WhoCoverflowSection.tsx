@@ -44,6 +44,7 @@ export function WhoCoverflowSection() {
         label="Industries BalloAds serves"
         cardWidth="clamp(200px, 26vw, 340px)"
         showOverlay
+        autoPlay={3500}
         showPagination
       />
 
