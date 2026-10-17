@@ -3475,8 +3475,10 @@
   margin-bottom: 0.75rem;
 }
 
-.who-curved__copy > :last-child {
-  margin-top: 1.5rem;
+.who-curved__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(0.5rem, 2vh, 1.25rem);
 }
 
 /* The band's height sets the tile size: `tileHeight` is a share of it. */

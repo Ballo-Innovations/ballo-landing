@@ -31,11 +31,6 @@ export function WhoCurvedSection() {
       <FadeUpReveal yOffset={24}>
         <div className="who-curved__copy">
           <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
-          <p>Banks, clinics, schools, shops, nonprofits, government.</p>
-          <p>One dashboard, whatever you are sending.</p>
-          <ShinyButton onClick={openWaitlist}>
-            Start your first campaign
-          </ShinyButton>
         </div>
       </FadeUpReveal>
 
@@ -48,6 +43,10 @@ export function WhoCurvedSection() {
         curve={70}
         fade={10}
       />
+
+      <div className="who-curved__cta">
+        <ShinyButton onClick={openWaitlist}>Start your first campaign</ShinyButton>
+      </div>
 
       {/* The band is decorative (aria-hidden), so the industries are listed
           here for screen readers and crawlers. */}

@@ -31,3 +31,9 @@ Production is unchanged and still shows the original section.
 ## Update (2026-10-17): slower
 
 `speed` 4.5 → 8 seconds per tile, roughly half the pace.
+
+## Update (2026-10-17): heading, row, button
+
+The two lines under the heading are removed, and "Start your first campaign"
+moved from above the row to below it (`.who-curved__cta`). The sr-only industry
+list is unchanged.
