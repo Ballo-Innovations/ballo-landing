@@ -220,13 +220,24 @@ const AFTER_IN: [number, number] = [0.93, 1];
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
-  const t = useTransform(scrollYProgress, (p) => at(p, AFTER_IN));
-  const scale = useTransform(t, (v) => 0.96 + 0.04 * easeOut(v));
-  const pointerEvents = useTransform(t, (v) => (v > 0.6 ? "auto" : "none"));
+  const ref = React.useRef<HTMLDivElement>(null);
+  // One number, `--after-t` (0→1 over AFTER_IN); home.css decides what each
+  // piece does with it: the copy fades, the carousel rises from below.
+  const place = React.useCallback((p: number) => {
+    const el = ref.current;
+    if (!el) return;
+    const t = at(p, AFTER_IN);
+    el.style.setProperty("--after-t", t.toFixed(4));
+    el.style.setProperty("--after-rise", easeOut(t).toFixed(4));
+    el.style.visibility = t > 0 ? "visible" : "hidden";
+    el.style.pointerEvents = t > 0.6 ? "auto" : "none";
+  }, []);
+  useMotionValueEvent(scrollYProgress, "change", place);
+  React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
   return (
-    <motion.div className="brutus-stage__after" style={{ opacity: t, scale, pointerEvents }}>
+    <div ref={ref} className="brutus-stage__after" style={{ visibility: "hidden" }}>
       {children}
-    </motion.div>
+    </div>
   );
 }
 

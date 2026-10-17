@@ -25,3 +25,10 @@ by" follows in normal flow.
   1440×900.
 - The Who section's own in-view reveal fires early, while the stage is still
   hidden, so the fade is its effective entrance.
+
+## Update: carousel rises, copy fades
+
+The layer now stays at full opacity and writes `--after-t` and
+`--after-rise` instead. In home.css the heading, lines and button fade with
+`--after-t`, and the carousel (`.who-curved__band`) rises from 70vh below
+with `--after-rise`, at full opacity.
