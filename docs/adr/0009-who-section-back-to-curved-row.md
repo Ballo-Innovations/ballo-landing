@@ -77,3 +77,10 @@ travels while the band crosses the viewport. The section uses 3.
   still sets the tile spacing in time, but no longer sets a pace.
 
 No dependency added.
+
+## Update (2026-10-18): every industry passes
+
+With `scrollDriven={3}` only 5 of 6 industries came into view at 1440px
+wide, and 4 at 390px (measured by scrolling the band through and recording
+the labels whose tiles were on screen). Now `scrollDriven={6}`, one full
+lap: all six come into view at both widths.

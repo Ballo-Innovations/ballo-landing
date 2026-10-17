@@ -42,7 +42,7 @@ export function WhoCurvedSection() {
         tileHeight={40}
         axis={50}
         speed={8}
-        scrollDriven={3}
+        scrollDriven={6}
         curve={70}
         fade={10}
       />
