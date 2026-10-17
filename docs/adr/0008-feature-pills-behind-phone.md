@@ -58,3 +58,9 @@ not a fade. The right-only mask is gone; instead the block is wider
 (`min(65.5rem, 131vw)`), so the rows reach to about 25px short of the copy
 at 1440px, and end in the marquees' own fade.
 Reverted to the first version's width (`min(60rem, 120vw)`) at George's request.
+
+## Update (2026-10-17): Why Choose only
+
+The pills now fade in on `TEXT_SWAP` (the heading turning over to "Why Choose
+BalloAds?") instead of `HALO_IN`, so they are absent during "What We're
+About".

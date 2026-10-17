@@ -546,9 +546,14 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   // up once the phone has settled left beside "What We're About".
   const chipsRef = React.useRef<HTMLDivElement>(null);
   const placeHalo = React.useCallback((p: number) => {
-    const o = String(easeOut(at(p, HALO_IN)));
-    if (haloRef.current) haloRef.current.style.opacity = o;
-    if (chipsRef.current) chipsRef.current.style.opacity = o;
+    if (haloRef.current) {
+      haloRef.current.style.opacity = String(easeOut(at(p, HALO_IN)));
+    }
+    // The pills wait for "Why Choose BalloAds?" (the text swap), not "What
+    // We're About".
+    if (chipsRef.current) {
+      chipsRef.current.style.opacity = String(easeOut(at(p, TEXT_SWAP)));
+    }
   }, []);
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
   React.useEffect(() => placeHalo(scrollYProgress.get()), [placeHalo, scrollYProgress]);
