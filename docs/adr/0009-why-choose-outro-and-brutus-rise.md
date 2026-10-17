@@ -36,3 +36,13 @@ phone does.
 
 - The home page is 100vh longer in scroll, all of it outro.
 - The outro is tuned at 1440×900. Check phones before promoting.
+
+## Update (2026-10-17): element by element
+
+The outro now moves each element on its own, the way `HeroParts` does. The
+lists are `OUTRO_LEFT` and `OUTRO_RIGHT`. On the left, the two store badges
+go first, then each pill row, then the phone last. On the right, the button
+goes first, then the paragraph, then the heading. Each has its own speed and
+a small stagger. The movement is written to the CSS `translate` property, so
+it composes with the phone tilt, the pill centring and the heading flip,
+which all use `transform`.

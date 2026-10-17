@@ -668,15 +668,24 @@ const SPEED_HINTS: Record<string, number> = {
  * The hero is passed in as `children` and is otherwise untouched. Anything
  * meant to leave carries `data-hero-exit`; DOM order is order of departure.
  */
-/** One side of the outro: its layer travels off toward `side`. */
+/**
+ * One side of the outro. Like `HeroParts`, each element leaves on its own:
+ * `targets` lists selectors in this layer with a speed each (nearer and
+ * smaller leaves faster), so the pieces separate as they go instead of
+ * sliding off as one slab.
+ *
+ * Written to the CSS `translate` property, not `transform`: the phone tilts,
+ * the pills are centred and the copy flips, all on `transform`, and
+ * `translate` composes with that instead of replacing it.
+ */
 function OutroLayer({
   side,
-  speed,
+  targets,
   z,
   children,
 }: {
   side: "left" | "right";
-  speed: number;
+  targets: Array<[selector: string, speed: number]>;
   z: number;
   children: React.ReactNode;
 }) {
@@ -684,19 +693,21 @@ function OutroLayer({
   const ref = React.useRef<HTMLDivElement>(null);
   const place = React.useCallback(
     (p: number) => {
-      const el = ref.current;
-      if (!el) return;
-      // Eased at both ends and spread over the whole outro, so the stage is
-      // still clearing while Brutus rises underneath it rather than emptying
-      // before Brutus is in sight.
-      const u = clamp01(at(p, OUTRO) * speed);
-      const t = u * u * (3 - 2 * u);
-      // A full viewport plus margin clears anything on the stage.
-      const dx = (side === "left" ? -1 : 1) * (window.innerWidth + 80) * t;
-      el.style.transform = t > 0.0005 ? `translate3d(${dx.toFixed(1)}px, 0, 0)` : "";
-      el.style.willChange = t > 0.0005 && t < 0.999 ? "transform" : "auto";
+      const root = ref.current;
+      if (!root) return;
+      const u0 = at(p, OUTRO);
+      const sign = side === "left" ? -1 : 1;
+      const dist = window.innerWidth + 120;
+      targets.forEach(([sel, speed], i) => {
+        // A small stagger in list order, as `ITEM_STAGGER` does for the hero.
+        const u = clamp01((u0 - i * 0.04) * speed);
+        const t = u * u * (3 - 2 * u);
+        root.querySelectorAll<HTMLElement>(sel).forEach((el) => {
+          el.style.translate = t > 0.0005 ? `${(sign * dist * t).toFixed(1)}px 0` : "";
+        });
+      });
     },
-    [side, speed],
+    [side, targets],
   );
   useMotionValueEvent(scrollYProgress, "change", place);
   React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
@@ -706,6 +717,22 @@ function OutroLayer({
     </div>
   );
 }
+
+/** Left side: badges and the near pill row first, the phone last. */
+const OUTRO_LEFT: Array<[string, number]> = [
+  [".hero-store-badges__item:first-child", 2.1],
+  [".hero-store-badges__item:last-child", 1.9],
+  [".hero-phone-chips .mq:first-child", 1.6],
+  [".hero-phone-chips .mq:last-child", 1.35],
+  [".phone3d-scene", 1.05],
+];
+
+/** Right side: the button first, then the paragraph, the heading last. */
+const OUTRO_RIGHT: Array<[string, number]> = [
+  [".aside-copy-cta", 2],
+  [".aside-copy > :not(.aside-copy-title):not(.aside-copy-cta)", 1.6],
+  [".aside-copy-title", 1.2],
+];
 
 function HeroParts({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -1102,11 +1129,11 @@ export function HeroSideExit({
               {glow}
             </div>
           ) : null}
-          <OutroLayer side="left" speed={SPEED_SLOW} z={2}>
+          <OutroLayer side="left" targets={OUTRO_LEFT} z={2}>
             <HeroPhone screen={phoneScreen} />
           </OutroLayer>
           {aside ? (
-            <OutroLayer side="right" speed={1.35} z={4}>
+            <OutroLayer side="right" targets={OUTRO_RIGHT} z={4}>
               <HeroAside whyHeading={whyHeading}>{aside}</HeroAside>
             </OutroLayer>
           ) : null}
