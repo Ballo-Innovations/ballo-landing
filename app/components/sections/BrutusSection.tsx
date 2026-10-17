@@ -224,7 +224,7 @@ const AFTER_IN: [number, number] = vh(223, 240);
 /** Who leaves the same way it came (ADR 0014), after a short hold. */
 const AFTER_OUT: [number, number] = vh(270, 330);
 /** Then "Backed by" fades in at the centre. */
-const THEN_IN: [number, number] = vh(320, 375);
+const THEN_IN: [number, number] = vh(318, 338);
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();

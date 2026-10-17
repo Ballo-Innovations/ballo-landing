@@ -27,3 +27,4 @@ testimonials follow.
   and the `vh()` ranges).
 - "Backed by" loses its per-logo entrance stagger, because the fade replaces
   it.
+"Backed by" now fades in over 20vh (THEN_IN 318–338vh), down from 55vh.
