@@ -44,3 +44,5 @@ its own direction (from a set of six vectors) at its own speed and settles
 into the curve. This is written to the CSS `translate` property, so it
 composes with the tile's orbit transform and the row keeps moving
 underneath.
+Then: the cards come in straight from the left or the right, alternating,
+with no vertical component.
