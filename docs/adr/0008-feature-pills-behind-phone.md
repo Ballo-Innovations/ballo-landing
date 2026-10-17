@@ -35,3 +35,5 @@ stays off.
 Four rows instead of two (`FeatureChipRows rows={4}`). Each row carries the
 whole list from a different starting point, alternating direction and pace.
 Callers that pass nothing still get the original two rows.
+The block also fades in from the left inside the viewport (a mask on
+`.hero-phone-chips`), because the rows' own end fades fall off-screen there.
