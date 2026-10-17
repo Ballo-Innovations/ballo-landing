@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { FeatureChipRows } from "./FeatureChips";
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from "framer-motion";
 
 import { Phone3D } from "./Phone3D";
@@ -541,10 +542,13 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   // timeline, which measures the window rather than this pin, and the halo
   // sat at full strength from the first frame.
   const haloRef = React.useRef<HTMLDivElement>(null);
+  // The feature pills behind the phone (ADR 0008) share the halo's timing:
+  // up once the phone has settled left beside "What We're About".
+  const chipsRef = React.useRef<HTMLDivElement>(null);
   const placeHalo = React.useCallback((p: number) => {
-    if (haloRef.current) {
-      haloRef.current.style.opacity = String(easeOut(at(p, HALO_IN)));
-    }
+    const o = String(easeOut(at(p, HALO_IN)));
+    if (haloRef.current) haloRef.current.style.opacity = o;
+    if (chipsRef.current) chipsRef.current.style.opacity = o;
   }, []);
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
   React.useEffect(() => placeHalo(scrollYProgress.get()), [placeHalo, scrollYProgress]);
@@ -578,6 +582,9 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
       {SHOW_PHONE_HALO ? <div ref={haloRef} className="hero-phone-halo" /> : null}
+      <div ref={chipsRef} className="aside-copy-rows hero-phone-chips">
+        <FeatureChipRows />
+      </div>
       <Phone3D floating={<HeroStoreBadges />}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card

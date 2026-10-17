@@ -686,3 +686,54 @@
   opacity: var(--band-fade, 1);
 }
 
+
+/* The feature pills behind the phone (ADR 0008): both counter-scrolling rows,
+   centred on the phone and wider than it, under the device. Opacity is
+   written by HeroSideExit on the halo's timing. */
+.aside-copy-rows.hero-phone-chips {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  width: min(60rem, 120vw);
+  gap: 0.9rem;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The phone layer is scaled down, so the pills are set larger here to read
+   at the size of the ones in the closing CTA. */
+.hero-phone-chips .cta-chip {
+  --chip-h: 3.1rem;
+  padding: 0 1.4rem;
+  font-size: 1.15rem;
+}
+
+.hero-phone-chips .cta-chip svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.hero-phone-chips .mq__group {
+  gap: 0.9rem;
+  padding-right: 0.9rem;
+}
+
+.hero-zoom-phone > :not(.hero-phone-chips) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .aside-copy-rows.hero-phone-chips .mq--row-b {
+    display: block;
+  }
+}
+
+@media (max-height: 700px) {
+  .aside-copy-rows.hero-phone-chips {
+    display: flex;
+  }
+}
