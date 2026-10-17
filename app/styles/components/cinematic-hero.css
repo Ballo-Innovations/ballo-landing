@@ -695,7 +695,7 @@
   top: 50%;
   left: 50%;
   z-index: 0;
-  width: min(65.5rem, 131vw);
+  width: min(60rem, 120vw);
   gap: 0.9rem;
   margin: 0;
   transform: translate(-50%, -50%);

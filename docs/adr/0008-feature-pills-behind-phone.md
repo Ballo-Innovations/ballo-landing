@@ -57,3 +57,4 @@ Correction: the ask was less blank space between the pills and the copy,
 not a fade. The right-only mask is gone; instead the block is wider
 (`min(65.5rem, 131vw)`), so the rows reach to about 25px short of the copy
 at 1440px, and end in the marquees' own fade.
+Reverted to the first version's width (`min(60rem, 120vw)`) at George's request.
