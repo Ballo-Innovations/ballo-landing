@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { motion, useTransform } from "framer-motion";
+import { motion, useMotionValueEvent, useTransform } from "framer-motion";
 
 import {
   ContainerInset,
@@ -71,9 +71,12 @@ import { at, easeOut } from "@/lib/cinematic";
  * `FILM_OPEN` is unchanged, so the film still finishes opening exactly where
  * it did and the copy and CTA beats below keep their cues.
  */
+/** The track grew 170vh → 240vh for the outro; the entrance keeps its scroll. */
+const TRACK_SCALE = 170 / 240;
+
 const FILM_OPEN_FROM = 0;
 /** Progress at which the film has finished opening to full bleed. */
-const FILM_OPEN = 0.78;
+const FILM_OPEN = 0.78 * TRACK_SCALE;
 
 /**
  * How far below its resting place the film starts, in pixels.
@@ -86,8 +89,43 @@ const FILM_OPEN = 0.78;
 const FILM_DROP = 150;
 
 /** The copy, then the buttons — each after the beat before it. */
-const COPY_IN: [number, number] = [0.79, 0.9];
-const CTA_IN: [number, number] = [0.87, 0.97];
+const COPY_IN: [number, number] = [0.79 * TRACK_SCALE, 0.9 * TRACK_SCALE];
+const CTA_IN: [number, number] = [0.87 * TRACK_SCALE, 0.97 * TRACK_SCALE];
+
+/**
+ * The outro (like the hero's exit, see HeroSideExit): the pieces leave
+ * sideways at their own speeds over the track's added tail, before the pin
+ * releases. Travel only; written to CSS `translate` so it composes with the
+ * film's rise and the copy's own `y`.
+ */
+const OUTRO: [number, number] = [0.74, 1];
+const OUTRO_PARTS: Array<[selector: string, dir: 1 | -1, speed: number]> = [
+  [".brutus-stage__cta", 1, 2],
+  [".brutus-stage__lede", -1, 1.7],
+  [".brutus-stage__h2", 1, 1.4],
+  [".brutus-stage__copy .section-eyebrow", -1, 1.9],
+  [".brutus-stage__inset", -1, 1.05],
+];
+
+function BrutusOutro() {
+  const { scrollYProgress } = useContainerScrollContext();
+  const ref = React.useRef<HTMLSpanElement>(null);
+  const place = React.useCallback((p: number) => {
+    const stage = ref.current?.parentElement;
+    if (!stage) return;
+    const u0 = at(p, OUTRO);
+    const dist = window.innerWidth + 120;
+    OUTRO_PARTS.forEach(([sel, dir, speed], i) => {
+      const u = Math.min(1, Math.max(0, (u0 - i * 0.04) * speed));
+      const t = u * u * (3 - 2 * u);
+      const el = stage.querySelector<HTMLElement>(sel);
+      if (el) el.style.translate = t > 0.0005 ? `${(dir * dist * t).toFixed(1)}px 0` : "";
+    });
+  }, []);
+  useMotionValueEvent(scrollYProgress, "change", place);
+  React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
+  return <span ref={ref} hidden />;
+}
 
 /**
  * One beat of the stage: fades and rises over its own slice of the pin.
@@ -200,6 +238,7 @@ export function BrutusSection() {
         offset={["start end", "end end"]}
       >
         <ContainerSticky className="brutus-stage">
+          <BrutusOutro />
           <Film />
 
           <Beat range={COPY_IN} className="brutus-stage__copy">
