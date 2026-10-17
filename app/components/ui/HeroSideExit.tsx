@@ -563,7 +563,17 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
     // The pills wait for "Why Choose BalloAds?" (the text swap), not "What
     // We're About".
     if (chipsRef.current) {
-      chipsRef.current.style.opacity = String(easeOut(at(p, TEXT_SWAP)));
+      // In from the left (ADR 0010), each row at its own speed. `left`, not
+      // `translate`, which the outro owns.
+      const t = at(p, TEXT_SWAP);
+      chipsRef.current.style.opacity = t > 0 ? "1" : "0";
+      const rows = chipsRef.current.querySelectorAll<HTMLElement>(":scope > .mq");
+      rows.forEach((row, i) => {
+        const a = easeOut(clamp01((t - i * 0.08) * (i === 0 ? 1.5 : 1.15)));
+        const x = -(window.innerWidth * 1.2) * (1 - a);
+        row.style.position = "relative";
+        row.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
+      });
     }
   }, []);
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
@@ -879,6 +889,31 @@ function setFlip(layer: HTMLElement, state: "in" | "out" | undefined) {
 const SWAP_SECONDS = 0.9;
 const SWAP_HALF = 0.5;
 
+/**
+ * Per-piece speeds for the copy column, in DOM order (heading, paragraph,
+ * button…). The heading leads; each later piece is slower and a step behind.
+ */
+const COPY_SPEEDS = [1.7, 1.35, 1.1, 1];
+
+/**
+ * Places a copy layer's pieces: `inT` 0→1 brings them in from the right,
+ * `outT` 0→1 sends them back out to the right. Written to `left` (with
+ * `position: relative`) rather than `translate`, which the outro owns.
+ */
+function slideCopy(layer: HTMLElement, inT: number, outT: number) {
+  const pieces = layer.querySelectorAll<HTMLElement>(".aside-copy > *");
+  const dist = window.innerWidth;
+  pieces.forEach((el, i) => {
+    const sp = COPY_SPEEDS[Math.min(i, COPY_SPEEDS.length - 1)];
+    const a = easeOut(clamp01((inT - i * 0.05) * sp));
+    // Leaving reverses the order: the last piece in is the first out.
+    const b = easeInOut(clamp01((outT - (pieces.length - 1 - i) * 0.05) * sp));
+    const x = dist * (1 - a) + dist * b;
+    el.style.position = "relative";
+    el.style.left = x > 0.5 ? `${x.toFixed(1)}px` : "";
+  });
+}
+
 function HeroAside({
   children,
   whyHeading,
@@ -909,73 +944,24 @@ function HeroAside({
     const p = scrollYProgress.get();
     const tIn = easeOut(at(p, ASIDE_IN));
     const s = swap.current;
-    if (s !== lastSwap.current) {
-      swapDir.current = s > lastSwap.current ? 1 : -1;
-      lastSwap.current = s;
-    }
-    const forward = swapDir.current > 0;
-    // How far the outgoing block is gone, and the incoming one arrived: one
-    // half of the beat each.
-    const tOut = easeInOut(clamp01(s / SWAP_HALF));
-    const tIn2 = easeInOut(clamp01((s - SWAP_HALF) / (1 - SWAP_HALF)));
-    // No travel. The column used to slide in from 64px to the right of where
-    // it belongs, which was its entrance; the per-character reveal on the
-    // heading (see `TextReveal`) is the entrance now, and running both meant
-    // the letters rose into place while the block they sat on was still
-    // arriving underneath them — two movements, in two directions, on one
-    // piece of copy.
-    //
-    // The fade stays. It is not the slide: this column is in the viewport from
-    // the pin's first frame, so something has to keep it off the stage until
-    // the phone has moved aside, and the alternative is the block appearing
-    // outright the instant `ASIDE_IN` opens.
-    el.style.opacity = String(tIn);
+    const tOut = clamp01(s / SWAP_HALF);
+    const tIn2 = clamp01((s - SWAP_HALF) / (1 - SWAP_HALF));
+    // Travel only (ADR 0010): the copy arrives from the right, piece by
+    // piece at its own speed, like the hero leaving; no fade, no flip.
+    el.style.opacity = p > ASIDE_IN[0] ? "1" : "0";
     el.style.pointerEvents = tIn > 0.9 && tOut < 0.1 ? "auto" : "none";
-    el.style.willChange = tIn > 0.001 && tIn < 0.999 ? "opacity" : "auto";
 
     if (oldRef.current) {
-      // Arms the heading's per-character reveal (see `TextReveal`) as the
-      // block arrives, and disarms it if the reader scrolls back out, so the
-      // copy plays again on the way in rather than being spent the first
-      // time. Same write-only-on-change rule as `data-morph` below: a new
-      // value restarts an animation on every character.
-      const reveal = tIn > 0.05 ? "in" : "out";
-      if (oldRef.current.dataset.reveal !== reveal) oldRef.current.dataset.reveal = reveal;
-      const oldTitle = oldRef.current.querySelector<HTMLElement>(".aside-copy-title");
-      // And hinges away when the swap starts — the first half of the beat is
-      // this heading's. Cleared once that half is over and the layer is
-      // transparent, or it keeps a spent animation holding its characters
-      // edge-on for the rest of the pin.
-      //
-      // Scrolling back it turns IN over the second half of the reverse, once
-      // "Why Choose" has gone, and keeps that state when the beat is back at
-      // 0: clearing it there would hand the characters back to the rise and
-      // replay it on copy that is already on screen. It is cleared when the
-      // block itself leaves (`reveal` out), so the rise plays again on the
-      // next way in.
-      if (s > 0 && s < SWAP_HALF) setFlip(oldRef.current, forward ? "out" : "in");
-      else if (s >= SWAP_HALF || reveal === "out") setFlip(oldRef.current, undefined);
-      else if (oldTitle?.dataset.flip === "out") setFlip(oldRef.current, undefined);
-      oldRef.current.style.opacity = String(1 - tOut);
+      // Headings stay whole: the reveal is on, and no flip state is set.
+      if (oldRef.current.dataset.reveal !== "in") oldRef.current.dataset.reveal = "in";
+      setFlip(oldRef.current, undefined);
+      slideCopy(oldRef.current, at(p, ASIDE_IN), tOut);
     }
     if (newRef.current) {
-      // One-shot rather than scrubbed: the chips under this heading form as it
-      // turns over (see `chip-morph` in cinematic-hero.css). Written as an
-      // attribute the CSS keys off, and only on the frames it actually
-      // changes — assigning the same value every frame would be a no-op, but
-      // assigning a different one restarts twelve animations, so the two
-      // states are set from the beat's own threshold rather than from tSwap
-      // crossing some number of its own.
-      const morph = s > SWAP_HALF ? "in" : "out";
-      if (newRef.current.dataset.morph !== morph) newRef.current.dataset.morph = morph;
-      // The second half of the turn: this heading's characters come up out of
-      // the page once the one above has fallen away. Scrolling back, it falls
-      // away first, before "What We're About" turns up.
-      setFlip(
-        newRef.current,
-        s > SWAP_HALF && s < 1 ? (forward ? "in" : "out") : s >= 1 ? "in" : undefined,
-      );
-      newRef.current.style.opacity = String(tIn2);
+      if (newRef.current.dataset.morph !== "in") newRef.current.dataset.morph = "in";
+      setFlip(newRef.current, undefined);
+      newRef.current.style.opacity = "1";
+      slideCopy(newRef.current, tIn2, 0);
       newRef.current.style.pointerEvents = tIn2 > 0.9 ? "auto" : "none";
     }
   }, [scrollYProgress]);

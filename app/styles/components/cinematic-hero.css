@@ -746,3 +746,13 @@
   inset: 0;
   pointer-events: none;
 }
+
+/* The copy beside the phone slides in whole (ADR 0010): no per-letter
+   reveal or flip on its headings. */
+.hero-aside .aside-copy-title .reveal-char {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+  animation: none !important;
+}
