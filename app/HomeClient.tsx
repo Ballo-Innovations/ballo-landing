@@ -509,10 +509,12 @@ export default function HomeClient({
           falling back to the marquee-row section while the flag is dark. The
           flag is read after mount (see below), so the server and the first
           client render always agree on which one is here. */}
-      {/* Newest trial wins: coverflow (ADR 0008), hover list (ADR 0007), circular split roll (ADR 0006), connected
-          carousel (ADR 0005), then the cards
-          (ADR 0004), then the curved row (ADR 0003). */}
-      {whoCoverflow ? (
+      {/* The curved row (ADR 0003) is back on top, picked again on
+          2026-10-17 over the later trials (ADR 0009); the rest follow in
+          their old order. */}
+      {whoCurved ? (
+        <WhoCurvedSection />
+      ) : whoCoverflow ? (
         <WhoCoverflowSection />
       ) : whoHover ? (
         <WhoHoverSection />
@@ -522,8 +524,6 @@ export default function HomeClient({
         <WhoConnectedSection />
       ) : whoCards ? (
         <WhoCardsSection />
-      ) : whoCurved ? (
-        <WhoCurvedSection />
       ) : whoStack ? (
         <WhoStackSection />
       ) : (
