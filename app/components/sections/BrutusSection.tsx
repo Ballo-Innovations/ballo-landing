@@ -215,7 +215,22 @@ function Film() {
   );
 }
 
-export function BrutusSection() {
+/** Where the next section fades in, over the end of the outro. */
+const AFTER_IN: [number, number] = [0.9, 1];
+
+function After({ children }: { children: React.ReactNode }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const t = useTransform(scrollYProgress, (p) => at(p, AFTER_IN));
+  const scale = useTransform(t, (v) => 0.96 + 0.04 * easeOut(v));
+  const pointerEvents = useTransform(t, (v) => (v > 0.6 ? "auto" : "none"));
+  return (
+    <motion.div className="brutus-stage__after" style={{ opacity: t, scale, pointerEvents }}>
+      {children}
+    </motion.div>
+  );
+}
+
+export function BrutusSection({ after }: { after?: React.ReactNode } = {}) {
   const animRef = useAnimateWhenVisible<HTMLElement>();
 
   return (
@@ -262,6 +277,7 @@ export function BrutusSection() {
               Talk to us
             </Link>
           </Beat>
+          {after ? <After>{after}</After> : null}
         </ContainerSticky>
       </ContainerScroll>
     </section>

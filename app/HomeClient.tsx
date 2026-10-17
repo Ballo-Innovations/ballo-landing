@@ -488,22 +488,16 @@ export default function HomeClient({
           Sits directly under the hero, ahead of the proof sections: it is the
           product story, and the partners and industries below it are the
           evidence for it. */}
-      <BrutusSection />
-
-      {/* Backed By. A short, CMS-driven list (partner-logo rows with "Backed
-          by" switched on) — too few to loop, so it is a band of fixed cells
-          rather than a marquee. One cell at a time swaps its logo for the
-          partner's name and role; the pointer overrides the cycle, and the
-          cycle itself stops while the section is off-screen. */}
-      <section className="backers-section">
-        {/* The reveal is only the trigger here: its own transform is turned
-            off in CSS and the label and each cell animate themselves, so the
-            logos arrive one after another instead of the whole band fading in
-            as one block. */}
-        <FadeUpReveal yOffset={0} className="backers-reveal">
-          <BackedBy logos={backerLogos} />
-        </FadeUpReveal>
-      </section>
+      {/* Brutus, with "Backed by" fading in at the centre of its stage once
+          the Brutus pieces have left (ADR 0011). The band rides out with the
+          stage when the pin releases. */}
+      <BrutusSection
+        after={
+          <div className="backers-section backers-section--in-stage">
+            <BackedBy logos={backerLogos} />
+          </div>
+        }
+      />
 
       {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
           falling back to the marquee-row section while the flag is dark. The
