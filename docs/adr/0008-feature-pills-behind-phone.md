@@ -50,3 +50,6 @@ the right, short of the copy.
 After trying four and three rows, a left-edge fade, and no fades, George
 chose the first version: two rows with the marquees' own end fades. The
 `rows` prop on `FeatureChipRows` stays (it defaults to two).
+The right end now fades out just before the copy beside the phone (a
+right-only mask on `.hero-phone-chips`, #000 80% to transparent 95%). The
+left keeps the marquees' own fades.
