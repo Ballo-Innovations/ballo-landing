@@ -45,7 +45,6 @@ export function WhoCoverflowSection() {
         cardWidth="clamp(150px, 18vw, 230px)"
         showOverlay
         showPagination
-        showNavigation
       />
 
       <div className="who-cf__cta">

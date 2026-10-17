@@ -51,3 +51,8 @@ new `showOverlay` prop fades the slide's title and subtitle in over the
 bottom of a card, on a navy gradient, when that card is hovered. Touch
 devices (`hover: none`) keep the overlay up on the front card. The "For" and
 "Example" rows are no longer shown. The section is about 630px tall at 1440px.
+
+## Update (2026-10-17): no arrows
+
+The prev/next arrows are off (`showNavigation` not passed). Drag, flick, keyboard
+arrows, the dots and clicking a side card still move the ring.
