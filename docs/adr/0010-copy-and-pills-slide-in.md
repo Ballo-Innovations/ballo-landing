@@ -33,3 +33,8 @@ exit and the new outro (ADR 0009): pieces travelling in at different speeds.
 
 - `setFlip` and the flip CSS are unused by the hero now, but left in place.
 - Reduced motion is unchanged, because the static hero has no pin.
+
+## Update (2026-10-17): pills arrive with What We're About
+
+The pills now slide in on `ASIDE_IN`, alongside the "What We're About" copy,
+and stay through "Why Choose" until the outro.

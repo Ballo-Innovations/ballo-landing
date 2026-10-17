@@ -560,12 +560,11 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
     if (haloRef.current) {
       haloRef.current.style.opacity = String(easeOut(at(p, HALO_IN)));
     }
-    // The pills wait for "Why Choose BalloAds?" (the text swap), not "What
-    // We're About".
     if (chipsRef.current) {
       // In from the left (ADR 0010), each row at its own speed. `left`, not
       // `translate`, which the outro owns.
-      const t = at(p, TEXT_SWAP);
+      // With "What We're About", alongside its copy (ASIDE_IN).
+      const t = at(p, ASIDE_IN);
       chipsRef.current.style.opacity = t > 0 ? "1" : "0";
       const rows = chipsRef.current.querySelectorAll<HTMLElement>(":scope > .mq");
       rows.forEach((row, i) => {
