@@ -1,6 +1,6 @@
 # ADR 0011: "Backed by" fades in at the centre of the Brutus stage
 
-- Status: Accepted
+- Status: Superseded (2026-10-17): "Backed by" moved below "Who can use BalloAds?"
 - Date: 2026-10-17
 - Deciders: George M'sapenda
 
@@ -26,3 +26,10 @@ with the stage, and "Who can use BalloAds?" follows in normal flow.
   means taking it out of the `after` slot.
 - The band's own per-cell entrance stagger no longer runs, because its
   reveal trigger is gone. The fade replaces it.
+
+## Update (2026-10-17): moved below "Who can use BalloAds?"
+
+George moved "Backed by" to sit between "Who can use BalloAds?" and the
+testimonials, as an ordinary section with its own `FadeUpReveal` again. The
+Brutus stage no longer passes anything to its `after` slot. The slot is kept
+but unused.

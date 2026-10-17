@@ -488,16 +488,7 @@ export default function HomeClient({
           Sits directly under the hero, ahead of the proof sections: it is the
           product story, and the partners and industries below it are the
           evidence for it. */}
-      {/* Brutus, with "Backed by" fading in at the centre of its stage once
-          the Brutus pieces have left (ADR 0011). The band rides out with the
-          stage when the pin releases. */}
-      <BrutusSection
-        after={
-          <div className="backers-section backers-section--in-stage">
-            <BackedBy logos={backerLogos} />
-          </div>
-        }
-      />
+      <BrutusSection />
 
       {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
           falling back to the marquee-row section while the flag is dark. The
@@ -523,6 +514,13 @@ export default function HomeClient({
       ) : (
         <WhoCinematicSection />
       )}
+
+      {/* Backed By, below "Who can use BalloAds?" (ADR 0011). */}
+      <section className="backers-section">
+        <FadeUpReveal yOffset={0} className="backers-reveal">
+          <BackedBy logos={backerLogos} />
+        </FadeUpReveal>
+      </section>
 
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />
