@@ -95,36 +95,38 @@ export function ServicesHoverModal({
               onMouseLeave={() => setModal({ active: false, index })}
               onFocus={() => setModal({ active: false, index })}
               className={cn(
-                "group flex w-full flex-col gap-4 border-t border-white/15 px-2 py-5 text-left text-white transition-opacity duration-200 last:border-b md:flex-row md:items-center md:justify-between md:px-8 md:py-7",
+                "group flex w-full flex-col gap-4 border-t border-white/15 px-2 py-4 text-left text-white transition-opacity duration-200 last:border-b md:flex-row md:items-center md:justify-between md:px-6 md:py-3.5",
                 finePointer && "cursor-none",
                 // The demo dims the row under the pointer, so the card in
                 // front of it reads as the subject.
-                "hover:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60",
               )}
             >
-              <div className="min-w-0 transition-transform duration-300 group-hover:translate-x-2.5">
-                <h3 className="m-0 text-[clamp(1.35rem,2.4vw,2.25rem)] font-bold leading-[1.05] tracking-[-0.02em]">
+              <div className="min-w-0 transition-[transform,opacity] duration-300 group-hover:translate-x-2.5 group-hover:opacity-60">
+                <h3 className="m-0 text-[clamp(1.2rem,1.9vw,1.75rem)] font-bold leading-[1.05] tracking-[-0.02em]">
                   {item.title}
                 </h3>
-                {item.description ? (
-                  /* Revealed on hover (and always on touch, where the row
-                     has no hover to reveal it). */
-                  <p
-                    className={cn(
-                      "mt-2 max-w-xl text-sm text-white/70 transition-[opacity,max-height] duration-300 md:text-base",
-                      finePointer &&
-                        "max-h-0 overflow-hidden opacity-0 group-hover:max-h-24 group-hover:opacity-100 group-focus-visible:max-h-24 group-focus-visible:opacity-100",
-                    )}
-                  >
-                    {item.description}
-                  </p>
-                ) : null}
               </div>
-              {item.meta ? (
-                <p className="shrink-0 text-sm font-light text-white/70 transition-transform duration-300 group-hover:translate-x-2.5 md:text-base">
-                  {item.meta}
-                </p>
-              ) : null}
+              {/* On hover the description takes the meta line's place, so
+                  the row never changes height. Touch shows the description,
+                  which it has no hover to reveal. */}
+              {finePointer ? (
+                <div className="relative shrink-0 text-right text-sm font-light md:w-[min(28rem,45%)] md:text-base">
+                  <p className="text-white/70 transition-opacity duration-300 group-hover:opacity-0 group-focus-visible:opacity-0">
+                    {item.meta}
+                  </p>
+                  {item.description ? (
+                    <p className="absolute inset-0 flex items-center justify-end text-white/85 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      {item.description}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="text-sm text-white/70">
+                  {item.description ? <p>{item.description}</p> : null}
+                  {item.meta ? <p className="mt-1 text-white/50">{item.meta}</p> : null}
+                </div>
+              )}
               {!finePointer ? (
                 // eslint-disable-next-line @next/next/no-img-element -- remote Unsplash crop, same as the card
                 <img
@@ -180,7 +182,7 @@ function Modal({
         variants={scaleAnimation}
         initial="initial"
         animate={active ? "enter" : "closed"}
-        className="pointer-events-none fixed z-40 flex h-[350px] w-[400px] items-center justify-center overflow-hidden rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
+        className="pointer-events-none fixed z-40 flex h-[240px] w-[280px] items-center justify-center overflow-hidden rounded-2xl shadow-[0_30px_60px_rgba(0,0,0,0.5)]"
         style={{ left: card.sx, top: card.sy }}
       >
         <div

@@ -3578,7 +3578,7 @@
    Behind `whoHoverList`; wins over every earlier trial.
    ============================================================= */
 .who-hover {
-  padding: clamp(4rem, 10vh, 7rem) clamp(1rem, 5vw, 2rem);
+  padding: clamp(2.5rem, 6vh, 4rem) clamp(1rem, 5vw, 2rem);
 }
 
 .who-hover__inner {
@@ -3592,7 +3592,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-  margin-bottom: clamp(2rem, 6vh, 4rem);
+  margin-bottom: clamp(1.25rem, 3vh, 2rem);
 }
 
 .who-hover__lines {
@@ -3605,5 +3605,5 @@
 .who-hover__cta {
   display: flex;
   justify-content: center;
-  margin-top: clamp(2rem, 6vh, 3.5rem);
+  margin-top: clamp(1.25rem, 3vh, 2rem);
 }

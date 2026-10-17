@@ -56,3 +56,17 @@ George wanted to appear on hover.
 - On phones the section is long, because each row carries a full-width photo.
 - Whichever design wins, delete the others' sections, components and flags,
   and mark their ADRs superseded.
+
+## Update (2026-10-17): compact
+
+George asked for the section at half the height. It now measures about 620px
+at 1440px wide.
+
+- Rows are shorter (py 3.5 on desktop) and titles smaller (up to 1.75rem).
+- On hover, the description replaces the right-hand "who it covers" line
+  in place. It no longer opens a new line under the title, so rows never
+  change height. Only the title dims.
+- The card is 280×240.
+- Spacing around the head and the CTA is tighter.
+
+Touch still shows the description and photo inline.
