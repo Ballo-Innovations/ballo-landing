@@ -95,7 +95,7 @@ export function ServicesHoverModal({
               onMouseLeave={() => setModal({ active: false, index })}
               onFocus={() => setModal({ active: false, index })}
               className={cn(
-                "group flex w-full flex-col gap-4 border-t border-white/15 px-2 py-7 text-left text-white transition-opacity duration-200 last:border-b md:flex-row md:items-center md:justify-between md:px-10 md:py-10",
+                "group flex w-full flex-col gap-4 border-t border-white/15 px-2 py-5 text-left text-white transition-opacity duration-200 last:border-b md:flex-row md:items-center md:justify-between md:px-8 md:py-7",
                 finePointer && "cursor-none",
                 // The demo dims the row under the pointer, so the card in
                 // front of it reads as the subject.
@@ -103,7 +103,7 @@ export function ServicesHoverModal({
               )}
             >
               <div className="min-w-0 transition-transform duration-300 group-hover:translate-x-2.5">
-                <h3 className="m-0 text-[clamp(1.75rem,4.2vw,3.75rem)] font-bold leading-[1.05] tracking-[-0.02em]">
+                <h3 className="m-0 text-[clamp(1.35rem,2.4vw,2.25rem)] font-bold leading-[1.05] tracking-[-0.02em]">
                   {item.title}
                 </h3>
                 {item.description ? (
@@ -111,7 +111,7 @@ export function ServicesHoverModal({
                      has no hover to reveal it). */
                   <p
                     className={cn(
-                      "mt-2 max-w-xl text-base text-white/70 transition-[opacity,max-height] duration-300 md:text-lg",
+                      "mt-2 max-w-xl text-sm text-white/70 transition-[opacity,max-height] duration-300 md:text-base",
                       finePointer &&
                         "max-h-0 overflow-hidden opacity-0 group-hover:max-h-24 group-hover:opacity-100 group-focus-visible:max-h-24 group-focus-visible:opacity-100",
                     )}
