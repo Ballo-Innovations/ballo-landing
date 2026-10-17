@@ -53,3 +53,7 @@ chose the first version: two rows with the marquees' own end fades. The
 The right end now fades out just before the copy beside the phone (a
 right-only mask on `.hero-phone-chips`, #000 80% to transparent 95%). The
 left keeps the marquees' own fades.
+Correction: the ask was less blank space between the pills and the copy,
+not a fade. The right-only mask is gone; instead the block is wider
+(`min(65.5rem, 131vw)`), so the rows reach to about 25px short of the copy
+at 1440px, and end in the marquees' own fade.
