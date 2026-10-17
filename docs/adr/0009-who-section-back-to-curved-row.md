@@ -54,3 +54,26 @@ tiles touched the second line.
 "Start your first campaign" is pulled up into the band's empty lower edge
 (`margin-top: band height × -0.12`), clear of the edge tiles that curve below
 the row's centre line. The section is about 740px tall at 1440px wide.
+
+## Update (2026-10-18): scroll-driven instead of auto
+
+George asked for the row to move with the page scroll instead of on a timer.
+`TiltedGridHero` has a new `scrollDriven` prop, the number of tiles the row
+travels while the band crosses the viewport. The section uses 3.
+
+- The CSS keyframes are unchanged. In scroll mode every tile's animation is
+  `paused`, and its `animation-delay` is set from framer-motion's
+  `useScroll` progress over the band (`start end` → `end start`). The page
+  scroll is the clock: the row moves forward scrolling down, back scrolling
+  up, and holds still otherwise. Lenis drives the native scroll, so it needs
+  no bridge.
+- Delays are written straight to the tile nodes on each scroll change, with
+  no React render per frame. A paused animation never fires
+  `animationiteration`, so each tile's image comes from the lap it is on;
+  state changes only when a tile changes lap.
+- Reduced motion: the row only moves while the reader scrolls, so it is not
+  paused separately.
+- `scrollDriven={0}` (the default) keeps the original timed loop. `speed`
+  still sets the tile spacing in time, but no longer sets a pace.
+
+No dependency added.

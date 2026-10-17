@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useMotionValueEvent, useScroll } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /* ── the curved row ──────────────────────────────────────────────
@@ -116,6 +117,13 @@ export type TiltedGridHeroProps = {
   curve?: number;
   /** Width of the fade at each end, as a percentage of the hero's width. @default 12 */
   fade?: number;
+  /**
+   * Drive the row from page scroll instead of time: it moves as the hero
+   * crosses the viewport (forward scrolling down, back scrolling up) and
+   * holds still otherwise. The value is how many tiles it travels over that
+   * whole pass. 0 (the default) keeps the timed loop. See ADR 0009.
+   */
+  scrollDriven?: number;
   /** Content rendered above the band. */
   children?: React.ReactNode;
   className?: string;
@@ -130,6 +138,7 @@ export function TiltedGridHero({
   axis = 56,
   curve = 80,
   fade = 12,
+  scrollDriven = 0,
   children,
   className,
   ...props
@@ -149,6 +158,18 @@ export function TiltedGridHero({
   // The image each tile shows, as a position in the run of images. It only
   // changes when the tile wraps, out of sight.
   const [shown, setShown] = React.useState<Record<number, number>>({});
+
+  // Scroll-driven mode: the animations stay paused and their clock is the
+  // page. `offset` is how many seconds of the loop the scroll has played;
+  // each tile's delay is set from it directly, frame by frame, without a
+  // React render. A tile's image is picked from the lap it is on, since a
+  // paused animation never fires `animationiteration`.
+  const offset = React.useRef(0);
+  const tileRefs = React.useRef<(HTMLDivElement | null)[]>([]);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
 
   React.useEffect(() => {
     const el = ref.current;
@@ -202,6 +223,29 @@ export function TiltedGridHero({
 
   const share = aspectRatio / SLICES;
   const duration = columns * speed;
+
+  const lapOf = (t: number, at: number) =>
+    Math.floor((t * speed + at) / duration);
+  const applyScroll = (p: number) => {
+    if (!scrollDriven) return;
+    offset.current = p * scrollDriven * speed;
+    let changed = false;
+    const next: Record<number, number> = {};
+    tileRefs.current.forEach((node, t) => {
+      if (!node) return;
+      node.style.animationDelay = `${-(t * speed + offset.current)}s`;
+      const image = lapOf(t, offset.current) * columns + (columns - 1 - t);
+      next[t] = image;
+      if (shown[t] !== image) changed = true;
+    });
+    if (changed) setShown(next);
+  };
+  useMotionValueEvent(scrollYProgress, "change", applyScroll);
+  React.useEffect(() => {
+    if (scrollDriven) applyScroll(scrollYProgress.get());
+    // Re-place when the loop is re-measured (columns / duration change).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollDriven, columns, duration]);
   const mask = `linear-gradient(90deg,transparent,#000 ${fade}%,#000 ${
     100 - fade
   }%,transparent)`;
@@ -232,6 +276,9 @@ export function TiltedGridHero({
           return (
             <div
               key={t}
+              ref={(node) => {
+                tileRefs.current[t] = node;
+              }}
               className={cn(tile, "absolute")}
               style={{
                 left: `calc(50% - ${u(aspectRatio / 2)})`,
@@ -239,9 +286,12 @@ export function TiltedGridHero({
                 width: u(aspectRatio),
                 height: u(1),
                 transformStyle: "preserve-3d",
-                animation: `${orbit} ${duration}s linear ${-t * speed}s infinite`,
+                animation: scrollDriven
+                  ? `${orbit} ${duration}s linear ${-(t * speed + offset.current)}s infinite paused`
+                  : `${orbit} ${duration}s linear ${-t * speed}s infinite`,
               }}
               onAnimationIteration={(e) => {
+                if (scrollDriven) return;
                 const lap = Math.round(e.elapsedTime / duration);
                 setShown((prev) => {
                   const next = lap * columns + first;
