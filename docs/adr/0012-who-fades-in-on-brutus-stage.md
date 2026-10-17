@@ -46,3 +46,7 @@ composes with the tile's orbit transform and the row keeps moving
 underneath.
 Then: the cards come in straight from the left or the right, alternating,
 with no vertical component.
+Then, in order: each card comes from the side of the screen it sits on,
+the cards nearest the centre first, all from the same distance at the same
+pace. Outer cards trail inner ones and never pass them. On the way out the
+outer cards leave first.

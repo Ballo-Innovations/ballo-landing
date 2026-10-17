@@ -247,24 +247,28 @@ function After({ children }: { children: React.ReactNode }) {
     // Each carousel card flies in from its own direction and speed and
     // settles into the curve. CSS `translate` composes with the tile's own
     // orbit transform, so the row keeps moving underneath.
-    const dirs: Array<[number, number]> = [
-      // Straight in from the left or the right, alternating; no angles.
-      [-1, 0], [1, 0], [-1, 0], [1, 0], [-1, 0], [1, 0],
-    ];
-    el.querySelectorAll<HTMLElement>('.who-curved__band [class*="tgh-t-"]').forEach(
-      (card, i) => {
-        const [dx, dy] = dirs[i % dirs.length];
-        const sp = 1.15 + (i % 3) * 0.25;
-        const a = easeOut(Math.min(1, Math.max(0, (t - (i % 4) * 0.04) * sp)));
-        // Out the way it came in, last in first out.
-        const o = Math.min(1, Math.max(0, (out - (3 - (i % 4)) * 0.04) * sp));
-        const k = 1 - a + o * o * (3 - 2 * o);
-        card.style.translate =
-          k > 0.001
-            ? `${(dx * window.innerWidth * 1.1 * k).toFixed(1)}px ${(dy * window.innerHeight * 0.7 * k).toFixed(1)}px`
-            : "";
-      },
+    // In order, without crossing: a card comes from the side of the screen
+    // it sits on, the cards nearest the centre first, each from the same
+    // distance. A later (outer) card is never further along than an earlier
+    // (inner) one, so their paths never overlap. Out reverses it.
+    const cards = Array.from(
+      el.querySelectorAll<HTMLElement>('.who-curved__band [class*="tgh-t-"]'),
     );
+    const mid = window.innerWidth / 2;
+    const placed = cards.map((card) => {
+      const r = card.getBoundingClientRect();
+      const tx = parseFloat(card.style.translate) || 0;
+      return { card, x: r.left + r.width / 2 - tx, visible: r.width > 0 };
+    });
+    const ranked = [...placed].sort((p1, p2) => Math.abs(p1.x - mid) - Math.abs(p2.x - mid));
+    const D = window.innerWidth * 1.1;
+    ranked.forEach(({ card, x }, rank) => {
+      const dir = x < mid ? -1 : 1;
+      const a = easeOut(Math.min(1, Math.max(0, (t - rank * 0.06) * 1.4)));
+      const o = Math.min(1, Math.max(0, (out - (ranked.length - 1 - rank) * 0.06) * 1.4));
+      const k = 1 - a + o * o * (3 - 2 * o);
+      card.style.translate = k > 0.001 ? `${(dir * D * k).toFixed(1)}px 0` : "";
+    });
     pieces.forEach((piece, i) => {
       const sp = [1.7, 1.45, 1.25, 1.05][Math.min(i, 3)];
       const a = easeOut(Math.min(1, Math.max(0, (t - i * 0.05) * sp)));
