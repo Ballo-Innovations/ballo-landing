@@ -29,3 +29,9 @@ stays off.
 - No flag: this is a placement for already-shipped UI, like ADR 0001.
 - The rows run under the phone and are masked at both ends, so they read as
   passing behind the device.
+
+## Update (2026-10-17): four rows
+
+Four rows instead of two (`FeatureChipRows rows={4}`). Each row carries the
+whole list from a different starting point, alternating direction and pace.
+Callers that pass nothing still get the original two rows.

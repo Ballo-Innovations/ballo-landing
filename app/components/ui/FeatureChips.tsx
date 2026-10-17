@@ -72,15 +72,37 @@ export function Chips({ items }: { items: typeof CHIPS }) {
  * width the rows are masked against, and an extra div between it and the
  * marquees would shrink to its content instead.
  */
-export function FeatureChipRows() {
+export function FeatureChipRows({ rows = 2 }: { rows?: number }) {
+  if (rows <= 2) {
+    return (
+      <>
+        <Marquee reverse duration={34}>
+          <Chips items={ROW_A} />
+        </Marquee>
+        <Marquee duration={30} className="mq--row-b">
+          <Chips items={ROW_B} />
+        </Marquee>
+      </>
+    );
+  }
+  // More rows: every row carries the whole list, each starting further
+  // along it and alternating direction and pace, so no two rows line up.
   return (
     <>
-      <Marquee reverse duration={34}>
-        <Chips items={ROW_A} />
-      </Marquee>
-      <Marquee duration={30} className="mq--row-b">
-        <Chips items={ROW_B} />
-      </Marquee>
+      {Array.from({ length: rows }, (_, r) => {
+        const start = Math.round((r * CHIPS.length) / rows);
+        const items = [...CHIPS.slice(start), ...CHIPS.slice(0, start)];
+        return (
+          <Marquee
+            key={r}
+            reverse={r % 2 === 0}
+            duration={44 + (r % 3) * 6}
+            className={r === 1 ? "mq--row-b" : undefined}
+          >
+            <Chips items={items} />
+          </Marquee>
+        );
+      })}
     </>
   );
 }
