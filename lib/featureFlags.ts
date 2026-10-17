@@ -11,6 +11,7 @@ export type FeatureName =
   | "whoCards"
   | "whoConnected"
   | "whoRoll"
+  | "whoHoverList"
   | "tubesCursor";
 
 const STORAGE_KEY = "balloads.feature-overrides";
@@ -35,6 +36,8 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   whoconnected: "whoConnected",
   roll: "whoRoll",
   whoroll: "whoRoll",
+  hoverlist: "whoHoverList",
+  whohoverlist: "whoHoverList",
   tubes: "tubesCursor",
   tubescursor: "tubesCursor",
 };
@@ -65,6 +68,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   whoCards: process.env.NEXT_PUBLIC_FEATURE_WHO_CARDS,
   whoConnected: process.env.NEXT_PUBLIC_FEATURE_WHO_CONNECTED,
   whoRoll: process.env.NEXT_PUBLIC_FEATURE_WHO_ROLL,
+  whoHoverList: process.env.NEXT_PUBLIC_FEATURE_WHO_HOVER_LIST,
   tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
 };
 

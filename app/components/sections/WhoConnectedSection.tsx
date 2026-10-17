@@ -5,6 +5,7 @@ import { ShinyButton } from "../ui/ShinyButton";
 import { CalendlyCarousel, type CarouselItem } from "../ui/connected-carousel";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
 import { industries } from "./WhoCinematicSection";
+import { TAGS } from "./whoIndustryTags";
 
 /**
  * "Who can use BalloAds?" as a connected carousel (ADR 0005), behind
@@ -16,14 +17,6 @@ import { industries } from "./WhoCinematicSection";
  * industries, so `quoted={false}` keeps the description from reading as a
  * testimonial.
  */
-const TAGS: Record<string, { who: string; example: string }> = {
-  sme: { who: "Shops, brands & companies", example: "e.g. a weekend offer to past buyers" },
-  finance: { who: "Banks, lenders & insurers", example: "e.g. a loan-approval SMS" },
-  nonprofit: { who: "NGOs, councils & ministries", example: "e.g. a community health alert" },
-  retail: { who: "Stores & online sellers", example: "e.g. back-in-stock on WhatsApp" },
-  health: { who: "Clinics, labs & pharmacies", example: "e.g. an appointment reminder" },
-  education: { who: "Schools, colleges & universities", example: "e.g. fees due to parents" },
-};
 
 const ITEMS: CarouselItem[] = industries.map((item) => ({
   id: item.id,

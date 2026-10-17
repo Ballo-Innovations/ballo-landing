@@ -15,6 +15,7 @@ import { WhoCurvedSection } from "./components/sections/WhoCurvedSection";
 import { WhoCardsSection } from "./components/sections/WhoCardsSection";
 import { WhoConnectedSection } from "./components/sections/WhoConnectedSection";
 import { WhoRollSection } from "./components/sections/WhoRollSection";
+import { WhoHoverSection } from "./components/sections/WhoHoverSection";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import { BrutusSection } from "./components/sections/BrutusSection";
 import { Testimonials3D } from "./components/sections/Testimonials3D";
@@ -160,6 +161,8 @@ export default function HomeClient({
   useEffect(() => setWhoConnected(isFeatureEnabled("whoConnected")), []);
   const [whoRoll, setWhoRoll] = useState(false);
   useEffect(() => setWhoRoll(isFeatureEnabled("whoRoll")), []);
+  const [whoHover, setWhoHover] = useState(false);
+  useEffect(() => setWhoHover(isFeatureEnabled("whoHoverList")), []);
   // Same read-after-mount shape for the WebGL layer under "Trusted by", so the
   // one heavy dependency on this page can be switched off per environment.
   const [tubesCursor, setTubesCursor] = useState(false);
@@ -503,10 +506,12 @@ export default function HomeClient({
           falling back to the marquee-row section while the flag is dark. The
           flag is read after mount (see below), so the server and the first
           client render always agree on which one is here. */}
-      {/* Newest trial wins: circular split roll (ADR 0006), connected
+      {/* Newest trial wins: hover list (ADR 0007), circular split roll (ADR 0006), connected
           carousel (ADR 0005), then the cards
           (ADR 0004), then the curved row (ADR 0003). */}
-      {whoRoll ? (
+      {whoHover ? (
+        <WhoHoverSection />
+      ) : whoRoll ? (
         <WhoRollSection />
       ) : whoConnected ? (
         <WhoConnectedSection />
