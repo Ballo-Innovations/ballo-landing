@@ -37,3 +37,10 @@ whole list from a different starting point, alternating direction and pace.
 Callers that pass nothing still get the original two rows.
 The block also fades in from the left inside the viewport (a mask on
 `.hero-phone-chips`), because the rows' own end fades fall off-screen there.
+
+## Update (2026-10-17): three rows, no fades
+
+Three rows (`rows={3}`), and no end fades: the rows' own marquee masks are
+turned off inside `.hero-phone-chips`, and the left-edge mask was removed.
+The rows leave the screen on the left and are clipped by the hero stage on
+the right, short of the copy.

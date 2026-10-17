@@ -701,10 +701,6 @@
   transform: translate(-50%, -50%);
   opacity: 0;
   pointer-events: none;
-  /* The rows' own end fades fall off-screen on the left (the phone sits near
-     the left edge), so the block fades itself in from inside the viewport. */
-  -webkit-mask-image: linear-gradient(90deg, transparent 14%, #000 34%);
-  mask-image: linear-gradient(90deg, transparent 14%, #000 34%);
 }
 
 /* The phone layer is scaled down, so the pills are set larger here to read
@@ -718,6 +714,12 @@
 .hero-phone-chips .cta-chip svg {
   width: 1.3rem;
   height: 1.3rem;
+}
+
+/* No end fades here: the rows run edge to edge behind the phone. */
+.hero-phone-chips .mq {
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 .hero-phone-chips .mq__group {
