@@ -2927,8 +2927,9 @@
    that was a whole demo page, and this is one section of a route that already
    opens with a 900vh hero pin. */
 .brutus-stage-track {
-  /* 170vh of entrance plus 70vh of outro (BrutusSection OUTRO). */
-  height: 240vh;
+  /* Brutus in (170vh), Brutus out, Who in, hold, Who out, Backed by in:
+     390vh in all (BrutusSection TRACK_VH, ADR 0014). */
+  height: 390vh;
 }
 
 .brutus-stage {

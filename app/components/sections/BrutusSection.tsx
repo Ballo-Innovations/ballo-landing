@@ -72,7 +72,11 @@ import { at, easeOut } from "@/lib/cinematic";
  * it did and the copy and CTA beats below keep their cues.
  */
 /** The track grew 170vh → 240vh for the outro; the entrance keeps its scroll. */
-const TRACK_SCALE = 170 / 240;
+// The track grew 240vh → 390vh for the Who outro and "Backed by" (ADR 0014).
+// Ranges are stated in vh of that track and divided by its length.
+const TRACK_VH = 390;
+const vh = (a: number, b: number): [number, number] => [a / TRACK_VH, b / TRACK_VH];
+const TRACK_SCALE = 170 / TRACK_VH;
 
 const FILM_OPEN_FROM = 0;
 /** Progress at which the film has finished opening to full bleed. */
@@ -98,7 +102,7 @@ const CTA_IN: [number, number] = [0.87 * TRACK_SCALE, 0.97 * TRACK_SCALE];
  * releases. Travel only; written to CSS `translate` so it composes with the
  * film's rise and the copy's own `y`.
  */
-const OUTRO: [number, number] = [0.74, 1];
+const OUTRO: [number, number] = vh(178, 240);
 const OUTRO_PARTS: Array<[selector: string, dir: 1 | -1, speed: number]> = [
   [".brutus-stage__cta", 1, 2],
   [".brutus-stage__lede", -1, 1.7],
@@ -216,7 +220,11 @@ function Film() {
 }
 
 /** Where the next section fades in, over the end of the outro. */
-const AFTER_IN: [number, number] = [0.93, 1];
+const AFTER_IN: [number, number] = vh(223, 240);
+/** Who leaves the same way it came (ADR 0014), after a short hold. */
+const AFTER_OUT: [number, number] = vh(270, 330);
+/** Then "Backed by" fades in at the centre. */
+const THEN_IN: [number, number] = vh(320, 375);
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -227,6 +235,7 @@ function After({ children }: { children: React.ReactNode }) {
     const el = ref.current;
     if (!el) return;
     const t = at(p, AFTER_IN);
+    const out = at(p, AFTER_OUT);
     el.style.setProperty("--after-t", t.toFixed(4));
     el.style.setProperty("--after-rise", easeOut(t).toFixed(4));
     // The copy slides in from the right piece by piece, heading first and
@@ -247,7 +256,9 @@ function After({ children }: { children: React.ReactNode }) {
         const [dx, dy] = dirs[i % dirs.length];
         const sp = 1.15 + (i % 3) * 0.25;
         const a = easeOut(Math.min(1, Math.max(0, (t - (i % 4) * 0.04) * sp)));
-        const k = 1 - a;
+        // Out the way it came in, last in first out.
+        const o = Math.min(1, Math.max(0, (out - (3 - (i % 4)) * 0.04) * sp));
+        const k = 1 - a + o * o * (3 - 2 * o);
         card.style.translate =
           k > 0.001
             ? `${(dx * window.innerWidth * 1.1 * k).toFixed(1)}px ${(dy * window.innerHeight * 0.7 * k).toFixed(1)}px`
@@ -257,12 +268,13 @@ function After({ children }: { children: React.ReactNode }) {
     pieces.forEach((piece, i) => {
       const sp = [1.7, 1.45, 1.25, 1.05][Math.min(i, 3)];
       const a = easeOut(Math.min(1, Math.max(0, (t - i * 0.05) * sp)));
-      const x = dist * (1 - a);
+      const o = Math.min(1, Math.max(0, (out - (pieces.length - 1 - i) * 0.05) * sp));
+      const x = dist * (1 - a) + dist * o * o * (3 - 2 * o);
       piece.style.position = "relative";
       piece.style.left = x > 0.5 ? `${x.toFixed(1)}px` : "";
     });
-    el.style.visibility = t > 0 ? "visible" : "hidden";
-    el.style.pointerEvents = t > 0.6 ? "auto" : "none";
+    el.style.visibility = t > 0 && out < 1 ? "visible" : "hidden";
+    el.style.pointerEvents = t > 0.6 && out < 0.2 ? "auto" : "none";
   }, []);
   useMotionValueEvent(scrollYProgress, "change", place);
   React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
@@ -273,7 +285,23 @@ function After({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function BrutusSection({ after }: { after?: React.ReactNode } = {}) {
+/** "Backed by" (ADR 0014): fades in at the centre after Who has left. */
+function Then({ children }: { children: React.ReactNode }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const t = useTransform(scrollYProgress, (p) => at(p, THEN_IN));
+  const scale = useTransform(t, (v) => 0.96 + 0.04 * easeOut(v));
+  const pointerEvents = useTransform(t, (v) => (v > 0.6 ? "auto" : "none"));
+  return (
+    <motion.div className="brutus-stage__after" style={{ opacity: t, scale, pointerEvents }}>
+      {children}
+    </motion.div>
+  );
+}
+
+export function BrutusSection({
+  after,
+  then,
+}: { after?: React.ReactNode; then?: React.ReactNode } = {}) {
   const animRef = useAnimateWhenVisible<HTMLElement>();
 
   return (
@@ -321,6 +349,7 @@ export function BrutusSection({ after }: { after?: React.ReactNode } = {}) {
             </Link>
           </Beat>
           {after ? <After>{after}</After> : null}
+          {then ? <Then>{then}</Then> : null}
         </ContainerSticky>
       </ContainerScroll>
     </section>

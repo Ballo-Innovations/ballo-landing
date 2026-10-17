@@ -502,6 +502,12 @@ export default function HomeClient({
       {/* "Who can use BalloAds?" fades in at the centre of the Brutus stage
           once Brutus has left (ADR 0012), rather than scrolling up after it. */}
       <BrutusSection
+        then={
+          /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
+          <div className="backers-section">
+            <BackedBy logos={backerLogos} />
+          </div>
+        }
         after={
           whoCurved ? (
             <WhoCurvedSection />
@@ -531,12 +537,6 @@ export default function HomeClient({
           2026-10-17 over the later trials (ADR 0009); the rest follow in
           their old order. */}
 
-      {/* Backed By, below "Who can use BalloAds?" (ADR 0011). */}
-      <section className="backers-section">
-        <FadeUpReveal yOffset={0} className="backers-reveal">
-          <BackedBy logos={backerLogos} />
-        </FadeUpReveal>
-      </section>
 
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />
