@@ -46,6 +46,8 @@ export interface CoverflowCarouselProps {
   showCaption?: boolean;
   showPagination?: boolean;
   showNavigation?: boolean;
+  /** Title and subtitle over the card on hover (the front card on touch). */
+  showOverlay?: boolean;
   /** Names the carousel for assistive tech. */
   label?: string;
   className?: string;
@@ -65,6 +67,7 @@ export function CoverflowCarousel({
   showCaption = false,
   showPagination = false,
   showNavigation = false,
+  showOverlay = false,
   label = "Cover carousel",
   className,
   cardClassName,
@@ -288,8 +291,9 @@ export function CoverflowCarousel({
                   // A click (not a drag) on a side card brings it forward.
                   if (index !== selected) goTo(index);
                 }}
+                data-front={index === selected ? "" : undefined}
                 className={cn(
-                  "absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
+                  "cf-card group absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
                   cardClassName,
                 )}
                 style={{ width: "var(--cf-card)", backgroundColor: "#0d1347" }}
@@ -301,6 +305,18 @@ export function CoverflowCarousel({
                   draggable={false}
                   className="h-full w-full select-none object-cover"
                 />
+                {showOverlay && slide.title ? (
+                  <div className="cf-overlay pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-[#02001e]/90 via-[#02001e]/45 to-transparent p-4 text-left">
+                    <p className="text-base font-bold leading-tight text-white md:text-lg">
+                      {slide.title}
+                    </p>
+                    {slide.subtitle ? (
+                      <p className="mt-1 text-xs leading-snug text-white/80 md:text-sm">
+                        {slide.subtitle}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>

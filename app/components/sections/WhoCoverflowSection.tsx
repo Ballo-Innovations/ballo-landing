@@ -9,8 +9,9 @@ import { TAGS } from "./whoIndustryTags";
 
 /**
  * "Who can use BalloAds?" as a coverflow (ADR 0008), behind `whoCoverflow`.
- * One square photo per industry on a raked 3D ring; the caption under the
- * front card names it, describes it, and lists who it covers and an example.
+ * One square photo per industry on a raked 3D ring. Hovering a card overlays
+ * its name and description (on touch, the front card always shows it); there
+ * is no caption under the ring.
  */
 const SLIDES: CoverflowSlide[] = industries.map((item) => ({
   src: item.src.replace("w=420&h=420", "w=560&h=560"),
@@ -42,7 +43,7 @@ export function WhoCoverflowSection() {
         slides={SLIDES}
         label="Industries BalloAds serves"
         cardWidth="clamp(150px, 18vw, 230px)"
-        showCaption
+        showOverlay
         showPagination
         showNavigation
       />

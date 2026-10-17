@@ -3641,6 +3641,23 @@
   margin-top: clamp(1.25rem, 3vh, 2rem);
 }
 
+/* The hover overlay on each card: hidden until hovered. Touch has no hover,
+   so there the front card keeps its overlay up. */
+.cf-overlay {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cf-card:hover .cf-overlay {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .cf-card[data-front] .cf-overlay {
+    opacity: 1;
+  }
+}
+
 /* Stands in for tailwindcss-animate's `animate-in fade-in` on the caption. */
 .cf-caption-in {
   animation: cf-caption-in 0.3s ease both;

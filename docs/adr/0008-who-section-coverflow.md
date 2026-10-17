@@ -43,3 +43,11 @@ installed.
   at the half-turn, where they wrap round the ring.
 - Whichever design wins, delete the others' sections, components and flags,
   and mark their ADRs superseded.
+
+## Update (2026-10-17): hover overlay instead of the caption
+
+George asked to remove the text under the ring. The caption is off, and a
+new `showOverlay` prop fades the slide's title and subtitle in over the
+bottom of a card, on a navy gradient, when that card is hovered. Touch
+devices (`hover: none`) keep the overlay up on the front card. The "For" and
+"Example" rows are no longer shown. The section is about 630px tall at 1440px.
