@@ -21,3 +21,12 @@ scrolling on touch screens.
   so a drag can show an image out of order until the next wrap. This is
   harmless with six industries.
 - No new dependency.
+
+## Update: works with the scroll-driven row
+
+The row is now scroll-driven (its animations stay paused and their delays
+come from the scroll). So in that mode a drag adds to a drag offset on the
+same clock and re-applies it, instead of pausing and playing the animations.
+That fixes the row emptying after a left-to-right drag: a negative offset
+gave the tiles positive delays, leaving them unstarted. The clock is now
+kept a large whole number of loops ahead, so it never goes negative.

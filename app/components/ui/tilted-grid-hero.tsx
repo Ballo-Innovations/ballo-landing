@@ -165,6 +165,8 @@ export function TiltedGridHero({
   // React render. A tile's image is picked from the lap it is on, since a
   // paused animation never fires `animationiteration`.
   const offset = React.useRef(0);
+  // Seconds of loop added by dragging (ADR 0013), on top of the scroll's.
+  const dragOffset = React.useRef(0);
   const tileRefs = React.useRef<(HTMLDivElement | null)[]>([]);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -228,7 +230,12 @@ export function TiltedGridHero({
     Math.floor((t * speed + at) / duration);
   const applyScroll = (p: number) => {
     if (!scrollDriven) return;
-    offset.current = p * scrollDriven * speed;
+    // Dragging right takes the clock backwards. A negative offset gives the
+    // tiles positive delays, so they sit unstarted (hidden) and the row
+    // empties; a large whole number of loops ahead keeps it positive without
+    // changing where any tile is or which image it shows.
+    offset.current =
+      p * scrollDriven * speed + dragOffset.current + duration * 1000;
     let changed = false;
     const next: Record<number, number> = {};
     tileRefs.current.forEach((node, t) => {
@@ -262,7 +269,7 @@ export function TiltedGridHero({
     if (e.button !== 0) return;
     const tileEl = ref.current?.querySelector<HTMLElement>(`.${tile}`);
     drag.current = { x: e.clientX, tileW: tileEl?.offsetWidth || 300 };
-    rowAnimations().forEach((a) => a.pause());
+    if (!scrollDriven) rowAnimations().forEach((a) => a.pause());
     e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -272,6 +279,13 @@ export function TiltedGridHero({
     d.x = e.clientX;
     // Dragging left carries the row on the way it already travels.
     const ms = (-dx / d.tileW) * speed * 1000;
+    if (scrollDriven) {
+      // The row's clock is the scroll here: shift that clock instead, so the
+      // per-tile delays and the lap-based image choice stay consistent.
+      dragOffset.current += ms / 1000;
+      applyScroll(scrollYProgress.get());
+      return;
+    }
     rowAnimations().forEach((a) => {
       a.currentTime = Number(a.currentTime ?? 0) + ms;
     });
@@ -279,7 +293,7 @@ export function TiltedGridHero({
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return;
     drag.current = null;
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!scrollDriven && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       rowAnimations().forEach((a) => a.play());
     }
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
