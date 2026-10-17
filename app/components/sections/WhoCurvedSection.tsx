@@ -31,6 +31,8 @@ export function WhoCurvedSection() {
       <FadeUpReveal yOffset={24}>
         <div className="who-curved__copy">
           <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
+          <p>Banks, clinics, schools, shops, nonprofits, government.</p>
+          <p>One dashboard, whatever you are sending.</p>
         </div>
       </FadeUpReveal>
 

@@ -37,3 +37,7 @@ Production is unchanged and still shows the original section.
 The two lines under the heading are removed, and "Start your first campaign"
 moved from above the row to below it (`.who-curved__cta`). The sr-only industry
 list is unchanged.
+
+## Update (2026-10-17): lines restored
+
+The two lines under the heading are back. The button stays below the row.
