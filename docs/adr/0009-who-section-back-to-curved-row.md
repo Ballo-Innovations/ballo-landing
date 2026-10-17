@@ -48,3 +48,9 @@ The copy sits lower, nearer the row. The section top padding is now
 `clamp(6rem, 14vh, 9rem)`, and the band is pulled up by 10% of its height,
 because the tiles fill only its middle 40%. At 20% the upward-curving edge
 tiles touched the second line.
+
+## Update (2026-10-18): button closer to the row
+
+"Start your first campaign" is pulled up into the band's empty lower edge
+(`margin-top: band height × -0.12`), clear of the edge tiles that curve below
+the row's centre line. The section is about 740px tall at 1440px wide.

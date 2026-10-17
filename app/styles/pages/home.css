@@ -3478,7 +3478,12 @@
 .who-curved__cta {
   display: flex;
   justify-content: center;
-  margin-top: clamp(0.5rem, 2vh, 1.25rem);
+  /* Pulled up into the band's empty lower edge, as the copy is pulled down
+     into its top (see .who-curved__band). Kept clear of the edge tiles,
+     which curve below the row's centre line. */
+  position: relative;
+  z-index: 1;
+  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.12);
 }
 
 /* The band's height sets the tile size: `tileHeight` is a share of it. */
