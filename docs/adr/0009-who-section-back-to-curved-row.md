@@ -27,3 +27,7 @@ Production is unchanged and still shows the original section.
   `whoCurvedRow` is on. Once the curved row is confirmed, delete those
   sections, components and flags (keep `industries` and
   `whoIndustryTags.ts`) and mark ADRs 0004–0008 superseded.
+
+## Update (2026-10-17): slower
+
+`speed` 4.5 → 8 seconds per tile, roughly half the pace.

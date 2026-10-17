@@ -44,7 +44,7 @@ export function WhoCurvedSection() {
         className="who-curved__band"
         tileHeight={40}
         axis={50}
-        speed={4.5}
+        speed={8}
         curve={70}
         fade={10}
       />
