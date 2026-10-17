@@ -235,6 +235,24 @@ function After({ children }: { children: React.ReactNode }) {
       ".who-curved__copy > *, .who-curved__cta",
     );
     const dist = window.innerWidth;
+    // Each carousel card flies in from its own direction and speed and
+    // settles into the curve. CSS `translate` composes with the tile's own
+    // orbit transform, so the row keeps moving underneath.
+    const dirs: Array<[number, number]> = [
+      [-1, -0.6], [0.2, 1], [1, -0.5], [-0.8, 0.9], [0.9, 0.8], [-0.3, -1],
+    ];
+    el.querySelectorAll<HTMLElement>('.who-curved__band [class*="tgh-t-"]').forEach(
+      (card, i) => {
+        const [dx, dy] = dirs[i % dirs.length];
+        const sp = 1.15 + (i % 3) * 0.25;
+        const a = easeOut(Math.min(1, Math.max(0, (t - (i % 4) * 0.04) * sp)));
+        const k = 1 - a;
+        card.style.translate =
+          k > 0.001
+            ? `${(dx * window.innerWidth * 0.7 * k).toFixed(1)}px ${(dy * window.innerHeight * 0.7 * k).toFixed(1)}px`
+            : "";
+      },
+    );
     pieces.forEach((piece, i) => {
       const sp = [1.7, 1.45, 1.25, 1.05][Math.min(i, 3)];
       const a = easeOut(Math.min(1, Math.max(0, (t - i * 0.05) * sp)));

@@ -36,3 +36,11 @@ The heading, lines and button no longer fade. They slide in from the right
 piece by piece, heading first and fastest, like "What We're About" (ADR
 0010). `After` writes `left` on `.who-curved__copy > *` and
 `.who-curved__cta`.
+
+## Update: cards fly in
+
+The carousel no longer rises as one band. Each card (tile) flies in from
+its own direction (from a set of six vectors) at its own speed and settles
+into the curve. This is written to the CSS `translate` property, so it
+composes with the tile's orbit transform and the row keeps moving
+underneath.
