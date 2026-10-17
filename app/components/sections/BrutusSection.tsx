@@ -151,6 +151,8 @@ function Film() {
     <ContainerInset
       openFrom={FILM_OPEN_FROM}
       closeAt={FILM_OPEN}
+      // Ends rounder than the component's default 16px.
+      roundednessRange={[1000, 40]}
       className="brutus-stage__inset"
       style={{ y }}
     >
