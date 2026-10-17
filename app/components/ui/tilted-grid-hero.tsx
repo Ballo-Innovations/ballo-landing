@@ -250,12 +250,53 @@ export function TiltedGridHero({
     100 - fade
   }%,transparent)`;
 
+  // Drag to scrub the row (ADR 0013). The row is CSS animations, so a drag
+  // seeks them: the pointer's travel, in tile widths, becomes seconds of the
+  // loop. They pause while held and resume where they were let go.
+  const drag = React.useRef<{ x: number; tileW: number } | null>(null);
+  const rowAnimations = () =>
+    (ref.current?.getAnimations({ subtree: true }) ?? []).filter(
+      (a) => (a as CSSAnimation).animationName === orbit,
+    );
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const tileEl = ref.current?.querySelector<HTMLElement>(`.${tile}`);
+    drag.current = { x: e.clientX, tileW: tileEl?.offsetWidth || 300 };
+    rowAnimations().forEach((a) => a.pause());
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d) return;
+    const dx = e.clientX - d.x;
+    d.x = e.clientX;
+    // Dragging left carries the row on the way it already travels.
+    const ms = (-dx / d.tileW) * speed * 1000;
+    rowAnimations().forEach((a) => {
+      a.currentTime = Number(a.currentTime ?? 0) + ms;
+    });
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!drag.current) return;
+    drag.current = null;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      rowAnimations().forEach((a) => a.play());
+    }
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
+
   return (
     <div
       ref={ref}
-      className={cn("relative overflow-hidden", className)}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      className={cn("relative cursor-grab select-none overflow-hidden active:cursor-grabbing", className)}
       {...props}
-      style={{ containerType: "size", ...props.style }}
+      style={{ containerType: "size", touchAction: "pan-y", ...props.style }}
     >
       <style>{css}</style>
 
