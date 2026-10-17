@@ -3675,3 +3675,16 @@
     animation: none;
   }
 }
+
+/* Brutus rises over the end of the hero pin (ADR 0009), the way the phone
+   rises into the hero: pulled up over the outro (the last 1/7 of the pin's
+   600vh of scroll, ~86vh), so it comes up from the bottom while "Why Choose"
+   leaves sideways. Only when the
+   pin exists: under reduced motion the hero is static and nothing overlaps. */
+@media (prefers-reduced-motion: no-preference) {
+  .brutus-home {
+    position: relative;
+    z-index: 5;
+    margin-top: -86vh;
+  }
+}

@@ -737,3 +737,12 @@
     display: flex;
   }
 }
+
+/* The outro wrappers (ADR 0009): full-stage layers that carry the phone and
+   the copy off sideways at the end of the pin. Transparent to the pointer;
+   their children set their own pointer-events. */
+.hero-outro {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

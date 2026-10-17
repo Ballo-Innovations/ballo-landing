@@ -215,6 +215,8 @@ function useSnapToCard(
    * beats of handover that would be yanked around by a snap.
    */
   activeFrom: number = 0,
+  /** Progress above which nothing is snapped (the hero's outro). */
+  activeTo: number = 1,
 ) {
   const frameRef = useRef<number | null>(null);
   const expectedRef = useRef<number | null>(null);
@@ -297,7 +299,7 @@ function useSnapToCard(
       const progress = (window.scrollY - start) / length;
       // Only while the cards actually own the track. At the very ends the
       // reader is on their way somewhere else and must not be pulled back.
-      if (progress <= Math.max(0.001, activeFrom) || progress >= 0.999) return;
+      if (progress <= Math.max(0.001, activeFrom) || progress >= Math.min(0.999, activeTo)) return;
 
       const nearest = snapPoints.reduce((best, p) =>
         Math.abs(p - progress) < Math.abs(best - progress) ? p : best,
@@ -314,7 +316,7 @@ function useSnapToCard(
       if (settle) clearTimeout(settle);
       cancel();
     };
-  }, [enabled, outerRef, snapPoints, tweenTo, cancel, activeFrom]);
+  }, [enabled, outerRef, snapPoints, tweenTo, cancel, activeFrom, activeTo]);
 }
 
 /**
@@ -551,7 +553,8 @@ export function WhyCardSequence({ range }: { range: Range }) {
     [snapPoints, range],
   );
 
-  useSnapToCard(trackRef, trackSnapPoints, pinned, range[0]);
+  // Not past the last card: the hero's outro (ADR 0009) owns the rest.
+  useSnapToCard(trackRef, trackSnapPoints, pinned, range[0], range[1] + 0.005);
 
   return (
     <div ref={rootRef} className="hero-phone-why-screen" aria-hidden="true">

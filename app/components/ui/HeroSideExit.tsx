@@ -51,7 +51,9 @@ import { DustMirrorProvider } from "./DustMirror";
  * unchanged when the card sequence was shortened: it is HANDOVER_END of
  * TRACK_CLASS, which is 432vh at both 0.48/900vh and 0.72/600vh.
  */
-const HANDOVER_END = 0.72;
+// Scaled by 6/7 when the track grew from 600vh to 700vh for the outro
+// (ADR 0009), so the handover and the cards keep their physical scroll.
+const HANDOVER_END = 0.72 * (6 / 7);
 const HANDOVER_TUNED_END = 0.9;
 const hand = ([from, to]: Range): Range => [
   (from / HANDOVER_TUNED_END) * HANDOVER_END,
@@ -235,7 +237,16 @@ export const BAND_WORDMARK: Range = hand([0.62, 0.86]);
  * pin releases. Exported so the sequence can remap the same scroll progress
  * into its own [0, 1].
  */
-export const PHONE_CONTENT: Range = [HANDOVER_END, 1];
+export const PHONE_CONTENT: Range = [HANDOVER_END, 6 / 7];
+
+/**
+ * The outro (ADR 0009): once the last card has had its dwell, "Why Choose"
+ * leaves the way the hero did — sideways, travel only, the copy briskly to
+ * the right and the phone (pills and all) more slowly to the left. The stage
+ * is empty when the pin releases, so the Brutus section rises in from below
+ * over it, as the phone rose into the hero.
+ */
+const OUTRO: Range = [6 / 7, 1];
 /**
  * Just the crossfade — the onboarding mock fading out under the cards.
  *
@@ -321,7 +332,7 @@ const BAND_REST_OPACITY = 0.5;
  * 600vh — 432vh either way — which is exactly what `HANDOVER_END` and `hand()`
  * are for: the split moves, the beats before it do not.
  */
-const TRACK_CLASS = "h-[600vh]";
+const TRACK_CLASS = "h-[700vh]";
 
 /**
  * The element's true on-screen extent, its transformed descendants included.
@@ -657,6 +668,45 @@ const SPEED_HINTS: Record<string, number> = {
  * The hero is passed in as `children` and is otherwise untouched. Anything
  * meant to leave carries `data-hero-exit`; DOM order is order of departure.
  */
+/** One side of the outro: its layer travels off toward `side`. */
+function OutroLayer({
+  side,
+  speed,
+  z,
+  children,
+}: {
+  side: "left" | "right";
+  speed: number;
+  z: number;
+  children: React.ReactNode;
+}) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const place = React.useCallback(
+    (p: number) => {
+      const el = ref.current;
+      if (!el) return;
+      // Eased at both ends and spread over the whole outro, so the stage is
+      // still clearing while Brutus rises underneath it rather than emptying
+      // before Brutus is in sight.
+      const u = clamp01(at(p, OUTRO) * speed);
+      const t = u * u * (3 - 2 * u);
+      // A full viewport plus margin clears anything on the stage.
+      const dx = (side === "left" ? -1 : 1) * (window.innerWidth + 80) * t;
+      el.style.transform = t > 0.0005 ? `translate3d(${dx.toFixed(1)}px, 0, 0)` : "";
+      el.style.willChange = t > 0.0005 && t < 0.999 ? "transform" : "auto";
+    },
+    [side, speed],
+  );
+  useMotionValueEvent(scrollYProgress, "change", place);
+  React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
+  return (
+    <div ref={ref} className="hero-outro" style={{ zIndex: z }}>
+      {children}
+    </div>
+  );
+}
+
 function HeroParts({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -1052,8 +1102,14 @@ export function HeroSideExit({
               {glow}
             </div>
           ) : null}
-          <HeroPhone screen={phoneScreen} />
-          {aside ? <HeroAside whyHeading={whyHeading}>{aside}</HeroAside> : null}
+          <OutroLayer side="left" speed={SPEED_SLOW} z={2}>
+            <HeroPhone screen={phoneScreen} />
+          </OutroLayer>
+          {aside ? (
+            <OutroLayer side="right" speed={1.35} z={4}>
+              <HeroAside whyHeading={whyHeading}>{aside}</HeroAside>
+            </OutroLayer>
+          ) : null}
           <HeroParts>{children}</HeroParts>
         </ContainerSticky>
       </DustMirrorProvider>
