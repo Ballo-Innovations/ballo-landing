@@ -56,3 +56,8 @@ devices (`hover: none`) keep the overlay up on the front card. The "For" and
 
 The prev/next arrows are off (`showNavigation` not passed). Drag, flick, keyboard
 arrows, the dots and clicking a side card still move the ring.
+
+## Update (2026-10-17): bigger cards
+
+Cards are `clamp(200px, 26vw, 340px)` (were 150–230px). The section is about 740px
+tall at 1440px wide.

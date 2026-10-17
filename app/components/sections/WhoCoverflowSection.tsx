@@ -42,7 +42,7 @@ export function WhoCoverflowSection() {
       <CoverflowCarousel
         slides={SLIDES}
         label="Industries BalloAds serves"
-        cardWidth="clamp(150px, 18vw, 230px)"
+        cardWidth="clamp(200px, 26vw, 340px)"
         showOverlay
         showPagination
       />
