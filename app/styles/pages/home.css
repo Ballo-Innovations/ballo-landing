@@ -3607,3 +3607,54 @@
   justify-content: center;
   margin-top: clamp(1.25rem, 3vh, 2rem);
 }
+
+/* =============================================================
+   Who can use BalloAds? — the coverflow (ADR 0008)
+   File: app/components/sections/WhoCoverflowSection.tsx
+   Behind `whoCoverflow`; wins over every earlier trial.
+   ============================================================= */
+.who-cf {
+  padding: clamp(2.5rem, 6vh, 4rem) 0;
+  overflow: clip;
+}
+
+.who-cf__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+}
+
+.who-cf__copy > .section-h2 {
+  margin-bottom: 0.5rem;
+}
+
+.who-cf__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+}
+
+/* Stands in for tailwindcss-animate's `animate-in fade-in` on the caption. */
+.cf-caption-in {
+  animation: cf-caption-in 0.3s ease both;
+}
+
+@keyframes cf-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-caption-in {
+    animation: none;
+  }
+}
