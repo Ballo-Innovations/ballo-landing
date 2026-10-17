@@ -201,7 +201,9 @@ export const TEXT_SWAP: Range = hand([0.76, 0.86]);
  * shown; the animation itself runs on its own clock (a CSS transition — see
  * `.hero-store-badges` in cinematic-hero.css).
  */
-const BADGES_SHOW_AT = PHONE_ASIDE[1];
+// With the pills (ADR 0010): the badges ride in on `ASIDE_IN` too, scrubbed
+// from the left the same way (see `placeHalo` in HeroPhone).
+const BADGES_SHOW_AT = ASIDE_IN[0];
 /*
  * There is no matching point where they animate out. They used to leave at
  * `TEXT_SWAP`, then after the fifth feature card; both read as the page losing
@@ -573,6 +575,15 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
         row.style.position = "relative";
         row.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
       });
+      // The store badges ride in just ahead of the pill rows.
+      rootRef.current
+        ?.querySelectorAll<HTMLElement>(".hero-store-badges__item")
+        .forEach((b, i) => {
+          const a = easeOut(clamp01((t - i * 0.05) * 1.8));
+          const x = -(window.innerWidth * 0.6) * (1 - a);
+          b.style.position = "relative";
+          b.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
+        });
     }
   }, []);
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
