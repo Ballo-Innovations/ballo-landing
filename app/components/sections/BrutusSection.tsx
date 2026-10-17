@@ -216,7 +216,7 @@ function Film() {
 }
 
 /** Where the next section fades in, over the end of the outro. */
-const AFTER_IN: [number, number] = [0.9, 1];
+const AFTER_IN: [number, number] = [0.93, 1];
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();

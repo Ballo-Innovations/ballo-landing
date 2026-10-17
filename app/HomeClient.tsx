@@ -279,7 +279,11 @@ export default function HomeClient({
               />
             </p>
             <div className="hero-actions aside-copy-cta">
-              <button type="button" onClick={openWaitlist} className="btn-primary group">
+              <button
+                type="button"
+                onClick={openWaitlist}
+                className="btn-primary group"
+              >
                 Get Started
               </button>
               <Link href="/how-it-works" className="btn-secondary group">
@@ -413,7 +417,10 @@ export default function HomeClient({
                   ))}
                 </div>
 
-                <div className="hero-actions justify-center md:justify-start" data-hero-exit>
+                <div
+                  className="hero-actions justify-center md:justify-start"
+                  data-hero-exit
+                >
                   <button
                     type="button"
                     onClick={openWaitlist}
@@ -440,7 +447,11 @@ export default function HomeClient({
               sit at different depths, so they travel at different rates. The
               container itself is not marked. */}
           <div className="hero-visual">
-            <div className="hero-rings" aria-hidden="true" data-hero-exit="slow">
+            <div
+              className="hero-rings"
+              aria-hidden="true"
+              data-hero-exit="slow"
+            >
               <ConcentricRings />
             </div>
             <div className="hero-person-stage" data-hero-exit="fast">
@@ -488,7 +499,29 @@ export default function HomeClient({
           Sits directly under the hero, ahead of the proof sections: it is the
           product story, and the partners and industries below it are the
           evidence for it. */}
-      <BrutusSection />
+      {/* "Who can use BalloAds?" fades in at the centre of the Brutus stage
+          once Brutus has left (ADR 0012), rather than scrolling up after it. */}
+      <BrutusSection
+        after={
+          whoCurved ? (
+            <WhoCurvedSection />
+          ) : whoCoverflow ? (
+            <WhoCoverflowSection />
+          ) : whoHover ? (
+            <WhoHoverSection />
+          ) : whoRoll ? (
+            <WhoRollSection />
+          ) : whoConnected ? (
+            <WhoConnectedSection />
+          ) : whoCards ? (
+            <WhoCardsSection />
+          ) : whoStack ? (
+            <WhoStackSection />
+          ) : (
+            <WhoCinematicSection />
+          )
+        }
+      />
 
       {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
           falling back to the marquee-row section while the flag is dark. The
@@ -497,23 +530,6 @@ export default function HomeClient({
       {/* The curved row (ADR 0003) is back on top, picked again on
           2026-10-17 over the later trials (ADR 0009); the rest follow in
           their old order. */}
-      {whoCurved ? (
-        <WhoCurvedSection />
-      ) : whoCoverflow ? (
-        <WhoCoverflowSection />
-      ) : whoHover ? (
-        <WhoHoverSection />
-      ) : whoRoll ? (
-        <WhoRollSection />
-      ) : whoConnected ? (
-        <WhoConnectedSection />
-      ) : whoCards ? (
-        <WhoCardsSection />
-      ) : whoStack ? (
-        <WhoStackSection />
-      ) : (
-        <WhoCinematicSection />
-      )}
 
       {/* Backed By, below "Who can use BalloAds?" (ADR 0011). */}
       <section className="backers-section">

@@ -3707,6 +3707,6 @@
   z-index: 3;
 }
 
-.backers-section--in-stage {
+.brutus-stage__after > * {
   width: 100%;
 }
