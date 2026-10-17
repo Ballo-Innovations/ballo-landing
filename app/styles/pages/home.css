@@ -3454,7 +3454,7 @@
    ============================================================= */
 .who-curved {
   position: relative;
-  padding: clamp(4rem, 10vh, 7rem) 0 clamp(2rem, 6vh, 4rem);
+  padding: clamp(6rem, 14vh, 9rem) 0 clamp(2rem, 6vh, 4rem);
   overflow: clip;
 }
 
@@ -3484,7 +3484,9 @@
 /* The band's height sets the tile size: `tileHeight` is a share of it. */
 .who-curved__band {
   height: clamp(14rem, 40vw, 30rem);
-  margin-top: clamp(1rem, 4vh, 2.5rem);
+  /* Pulled up under the copy: the tiles sit in the middle 40% of the band,
+     so its top ~30% is empty and read as a gap below the text. */
+  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.1);
 }
 
 /* The industry name on each tile, bent with it (see `label` in

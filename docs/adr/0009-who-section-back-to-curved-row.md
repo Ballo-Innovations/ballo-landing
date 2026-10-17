@@ -41,3 +41,10 @@ list is unchanged.
 ## Update (2026-10-17): lines restored
 
 The two lines under the heading are back. The button stays below the row.
+
+## Update (2026-10-17): copy closer to the row
+
+The copy sits lower, nearer the row. The section top padding is now
+`clamp(6rem, 14vh, 9rem)`, and the band is pulled up by 10% of its height,
+because the tiles fill only its middle 40%. At 20% the upward-curving edge
+tiles touched the second line.
