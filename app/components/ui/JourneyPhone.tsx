@@ -237,10 +237,12 @@ export function JourneyPhone({
     };
     // The active slide of the curved row, which runs across the lower middle
     // of the stage under the Who heading.
+    // Large and low on desktop: its top just clears the subtitle and its
+    // foot sits near the bottom of the screen.
     const who = (): Pose => ({
       x: W / 2,
-      y: H * (narrow ? 0.68 : 0.6),
-      h: Math.min(H * (narrow ? 0.4 : 0.5), 460),
+      y: H * 0.68,
+      h: Math.min(H * (narrow ? 0.4 : 0.58), 560),
       r: 0,
     });
     // Where a section's content runs the full width and is meant to be read,
