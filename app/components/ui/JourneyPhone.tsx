@@ -86,6 +86,13 @@ export function JourneyPhone({
   const timeline = React.useRef<Timeline | null>(null);
   /** The scene's portrait height at scale 1, and the rig's layout box. */
   const base = React.useRef({ h: 1, w: 0, hh: 0 });
+  /**
+   * The wallpaper behind the clear glass (see `.journey-phone__backdrop`):
+   * a twin of the rig under the page's content, carrying only the screen.
+   */
+  const backdropRef = React.useRef<HTMLDivElement>(null);
+  const backdropRigRef = React.useRef<HTMLDivElement>(null);
+  const backdropScreenRef = React.useRef<HTMLDivElement>(null);
   const shown = React.useRef(false);
   const [upright, setUpright] = React.useState(false);
 
@@ -121,6 +128,7 @@ export function JourneyPhone({
     }
     if (!visible) {
       videoRef.current?.pause();
+      backdropRef.current?.removeAttribute("data-on");
       return;
     }
 
@@ -145,18 +153,26 @@ export function JourneyPhone({
       };
     }
     const { h, w, hh } = base.current;
-    rig.style.transform =
+    const transform =
       `translate3d(${(pose.x - w / 2).toFixed(1)}px, ${(pose.y - hh / 2).toFixed(1)}px, 0) ` +
       `rotate(${pose.r.toFixed(2)}deg) scale(${(pose.h / h).toFixed(4)})`;
-    setUpright(Math.abs(pose.r) < 12);
+    rig.style.transform = transform;
 
     // Screen.
     let screen: JourneyScreenId = "film";
     for (const [at, id] of t.cues) if (y >= at) screen = id;
     const stack = stackRef.current;
     if (stack && stack.dataset.screen !== screen) stack.dataset.screen = screen;
-    // Clear glass while the curved row is behind it.
-    layer.toggleAttribute("data-glass", screen === "who");
+    // Clear glass while the curved row is behind it, with the wallpaper
+    // under the row. The pointer tilt is off then: the wallpaper does not
+    // lean, so a leaning phone would slide off it.
+    const glass = screen === "who";
+    layer.toggleAttribute("data-glass", glass);
+    backdropRef.current?.toggleAttribute("data-on", glass);
+    if (glass && backdropRigRef.current) {
+      backdropRigRef.current.style.transform = transform;
+    }
+    setUpright(Math.abs(pose.r) < 12 && !glass);
     const v = videoRef.current;
     if (v) {
       if (screen === "film" && v.paused) void v.play().catch(() => {});
@@ -218,6 +234,27 @@ export function JourneyPhone({
       w: rig.offsetWidth,
       hh: rig.offsetHeight,
     };
+    // The wallpaper's twin rig: the rig's layout box, with the screen placed
+    // where it measures inside it at rest (scene scale included), so the same
+    // transform lands it exactly behind the glass.
+    const screenEl = rig.querySelector<HTMLElement>(".phone3d-screen");
+    const twin = backdropRigRef.current;
+    const pane = backdropScreenRef.current;
+    if (screenEl && twin && pane) {
+      rig.style.transform = "none";
+      const rr = rig.getBoundingClientRect();
+      const qr = screenEl.getBoundingClientRect();
+      rig.style.transform = prev;
+      twin.style.width = `${rig.offsetWidth}px`;
+      twin.style.height = `${rig.offsetHeight}px`;
+      pane.style.left = `${qr.left - rr.left}px`;
+      pane.style.top = `${qr.top - rr.top}px`;
+      pane.style.width = `${qr.width}px`;
+      pane.style.height = `${qr.height}px`;
+      const radius =
+        parseFloat(getComputedStyle(screenEl).borderTopLeftRadius) || 0;
+      pane.style.borderRadius = `${radius * (qr.width / (screenEl.offsetWidth || 1))}px`;
+    }
 
     const W = window.innerWidth;
     const H = window.innerHeight;
@@ -374,25 +411,39 @@ export function JourneyPhone({
   }, [place, survey]);
 
   return (
-    <div
-      ref={layerRef}
-      className="journey-phone"
-      aria-hidden="true"
-      // Scenery: the onboarding mock's button must not take keyboard focus.
-      inert
-      style={{ visibility: "hidden" }}
-    >
-      <div ref={rigRef} className="journey-phone__rig">
-        <Phone3D interactive={upright}>
-          <JourneyScreens
-            stackRef={stackRef}
-            postsRef={postsRef}
-            videoRef={videoRef}
-            film={film}
-            testimonials={testimonials}
-          />
-        </Phone3D>
+    <>
+      {/* Under the page's content (z-index -1, over the page gradient), so the
+        curved row's tiles sit on top of it and the phone's glass on top of
+        them: through the glass, a wallpaper behind the cards. */}
+      <div
+        ref={backdropRef}
+        className="journey-phone__backdrop"
+        aria-hidden="true"
+      >
+        <div ref={backdropRigRef} className="journey-phone__rig">
+          <div ref={backdropScreenRef} className="journey-phone__wallpaper" />
+        </div>
       </div>
-    </div>
+      <div
+        ref={layerRef}
+        className="journey-phone"
+        aria-hidden="true"
+        // Scenery: the onboarding mock's button must not take keyboard focus.
+        inert
+        style={{ visibility: "hidden" }}
+      >
+        <div ref={rigRef} className="journey-phone__rig">
+          <Phone3D interactive={upright}>
+            <JourneyScreens
+              stackRef={stackRef}
+              postsRef={postsRef}
+              videoRef={videoRef}
+              film={film}
+              testimonials={testimonials}
+            />
+          </Phone3D>
+        </div>
+      </div>
+    </>
   );
 }

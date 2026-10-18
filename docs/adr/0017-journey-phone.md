@@ -79,3 +79,18 @@ capped at 72% of the screen height (700px) on desktop and 49% on narrow
 screens, and it never extends past the space between the heading and the
 bottom of the screen. Filling that whole space made it too large. It is placed so the row
 crosses its glass 40% of the way down, above the campaign card.
+
+## Update (2026-10-18): a wallpaper behind the cards
+
+The clear glass now has a wallpaper behind the row of cards (a blue and cyan
+gradient). It can't be painted on the screen itself, because the cards are
+behind the phone, so a screen fill would hide them. Instead,
+`.journey-phone__backdrop` is a second fixed layer at z-index -1. That puts
+it under all the page's content, but above the page gradient at -2.
+
+The backdrop is a twin of the phone rig. It carries only a pane with the
+screen's measured position and corner radius, and gets the same transform
+every frame, so it stays exactly behind the glass. The row's tiles then pass
+between the wallpaper and the phone. The pointer tilt is off during the Who
+section, because the wallpaper doesn't tilt and would slide out from under
+the screen.

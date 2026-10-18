@@ -22,6 +22,35 @@
   pointer-events: none;
 }
 
+/* The wallpaper behind the clear glass in the Who section: a fixed layer
+   under all content, so the row's tiles pass in front of it. */
+.journey-phone__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.journey-phone__backdrop[data-on] {
+  opacity: 1;
+}
+
+.journey-phone__wallpaper {
+  position: absolute;
+  background:
+    radial-gradient(90% 55% at 15% 8%, rgba(34, 211, 238, 0.35), transparent 60%),
+    radial-gradient(100% 60% at 95% 95%, rgba(47, 107, 255, 0.55), transparent 60%),
+    linear-gradient(180deg, #0d1a5c, #060c33);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-phone__backdrop {
+    display: none;
+  }
+}
+
 .journey-phone__rig {
   position: absolute;
   top: 0;
