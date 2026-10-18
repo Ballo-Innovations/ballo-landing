@@ -1,12 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { useScroll } from "framer-motion";
-
 import { FadeUpReveal } from "../ui/FadeUpReveal";
 import { ShinyButton } from "../ui/ShinyButton";
 import { TiltedGridHero, type TiltedGridImage } from "../ui/tilted-grid-hero";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
+import { useStageRowProgress } from "../ui/stageRowProgress";
 import { industries } from "./WhoCinematicSection";
 
 /**
@@ -28,17 +26,11 @@ const IMAGES: TiltedGridImage[] = industries.map((item) => ({
 
 export function WhoCurvedSection() {
   const { openWaitlist } = useWaitlist();
-  const pinRef = useRef<HTMLElement>(null);
-  const { scrollYProgress: pinProgress } = useScroll({
-    target: pinRef,
-    offset: ["start start", "end end"],
-  });
+  // On the Brutus stage the row turns with the stage's hold (ADR 0015).
+  const rowProgress = useStageRowProgress() ?? undefined;
 
   return (
-    <section ref={pinRef} className="who-curved">
-      {/* Pinned: the section holds on screen while the scroll turns the row
-          one full lap, then scrolls away (ADR 0009). */}
-      <div className="who-curved__pin">
+    <section className="who-curved">
       <FadeUpReveal yOffset={24}>
         <div className="who-curved__copy">
           <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
@@ -50,18 +42,17 @@ export function WhoCurvedSection() {
       <TiltedGridHero
         images={IMAGES}
         className="who-curved__band"
-        tileHeight={40}
+        tileHeight={50}
         axis={50}
         speed={8}
         scrollDriven={6}
-        scrollProgress={pinProgress}
+        scrollProgress={rowProgress}
         curve={70}
         fade={10}
       />
 
       <div className="who-curved__cta">
         <ShinyButton onClick={openWaitlist}>Start your first campaign</ShinyButton>
-      </div>
       </div>
 
       {/* The band is decorative (aria-hidden), so the industries are listed

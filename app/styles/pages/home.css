@@ -3451,23 +3451,11 @@
    File: app/components/sections/WhoCurvedSection.tsx
    Behind `whoCurvedRow`; `WhoCinematicSection` is the fallback.
    ============================================================= */
-/* Tall track with a sticky, viewport-high stage: the extra 150vh is the
-   scroll that turns the row before the section moves on. No overflow here,
-   or the stage would stop sticking. */
 .who-curved {
   position: relative;
-  height: 250vh;
-}
-
-.who-curved__pin {
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100vh;
-  height: 100svh;
-  overflow: clip;
+  /* Shown on the Brutus stage with "Backed by" under it (ADR 0015), so it
+     brings little padding of its own. */
+  padding: clamp(3.5rem, 8vh, 5rem) 0 0;
 }
 
 .who-curved__copy {
@@ -3495,15 +3483,15 @@
      which curve below the row's centre line. */
   position: relative;
   z-index: 1;
-  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.12);
+  margin-top: calc(clamp(12rem, 28vw, 22rem) * -0.06);
 }
 
 /* The band's height sets the tile size: `tileHeight` is a share of it. */
 .who-curved__band {
-  height: clamp(14rem, 40vw, 30rem);
+  height: clamp(12rem, 28vw, 22rem);
   /* Pulled up under the copy: the tiles sit in the middle 40% of the band,
      so its top ~30% is empty and read as a gap below the text. */
-  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.1);
+  margin-top: calc(clamp(12rem, 28vw, 22rem) * -0.08);
 }
 
 /* The industry name on each tile, bent with it (see `label` in
@@ -3723,6 +3711,16 @@
 
 .brutus-stage__after > * {
   width: 100%;
+}
+
+/* Who and "Backed by" share the stage (ADR 0015): stacked in one column. */
+.brutus-stage__after--stack {
+  flex-direction: column;
+  gap: clamp(0.75rem, 2.5vh, 1.75rem);
+}
+
+.brutus-stage__after--stack .backers-section {
+  padding: 0 clamp(1rem, 5vw, 2rem);
 }
 
 /* The Who section's entrance on the Brutus stage (ADR 0012): the heading,
