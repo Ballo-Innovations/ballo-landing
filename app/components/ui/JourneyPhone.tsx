@@ -26,18 +26,15 @@ import { Phone3D } from "./Phone3D";
  *     row turns.
  *   - "Backed by" / "Trusted by": aside, beside the logos, on a lock screen of
  *     glass notifications. A corner miniature where there is no aside.
- *   - Testimonials: in front of the wall, the quotes arriving as a chat.
- *   - The closing CTA: docked in its right-hand column among the glass
- *     channel icons, showing a campaign's results, and riding up with it.
- *   - The footer: it flies into the ring of the big "a" logo and shrinks to
- *     become its dot, back on the app's first screen, where the hero began.
+ *   - Testimonials: in front of the wall, the quotes arriving as a chat. This
+ *     is where the journey ends: once the section is on its way out, the
+ *     phone rides up off the screen with it. Nothing below it has the phone.
  *
  * A pose is where the phone's centre is (viewport px), how tall it is in
  * portrait (px) and its turn. Each stop pins a pose to a scroll position
  * measured off the sections themselves, so the timeline follows the page's
  * layout rather than a table of numbers; between stops the pose eases from
- * one to the next. The docked pose reads its column's rect, so it moves with
- * the page. One transform written per frame, nothing else.
+ * one to the next. One transform written per frame, nothing else.
  *
  * Not rendered under reduced motion: the hero is static there, and so is
  * everything after it.
@@ -58,6 +55,8 @@ interface Stop {
 
 interface Timeline {
   start: number;
+  /** Where it has ridden off the top of the screen with the testimonials. */
+  end: number;
   stops: Stop[];
   /** Scroll positions where the screen changes, in order. */
   cues: Array<[y: number, screen: JourneyScreenId]>;
@@ -97,11 +96,11 @@ export function JourneyPhone({
     const y = window.scrollY;
     const hero = document.querySelector<HTMLElement>(".cinematic-hero");
 
-    const visible = y >= t.start;
+    hero?.toggleAttribute("data-phone-handoff", y >= t.start);
+    const visible = y >= t.start && y < t.end;
     if (visible !== shown.current) {
       shown.current = visible;
       layer.style.visibility = visible ? "visible" : "hidden";
-      hero?.toggleAttribute("data-phone-handoff", visible);
       // Pick the film up where the hero's left it, so the hand-off is the
       // same frame rather than a cut back to the start.
       const v = videoRef.current;
@@ -187,9 +186,6 @@ export function JourneyPhone({
     const hero = document.querySelector<HTMLElement>(".cinematic-hero");
     const track = document.querySelector<HTMLElement>(".brutus-stage-track");
     const reviews = document.querySelector<HTMLElement>(".t3d");
-    const cta = document.querySelector<HTMLElement>(".cta-mq");
-    const dock = document.querySelector<HTMLElement>(".cta-mq__visual");
-    const logo = document.querySelector<HTMLElement>(".footer__logo-img");
     if (!rig || !scene || !hero || !track) return;
 
     const prev = rig.style.transform;
@@ -205,7 +201,6 @@ export function JourneyPhone({
     const W = window.innerWidth;
     const H = window.innerHeight;
     const narrow = W <= 900;
-    const maxY = document.documentElement.scrollHeight - H;
 
     const heroY = (p: number) => docTop(hero) + p * (hero.offsetHeight - H);
     // The Brutus track runs from its top entering at the bottom of the screen
@@ -246,32 +241,6 @@ export function JourneyPhone({
       narrow
         ? mini()
         : { x: W / 2, y: H * 0.64, h: Math.min(H * 0.5, 460), r: -4 };
-    const docked = (): Pose => {
-      const r = dock?.getBoundingClientRect();
-      // Stacked layouts drop the column, and the copy and buttons then
-      // fill the width.
-      if (!r || r.width < 40 || r.height < 40) return mini();
-      return {
-        x: r.left + r.width / 2,
-        y: r.top + r.height / 2,
-        h: Math.min(r.height * 0.9, H * 0.66, 520),
-        r: 0,
-      };
-    };
-    // The ring of the footer's "a" mark. The logo is an image with the same
-    // proportions at every width, so the ring is placed by fraction: its
-    // centre sits 32% across and 33% down, and its hole is ~21% of the width.
-    const ring = (): Pose => {
-      const r = logo?.getBoundingClientRect();
-      if (!r || !r.width) return { x: W / 2, y: H * 0.5, h: 80, r: 0 };
-      return {
-        x: r.left + r.width * 0.3224,
-        y: r.top + r.height * 0.3333,
-        h: r.width * 0.21,
-        r: 0,
-      };
-    };
-
     const start = heroY(HANDOFF);
     const whoIn = stageY(AFTER_IN[1]);
     const rowEnd = stageY(ROW_TURN[1]);
@@ -283,18 +252,20 @@ export function JourneyPhone({
     const reviewsAside = Math.max(release + 1, reviewsTop);
     const reviewsIn = reviewsAside + H * 0.2;
     const reviewsHold = reviewsIn + H * 0.2;
-    const ctaTop = cta ? docTop(cta) : maxY;
-    // Docked while the CTA is mostly on screen, then on to the footer, which
-    // only arrives at the very end of the page.
-    const ctaIn = Math.max(
-      reviewsHold + 1,
-      Math.min(ctaTop - H * 0.2, maxY - H * 0.6),
-    );
-    const ctaHold = Math.max(
-      ctaIn + 1,
-      Math.min(ctaTop + H * 0.1, maxY - H * 0.4),
-    );
-
+    // Held until the section starts to leave, then carried off with it: from
+    // here the phone moves with the page, pixel for pixel. The corner
+    // miniature would ride up across the CTA instead, so it slides out to the
+    // left.
+    const reviewsH = reviews ? reviews.offsetHeight : H;
+    const rideStart = Math.max(reviewsHold + 1, reviewsTop + reviewsH - H);
+    const rest = reviewsPose();
+    const leave: Stop = narrow
+      ? { y: rideStart + H * 0.3, pose: () => ({ ...mini(), x: -160, r: -14 }) }
+      : {
+          y: rideStart,
+          pose: () => ({ ...rest, y: rest.y - (window.scrollY - rideStart) }),
+        };
+    const end = narrow ? leave.y + 1 : rideStart + rest.y + rest.h * 0.6 + 40;
     const stops: Stop[] = [
       { y: start, pose: handoff },
       { y: whoIn, pose: who },
@@ -304,9 +275,8 @@ export function JourneyPhone({
       { y: reviewsAside, pose: trusted },
       { y: reviewsIn, pose: reviewsPose },
       { y: reviewsHold, pose: reviewsPose },
-      { y: ctaIn, pose: docked },
-      { y: ctaHold, pose: docked },
-      { y: maxY, pose: ring },
+      ...(narrow ? [{ y: rideStart, pose: reviewsPose }] : []),
+      leave,
     ];
     // Never let a later stop sit above an earlier one, whatever the layout.
     for (let i = 1; i < stops.length; i++) {
@@ -315,13 +285,12 @@ export function JourneyPhone({
 
     timeline.current = {
       start,
+      end,
       stops,
       cues: [
         [mid(start, whoIn), "who"],
         [mid(rowEnd, trustedIn), "lock"],
         [mid(reviewsAside, reviewsIn), "reviews"],
-        [mid(reviewsHold, ctaIn), "results"],
-        [mid(ctaHold, maxY), "home"],
       ],
       row: [stageY(ROW_TURN[0]), rowEnd],
     };

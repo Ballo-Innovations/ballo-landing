@@ -16,11 +16,10 @@ import {
 
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { industries } from "../sections/WhoCinematicSection";
-import { PhoneOnboardingScreen } from "./PhoneOnboardingScreen";
 
 /**
  * The screens the journey phone shows below the hero (ADR 0017), one per
- * section it passes through. All are mounted and stacked; `JourneyPhone`
+ * section it passes through, up to the testimonials. All are mounted and stacked; `JourneyPhone`
  * names the live one in `data-screen` on the stack, and CSS does the rest,
  * including each screen's own entrance (journey-phone.css). Sized in `cqw`
  * against the phone's screen, like `.phone-ui`.
@@ -28,8 +27,7 @@ import { PhoneOnboardingScreen } from "./PhoneOnboardingScreen";
  * Mock UI throughout: the figures are illustrative, as on the hero's cards.
  */
 
-export type JourneyScreenId =
-  "film" | "who" | "lock" | "reviews" | "results" | "home";
+export type JourneyScreenId = "film" | "who" | "lock" | "reviews";
 
 /** One example message per industry, in the order of `industries`. */
 const INDUSTRY_POSTS: Record<
@@ -237,59 +235,6 @@ function ReviewsScreen({
   );
 }
 
-const CHANNELS = [
-  { name: "SMS", share: 62 },
-  { name: "WhatsApp", share: 24 },
-  { name: "Email", share: 14 },
-];
-
-/** The closing CTA: what one campaign earned. */
-function ResultsScreen() {
-  return (
-    <div className="jp-screen jp-screen--results">
-      <StatusBar />
-      <div className="jp-results__title">
-        <b>Campaign results</b>
-        <small>Weekend promo · sent 09:00</small>
-      </div>
-      <div className="jp-card jp-results__reach">
-        <span className="jp-results__tick">
-          <Check />
-        </span>
-        <b>24,906</b>
-        <small>customers reached</small>
-      </div>
-      <div className="jp-card jp-results__channels">
-        {CHANNELS.map((c) => (
-          <div
-            key={c.name}
-            className="jp-bar"
-            style={
-              { ["--share" as string]: `${c.share}%` } as React.CSSProperties
-            }
-          >
-            <span>
-              {c.name}
-              <em>{c.share}%</em>
-            </span>
-            <i />
-          </div>
-        ))}
-      </div>
-      <div className="jp-card jp-results__earned">
-        <span>
-          <b>K48,200</b>
-          <small>earned from this campaign</small>
-        </span>
-        <svg viewBox="0 0 60 24" aria-hidden="true">
-          <polyline points="0,20 10,17 20,18 30,11 40,12 50,5 60,3" />
-        </svg>
-      </div>
-      <span className="jp-results__cta">Send again</span>
-    </div>
-  );
-}
-
 export function JourneyScreens({
   stackRef,
   postsRef,
@@ -322,11 +267,6 @@ export function JourneyScreens({
       <WhoScreen indexRef={postsRef} />
       <LockScreen />
       <ReviewsScreen testimonials={testimonials} />
-      <ResultsScreen />
-      {/* The footer: back to the app's first screen, where the hero began. */}
-      <div className="jp-screen jp-screen--home">
-        <PhoneOnboardingScreen />
-      </div>
     </div>
   );
 }

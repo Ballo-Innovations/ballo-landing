@@ -3,7 +3,7 @@
    File: app/components/ui/JourneyPhone.tsx, JourneyScreens.tsx
 
    A fixed layer carrying the phone from the end of the hero's pin to the
-   closing CTA. `JourneyPhone` writes the rig's transform each frame and
+   testimonials. `JourneyPhone` writes the rig's transform each frame and
    names the live screen in `.jp-screens[data-screen]`; everything here is
    sized in `cqw` against the phone's screen.
    ============================================================= */
@@ -71,16 +71,8 @@
 .jp-screens[data-screen="film"] .jp-screen--film,
 .jp-screens[data-screen="who"] .jp-screen--who,
 .jp-screens[data-screen="lock"] .jp-screen--lock,
-.jp-screens[data-screen="reviews"] .jp-screen--reviews,
-.jp-screens[data-screen="results"] .jp-screen--results,
-.jp-screens[data-screen="home"] .jp-screen--home {
+.jp-screens[data-screen="reviews"] .jp-screen--reviews {
   opacity: 1;
-}
-
-/* The onboarding mock is drawn for the phone's own white screen. */
-.jp-screen--home {
-  padding: 0;
-  background: #fff;
 }
 
 /* The film layer reuses `.hero-phone-film`, which pads nothing. */
@@ -154,12 +146,6 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-.jp-card {
-  border-radius: 5cqw;
-  padding: 4.5cqw;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
-  border: 1px solid rgba(255, 255, 255, 0.14);
-}
 
 /* ── Who: campaign posts, carousel style ── */
 
@@ -476,144 +462,4 @@
 @keyframes jp-typing {
   0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
   30% { transform: translateY(-1.2cqw); opacity: 1; }
-}
-
-/* ── Results: the closing CTA ── */
-
-.jp-results__title {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
-
-.jp-results__title b {
-  font-size: 5.4cqw;
-}
-
-.jp-results__title small {
-  font-size: 3.3cqw;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.jp-results__reach {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.6cqw;
-}
-
-.jp-results__reach b {
-  font-size: 10cqw;
-  line-height: 1;
-}
-
-.jp-results__reach small,
-.jp-results__earned small {
-  font-size: 3.2cqw;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.jp-results__tick {
-  display: grid;
-  place-items: center;
-  width: 8cqw;
-  height: 8cqw;
-  margin-bottom: 1.5cqw;
-  border-radius: 50%;
-  background: #16a34a;
-  transform: scale(0);
-  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms;
-}
-
-.jp-results__tick svg {
-  width: 5cqw;
-  height: 5cqw;
-}
-
-.jp-screens[data-screen="results"] .jp-results__tick {
-  transform: scale(1);
-}
-
-.jp-results__channels {
-  display: flex;
-  flex-direction: column;
-  gap: 2.6cqw;
-}
-
-.jp-bar span {
-  display: flex;
-  justify-content: space-between;
-  font-size: 3.3cqw;
-  margin-bottom: 1.2cqw;
-}
-
-.jp-bar em {
-  font-style: normal;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.jp-bar i {
-  display: block;
-  height: 1.8cqw;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-}
-
-.jp-bar i::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--share);
-  border-radius: inherit;
-  background: linear-gradient(90deg, #2f6bff, #22d3ee);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms;
-}
-
-.jp-screens[data-screen="results"] .jp-bar i::after {
-  transform: scaleX(1);
-}
-
-.jp-results__earned {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 3cqw;
-}
-
-.jp-results__earned > span {
-  display: flex;
-  flex-direction: column;
-}
-
-.jp-results__earned b {
-  font-size: 6cqw;
-}
-
-.jp-results__earned svg {
-  width: 20cqw;
-  height: 8cqw;
-  flex: none;
-}
-
-.jp-results__earned polyline {
-  fill: none;
-  stroke: #22d3ee;
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.jp-results__cta {
-  margin-top: auto;
-  display: grid;
-  place-items: center;
-  height: 12cqw;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #2f6bff, #22d3ee);
-  font-size: 4cqw;
-  font-weight: 700;
 }
