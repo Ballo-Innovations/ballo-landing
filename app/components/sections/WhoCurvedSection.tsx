@@ -1,9 +1,7 @@
 "use client";
 
 import { FadeUpReveal } from "../ui/FadeUpReveal";
-import { ShinyButton } from "../ui/ShinyButton";
 import { TiltedGridHero, type TiltedGridImage } from "../ui/tilted-grid-hero";
-import { useWaitlist } from "../waitlist/WaitlistProvider";
 import { useStageRowProgress } from "../ui/stageRowProgress";
 import { industries } from "./WhoCinematicSection";
 
@@ -25,7 +23,6 @@ const IMAGES: TiltedGridImage[] = industries.map((item) => ({
 }));
 
 export function WhoCurvedSection() {
-  const { openWaitlist } = useWaitlist();
   // On the Brutus stage the row turns with the stage's hold (ADR 0015).
   const rowProgress = useStageRowProgress() ?? undefined;
 
@@ -42,7 +39,8 @@ export function WhoCurvedSection() {
       <TiltedGridHero
         images={IMAGES}
         className="who-curved__band"
-        tileHeight={40}
+        tileHeight={52}
+        aspectRatio={1.35}
         axis={50}
         speed={8}
         scrollDriven={6}
@@ -50,10 +48,6 @@ export function WhoCurvedSection() {
         curve={70}
         fade={10}
       />
-
-      <div className="who-curved__cta">
-        <ShinyButton onClick={openWaitlist}>Start your first campaign</ShinyButton>
-      </div>
 
       {/* The band is decorative (aria-hidden), so the industries are listed
           here for screen readers and crawlers. */}
