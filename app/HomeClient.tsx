@@ -18,7 +18,11 @@ import { WhoRollSection } from "./components/sections/WhoRollSection";
 import { WhoHoverSection } from "./components/sections/WhoHoverSection";
 import { WhoCoverflowSection } from "./components/sections/WhoCoverflowSection";
 import { isFeatureEnabled } from "@/lib/featureFlags";
-import { BrutusSection } from "./components/sections/BrutusSection";
+import {
+  BRUTUS_FILM,
+  BrutusSection,
+  BrutusStageCopy,
+} from "./components/sections/BrutusSection";
 import { Testimonials3D } from "./components/sections/Testimonials3D";
 import { FinalCta } from "./components/sections/FinalCta";
 import { FadeUpReveal } from "./components/ui/FadeUpReveal";
@@ -333,6 +337,11 @@ export default function HomeClient({
            the rest of this pin. There is no separate "Why Choose" section
            below any more — this is that section. */
         phoneScreen={<WhyCardSequence range={PHONE_CONTENT} />}
+        /* Act four (ADR 0016): the same phone comes back to the middle, turns
+           to landscape and plays the Brutus film, with this copy rising in
+           underneath it. */
+        brutus={<BrutusStageCopy />}
+        film={BRUTUS_FILM}
       >
         <section
           className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"

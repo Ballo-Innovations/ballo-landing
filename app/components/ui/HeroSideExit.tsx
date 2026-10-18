@@ -51,9 +51,23 @@ import { DustMirrorProvider } from "./DustMirror";
  * unchanged when the card sequence was shortened: it is HANDOVER_END of
  * TRACK_CLASS, which is 432vh at both 0.48/900vh and 0.72/600vh.
  */
+/**
+ * Track length in vh. The stage is one viewport, so the pin holds for
+ * `TRACK_VH - 100` of scroll.
+ *
+ * 700 → 880 for the Brutus act (ADR 0016). Everything before that act was
+ * tuned on the 700vh track and is restated through `TUNED`, so it keeps the
+ * scroll it had.
+ */
+const TRACK_VH = 880;
+/** Tailwind needs the class as a literal; keep it in step with `TRACK_VH`. */
+const TRACK_CLASS = "h-[880vh]";
+const SCROLL_VH = TRACK_VH - 100;
+const TUNED = 600 / SCROLL_VH;
+
 // Scaled by 6/7 when the track grew from 600vh to 700vh for the outro
 // (ADR 0009), so the handover and the cards keep their physical scroll.
-const HANDOVER_END = 0.72 * (6 / 7);
+const HANDOVER_END = 0.72 * (6 / 7) * TUNED;
 const HANDOVER_TUNED_END = 0.9;
 const hand = ([from, to]: Range): Range => [
   (from / HANDOVER_TUNED_END) * HANDOVER_END,
@@ -239,16 +253,38 @@ export const BAND_WORDMARK: Range = hand([0.62, 0.86]);
  * pin releases. Exported so the sequence can remap the same scroll progress
  * into its own [0, 1].
  */
-export const PHONE_CONTENT: Range = [HANDOVER_END, 6 / 7];
+export const PHONE_CONTENT: Range = [HANDOVER_END, (6 / 7) * TUNED];
+
+/* ── Act four: Brutus (ADR 0016) ───────────────────────────────────────────
+   The phone stays. "Why Choose" leaves sideways around it, the device comes
+   back to the middle, turns to landscape and plays the Brutus film on its own
+   screen, and the Brutus copy rises in from the bottom underneath it. Then
+   all of it leaves sideways and the pin releases onto an empty stage, where
+   the Who section is already arriving (see `BrutusSection`).
+
+   Stated in vh of scroll after the last card's dwell. */
+const WHY_END = PHONE_CONTENT[1];
+const act = (from: number, to: number): Range => [
+  WHY_END + from / SCROLL_VH,
+  WHY_END + to / SCROLL_VH,
+];
 
 /**
- * The outro (ADR 0009): once the last card has had its dwell, "Why Choose"
- * leaves the way the hero did — sideways, travel only, the copy briskly to
- * the right and the phone (pills and all) more slowly to the left. The stage
- * is empty when the pin releases, so the Brutus section rises in from below
- * over it, as the phone rose into the hero.
+ * "Why Choose" leaves the way the hero did (ADR 0009): sideways, travel only,
+ * the copy to the right and the badges and pills to the left. The badges ride
+ * on the phone, so they have to be clear before it starts to turn.
  */
-const OUTRO: Range = [6 / 7, 1];
+const WHY_OUT = act(0, 70);
+/** The phone returns to the middle of the stage at full size… */
+const PHONE_HOME = act(10, 85);
+/** …and, overlapping that, turns a quarter to landscape and grows. */
+const PHONE_TURN = act(40, 100);
+/** The screen swaps from the last card to the film as the turn lands. Latched. */
+const FILM_IN = act(78, 100);
+/** The Brutus copy rises in from the bottom, under the device. */
+const BRUTUS_IN = act(100, 150);
+/** Then everything leaves sideways, the phone last, before the pin releases. */
+const BRUTUS_OUT = act(196, 262);
 /**
  * Just the crossfade — the onboarding mock fading out under the cards.
  *
@@ -320,8 +356,8 @@ const BAND_OUT: Range = hand([0.86, 0.9]);
 const BAND_REST_OPACITY = 0.5;
 
 /**
- * Track length: the handover, then act two, then the in-place handoff to
- * "Why Choose". `PHONE_CONTENT` needs room to fit an actual card swap (see
+ * Track length (now `TRACK_VH`, above): the handover, then act two, then the
+ * in-place handoff to "Why Choose". `PHONE_CONTENT` needs room to fit an actual card swap (see
  * `WhyPreviewCards`), not just a crossfade.
  *
  * Shortened from 900vh, and the shortening is all in the card sequence. At
@@ -334,7 +370,6 @@ const BAND_REST_OPACITY = 0.5;
  * 600vh — 432vh either way — which is exactly what `HANDOVER_END` and `hand()`
  * are for: the split moves, the beats before it do not.
  */
-const TRACK_CLASS = "h-[700vh]";
 
 /**
  * The element's true on-screen extent, its transformed descendants included.
@@ -437,7 +472,32 @@ function HeroStoreBadges() {
  * own movement so the target did not slide out from under the animation. There
  * is no landing any more, so none of that machinery is here.
  */
-function HeroPhone({ screen }: { screen?: React.ReactNode }) {
+/** Where the landscape phone lands, and how large, measured per layout. */
+interface TurnGeometry {
+  /** The scene's visual centre, relative to the turn wrapper's own centre. */
+  ox: number;
+  oy: number;
+  /** How far that centre travels to its landscape spot, in stage px. */
+  tx: number;
+  ty: number;
+  /** Scale in landscape. */
+  k: number;
+}
+
+/**
+ * Room the header needs above the landscape phone, and the gap between the
+ * device and the Brutus copy under it.
+ */
+const TURN_TOP_RESERVE = 104;
+const TURN_GAP = 28;
+
+function HeroPhone({
+  screen,
+  film,
+}: {
+  screen?: React.ReactNode;
+  film?: { src: string; poster: string };
+}) {
   const { scrollYProgress } = useContainerScrollContext();
   const rootRef = React.useRef<HTMLDivElement>(null);
   /**
@@ -494,16 +554,17 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   // Act two. The phone drifts aside and stays there for the rest of the
   // track — act three changes what's on its screen rather than moving it
   // again.
+  // Act four brings it back to the middle at full size, for the turn.
   const x = useTransform(
     scrollYProgress,
-    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
-    ["0%", "0%", `${asideX}%`, `${asideX}%`],
+    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], PHONE_HOME[0], PHONE_HOME[1], 1],
+    ["0%", "0%", `${asideX}%`, `${asideX}%`, "0%", "0%"],
     { ease: easeInOut },
   );
   const scale = useTransform(
     scrollYProgress,
-    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], 1],
-    [1, 1, PHONE_ASIDE_SCALE, PHONE_ASIDE_SCALE],
+    [0, PHONE_ASIDE[0], PHONE_ASIDE[1], PHONE_HOME[0], PHONE_HOME[1], 1],
+    [1, 1, PHONE_ASIDE_SCALE, PHONE_ASIDE_SCALE, 1, 1],
     { ease: easeInOut },
   );
 
@@ -589,6 +650,119 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
   React.useEffect(() => placeHalo(scrollYProgress.get()), [placeHalo, scrollYProgress]);
 
+  // ── Act four: the turn to landscape and the film ──────────────────────
+  //
+  // On a wrapper around the device rather than on `.hero-zoom-phone`, which
+  // is stage-sized and owns x/y/scale above: the turn has to pivot on the
+  // phone itself. By the end of `PHONE_HOME` that layer is back to identity,
+  // so the wrapper's layout box is where the phone really is, and the
+  // geometry below can be worked out from layout alone.
+  const turnRef = React.useRef<HTMLDivElement>(null);
+  const geomRef = React.useRef<TurnGeometry | null>(null);
+  const filmRef = React.useRef<HTMLDivElement>(null);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  // The pointer tilt leans on the device's own axes, which are a quarter turn
+  // out once it is landscape; it is switched off for the act.
+  const [turning, setTurning] = React.useState(false);
+
+  const placeTurn = React.useCallback(
+    (p: number) => {
+      setTurning(p > PHONE_HOME[0]);
+      const el = turnRef.current;
+      const g = geomRef.current;
+      if (el && g) {
+        // Across with the return to the middle; up only with the turn, so the
+        // tall portrait device never rises under the header before it is on
+        // its side.
+        const m = easeInOut(at(p, PHONE_HOME));
+        const r = easeInOut(at(p, PHONE_TURN));
+        el.style.transformOrigin = `calc(50% + ${g.ox.toFixed(1)}px) calc(50% + ${g.oy.toFixed(1)}px)`;
+        el.style.transform =
+          m > 0.0005 || r > 0.0005
+            ? `translate(${(g.tx * m).toFixed(1)}px, ${(g.ty * r).toFixed(1)}px) rotate(${(-90 * r).toFixed(2)}deg) scale(${lerp(1, g.k, r).toFixed(4)})`
+            : "";
+      }
+      const video = videoRef.current;
+      if (video) {
+        // Fetched from the start of the act, so the first frames are in hand
+        // by the time the screen swaps; playing only while it can be seen.
+        if (p > WHY_OUT[0] && video.preload !== "auto") video.preload = "auto";
+        const live = p >= FILM_IN[0] && p < BRUTUS_OUT[1];
+        if (live && video.paused) void video.play().catch(() => {});
+        else if (!live && !video.paused) video.pause();
+      }
+    },
+    [],
+  );
+
+  /**
+   * Measures where the landscape phone goes. Taken with the wrapper's own
+   * transform cleared; its ancestors only ever translate and scale, so their
+   * scale can be divided back out of the rects.
+   */
+  const surveyTurn = React.useCallback(() => {
+    const el = turnRef.current;
+    const scene = el?.querySelector<HTMLElement>(".phone3d-scene");
+    const stage = el?.closest<HTMLElement>(".ch-stage");
+    if (!el || !scene || !stage) return;
+    const prev = el.style.transform;
+    el.style.transform = "";
+    const wr = el.getBoundingClientRect();
+    const sr = scene.getBoundingClientRect();
+    el.style.transform = prev;
+    const k0 = wr.width / (el.offsetWidth || 1);
+    if (!k0) return;
+    const ox = (sr.left + sr.width / 2 - (wr.left + wr.width / 2)) / k0;
+    const oy = (sr.top + sr.height / 2 - (wr.top + wr.height / 2)) / k0;
+    // Portrait size; landscape swaps the two.
+    const sw = sr.width / k0;
+    const sh = sr.height / k0;
+
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    const copy = stage.querySelector<HTMLElement>(".hero-brutus");
+    const copyTop = copy ? copy.offsetTop : H * 0.62;
+    const top = Math.min(TURN_TOP_RESERVE, H * 0.12);
+    const availH = Math.max(80, copyTop - TURN_GAP - top);
+    const availW = W * (W <= 900 ? 0.92 : 0.72);
+    const k = Math.min(availW / sh, availH / sw, 2.4);
+
+    // The wrapper's layout centre, in stage px (`.hero-zoom-phone` fills the
+    // stage, and is at identity by the time the turn lands).
+    const wcx = el.offsetLeft + el.offsetWidth / 2;
+    const wcy = el.offsetTop + el.offsetHeight / 2;
+    geomRef.current = {
+      ox,
+      oy,
+      tx: W / 2 - (wcx + ox),
+      ty: top + availH / 2 - (wcy + oy),
+      k,
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const run = () => {
+      surveyTurn();
+      placeTurn(scrollYProgress.get());
+    };
+    run();
+    window.addEventListener("resize", run);
+    // The copy under the phone changes height once the web fonts land.
+    void document.fonts?.ready.then(run);
+    return () => window.removeEventListener("resize", run);
+  }, [surveyTurn, placeTurn, scrollYProgress]);
+  useMotionValueEvent(scrollYProgress, "change", placeTurn);
+
+  // The last card hands the screen to the film: latched like the other screen
+  // swap, so it never rests half and half.
+  const filmSwap = React.useRef(0);
+  const placeFilm = React.useCallback(() => {
+    if (filmRef.current) {
+      filmRef.current.style.opacity = String(easeOut(filmSwap.current));
+    }
+  }, []);
+  useLatchedBeat(scrollYProgress, FILM_IN, filmSwap, placeFilm, 0.4);
+
   React.useEffect(() => {
     const stage = rootRef.current?.closest(".ch-stage") as HTMLElement | null;
     const apply = () => {
@@ -621,7 +795,8 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
       <div ref={chipsRef} className="aside-copy-rows hero-phone-chips">
         <FeatureChipRows />
       </div>
-      <Phone3D floating={<HeroStoreBadges />}>
+      <div ref={turnRef} className="hero-phone-turn">
+      <Phone3D floating={<HeroStoreBadges />} interactive={!turning}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
             mock is what's on the phone at rest, `screen` (the feature-card
             preview) is what it hands off to. Absolute-on-relative rather than
@@ -635,7 +810,24 @@ function HeroPhone({ screen }: { screen?: React.ReactNode }) {
             {screen}
           </div>
         ) : null}
+        {/* The Brutus film, on the screen once the device is landscape. The
+            video is turned back a quarter inside it so it plays upright. */}
+        {film ? (
+          <div ref={filmRef} className="hero-phone-film" style={{ opacity: 0 }}>
+            <video
+              ref={videoRef}
+              className="hero-phone-film__video"
+              src={film.src}
+              poster={film.poster}
+              muted
+              loop
+              playsInline
+              preload="none"
+            />
+          </div>
+        ) : null}
       </Phone3D>
+      </div>
     </motion.div>
   );
 }
@@ -701,11 +893,13 @@ const SPEED_HINTS: Record<string, number> = {
 function OutroLayer({
   side,
   targets,
+  range,
   z,
   children,
 }: {
   side: "left" | "right";
   targets: Array<[selector: string, speed: number]>;
+  range: Range;
   z: number;
   children: React.ReactNode;
 }) {
@@ -715,7 +909,7 @@ function OutroLayer({
     (p: number) => {
       const root = ref.current;
       if (!root) return;
-      const u0 = at(p, OUTRO);
+      const u0 = at(p, range);
       const sign = side === "left" ? -1 : 1;
       const dist = window.innerWidth + 120;
       targets.forEach(([sel, speed], i) => {
@@ -727,7 +921,7 @@ function OutroLayer({
         });
       });
     },
-    [side, targets],
+    [side, targets, range],
   );
   useMotionValueEvent(scrollYProgress, "change", place);
   React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
@@ -738,14 +932,23 @@ function OutroLayer({
   );
 }
 
-/** Left side: badges and the near pill row first, the phone last. */
+/**
+ * Left side: badges and the near pill row first. The phone used to go last;
+ * it stays now, for the Brutus act, and leaves at the end of that instead.
+ */
 const OUTRO_LEFT: Array<[string, number]> = [
   [".hero-store-badges__item:first-child", 2.1],
   [".hero-store-badges__item:last-child", 1.9],
   [".hero-phone-chips .mq:first-child", 1.6],
   [".hero-phone-chips .mq:last-child", 1.35],
-  [".phone3d-scene", 1.05],
 ];
+
+/**
+ * The phone's own exit, at the end of the Brutus act. The turn wrapper, not
+ * the scene: `translate` composes in the parent's frame, and the scene is
+ * inside the quarter turn, where "left" would point down.
+ */
+const BRUTUS_OUT_LEFT: Array<[string, number]> = [[".hero-phone-turn", 1.05]];
 
 /** Right side: the button first, then the paragraph, the heading last. */
 const OUTRO_RIGHT: Array<[string, number]> = [
@@ -753,6 +956,56 @@ const OUTRO_RIGHT: Array<[string, number]> = [
   [".aside-copy > :not(.aside-copy-title):not(.aside-copy-cta)", 1.6],
   [".aside-copy-title", 1.2],
 ];
+
+/**
+ * The Brutus copy, under the landscape phone (ADR 0016).
+ *
+ * Each piece rises from below the stage at its own speed, heading first, over
+ * `BRUTUS_IN`; over `BRUTUS_OUT` they leave sideways, alternating, as the old
+ * Brutus stage's pieces did. Both are written to `translate` as one value.
+ */
+const BRUTUS_PIECES = ".brutus-stage__copy > *, .brutus-stage__cta";
+const BRUTUS_EXIT: Array<[dir: 1 | -1, speed: number]> = [
+  [-1, 1.9],
+  [1, 1.4],
+  [-1, 1.7],
+  [1, 2],
+];
+
+function BrutusAct({ children }: { children: React.ReactNode }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const place = React.useCallback((p: number) => {
+    const root = ref.current;
+    const stage = root?.parentElement;
+    if (!root || !stage) return;
+    const tIn = at(p, BRUTUS_IN);
+    const u0 = at(p, BRUTUS_OUT);
+    const rise = stage.clientHeight;
+    const dist = window.innerWidth + 120;
+    const pieces = root.querySelectorAll<HTMLElement>(BRUTUS_PIECES);
+    pieces.forEach((el, i) => {
+      const a = easeOut(clamp01((tIn - i * 0.08) * 1.4));
+      const [dir, speed] = BRUTUS_EXIT[Math.min(i, BRUTUS_EXIT.length - 1)];
+      // Last in, first out.
+      const u = clamp01((u0 - (pieces.length - 1 - i) * 0.04) * speed);
+      const o = u * u * (3 - 2 * u);
+      const x = dir * dist * o;
+      const y = rise * (1 - a);
+      el.style.translate =
+        Math.abs(x) > 0.5 || y > 0.5 ? `${x.toFixed(1)}px ${y.toFixed(1)}px` : "";
+    });
+    root.style.visibility = tIn > 0 && u0 < 1 ? "visible" : "hidden";
+    root.style.pointerEvents = tIn > 0.9 && u0 < 0.1 ? "auto" : "none";
+  }, []);
+  useMotionValueEvent(scrollYProgress, "change", place);
+  React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
+  return (
+    <div ref={ref} className="hero-brutus" style={{ visibility: "hidden" }}>
+      {children}
+    </div>
+  );
+}
 
 function HeroParts({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -1065,6 +1318,8 @@ export function HeroSideExit({
   aside,
   whyHeading,
   phoneScreen,
+  brutus,
+  film,
 }: {
   children: React.ReactNode;
   /** Background band on the pin, behind everything. */
@@ -1094,6 +1349,10 @@ export function HeroSideExit({
    * the phone never leaves or is replaced, only what it's showing changes.
    */
   phoneScreen?: React.ReactNode;
+  /** The Brutus copy, risen in under the landscape phone (ADR 0016). */
+  brutus?: React.ReactNode;
+  /** The film the landscape phone plays. */
+  film?: { src: string; poster: string };
 }) {
   const reduced = useReducedMotion();
 
@@ -1107,6 +1366,15 @@ export function HeroSideExit({
           {children}
           {backdrop}
           {aside ? <div className="hero-aside hero-aside--static">{aside}</div> : null}
+          {brutus ? (
+            <div className="hero-brutus hero-brutus--static">
+              {film ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="hero-brutus__poster" src={film.poster} alt="" />
+              ) : null}
+              {brutus}
+            </div>
+          ) : null}
         </div>
       </div>
     );
@@ -1125,14 +1393,17 @@ export function HeroSideExit({
               {glow}
             </div>
           ) : null}
-          <OutroLayer side="left" targets={OUTRO_LEFT} z={2}>
-            <HeroPhone screen={phoneScreen} />
+          <OutroLayer side="left" targets={BRUTUS_OUT_LEFT} range={BRUTUS_OUT} z={2}>
+            <OutroLayer side="left" targets={OUTRO_LEFT} range={WHY_OUT} z={2}>
+              <HeroPhone screen={phoneScreen} film={film} />
+            </OutroLayer>
           </OutroLayer>
           {aside ? (
-            <OutroLayer side="right" targets={OUTRO_RIGHT} z={4}>
+            <OutroLayer side="right" targets={OUTRO_RIGHT} range={WHY_OUT} z={4}>
               <HeroAside whyHeading={whyHeading}>{aside}</HeroAside>
             </OutroLayer>
           ) : null}
+          {brutus ? <BrutusAct>{brutus}</BrutusAct> : null}
           <HeroParts>{children}</HeroParts>
         </ContainerSticky>
       </DustMirrorProvider>
