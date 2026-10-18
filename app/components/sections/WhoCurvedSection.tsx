@@ -39,14 +39,14 @@ export function WhoCurvedSection() {
       <TiltedGridHero
         images={IMAGES}
         className="who-curved__band"
-        tileHeight={52}
+        tileHeight={46}
         aspectRatio={1.35}
         axis={50}
         speed={8}
         scrollDriven={6}
         scrollProgress={rowProgress}
         curve={70}
-        fade={10}
+        fade={0}
       />
 
       {/* The band is decorative (aria-hidden), so the industries are listed

@@ -3492,10 +3492,10 @@
 /* The band's height sets the tile size: `tileHeight` is a share of it. */
 .who-curved__band {
   /* Taller, and the button below is gone so the cards take its space. */
-  height: clamp(18rem, 52vw, 40rem);
+  height: clamp(16rem, 45vw, 34rem);
   /* Pulled up under the copy: the tiles sit in the middle 40% of the band,
      so its top ~30% is empty and read as a gap below the text. */
-  margin-top: calc(clamp(18rem, 52vw, 40rem) * -0.1);
+  margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1);
 }
 
 /* The industry name on each tile, bent with it (see `label` in
