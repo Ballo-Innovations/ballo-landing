@@ -3752,3 +3752,17 @@
   width: 100%;
   padding-top: clamp(2rem, 6vh, 4rem);
 }
+
+/* The Backed by band without its glass panel (2026-10-18): the marks and
+   dashed dividers sit straight on the page. */
+.backers__band {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.backers__band::after {
+  content: none;
+}
