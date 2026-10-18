@@ -3781,3 +3781,9 @@
     margin-top: -100vh;
   }
 }
+
+/* The logo wall is one block now, centred on the stage. */
+.brutus-stage__then:has(.logo-wall) {
+  justify-content: center;
+  padding-top: 4rem;
+}
