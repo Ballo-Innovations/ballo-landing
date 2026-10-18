@@ -166,6 +166,12 @@ const HALO_IN: Range = [ASIDE_IN[1], ASIDE_IN[1] + (ASIDE_IN[1] - ASIDE_IN[0])];
 const SHOW_PHONE_HALO = false;
 
 /**
+ * Archived 2026-10-18 (ADR 0008 update): the feature pills scrolling behind
+ * the phone are off. Flip to true to bring them back as they were.
+ */
+const SHOW_PHONE_CHIPS = false;
+
+/**
  * The band leaves: after the phone has started moving, before the copy lands.
  *
  * It used to fade across `BAND_WORDMARK`, which opens at 0.62 — the same
@@ -643,11 +649,11 @@ function HeroPhone({
     if (haloRef.current) {
       haloRef.current.style.opacity = String(easeOut(at(p, HALO_IN)));
     }
+    // With "What We're About", alongside its copy (ASIDE_IN).
+    const t = at(p, ASIDE_IN);
     if (chipsRef.current) {
       // In from the left (ADR 0010), each row at its own speed. `left`, not
       // `translate`, which the outro owns.
-      // With "What We're About", alongside its copy (ASIDE_IN).
-      const t = at(p, ASIDE_IN);
       chipsRef.current.style.opacity = t > 0 ? "1" : "0";
       const rows = chipsRef.current.querySelectorAll<HTMLElement>(":scope > .mq");
       rows.forEach((row, i) => {
@@ -656,16 +662,16 @@ function HeroPhone({
         row.style.position = "relative";
         row.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
       });
-      // The store badges ride in just ahead of the pill rows.
-      rootRef.current
-        ?.querySelectorAll<HTMLElement>(".hero-store-badges__item")
-        .forEach((b, i) => {
-          const a = easeOut(clamp01((t - i * 0.05) * 1.8));
-          const x = -(window.innerWidth * 0.6) * (1 - a);
-          b.style.position = "relative";
-          b.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
-        });
     }
+    // The store badges ride in from the left on the same beat.
+    rootRef.current
+      ?.querySelectorAll<HTMLElement>(".hero-store-badges__item")
+      .forEach((b, i) => {
+        const a = easeOut(clamp01((t - i * 0.05) * 1.8));
+        const x = -(window.innerWidth * 0.6) * (1 - a);
+        b.style.position = "relative";
+        b.style.left = x < -0.5 ? `${x.toFixed(1)}px` : "";
+      });
   }, []);
   useMotionValueEvent(scrollYProgress, "change", placeHalo);
   React.useEffect(() => placeHalo(scrollYProgress.get()), [placeHalo, scrollYProgress]);
@@ -815,9 +821,11 @@ function HeroPhone({
           target. Nothing measures the screen now, so the phone is free to
           lean toward the cursor as it does in "What We're About". */}
       {SHOW_PHONE_HALO ? <div ref={haloRef} className="hero-phone-halo" /> : null}
-      <div ref={chipsRef} className="aside-copy-rows hero-phone-chips">
-        <FeatureChipRows />
-      </div>
+      {SHOW_PHONE_CHIPS ? (
+        <div ref={chipsRef} className="aside-copy-rows hero-phone-chips">
+          <FeatureChipRows />
+        </div>
+      ) : null}
       <div ref={turnRef} className="hero-phone-turn">
       <Phone3D floating={<HeroStoreBadges />} interactive={!turning}>
         {/* Two screens stacked in the same box, crossfading — the onboarding
