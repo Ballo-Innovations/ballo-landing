@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useMotionValueEvent, useScroll } from "framer-motion";
+import { type MotionValue, useMotionValueEvent, useScroll } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /* ── the curved row ──────────────────────────────────────────────
@@ -124,6 +124,11 @@ export type TiltedGridHeroProps = {
    * whole pass. 0 (the default) keeps the timed loop. See ADR 0009.
    */
   scrollDriven?: number;
+  /**
+   * 0–1 progress to drive the row with instead of the band crossing the
+   * viewport, e.g. a pinned section's own scroll (see WhoCurvedSection).
+   */
+  scrollProgress?: MotionValue<number>;
   /** Content rendered above the band. */
   children?: React.ReactNode;
   className?: string;
@@ -139,6 +144,7 @@ export function TiltedGridHero({
   curve = 80,
   fade = 12,
   scrollDriven = 0,
+  scrollProgress,
   children,
   className,
   ...props
@@ -168,10 +174,11 @@ export function TiltedGridHero({
   // Seconds of loop added by dragging (ADR 0013), on top of the scroll's.
   const dragOffset = React.useRef(0);
   const tileRefs = React.useRef<(HTMLDivElement | null)[]>([]);
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress: ownProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
+  const scrollYProgress = scrollProgress ?? ownProgress;
 
   React.useEffect(() => {
     const el = ref.current;

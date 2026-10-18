@@ -84,3 +84,12 @@ With `scrollDriven={3}` only 5 of 6 industries came into view at 1440px
 wide, and 4 at 390px (measured by scrolling the band through and recording
 the labels whose tiles were on screen). Now `scrollDriven={6}`, one full
 lap: all six come into view at both widths.
+
+## Update (2026-10-18): pinned while the row turns
+
+The section now pins. `.who-curved` is a 250vh track and `.who-curved__pin` a
+sticky, viewport-high stage, so the section holds on screen while the extra
+150vh of scroll turns the row one full lap. After that it scrolls away. The
+row is driven by the track's own progress (`useScroll` with
+`start start` → `end end`), passed in through a new `scrollProgress` prop on
+`TiltedGridHero`. All six industries pass while pinned, at 1440px and 390px.

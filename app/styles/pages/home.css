@@ -3451,9 +3451,22 @@
    File: app/components/sections/WhoCurvedSection.tsx
    Behind `whoCurvedRow`; `WhoCinematicSection` is the fallback.
    ============================================================= */
+/* Tall track with a sticky, viewport-high stage: the extra 150vh is the
+   scroll that turns the row before the section moves on. No overflow here,
+   or the stage would stop sticking. */
 .who-curved {
   position: relative;
-  padding: clamp(6rem, 14vh, 9rem) 0 clamp(2rem, 6vh, 4rem);
+  height: 250vh;
+}
+
+.who-curved__pin {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+  height: 100svh;
   overflow: clip;
 }
 

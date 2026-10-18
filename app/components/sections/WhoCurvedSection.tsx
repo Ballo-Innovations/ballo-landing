@@ -1,5 +1,8 @@
 "use client";
 
+import { useRef } from "react";
+import { useScroll } from "framer-motion";
+
 import { FadeUpReveal } from "../ui/FadeUpReveal";
 import { ShinyButton } from "../ui/ShinyButton";
 import { TiltedGridHero, type TiltedGridImage } from "../ui/tilted-grid-hero";
@@ -25,9 +28,17 @@ const IMAGES: TiltedGridImage[] = industries.map((item) => ({
 
 export function WhoCurvedSection() {
   const { openWaitlist } = useWaitlist();
+  const pinRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: pinProgress } = useScroll({
+    target: pinRef,
+    offset: ["start start", "end end"],
+  });
 
   return (
-    <section className="who-curved">
+    <section ref={pinRef} className="who-curved">
+      {/* Pinned: the section holds on screen while the scroll turns the row
+          one full lap, then scrolls away (ADR 0009). */}
+      <div className="who-curved__pin">
       <FadeUpReveal yOffset={24}>
         <div className="who-curved__copy">
           <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
@@ -43,12 +54,14 @@ export function WhoCurvedSection() {
         axis={50}
         speed={8}
         scrollDriven={6}
+        scrollProgress={pinProgress}
         curve={70}
         fade={10}
       />
 
       <div className="who-curved__cta">
         <ShinyButton onClick={openWaitlist}>Start your first campaign</ShinyButton>
+      </div>
       </div>
 
       {/* The band is decorative (aria-hidden), so the industries are listed
