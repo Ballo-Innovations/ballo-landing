@@ -190,6 +190,11 @@ function Film() {
     (p) => (1 - easeOut(at(p, [FILM_OPEN_FROM, FILM_OPEN]))) * FILM_DROP,
   );
 
+  const filmScale = useTransform(
+    scrollYProgress,
+    (p) => 0.7 + 0.3 * at(p, [FILM_OPEN_FROM, FILM_OPEN]),
+  );
+
   return (
     <ContainerInset
       openFrom={FILM_OPEN_FROM}
@@ -212,6 +217,11 @@ function Film() {
           already says what the section is. */}
       <HeroVideo
         className="brutus-stage__video"
+        // HeroVideo scales 0.7→1 over the first 80% of the track, which was
+        // tuned for a short track. This one is far longer, so the film ended
+        // at ~0.84 scale, narrower than its frame, and the frame's rounded
+        // corners fell outside the picture. Reach full size as the frame opens.
+        style={{ scale: filmScale }}
         src="/brutus/demo.mp4"
         poster="/brutus/demo-poster.jpg"
         aria-hidden="true"
