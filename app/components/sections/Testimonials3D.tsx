@@ -327,7 +327,9 @@ export function Testimonials3D({ items }: { items: HomeTestimonialItem[] }) {
 
   const step = React.useCallback(
     (delta: number) => {
-      setActive((i) => (i === null ? i : (i + delta + items.length) % items.length));
+      setActive((i) =>
+        i === null ? i : (i + delta + items.length) % items.length,
+      );
       // A step is not a flight: the card stays where it is and only its
       // contents change — and it is no longer standing in for the card it came
       // out of, so that one goes back on the wall.
@@ -423,121 +425,203 @@ export function Testimonials3D({ items }: { items: HomeTestimonialItem[] }) {
   const current = active === null ? null : items[active];
 
   return (
-    <section
-      ref={ref}
-      className={`t3d prlx-testi-trigger${active !== null ? " t3d--focused" : ""}`}
-    >
-      <div className="prlx-testi-1" aria-hidden="true" />
-      <div className="page-inner">
-        <FadeUpReveal className="t3d__head">
-          <span className="section-eyebrow">Testimonials</span>
-          <h2 className="section-h2 text-gradient-silver">
-            Hear from those who have tried and tested.
-          </h2>
-        </FadeUpReveal>
-      </div>
+    <TestimonialsExit>
+      <section
+        ref={ref}
+        className={`t3d prlx-testi-trigger${active !== null ? " t3d--focused" : ""}`}
+      >
+        <div className="prlx-testi-1" aria-hidden="true" />
+        <div className="page-inner">
+          <FadeUpReveal className="t3d__head">
+            <span className="section-eyebrow">Testimonials</span>
+            <h2 className="section-h2 text-gradient-silver">
+              Hear from those who have tried and tested.
+            </h2>
+          </FadeUpReveal>
+        </div>
 
-      {/* The scene is masked at top and bottom and clips to itself; the
+        {/* The scene is masked at top and bottom and clips to itself; the
           focused card is a sibling of it inside this wrapper so it is neither
           faded by that mask nor cut off by that clip. */}
-      <div className="t3d__stage">
-        <div ref={sceneRef} className="t3d__scene">
-          <div ref={groupRef} className="t3d__group">
-            {columns.map((col, c) => (
-              <div
-                key={c}
-                className={`t3d__col${c % 2 ? " t3d__col--rev" : ""}`}
-                style={
-                  { ["--dur" as string]: `${38 + c * 5}s` } as React.CSSProperties
-                }
-              >
-                <div className="t3d__track">
-                  {col.map((entry, i) => (
-                    <Card
-                      key={`a-${i}`}
-                      t={entry.t}
-                      index={entry.index}
-                      onOpen={open}
-                    />
-                  ))}
-                  <div aria-hidden="true" className="contents">
+        <div className="t3d__stage">
+          <div ref={sceneRef} className="t3d__scene">
+            <div ref={groupRef} className="t3d__group">
+              {columns.map((col, c) => (
+                <div
+                  key={c}
+                  className={`t3d__col${c % 2 ? " t3d__col--rev" : ""}`}
+                  style={
+                    {
+                      ["--dur" as string]: `${38 + c * 5}s`,
+                    } as React.CSSProperties
+                  }
+                >
+                  <div className="t3d__track">
                     {col.map((entry, i) => (
                       <Card
-                        key={`b-${i}`}
+                        key={`a-${i}`}
                         t={entry.t}
                         index={entry.index}
                         onOpen={open}
-                        duplicate
                       />
                     ))}
+                    <div aria-hidden="true" className="contents">
+                      {col.map((entry, i) => (
+                        <Card
+                          key={`b-${i}`}
+                          t={entry.t}
+                          index={entry.index}
+                          onOpen={open}
+                          duplicate
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <span className="t3d__fade t3d__fade--t" aria-hidden="true" />
+            <span className="t3d__fade t3d__fade--b" aria-hidden="true" />
+            <span className="t3d__fade t3d__fade--l" aria-hidden="true" />
+            <span className="t3d__fade t3d__fade--r" aria-hidden="true" />
           </div>
-          <span className="t3d__fade t3d__fade--t" aria-hidden="true" />
-          <span className="t3d__fade t3d__fade--b" aria-hidden="true" />
-          <span className="t3d__fade t3d__fade--l" aria-hidden="true" />
-          <span className="t3d__fade t3d__fade--r" aria-hidden="true" />
-        </div>
 
-        {current ? (
-          <div
-            ref={dialogRef}
-            className="t3d-focus"
-            role="dialog"
-            aria-label={`Testimonial from ${current.name}`}
-            tabIndex={-1}
-            onKeyDown={onKeyDown}
-          >
-            {/* Clicking off the card puts it back. A button, not a bare div
+          {current ? (
+            <div
+              ref={dialogRef}
+              className="t3d-focus"
+              role="dialog"
+              aria-label={`Testimonial from ${current.name}`}
+              tabIndex={-1}
+              onKeyDown={onKeyDown}
+            >
+              {/* Clicking off the card puts it back. A button, not a bare div
                 with a handler, so it is announced and reachable. */}
-            <button
-              type="button"
-              className="t3d-focus__scrim"
-              aria-label="Close testimonial"
-              onClick={close}
-            />
-            <div className="t3d-focus__shell">
-              <figure ref={cardRef} className="t3d-focus__card">
-                {/* Keyed on the quote so stepping through with prev/next
-                    replays the content's own fade rather than swapping the
-                    text in place. */}
-                <div key={current.quote} className="t3d-focus__body">
-                  <blockquote className="t3d-focus__quote">
-                    “{current.quote}”
-                  </blockquote>
-                  <figcaption className="t3d-focus__who">
-                    <span className="t3d-focus__avatar" aria-hidden="true">
-                      {initials(current.name)}
-                    </span>
-                    <span className="t3d-card__meta">
-                      <span className="t3d-focus__name">{current.name}</span>
-                      <span className="t3d-focus__role">{role(current)}</span>
-                    </span>
-                  </figcaption>
-                </div>
-              </figure>
               <button
                 type="button"
-                className="t3d-focus__close"
+                className="t3d-focus__scrim"
                 aria-label="Close testimonial"
                 onClick={close}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="m6 6 12 12M18 6 6 18"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+              />
+              <div className="t3d-focus__shell">
+                <figure ref={cardRef} className="t3d-focus__card">
+                  {/* Keyed on the quote so stepping through with prev/next
+                    replays the content's own fade rather than swapping the
+                    text in place. */}
+                  <div key={current.quote} className="t3d-focus__body">
+                    <blockquote className="t3d-focus__quote">
+                      “{current.quote}”
+                    </blockquote>
+                    <figcaption className="t3d-focus__who">
+                      <span className="t3d-focus__avatar" aria-hidden="true">
+                        {initials(current.name)}
+                      </span>
+                      <span className="t3d-card__meta">
+                        <span className="t3d-focus__name">{current.name}</span>
+                        <span className="t3d-focus__role">{role(current)}</span>
+                      </span>
+                    </figcaption>
+                  </div>
+                </figure>
+                <button
+                  type="button"
+                  className="t3d-focus__close"
+                  aria-label="Close testimonial"
+                  onClick={close}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="m6 6 12 12M18 6 6 18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-        ) : null}
-      </div>
-    </section>
+          ) : null}
+        </div>
+      </section>
+    </TestimonialsExit>
+  );
+}
+
+/**
+ * The exit (2026-10-18): like the hero's, the section holds while its pieces
+ * leave sideways at their own speeds — the heading first, then each card
+ * column toward its nearer edge — and "Ready when you are" (pulled up under
+ * it in home.css) comes through behind. The section is held with
+ * `position: sticky`; the wrapper adds one viewport of scroll for the exit.
+ */
+const EXIT_PARTS_SPEED = [1.9, 1.15, 1.55, 1.0, 1.4, 1.25];
+
+function TestimonialsExit({ children }: { children: React.ReactNode }) {
+  const wrap = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const el = wrap.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
+    const section = el.firstElementChild as HTMLElement | null;
+    if (!section) return;
+    let frame = 0;
+    const layout = () => {
+      const vh = window.innerHeight;
+      const h = section.offsetHeight;
+      el.style.height = `${h + vh}px`;
+      section.style.position = "sticky";
+      section.style.top = `${Math.min(0, vh - h)}px`;
+    };
+    const place = () => {
+      frame = 0;
+      const vh = window.innerHeight;
+      const r = el.getBoundingClientRect();
+      // 0 → 1 over the wrapper's last viewport of scroll.
+      const e = Math.min(1, Math.max(0, (vh - r.bottom + vh) / vh));
+      const mid = window.innerWidth / 2;
+      const dist = window.innerWidth * 1.2;
+      const parts = [
+        ...section.querySelectorAll<HTMLElement>(".t3d__head > *"),
+        ...section.querySelectorAll<HTMLElement>(".t3d__col"),
+      ];
+      parts.forEach((part, i) => {
+        if (!part.dataset.exitDir) {
+          part.style.translate = "";
+          const b = part.getBoundingClientRect();
+          part.dataset.exitDir = b.left + b.width / 2 < mid ? "-1" : "1";
+        }
+        const dir = Number(part.dataset.exitDir);
+        const sp = EXIT_PARTS_SPEED[i % EXIT_PARTS_SPEED.length];
+        const u = Math.min(1, Math.max(0, (e - (i % 3) * 0.04) * sp));
+        const t = u * u * (3 - 2 * u);
+        part.style.translate =
+          t > 0.0005 ? `${(dir * dist * t).toFixed(1)}px 0` : "";
+      });
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(place);
+    };
+    const onResize = () => {
+      layout();
+      section
+        .querySelectorAll<HTMLElement>("[data-exit-dir]")
+        .forEach((n) => delete n.dataset.exitDir);
+      place();
+    };
+    layout();
+    place();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+  return (
+    <div ref={wrap} className="t3d-exit">
+      {children}
+    </div>
   );
 }

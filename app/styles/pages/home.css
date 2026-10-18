@@ -3766,3 +3766,18 @@
 .backers__band::after {
   content: none;
 }
+
+/* Testimonials exit (2026-10-18): the closing CTA is pulled up one viewport
+   so it is already under the testimonials as their pieces leave sideways. */
+@media (prefers-reduced-motion: no-preference) {
+  .t3d-exit {
+    position: relative;
+    z-index: 2;
+  }
+
+  .t3d-exit + * {
+    position: relative;
+    z-index: 1;
+    margin-top: -100vh;
+  }
+}
