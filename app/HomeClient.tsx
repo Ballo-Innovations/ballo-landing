@@ -538,9 +538,6 @@ export default function HomeClient({
           their old order. */}
 
 
-      {/* Testimonials — tilted marquee columns, no timers. */}
-      <Testimonials3D items={testimonials} />
-
       {/* Trusted By — the client marks, as a static grid. The only infinite
           animation left in it is the .text-shimmer heading, which parks while
           the section is off-screen via `trustedByRef`: it animates
@@ -551,6 +548,10 @@ export default function HomeClient({
           <LogoCloud logos={trustedLogos} title="Trusted by the very best" />
         </FadeUpReveal>
       </section>
+
+      {/* Testimonials — tilted marquee columns, no timers. */}
+      <Testimonials3D items={testimonials} />
+
 
       {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
           BalloAds?" phone, which opens the waitlist — and the only section
