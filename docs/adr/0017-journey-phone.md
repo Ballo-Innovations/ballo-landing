@@ -74,7 +74,8 @@ At George's request:
 - The cards are smaller: `tileHeight` went from 46 to 40.
 - The row sits 10vh lower than before, relative to the heading.
 
-The phone measures the heading and the row on every frame. It is as tall as
-the space between the heading and the bottom of the screen allows (at most
-52% of the screen height on narrow screens). It is placed so the row
+The phone measures the heading and the row on every frame. Its height is
+capped at 66% of the screen height (640px) on desktop and 46% on narrow
+screens, and it never extends past the space between the heading and the
+bottom of the screen. Filling that whole space made it too large. It is placed so the row
 crosses its glass 40% of the way down, above the campaign card.

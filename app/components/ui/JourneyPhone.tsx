@@ -240,16 +240,17 @@ export function JourneyPhone({
     const whoHeading = document.querySelector<HTMLElement>(".who-curved__h2");
     const whoRow = document.querySelector<HTMLElement>(".who-curved__band");
     const who = (): Pose => {
-      // As large as the screen allows below the heading: on desktop down to
-      // just above the bottom edge. Placed so the row of cards crosses the
-      // upper part of the glass (40% down), above the campaign card. Measured
-      // live, because the stage is still settling when the phone arrives.
+      // Up to 66% of the screen's height (640px) on desktop, 46% on narrow
+      // screens, and never past the space between the heading and the bottom
+      // edge. Placed so the row of cards crosses the upper part of the glass
+      // (40% down), above the campaign card. Measured live, because the stage
+      // is still settling when the phone arrives.
       const hr = whoHeading?.getBoundingClientRect();
       const top0 = (hr && hr.height ? hr.bottom : H * 0.2) + 18;
       const bottom = H - 22;
       const h = Math.max(
         H * 0.36,
-        Math.min(bottom - top0, narrow ? H * 0.52 : 760),
+        Math.min(bottom - top0, narrow ? H * 0.46 : Math.min(H * 0.66, 640)),
       );
       const rr = whoRow?.getBoundingClientRect();
       const rowY = rr && rr.height ? rr.top + rr.height / 2 : top0 + h * 0.4;
