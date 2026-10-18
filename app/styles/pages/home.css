@@ -2073,9 +2073,12 @@
   /* Every term lands on zero: at `--p: 1` the wall is square to the viewer and
      centred, with no rotation and no depth left in it. It arrives deep and
      turned away and ends straight. */
-  /* No tilt (2026-10-17): the wall stays flat and square to the viewer;
-     only the columns scroll. `--p` is still written but no longer read. */
-  transform: none;
+  transform:
+    translateX(calc(-100px + var(--p) * 100px))
+    translateZ(calc(-240px + var(--p) * 240px))
+    rotateX(calc(30deg - var(--p) * 30deg))
+    rotateY(calc(-30deg + var(--p) * 30deg))
+    rotateZ(calc(26deg - var(--p) * 26deg));
   transform-style: preserve-3d;
 }
 
@@ -3740,11 +3743,12 @@
   padding-block: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .trusted-by-section {
-    position: relative;
-    z-index: 5;
-    margin-top: -58vh;
-    padding-top: 0 !important;
-  }
+.brutus-stage__then {
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.trusted-by-section--in-stage {
+  width: 100%;
+  padding-top: clamp(2rem, 6vh, 4rem);
 }

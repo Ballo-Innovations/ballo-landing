@@ -504,9 +504,23 @@ export default function HomeClient({
       <BrutusSection
         then={
           /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
-          <div className="backers-section">
-            <BackedBy logos={backerLogos} />
-          </div>
+          <>
+            <div className="backers-section">
+              <BackedBy logos={backerLogos} />
+            </div>
+            {/* "Trusted by" fades in with it, below (2026-10-18). */}
+            <section
+              ref={trustedByRef}
+              className="trusted-by-section trusted-by-section--in-stage"
+            >
+              <FadeUpReveal yOffset={50}>
+                <LogoCloud
+                  logos={trustedLogos}
+                  title="Trusted by the very best"
+                />
+              </FadeUpReveal>
+            </section>
+          </>
         }
         after={
           whoCurved ? (
@@ -537,21 +551,8 @@ export default function HomeClient({
           2026-10-17 over the later trials (ADR 0009); the rest follow in
           their old order. */}
 
-
-      {/* Trusted By — the client marks, as a static grid. The only infinite
-          animation left in it is the .text-shimmer heading, which parks while
-          the section is off-screen via `trustedByRef`: it animates
-          background-position through background-clip:text, which cannot be
-          composited and so repaints the glyphs on every frame. */}
-      <section ref={trustedByRef} className="trusted-by-section pt-32 pb-16">
-        <FadeUpReveal yOffset={50}>
-          <LogoCloud logos={trustedLogos} title="Trusted by the very best" />
-        </FadeUpReveal>
-      </section>
-
       {/* Testimonials — tilted marquee columns, no timers. */}
       <Testimonials3D items={testimonials} />
-
 
       {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
           BalloAds?" phone, which opens the waitlist — and the only section
