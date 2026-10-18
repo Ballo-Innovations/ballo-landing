@@ -108,8 +108,8 @@
    strip of tape, like a mood board. Charcoal card stock rather than white:
    most client marks are white-on-transparent and would vanish on white. */
 .logo-cloud__grid {
-  max-width: 62rem;
-  gap: 1.6rem 1.2rem;
+  max-width: 46rem;
+  gap: 1.2rem 0.9rem;
 }
 
 .logo-cloud__item,
@@ -118,8 +118,8 @@
 }
 
 .logo-cloud__item {
-  aspect-ratio: 1.45;
-  padding: 9% 15%;
+  aspect-ratio: 1.6;
+  padding: 10% 17%;
   border-radius: 4px;
   background: linear-gradient(180deg, #23284a, #1a1e3b);
   box-shadow:
@@ -147,7 +147,7 @@
   top: -9px;
   left: 50%;
   width: 34%;
-  height: 18px;
+  height: 14px;
   translate: -50% 0;
   rotate: -2deg;
   background: rgba(240, 232, 205, 0.82);

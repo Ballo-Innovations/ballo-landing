@@ -3785,11 +3785,13 @@
 
 /* Backed by as taped cards too (2026-10-18), matching Trusted by. */
 .backers__items {
-  gap: 1.6rem 1.2rem;
+  max-width: 46rem;
+  margin-inline: auto;
+  gap: 1.2rem 0.9rem;
 }
 
 .backers__item {
-  padding: 1.4rem 1rem;
+  padding: 0.9rem 0.8rem;
   border-radius: 4px;
   background: linear-gradient(180deg, #23284a, #1a1e3b);
   box-shadow:
