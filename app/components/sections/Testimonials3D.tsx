@@ -585,6 +585,23 @@ function TestimonialsExit({ children }: { children: React.ReactNode }) {
         ...section.querySelectorAll<HTMLElement>(".t3d__head > *"),
         ...section.querySelectorAll<HTMLElement>(".t3d__col"),
       ];
+      // "Ready when you are" (the next section) holds still under the
+      // leaving cards — its scroll is cancelled while the exit runs — and its
+      // copy slides in from the right piece by piece, like "What We're About".
+      const next = el.nextElementSibling as HTMLElement | null;
+      if (next) {
+        next.style.translate = e > 0 && e < 1 ? `0 ${(-vh * (1 - e)).toFixed(1)}px` : "";
+        const pieces = next.querySelectorAll<HTMLElement>(
+          ".cta-mq__copy .section-eyebrow, .cta-mq__copy h2, .cta-mq__lede, .cta-mq__actions, .cta-mq__stores",
+        );
+        const speeds = [1.9, 1.7, 1.45, 1.25, 1.1];
+        pieces.forEach((piece, i) => {
+          const a = Math.min(1, Math.max(0, (e - 0.15 - i * 0.06) * speeds[i] * 1.3));
+          const k = 1 - (1 - Math.pow(1 - a, 3));
+          piece.style.translate =
+            k > 0.0005 ? `${(window.innerWidth * k).toFixed(1)}px 0` : "";
+        });
+      }
       parts.forEach((part, i) => {
         if (!part.dataset.exitDir) {
           part.style.translate = "";
