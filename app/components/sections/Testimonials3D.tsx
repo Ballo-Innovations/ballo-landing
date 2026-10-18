@@ -601,6 +601,22 @@ function TestimonialsExit({ children }: { children: React.ReactNode }) {
           piece.style.translate =
             k > 0.0005 ? `${(window.innerWidth * k).toFixed(1)}px 0` : "";
         });
+        // The floating icons come in from the right too, each at its own
+        // pace, and the tubes layer fades up under them.
+        next
+          .querySelectorAll<HTMLElement>(".floating-glass__tile")
+          .forEach((tile, i) => {
+            const sp = [1.6, 1.25, 1.45, 1.1, 1.35, 1.2][i % 6];
+            const a = Math.min(1, Math.max(0, (e - 0.1 - (i % 4) * 0.05) * sp * 1.3));
+            const k = Math.pow(1 - a, 3);
+            tile.style.translate =
+              k > 0.0005 ? `${(window.innerWidth * 0.8 * k).toFixed(1)}px 0` : "";
+          });
+        const tubes = next.querySelector<HTMLElement>(".tubes-cursor");
+        if (tubes) {
+          const a = Math.min(1, Math.max(0, (e - 0.3) / 0.6));
+          tubes.style.opacity = e > 0 && e < 1 ? a.toFixed(3) : "";
+        }
       }
       parts.forEach((part, i) => {
         if (!part.dataset.exitDir) {
