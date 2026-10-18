@@ -8,6 +8,7 @@ import { AFTER_IN, ROW_TURN, THEN_IN } from "../sections/BrutusSection";
 import { HANDOFF, PHONE_HANDOFF } from "./HeroSideExit";
 import {
   INDUSTRY_COUNT,
+  INDUSTRY_NAMES,
   JourneyScreens,
   type JourneyScreenId,
 } from "./JourneyScreens";
@@ -154,22 +155,42 @@ export function JourneyPhone({
     for (const [at, id] of t.cues) if (y >= at) screen = id;
     const stack = stackRef.current;
     if (stack && stack.dataset.screen !== screen) stack.dataset.screen = screen;
+    // Clear glass while the curved row is behind it.
+    layer.toggleAttribute("data-glass", screen === "who");
     const v = videoRef.current;
     if (v) {
       if (screen === "film" && v.paused) void v.play().catch(() => {});
       else if (screen !== "film" && !v.paused) v.pause();
     }
 
-    // Which industry's post is up, turning with the row.
+    // Which industry's campaign is up. The screen is glass during Who, so
+    // it names the tile actually showing through it: the one nearest the
+    // phone's centre. Off the curved row (another Who variant, or before it
+    // has laid out), it turns over with the scroll instead.
     const posts = postsRef.current;
     if (posts) {
       const u = clamp01((y - t.row[0]) / Math.max(1, t.row[1] - t.row[0]));
-      const idx = String(
-        Math.min(INDUSTRY_COUNT - 1, Math.floor(u * INDUSTRY_COUNT)),
-      );
+      let n = Math.min(INDUSTRY_COUNT - 1, Math.floor(u * INDUSTRY_COUNT));
+      if (screen === "who") {
+        let best = Infinity;
+        document
+          .querySelectorAll<HTMLElement>('.who-curved__band [class*="tgh-t-"]')
+          .forEach((tile) => {
+            const r = tile.getBoundingClientRect();
+            if (!r.width) return;
+            const d = Math.abs(r.left + r.width / 2 - pose.x);
+            if (d >= best) return;
+            const name = tile.querySelector(".tgh-label span")?.textContent;
+            const j = name ? INDUSTRY_NAMES.indexOf(name) : -1;
+            if (j >= 0) {
+              best = d;
+              n = j;
+            }
+          });
+      }
+      const idx = String(n);
       if (posts.dataset.index !== idx) {
         posts.dataset.index = idx;
-        const n = Number(idx);
         posts.querySelectorAll<HTMLElement>(".jp-post").forEach((el, j) => {
           el.dataset.pos = j === n ? "active" : j < n ? "prev" : "next";
         });

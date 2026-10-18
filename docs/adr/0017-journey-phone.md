@@ -50,3 +50,17 @@ references George shared.
   only loads once the Brutus act is near.
 - Not rendered under reduced motion.
 - The layer is `inert` and `aria-hidden`, and ignores the pointer.
+
+## Update (2026-10-18): clear glass in the Who section
+
+At George's request, the phone's screen is see-through while it sits in the
+curved row. `data-glass` on the layer clears every surface behind the
+display: the screen, the black inner bezel, the silver bezel and the back
+panel. The two bezels keep their rims as rings: an inset shadow for the
+black one, and a masked copy of the silver gradient for the other.
+
+All the screen keeps is the status bar and a glass card at the bottom with
+the industry's sample campaign. That replaces the in-app post, which had a
+photo and an app bar. The card now names the tile nearest the phone's
+centre, so it always describes what shows through the glass. If the curved
+row isn't there, it falls back to the scroll position.

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  ArrowLeft,
   BatteryFull,
   Check,
   Mail,
@@ -67,6 +66,7 @@ const INDUSTRY_POSTS: Record<
 };
 
 export const INDUSTRY_COUNT = industries.length;
+export const INDUSTRY_NAMES = industries.map((item) => item.name);
 
 function initials(name: string) {
   return name
@@ -90,15 +90,16 @@ function StatusBar() {
   );
 }
 
-/** "Who can use BalloAds?": a campaign post per industry, carousel style. */
+/**
+ * "Who can use BalloAds?": the screen is clear glass (`data-glass` on the
+ * layer, see journey-phone.css), so the curved row's tiles show through the
+ * phone. All it carries is a glass card at the bottom with that industry's
+ * campaign, turning over with the row.
+ */
 function WhoScreen({ indexRef }: { indexRef: React.Ref<HTMLDivElement> }) {
   return (
     <div className="jp-screen jp-screen--who">
       <StatusBar />
-      <div className="jp-appbar">
-        <ArrowLeft />
-        <span>Campaigns</span>
-      </div>
       <div ref={indexRef} className="jp-posts" data-index="0">
         {industries.map((item, i) => {
           const post = INDUSTRY_POSTS[item.id];
@@ -115,14 +116,7 @@ function WhoScreen({ indexRef }: { indexRef: React.Ref<HTMLDivElement> }) {
                   <small>SMS campaign · just now</small>
                 </span>
               </header>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="jp-post__img"
-                src={item.src}
-                alt=""
-                loading="lazy"
-              />
-              <p className="jp-bubble">{post?.text}</p>
+              <p className="jp-post__text">{post?.text}</p>
               <footer className="jp-post__stats">
                 <span>
                   <Check /> {post?.delivered} delivered
