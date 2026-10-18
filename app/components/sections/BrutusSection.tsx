@@ -296,7 +296,7 @@ function Then({ children }: { children: React.ReactNode }) {
   const scale = useTransform(t, (v) => 0.96 + 0.04 * easeOut(v));
   const pointerEvents = useTransform(t, (v) => (v > 0.6 ? "auto" : "none"));
   return (
-    <motion.div className="brutus-stage__after" style={{ opacity: t, scale, pointerEvents }}>
+    <motion.div className="brutus-stage__after brutus-stage__then" style={{ opacity: t, scale, pointerEvents }}>
       {children}
     </motion.div>
   );

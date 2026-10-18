@@ -3729,3 +3729,24 @@
    lines and button slide in from the right and each carousel card flies in
    from its own direction (BrutusSection `After`). */
 
+
+/* "Backed by" sits in the top part of the Brutus stage, and "Trusted by"
+   rides up into the lower part as the pin ends, so the two share a
+   viewport. */
+.brutus-stage__then {
+  align-items: flex-start;
+  padding-top: clamp(5.5rem, 13vh, 8rem);
+}
+
+.brutus-stage__then .backers-section {
+  padding-block: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .trusted-by-section {
+    position: relative;
+    z-index: 5;
+    margin-top: -58vh;
+    padding-top: 0 !important;
+  }
+}

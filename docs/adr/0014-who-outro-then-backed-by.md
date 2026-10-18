@@ -28,3 +28,11 @@ testimonials follow.
 - "Backed by" loses its per-logo entrance stagger, because the fade replaces
   it.
 "Backed by" now fades in over 20vh (THEN_IN 318–338vh), down from 55vh.
+
+## Update (2026-10-18): shares a viewport with "Trusted by"
+
+"Backed by" now sits in the top part of the stage (`.brutus-stage__then`,
+top-aligned). "Trusted by the very best", the next section, has
+`margin-top: -58vh` and sits above the stage (z-index 5). It rides up into
+the empty lower part as the pin ends, so the two share one screen. Reduced
+motion keeps the normal flow.
