@@ -36,3 +36,14 @@ top-aligned). "Trusted by the very best", the next section, has
 `margin-top: -58vh` and sits above the stage (z-index 5). It rides up into
 the empty lower part as the pin ends, so the two share one screen. Reduced
 motion keeps the normal flow.
+
+## Update (2026-10-18): restored after the ADR 0015 merge
+
+At George's request:
+- "Backed by" again fades in alone (`Then`, `THEN_IN` 380–400vh), after Who
+  has turned its lap (ROW_TURN, kept from the merge) and left (AFTER_OUT).
+- It sits high on the stage, with "Trusted by" rising into the space below.
+- The carousel is back to full size: the band is clamp(14rem, 40vw, 30rem)
+  and `tileHeight` is 40.
+
+The track is now 440vh.

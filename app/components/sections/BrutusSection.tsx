@@ -75,7 +75,7 @@ import { StageRowProgress } from "../ui/stageRowProgress";
 /** The track grew 170vh → 240vh for the outro; the entrance keeps its scroll. */
 // The track grew 240vh → 390vh for the Who outro and "Backed by" (ADR 0014).
 // Ranges are stated in vh of that track and divided by its length.
-const TRACK_VH = 390;
+const TRACK_VH = 440;
 const vh = (a: number, b: number): [number, number] => [a / TRACK_VH, b / TRACK_VH];
 const TRACK_SCALE = 170 / TRACK_VH;
 
@@ -229,17 +229,12 @@ const AFTER_IN: [number, number] = vh(223, 240);
  */
 const ROW_TURN: [number, number] = vh(240, 330);
 const AFTER_OUT: [number, number] = vh(330, 385);
+/** Then "Backed by" fades in alone, high on the stage (ADR 0014). */
+const THEN_IN: [number, number] = vh(380, 400);
 
-function After({
-  children,
-  then,
-}: {
-  children: React.ReactNode;
-  then?: React.ReactNode;
-}) {
+function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
   const ref = React.useRef<HTMLDivElement>(null);
-  const thenRef = React.useRef<HTMLDivElement>(null);
   const rowProgress = useTransform(scrollYProgress, (p) => at(p, ROW_TURN));
   // One number, `--after-t` (0→1 over AFTER_IN); home.css decides what each
   // piece does with it: the copy fades, the carousel rises from below.
@@ -289,13 +284,6 @@ function After({
       piece.style.position = "relative";
       piece.style.left = x > 0.5 ? `${x.toFixed(1)}px` : "";
     });
-    // "Backed by" rises in under Who as the copy lands, and fades with it.
-    if (thenRef.current) {
-      const a = easeOut(Math.min(1, Math.max(0, (t - 0.3) * 1.6)));
-      const o = Math.min(1, out * 1.6);
-      thenRef.current.style.opacity = (a * (1 - o)).toFixed(3);
-      thenRef.current.style.transform = `translateY(${((1 - a) * 40).toFixed(1)}px)`;
-    }
     el.style.visibility = t > 0 && out < 1 ? "visible" : "hidden";
     el.style.pointerEvents = t > 0.6 && out < 0.2 ? "auto" : "none";
   }, []);
@@ -304,18 +292,29 @@ function After({
   return (
     <div
       ref={ref}
-      className="brutus-stage__after brutus-stage__after--stack"
+      className="brutus-stage__after"
       style={{ visibility: "hidden" }}
     >
       <StageRowProgress.Provider value={rowProgress}>
         {children}
       </StageRowProgress.Provider>
-      {then ? (
-        <div ref={thenRef} style={{ opacity: 0 }}>
-          {then}
-        </div>
-      ) : null}
     </div>
+  );
+}
+
+/** "Backed by" (ADR 0014): fades in alone after Who has left. */
+function Then({ children }: { children: React.ReactNode }) {
+  const { scrollYProgress } = useContainerScrollContext();
+  const t = useTransform(scrollYProgress, (p) => at(p, THEN_IN));
+  const scale = useTransform(t, (v) => 0.96 + 0.04 * easeOut(v));
+  const pointerEvents = useTransform(t, (v) => (v > 0.6 ? "auto" : "none"));
+  return (
+    <motion.div
+      className="brutus-stage__after brutus-stage__then"
+      style={{ opacity: t, scale, pointerEvents }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -369,7 +368,8 @@ export function BrutusSection({
               Talk to us
             </Link>
           </Beat>
-          {after ? <After then={then}>{after}</After> : null}
+          {after ? <After>{after}</After> : null}
+          {then ? <Then>{then}</Then> : null}
         </ContainerSticky>
       </ContainerScroll>
     </section>

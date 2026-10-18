@@ -2929,7 +2929,7 @@
 .brutus-stage-track {
   /* Brutus in (170vh), Brutus out, Who in, hold, Who out, Backed by in:
      390vh in all (BrutusSection TRACK_VH, ADR 0014). */
-  height: 390vh;
+  height: 440vh;
 }
 
 .brutus-stage {
@@ -3483,15 +3483,15 @@
      which curve below the row's centre line. */
   position: relative;
   z-index: 1;
-  margin-top: calc(clamp(12rem, 28vw, 22rem) * -0.06);
+  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.12);
 }
 
 /* The band's height sets the tile size: `tileHeight` is a share of it. */
 .who-curved__band {
-  height: clamp(12rem, 28vw, 22rem);
+  height: clamp(14rem, 40vw, 30rem);
   /* Pulled up under the copy: the tiles sit in the middle 40% of the band,
      so its top ~30% is empty and read as a gap below the text. */
-  margin-top: calc(clamp(12rem, 28vw, 22rem) * -0.08);
+  margin-top: calc(clamp(14rem, 40vw, 30rem) * -0.1);
 }
 
 /* The industry name on each tile, bent with it (see `label` in
