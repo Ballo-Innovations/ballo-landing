@@ -43,6 +43,7 @@ import {
 import { BackedBy } from "./components/ui/BackedBy";
 import { LogoCloud } from "./components/ui/LogoCloud";
 import { TubesCursor } from "./components/ui/TubesCursor";
+import { JourneyPhone } from "./components/ui/JourneyPhone";
 
 // Referenced below for the one-off "invert to white" filter applied to the
 // Bayport mark specifically — kept here even though the rest of the fallback
@@ -219,49 +220,55 @@ export default function HomeClient({
   // sticking. `clip` does the same horizontal clipping (needed for the 200vw
   // hero marquee) without creating a scroll container.
   return (
-    <main className="relative min-h-screen text-white overflow-x-clip">
-      {/* <main> is deliberately transparent: the gradient now lives on a fixed
+    <>
+      {/* The phone, from the Brutus film to the closing CTA (ADR 0017). Outside
+        <main> so nothing there can clip or contain the fixed layer. */}
+      {shouldReduceMotion ? null : (
+        <JourneyPhone film={BRUTUS_FILM} testimonials={testimonials} />
+      )}
+      <main className="relative min-h-screen text-white overflow-x-clip">
+        {/* <main> is deliberately transparent: the gradient now lives on a fixed
           viewport layer behind it (PageGradient) rather than as a document-tall
           background here, which is what a fast scroll was outrunning. */}
-      <PageGradient />
-      {/* Hero Section. Pinned by HeroSideExit: the elements marked
+        <PageGradient />
+        {/* Hero Section. Pinned by HeroSideExit: the elements marked
           data-hero-exit leave sideways, each toward whichever edge it already
           sits nearer, and the phone rises into the space they vacate. */}
-      <HeroSideExit
-        /* On the pin, behind the hero, unaffected by the exits: it keeps
+        <HeroSideExit
+          /* On the pin, behind the hero, unaffected by the exits: it keeps
            scrolling at its own size and rises as the items go. */
-        backdrop={<HeroMarquee />}
-        /* The hero's mid-left bloom, on its own layer behind the phone. In the
+          backdrop={<HeroMarquee />}
+          /* The hero's mid-left bloom, on its own layer behind the phone. In the
            hero section below it covered the device, because the hero is
            stacked in front of the phone so it can leave across it. */
-        glow={<div className="prlx-hero-1" />}
-        /* Act two. This copy used to sit in the section below, beside a second
+          glow={<div className="prlx-hero-1" />}
+          /* Act two. This copy used to sit in the section below, beside a second
            phone mockup; now that the hero's own phone arrives and steps aside
            for it, that pairing happens up here and the section keeps only its
            title card. No FadeUpReveal on these: inside a pinned stage they are
            in the viewport from the first frame, so a viewport-triggered reveal
            would fire before the phone had arrived. */
-        aside={
-          /* The same `.aside-copy` treatment as "Why Choose" below, rather
+          aside={
+            /* The same `.aside-copy` treatment as "Why Choose" below, rather
              than its own Tailwind type scale. The two are the two halves of
              one crossfade in the same column, so a heading that changed
              weight, size, gradient and measure halfway through read as a
              different component arriving rather than the same one changing
              its words. */
-          <div className="aside-copy">
-            {/* One character at a time, rising into place, once the block
+            <div className="aside-copy">
+              {/* One character at a time, rising into place, once the block
                 itself arrives — `HeroAside` is what says when (see
                 `data-reveal`), because up here there is no scroll progress to
                 read and a mount-time animation would play while this is still
                 invisible. Only the heading: a per-character reveal on the
                 paragraph below would be 400-odd spans and would read as a
                 machine typing rather than as a title arriving. */}
-            <TextReveal
-              as="h2"
-              className="aside-copy-title font-black text-gradient-silver"
-              text="What We're About"
-            />
-            {/* Revealed like the heading above it, and on the same trigger —
+              <TextReveal
+                as="h2"
+                className="aside-copy-title font-black text-gradient-silver"
+                text="What We're About"
+              />
+              {/* Revealed like the heading above it, and on the same trigger —
                 the block's entrance is the copy arriving, so the paragraph
                 cannot simply fade in underneath letters that are rising.
                 A far smaller stagger than the heading's: this is ~290
@@ -269,310 +276,312 @@ export default function HomeClient({
                 last word would land three and a half seconds after the first.
                 At this rate the sentence is fully in in under a second, which
                 is the same wave crossing a longer line. */}
-            <p className="landing-body aside-copy-body">
-              <TextReveal
-                text={
-                  "BalloAds is an AI-powered digital advertising platform designed to " +
-                  "help businesses and organisations connect with the right audience " +
-                  "through bulk SMS, targeted message ads, and data-driven campaign " +
-                  "management. Whether you\u2019re a startup, an enterprise, or a " +
-                  "service provider, BalloAds gives you the tools to launch impactful " +
-                  "marketing campaigns with ease."
-                }
-                stagger={0.0015}
-              />
-            </p>
-            <div className="hero-actions aside-copy-cta">
-              <button
-                type="button"
-                onClick={openWaitlist}
-                className="btn-primary group"
-              >
-                Get Started
-              </button>
-              <Link href="/how-it-works" className="btn-secondary group">
-                Learn More
-              </Link>
+              <p className="landing-body aside-copy-body">
+                <TextReveal
+                  text={
+                    "BalloAds is an AI-powered digital advertising platform designed to " +
+                    "help businesses and organisations connect with the right audience " +
+                    "through bulk SMS, targeted message ads, and data-driven campaign " +
+                    "management. Whether you\u2019re a startup, an enterprise, or a " +
+                    "service provider, BalloAds gives you the tools to launch impactful " +
+                    "marketing campaigns with ease."
+                  }
+                  stagger={0.0015}
+                />
+              </p>
+              <div className="hero-actions aside-copy-cta">
+                <button
+                  type="button"
+                  onClick={openWaitlist}
+                  className="btn-primary group"
+                >
+                  Get Started
+                </button>
+                <Link href="/how-it-works" className="btn-secondary group">
+                  Learn More
+                </Link>
+              </div>
             </div>
-          </div>
-        }
-        /* Act three, beat 2: "Why Choose"'s heading, crossfaded into the same
+          }
+          /* Act three, beat 2: "Why Choose"'s heading, crossfaded into the same
            spot as the "What We're About" copy once the phone has started
            showing its cards. This is the only place the "Why Choose" copy
            lives now — there is no separate section below repeating it. */
-        whyHeading={
-          <div className="aside-copy">
-            {/* No hard line breaks. Forcing "Why / Choose / BalloAds?" onto
+          whyHeading={
+            <div className="aside-copy">
+              {/* No hard line breaks. Forcing "Why / Choose / BalloAds?" onto
                 three lines made the heading a tall narrow stack whatever the
                 column was doing: at 850px it filled 280px of a 786px column
                 and pushed the body copy most of a viewport down. It wraps to
                 the column now, balanced. */}
-            {/* Split like "What We're About" beside it, because the two are
+              {/* Split like "What We're About" beside it, because the two are
                 the two halves of one transition: the outgoing heading hinges
                 away and this one turns up into its place, character for
                 character (`data-flip`, set by `HeroAside`). */}
-            <TextReveal
-              as="h2"
-              className="aside-copy-title font-black text-gradient-silver"
-              text="Why Choose BalloAds?"
-            />
-            {/* Not one fixed paragraph: it re-writes itself as the phone
+              <TextReveal
+                as="h2"
+                className="aside-copy-title font-black text-gradient-silver"
+                text="Why Choose BalloAds?"
+              />
+              {/* Not one fixed paragraph: it re-writes itself as the phone
                 beside it turns over its five cards, so the copy is always
                 about the feature being shown. */}
-            <WhyStepBlurb range={PHONE_CONTENT} />
-            {/* Archived 2026-10-15 until they have a new home: see
+              <WhyStepBlurb range={PHONE_CONTENT} />
+              {/* Archived 2026-10-15 until they have a new home: see
                 docs/adr/0001-archive-why-halo-and-chips.md. */}
-            {SHOW_WHY_CHIPS ? <WhyFeatureChips /> : null}
-            <button
-              type="button"
-              onClick={openWaitlist}
-              className="btn-primary group aside-copy-cta"
-            >
-              Get Started
-            </button>
-          </div>
-        }
-        /* Act three, beat 1: the phone's own screen crossfades from the
+              {SHOW_WHY_CHIPS ? <WhyFeatureChips /> : null}
+              <button
+                type="button"
+                onClick={openWaitlist}
+                className="btn-primary group aside-copy-cta"
+              >
+                Get Started
+              </button>
+            </div>
+          }
+          /* Act three, beat 1: the phone's own screen crossfades from the
            onboarding mock to the feature cards, then runs all five of them on
            the rest of this pin. There is no separate "Why Choose" section
            below any more — this is that section. */
-        phoneScreen={<WhyCardSequence range={PHONE_CONTENT} />}
-        /* Act four (ADR 0016): the same phone comes back to the middle, turns
+          phoneScreen={<WhyCardSequence range={PHONE_CONTENT} />}
+          /* Act four (ADR 0016): the same phone comes back to the middle, turns
            to landscape and plays the Brutus film, with this copy rising in
            underneath it. */
-        brutus={<BrutusStageCopy />}
-        film={BRUTUS_FILM}
-      >
-        <section
-          className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"
-          style={{
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
+          brutus={<BrutusStageCopy />}
+          film={BRUTUS_FILM}
         >
-          {/* Parallax depth layers — behind all content. The mid-left bloom
+          <section
+            className="prlx-hero-trigger relative h-full min-h-screen pt-24 pb-12 overflow-hidden"
+            style={{
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            {/* Parallax depth layers — behind all content. The mid-left bloom
               (.prlx-hero-1) is not here: it is the `glow` prop above, so it
               sits behind the phone rather than in front of it. */}
-          <div className="prlx-hero-2" aria-hidden="true" />
+            <div className="prlx-hero-2" aria-hidden="true" />
 
-          {/* Background Pattern */}
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{ backgroundSize: "cover" }}
-          />
+            {/* Background Pattern */}
+            <div
+              className="absolute inset-0 opacity-10"
+              style={{ backgroundSize: "cover" }}
+            />
 
-          {/* Frame uses the EXACT header-pill width formula so the hero's left
+            {/* Frame uses the EXACT header-pill width formula so the hero's left
             edge tracks the nav's at every viewport. Two-column carousel: the
             rotating text (left) and person (right) change together as one slide;
             the person stands on the full-width "POWERFUL AND VERSATILE" card,
             which is pulled up to mask the cutout's clipped bottom edge. */}
-          <div className="hero-frame relative z-[1]">
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
-              {/* Left — rotating copy (text half of the carousel slide) */}
-              <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
-                <p className="hero-kicker text-shimmer" data-hero-exit>
-                  AI-Powered Performance Marketing
-                </p>
+            <div className="hero-frame relative z-[1]">
+              <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-end">
+                {/* Left — rotating copy (text half of the carousel slide) */}
+                <div className="hero-copy min-w-0 relative z-[1] mt-4 md:mt-0 md:self-center flex flex-col gap-6 md:gap-8 items-center text-center md:items-start md:text-left">
+                  <p className="hero-kicker text-shimmer" data-hero-exit>
+                    AI-Powered Performance Marketing
+                  </p>
 
-                {/* Rotating headline. All four headlines are mounted and stacked;
+                  {/* Rotating headline. All four headlines are mounted and stacked;
                   only the `is-active` class moves, so a slide change is a pure
                   opacity/transform crossfade on the compositor — no React
                   remount, no re-layout of the hero column. Slide 1 is the H1
                   (one per page); the rest are presentational. */}
-                <div className="hero-headline-stack" data-hero-exit>
-                  {features.map((feature, index) => {
-                    const lines = feature.titleLines.map((line) => (
-                      <span key={line}>{line}</span>
-                    ));
-                    const active = index === currentSlide;
-                    return index === 0 ? (
-                      <h1
-                        key={feature.title}
-                        className={`hero-headline${active ? " is-active" : ""}`}
-                        aria-hidden={!active}
-                      >
-                        {lines}
-                      </h1>
-                    ) : (
-                      <p
-                        key={feature.title}
-                        role="heading"
-                        aria-level={1}
-                        className={`hero-headline${active ? " is-active" : ""}`}
-                        aria-hidden={!active}
-                      >
-                        {lines}
-                      </p>
-                    );
-                  })}
-                </div>
+                  <div className="hero-headline-stack" data-hero-exit>
+                    {features.map((feature, index) => {
+                      const lines = feature.titleLines.map((line) => (
+                        <span key={line}>{line}</span>
+                      ));
+                      const active = index === currentSlide;
+                      return index === 0 ? (
+                        <h1
+                          key={feature.title}
+                          className={`hero-headline${active ? " is-active" : ""}`}
+                          aria-hidden={!active}
+                        >
+                          {lines}
+                        </h1>
+                      ) : (
+                        <p
+                          key={feature.title}
+                          role="heading"
+                          aria-level={1}
+                          className={`hero-headline${active ? " is-active" : ""}`}
+                          aria-hidden={!active}
+                        >
+                          {lines}
+                        </p>
+                      );
+                    })}
+                  </div>
 
-                {/* Pagination Dots — above the CTAs */}
-                <div
-                  className="flex items-center justify-center md:justify-start gap-3"
-                  data-hero-exit
-                >
-                  {features.map((_, index) => (
+                  {/* Pagination Dots — above the CTAs */}
+                  <div
+                    className="flex items-center justify-center md:justify-start gap-3"
+                    data-hero-exit
+                  >
+                    {features.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`w-3 h-3 rounded-full border border-white/85 transition-all ${
+                          index === currentSlide
+                            ? "bg-white"
+                            : "bg-transparent hover:bg-white/25"
+                        }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  <div
+                    className="hero-actions justify-center md:justify-start"
+                    data-hero-exit
+                  >
                     <button
-                      key={index}
-                      onClick={() => goToSlide(index)}
-                      className={`w-3 h-3 rounded-full border border-white/85 transition-all ${
-                        index === currentSlide
-                          ? "bg-white"
-                          : "bg-transparent hover:bg-white/25"
-                      }`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                <div
-                  className="hero-actions justify-center md:justify-start"
-                  data-hero-exit
-                >
-                  <button
-                    type="button"
-                    onClick={openWaitlist}
-                    className="btn-primary group"
-                  >
-                    Sign Up
-                  </button>
-                  <Link
-                    href={features[currentSlide].href}
-                    className="btn-secondary group"
-                  >
-                    Learn More
-                  </Link>
+                      type="button"
+                      onClick={openWaitlist}
+                      className="btn-primary group"
+                    >
+                      Sign Up
+                    </button>
+                    <Link
+                      href={features[currentSlide].href}
+                      className="btn-secondary group"
+                    >
+                      Learn More
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Right-side visual. The concentric rings hold their position while the
+            {/* Right-side visual. The concentric rings hold their position while the
             rotating person rests on the bottom of the hero (desktop); on mobile
             the whole block flows in below the copy. Anchored to the section (not
             the grid) so the person can reach the viewport floor. */}
-          {/* The rings and the figure leave separately, not as one block: they
+            {/* The rings and the figure leave separately, not as one block: they
               sit at different depths, so they travel at different rates. The
               container itself is not marked. */}
-          <div className="hero-visual">
-            <div
-              className="hero-rings"
-              aria-hidden="true"
-              data-hero-exit="slow"
-            >
-              <ConcentricRings />
-            </div>
-            <div className="hero-person-stage" data-hero-exit="fast">
-              {/* All four cutouts are mounted and stacked, crossfading via CSS.
+            <div className="hero-visual">
+              <div
+                className="hero-rings"
+                aria-hidden="true"
+                data-hero-exit="slow"
+              >
+                <ConcentricRings />
+              </div>
+              <div className="hero-person-stage" data-hero-exit="fast">
+                {/* All four cutouts are mounted and stacked, crossfading via CSS.
                 Previously each change unmounted the old <Image> and mounted the
                 new one, so every 5s the browser re-created and re-decoded an
                 image — and a hidden copy of the *next* slide had to be rendered
                 with `priority` to hide the cost, which competed with the real
                 LCP image for bandwidth. Mounting all four decodes each once and
                 deletes the preload hack outright. */}
-              {features.map((feature, index) => (
-                <div
-                  key={feature.title}
-                  className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
-                  aria-hidden={index !== currentSlide}
-                >
-                  <Image
-                    src={feature.image}
-                    alt={index === currentSlide ? feature.title : ""}
-                    fill
-                    sizes="(max-width: 768px) 90vw, 45vw"
-                    className="hero-person-img object-contain object-bottom"
-                    style={
-                      {
-                        ["--person-scale" as string]: feature.imageFrame.scale,
-                        ["--person-x" as string]: feature.imageFrame.x,
-                        ["--person-y" as string]: feature.imageFrame.y,
-                      } as React.CSSProperties
-                    }
-                    priority={index === 0}
-                  />
-                </div>
-              ))}
+                {features.map((feature, index) => (
+                  <div
+                    key={feature.title}
+                    className={`hero-person-figure${index === currentSlide ? " is-active" : ""}`}
+                    aria-hidden={index !== currentSlide}
+                  >
+                    <Image
+                      src={feature.image}
+                      alt={index === currentSlide ? feature.title : ""}
+                      fill
+                      sizes="(max-width: 768px) 90vw, 45vw"
+                      className="hero-person-img object-contain object-bottom"
+                      style={
+                        {
+                          ["--person-scale" as string]:
+                            feature.imageFrame.scale,
+                          ["--person-x" as string]: feature.imageFrame.x,
+                          ["--person-y" as string]: feature.imageFrame.y,
+                        } as React.CSSProperties
+                      }
+                      priority={index === 0}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      </HeroSideExit>
+          </section>
+        </HeroSideExit>
 
-      {/* No "Why Choose BalloAds" section here: the hero's pin above is that
+        {/* No "Why Choose BalloAds" section here: the hero's pin above is that
           scene now — heading, phone and all five feature cards, in one
           continuous scroll (see `whyHeading`/`phoneScreen` on HeroSideExit).
           Rendering `WhyScrollSection` as well would repeat all of it. */}
 
-      {/* Brutus, the AI assistant — a trailer for /brutus, on the home page.
+        {/* Brutus, the AI assistant — a trailer for /brutus, on the home page.
           Sits directly under the hero, ahead of the proof sections: it is the
           product story, and the partners and industries below it are the
           evidence for it. */}
-      {/* "Who can use BalloAds?" fades in at the centre of the Brutus stage
+        {/* "Who can use BalloAds?" fades in at the centre of the Brutus stage
           once Brutus has left (ADR 0012), rather than scrolling up after it. */}
-      <BrutusSection
-        then={
-          /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
-          <>
-            <div className="backers-section">
-              <BackedBy logos={backerLogos} />
-            </div>
-            {/* "Trusted by" fades in with it, below (2026-10-18). */}
-            <section
-              ref={trustedByRef}
-              className="trusted-by-section trusted-by-section--in-stage"
-            >
-              <FadeUpReveal yOffset={50}>
-                <LogoCloud
-                  logos={trustedLogos}
-                  title="Trusted by the very best"
-                />
-              </FadeUpReveal>
-            </section>
-          </>
-        }
-        after={
-          whoCurved ? (
-            <WhoCurvedSection />
-          ) : whoCoverflow ? (
-            <WhoCoverflowSection />
-          ) : whoHover ? (
-            <WhoHoverSection />
-          ) : whoRoll ? (
-            <WhoRollSection />
-          ) : whoConnected ? (
-            <WhoConnectedSection />
-          ) : whoCards ? (
-            <WhoCardsSection />
-          ) : whoStack ? (
-            <WhoStackSection />
-          ) : (
-            <WhoCinematicSection />
-          )
-        }
-      />
+        <BrutusSection
+          then={
+            /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
+            <>
+              <div className="backers-section">
+                <BackedBy logos={backerLogos} />
+              </div>
+              {/* "Trusted by" fades in with it, below (2026-10-18). */}
+              <section
+                ref={trustedByRef}
+                className="trusted-by-section trusted-by-section--in-stage"
+              >
+                <FadeUpReveal yOffset={50}>
+                  <LogoCloud
+                    logos={trustedLogos}
+                    title="Trusted by the very best"
+                  />
+                </FadeUpReveal>
+              </section>
+            </>
+          }
+          after={
+            whoCurved ? (
+              <WhoCurvedSection />
+            ) : whoCoverflow ? (
+              <WhoCoverflowSection />
+            ) : whoHover ? (
+              <WhoHoverSection />
+            ) : whoRoll ? (
+              <WhoRollSection />
+            ) : whoConnected ? (
+              <WhoConnectedSection />
+            ) : whoCards ? (
+              <WhoCardsSection />
+            ) : whoStack ? (
+              <WhoStackSection />
+            ) : (
+              <WhoCinematicSection />
+            )
+          }
+        />
 
-      {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
+        {/* Who can use BalloAds — the scattering stack behind `whoStackSpread`,
           falling back to the marquee-row section while the flag is dark. The
           flag is read after mount (see below), so the server and the first
           client render always agree on which one is here. */}
-      {/* The curved row (ADR 0003) is back on top, picked again on
+        {/* The curved row (ADR 0003) is back on top, picked again on
           2026-10-17 over the later trials (ADR 0009); the rest follow in
           their old order. */}
 
-      {/* Testimonials — tilted marquee columns, no timers. */}
-      <Testimonials3D items={testimonials} />
+        {/* Testimonials — tilted marquee columns, no timers. */}
+        <Testimonials3D items={testimonials} />
 
-      {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
+        {/* Closing CTA: copy + feature-chip marquees beside the "Want a feel of
           BalloAds?" phone, which opens the waitlist — and the only section
           with the WebGL tubes behind it. The layer belongs to this section: it
           is sized to it and scrolls away with it, and the ~770 KB module is
           fetched only when the section nears the viewport. Skipped entirely
           without a fine pointer or under reduced motion. */}
-      <div className="tubes-zone">
-        {tubesCursor ? <TubesCursor /> : null}
-        <FinalCta />
-      </div>
-    </main>
+        <div className="tubes-zone">
+          {tubesCursor ? <TubesCursor /> : null}
+          <FinalCta />
+        </div>
+      </main>
+    </>
   );
 }

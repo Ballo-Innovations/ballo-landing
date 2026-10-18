@@ -83,16 +83,16 @@ const vh = (a: number, b: number): [number, number] => [a / TRACK_VH, b / TRACK_
  * Where Who comes in: just before the stage pins, so it arrives as the hero's
  * Brutus act finishes leaving rather than onto an empty screen.
  */
-const AFTER_IN: [number, number] = vh(92, 110);
+export const AFTER_IN: [number, number] = vh(92, 110);
 /**
  * The hold (ADR 0015): Who and "Backed by" share the screen while the scroll
  * turns Who's curved row one full lap; only then does it all leave, the way
  * Who came in.
  */
-const ROW_TURN: [number, number] = vh(117, 207);
-const AFTER_OUT: [number, number] = vh(207, 262);
+export const ROW_TURN: [number, number] = vh(117, 207);
+export const AFTER_OUT: [number, number] = vh(207, 262);
 /** Then "Backed by" fades in alone, high on the stage (ADR 0014). */
-const THEN_IN: [number, number] = vh(257, 277);
+export const THEN_IN: [number, number] = vh(257, 277);
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();

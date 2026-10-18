@@ -1,0 +1,619 @@
+/* =============================================================
+   The journey phone (ADR 0017)
+   File: app/components/ui/JourneyPhone.tsx, JourneyScreens.tsx
+
+   A fixed layer carrying the phone from the end of the hero's pin to the
+   closing CTA. `JourneyPhone` writes the rig's transform each frame and
+   names the live screen in `.jp-screens[data-screen]`; everything here is
+   sized in `cqw` against the phone's screen.
+   ============================================================= */
+
+/* The hero's own phone, once this one has taken over. */
+.cinematic-hero[data-phone-handoff] .hero-phone-turn {
+  visibility: hidden;
+}
+
+.journey-phone {
+  position: fixed;
+  inset: 0;
+  /* Over every section, under the header (60), the chat widget (70) and
+     the waitlist. Never a hit target: it is scenery over content. */
+  z-index: 50;
+  pointer-events: none;
+}
+
+.journey-phone__rig {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.journey-phone .phone3d {
+  box-shadow: 0 40px 90px rgba(0, 0, 0, 0.45), 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-phone {
+    display: none;
+  }
+}
+
+/* ── The stack ── */
+
+.jp-screens {
+  position: absolute;
+  inset: 0;
+  /* Its own stacking context, under the camera island. */
+  z-index: 1;
+  background: #050a26;
+  color: #fff;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+}
+
+.jp-screens ~ .phone3d-island {
+  z-index: 2;
+}
+
+.jp-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 13cqw 5.5cqw 6cqw;
+  gap: 3.5cqw;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 420ms ease;
+}
+
+.jp-screens[data-screen="film"] .jp-screen--film,
+.jp-screens[data-screen="who"] .jp-screen--who,
+.jp-screens[data-screen="lock"] .jp-screen--lock,
+.jp-screens[data-screen="reviews"] .jp-screen--reviews,
+.jp-screens[data-screen="results"] .jp-screen--results,
+.jp-screens[data-screen="home"] .jp-screen--home {
+  opacity: 1;
+}
+
+/* The onboarding mock is drawn for the phone's own white screen. */
+.jp-screen--home {
+  padding: 0;
+  background: #fff;
+}
+
+/* The film layer reuses `.hero-phone-film`, which pads nothing. */
+.jp-screen--film {
+  padding: 0;
+  z-index: auto;
+}
+
+/* ── Shared pieces ── */
+
+.jp-status {
+  position: absolute;
+  top: 3.6cqw;
+  left: 8cqw;
+  right: 7cqw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 4.2cqw;
+  font-weight: 700;
+}
+
+.jp-status__icons {
+  display: flex;
+  gap: 1.2cqw;
+}
+
+.jp-status__icons svg {
+  width: 4.4cqw;
+  height: 4.4cqw;
+}
+
+.jp-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 10cqw;
+  height: 10cqw;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2f6bff, #22d3ee);
+  font-size: 3.6cqw;
+  font-weight: 700;
+}
+
+.jp-avatar--brand {
+  background: linear-gradient(135deg, #1b2a6e, #2f6bff);
+}
+
+.jp-avatar--sm {
+  width: 8cqw;
+  height: 8cqw;
+  font-size: 3cqw;
+}
+
+.jp-post__who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.jp-post__who b {
+  font-size: 4.2cqw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jp-post__who small {
+  font-size: 3.2cqw;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.jp-card {
+  border-radius: 5cqw;
+  padding: 4.5cqw;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* ── Who: campaign posts, carousel style ── */
+
+.jp-appbar {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  font-size: 4.6cqw;
+  font-weight: 700;
+}
+
+.jp-appbar svg {
+  width: 5cqw;
+  height: 5cqw;
+}
+
+.jp-posts {
+  position: relative;
+  flex: 1;
+}
+
+.jp-post {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3cqw;
+  opacity: 0;
+  transform: translateX(18cqw) scale(0.96);
+  transition:
+    opacity 380ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jp-post[data-pos="prev"] {
+  transform: translateX(-18cqw) scale(0.96);
+}
+
+.jp-post[data-pos="active"] {
+  opacity: 1;
+  transform: none;
+}
+
+.jp-post__head {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+}
+
+.jp-post__img {
+  width: 100%;
+  aspect-ratio: 1 / 0.82;
+  object-fit: cover;
+  border-radius: 4.5cqw;
+}
+
+.jp-bubble {
+  margin: 0;
+  padding: 3.2cqw 3.8cqw;
+  border-radius: 4.5cqw 4.5cqw 4.5cqw 1.2cqw;
+  background: #1b2a6e;
+  font-size: 3.6cqw;
+  line-height: 1.4;
+}
+
+.jp-post__stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 3.2cqw;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.jp-post__stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 1cqw;
+}
+
+.jp-post__stats svg {
+  width: 3.6cqw;
+  height: 3.6cqw;
+  color: #22d3ee;
+}
+
+.jp-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2cqw;
+}
+
+.jp-dots span {
+  width: 2cqw;
+  height: 2cqw;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition:
+    width 300ms ease,
+    background 300ms ease;
+}
+
+.jp-dots span[data-on] {
+  width: 6cqw;
+  background: #fff;
+}
+
+/* ── Lock screen: glass notifications ── */
+
+.jp-screen--lock {
+  background:
+    radial-gradient(120% 70% at 20% 0%, rgba(34, 211, 238, 0.45), transparent 60%),
+    radial-gradient(120% 80% at 100% 100%, rgba(47, 107, 255, 0.6), transparent 60%),
+    linear-gradient(180deg, #0b1650, #050a26);
+  align-items: center;
+}
+
+.jp-lock__date {
+  margin-top: 4cqw;
+  font-size: 4.4cqw;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.jp-lock__time {
+  font-size: 21cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.jp-notes {
+  list-style: none;
+  margin: 4cqw 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4cqw;
+}
+
+/* The Yapay-style glass card: translucent fill and a bright hairline,
+   no backdrop-filter (the phone is transformed every frame). */
+.jp-note {
+  display: flex;
+  gap: 2.6cqw;
+  padding: 3cqw;
+  border-radius: 4.5cqw;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.1));
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 2cqw 6cqw rgba(3, 8, 40, 0.35);
+  opacity: 0;
+  transform: translateY(14cqw) scale(0.94);
+  transition:
+    opacity 360ms ease,
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jp-screens[data-screen="lock"] .jp-note {
+  opacity: 1;
+  transform: none;
+}
+
+.jp-screens[data-screen="lock"] .jp-note:nth-child(2) { transition-delay: 140ms; }
+.jp-screens[data-screen="lock"] .jp-note:nth-child(3) { transition-delay: 280ms; }
+.jp-screens[data-screen="lock"] .jp-note:nth-child(4) { transition-delay: 420ms; }
+
+.jp-note__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 9cqw;
+  height: 9cqw;
+  border-radius: 2.6cqw;
+  background: linear-gradient(135deg, #2f6bff, #22d3ee);
+}
+
+.jp-note__icon svg {
+  width: 5cqw;
+  height: 5cqw;
+}
+
+.jp-note__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+  font-size: 3.3cqw;
+}
+
+.jp-note__app {
+  display: flex;
+  justify-content: space-between;
+  font-size: 2.9cqw;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.jp-note__text b {
+  font-size: 3.6cqw;
+}
+
+.jp-note__text small {
+  font-size: 3.1cqw;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Reviews: a chat ── */
+
+.jp-chat__head {
+  display: flex;
+  align-items: center;
+  gap: 2.5cqw;
+  padding-bottom: 3cqw;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.jp-stars {
+  display: flex;
+  gap: 0.6cqw;
+}
+
+.jp-stars svg {
+  width: 3.4cqw;
+  height: 3.4cqw;
+  fill: #fbbf24;
+  color: #fbbf24;
+}
+
+.jp-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2.6cqw;
+  min-height: 0;
+}
+
+.jp-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.8cqw;
+  opacity: 0;
+  transform: translateY(10cqw);
+  transition:
+    opacity 360ms ease,
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.jp-screens[data-screen="reviews"] .jp-msg,
+.jp-screens[data-screen="reviews"] .jp-typing {
+  opacity: 1;
+  transform: none;
+}
+
+.jp-screens[data-screen="reviews"] .jp-msg:nth-child(2) { transition-delay: 300ms; }
+.jp-screens[data-screen="reviews"] .jp-msg:nth-child(3) { transition-delay: 600ms; }
+.jp-screens[data-screen="reviews"] .jp-msg:nth-child(4) { transition-delay: 900ms; }
+.jp-screens[data-screen="reviews"] .jp-typing { transition-delay: 1100ms; }
+
+.jp-msg__bubble {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  overflow: hidden;
+  padding: 2.6cqw 3.2cqw;
+  border-radius: 4cqw 4cqw 4cqw 1cqw;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 3.3cqw;
+  line-height: 1.4;
+}
+
+.jp-msg__bubble small {
+  display: block;
+  font-size: 2.8cqw;
+  font-weight: 700;
+  color: #22d3ee;
+}
+
+.jp-msg--out {
+  justify-content: flex-end;
+}
+
+.jp-msg--out .jp-msg__bubble {
+  border-radius: 4cqw 4cqw 1cqw 4cqw;
+  background: linear-gradient(135deg, #2f6bff, #1d4ed8);
+}
+
+.jp-typing {
+  display: flex;
+  gap: 1.2cqw;
+  padding: 3cqw 4cqw;
+  width: fit-content;
+  border-radius: 4cqw;
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 0;
+  transition: opacity 360ms ease;
+}
+
+.jp-typing span {
+  width: 1.8cqw;
+  height: 1.8cqw;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  animation: jp-typing 1.2s ease-in-out infinite;
+}
+
+.jp-typing span:nth-child(2) { animation-delay: 0.15s; }
+.jp-typing span:nth-child(3) { animation-delay: 0.3s; }
+
+/* Only while the screen is up: an infinite animation has to stop when
+   nobody can see it. */
+.jp-screens:not([data-screen="reviews"]) .jp-typing span {
+  animation: none;
+}
+
+@keyframes jp-typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-1.2cqw); opacity: 1; }
+}
+
+/* ── Results: the closing CTA ── */
+
+.jp-results__title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.jp-results__title b {
+  font-size: 5.4cqw;
+}
+
+.jp-results__title small {
+  font-size: 3.3cqw;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.jp-results__reach {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6cqw;
+}
+
+.jp-results__reach b {
+  font-size: 10cqw;
+  line-height: 1;
+}
+
+.jp-results__reach small,
+.jp-results__earned small {
+  font-size: 3.2cqw;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.jp-results__tick {
+  display: grid;
+  place-items: center;
+  width: 8cqw;
+  height: 8cqw;
+  margin-bottom: 1.5cqw;
+  border-radius: 50%;
+  background: #16a34a;
+  transform: scale(0);
+  transition: transform 480ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms;
+}
+
+.jp-results__tick svg {
+  width: 5cqw;
+  height: 5cqw;
+}
+
+.jp-screens[data-screen="results"] .jp-results__tick {
+  transform: scale(1);
+}
+
+.jp-results__channels {
+  display: flex;
+  flex-direction: column;
+  gap: 2.6cqw;
+}
+
+.jp-bar span {
+  display: flex;
+  justify-content: space-between;
+  font-size: 3.3cqw;
+  margin-bottom: 1.2cqw;
+}
+
+.jp-bar em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.jp-bar i {
+  display: block;
+  height: 1.8cqw;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.jp-bar i::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--share);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2f6bff, #22d3ee);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 300ms;
+}
+
+.jp-screens[data-screen="results"] .jp-bar i::after {
+  transform: scaleX(1);
+}
+
+.jp-results__earned {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3cqw;
+}
+
+.jp-results__earned > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.jp-results__earned b {
+  font-size: 6cqw;
+}
+
+.jp-results__earned svg {
+  width: 20cqw;
+  height: 8cqw;
+  flex: none;
+}
+
+.jp-results__earned polyline {
+  fill: none;
+  stroke: #22d3ee;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.jp-results__cta {
+  margin-top: auto;
+  display: grid;
+  place-items: center;
+  height: 12cqw;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2f6bff, #22d3ee);
+  font-size: 4cqw;
+  font-weight: 700;
+}

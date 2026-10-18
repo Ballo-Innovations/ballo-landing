@@ -259,8 +259,9 @@ export const PHONE_CONTENT: Range = [HANDOVER_END, (6 / 7) * TUNED];
    The phone stays. "Why Choose" leaves sideways around it, the device comes
    back to the middle, turns to landscape and plays the Brutus film on its own
    screen, and the Brutus copy rises in from the bottom underneath it. Then
-   all of it leaves sideways and the pin releases onto an empty stage, where
-   the Who section is already arriving (see `BrutusSection`).
+   the copy leaves sideways and the phone is handed to `JourneyPhone`
+   (`HANDOFF`, ADR 0017), which carries it on through the Who section that is
+   already arriving (see `BrutusSection`) and the rest of the page.
 
    Stated in vh of scroll after the last card's dwell. */
 const WHY_END = PHONE_CONTENT[1];
@@ -283,8 +284,27 @@ const PHONE_TURN = act(40, 100);
 const FILM_IN = act(78, 100);
 /** The Brutus copy rises in from the bottom, under the device. */
 const BRUTUS_IN = act(100, 150);
-/** Then everything leaves sideways, the phone last, before the pin releases. */
+/** Then the copy leaves sideways before the pin releases. */
 const BRUTUS_OUT = act(196, 262);
+
+/**
+ * Where this pin hands the phone over to `JourneyPhone` (ADR 0017), which
+ * carries it through the rest of the page. From here on the hero's own phone
+ * is hidden and the journey phone, drawn in the same pose and playing the
+ * same film, is the one on screen.
+ */
+export const HANDOFF = BRUTUS_OUT[0];
+
+/**
+ * What the journey phone needs to pick up exactly where this one is: the
+ * landscape pose in viewport px (the stage is pinned at the top of the
+ * viewport, so stage px are viewport px), and the film, for its playhead.
+ * Written by `HeroPhone` whenever it measures; read at the hand-off.
+ */
+export const PHONE_HANDOFF: {
+  pose: { cx: number; cy: number; w: number } | null;
+  video: HTMLVideoElement | null;
+} = { pose: null, video: null };
 /**
  * Just the crossfade — the onboarding mock fading out under the cards.
  *
@@ -687,7 +707,9 @@ function HeroPhone({
         // Fetched from the start of the act, so the first frames are in hand
         // by the time the screen swaps; playing only while it can be seen.
         if (p > WHY_OUT[0] && video.preload !== "auto") video.preload = "auto";
-        const live = p >= FILM_IN[0] && p < BRUTUS_OUT[1];
+        PHONE_HANDOFF.video = video;
+        // Until the hand-off; the journey phone plays it from there.
+        const live = p >= FILM_IN[0] && p < HANDOFF;
         if (live && video.paused) void video.play().catch(() => {});
         else if (!live && !video.paused) video.pause();
       }
@@ -738,6 +760,7 @@ function HeroPhone({
       ty: top + availH / 2 - (wcy + oy),
       k,
     };
+    PHONE_HANDOFF.pose = { cx: W / 2, cy: top + availH / 2, w: sh * k };
   }, []);
 
   React.useEffect(() => {
@@ -934,7 +957,7 @@ function OutroLayer({
 
 /**
  * Left side: badges and the near pill row first. The phone used to go last;
- * it stays now, for the Brutus act, and leaves at the end of that instead.
+ * it stays now, for the Brutus act and then the rest of the page (ADR 0017).
  */
 const OUTRO_LEFT: Array<[string, number]> = [
   [".hero-store-badges__item:first-child", 2.1],
@@ -943,12 +966,6 @@ const OUTRO_LEFT: Array<[string, number]> = [
   [".hero-phone-chips .mq:last-child", 1.35],
 ];
 
-/**
- * The phone's own exit, at the end of the Brutus act. The turn wrapper, not
- * the scene: `translate` composes in the parent's frame, and the scene is
- * inside the quarter turn, where "left" would point down.
- */
-const BRUTUS_OUT_LEFT: Array<[string, number]> = [[".hero-phone-turn", 1.05]];
 
 /** Right side: the button first, then the paragraph, the heading last. */
 const OUTRO_RIGHT: Array<[string, number]> = [
@@ -1393,10 +1410,8 @@ export function HeroSideExit({
               {glow}
             </div>
           ) : null}
-          <OutroLayer side="left" targets={BRUTUS_OUT_LEFT} range={BRUTUS_OUT} z={2}>
-            <OutroLayer side="left" targets={OUTRO_LEFT} range={WHY_OUT} z={2}>
-              <HeroPhone screen={phoneScreen} film={film} />
-            </OutroLayer>
+          <OutroLayer side="left" targets={OUTRO_LEFT} range={WHY_OUT} z={2}>
+            <HeroPhone screen={phoneScreen} film={film} />
           </OutroLayer>
           {aside ? (
             <OutroLayer side="right" targets={OUTRO_RIGHT} range={WHY_OUT} z={4}>
