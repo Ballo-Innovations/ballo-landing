@@ -30,9 +30,9 @@ export function WhoCurvedSection() {
     <section className="who-curved">
       <FadeUpReveal yOffset={24}>
         <div className="who-curved__copy">
+          {/* Heading only: the subtitle lines went so the journey phone
+              (ADR 0017) has the height. */}
           <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
-          <p>Banks, clinics, schools, shops, nonprofits, government.</p>
-          <p>One dashboard, whatever you are sending.</p>
         </div>
       </FadeUpReveal>
 
