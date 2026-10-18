@@ -64,3 +64,17 @@ the industry's sample campaign. That replaces the in-app post, which had a
 photo and an app bar. The card now names the tile nearest the phone's
 centre, so it always describes what shows through the glass. If the curved
 row isn't there, it falls back to the scroll position.
+
+## Update (2026-10-18): a bigger phone in the Who section
+
+At George's request:
+- The subtitle lines under "Who can use BalloAds?" were removed.
+- On the Brutus stage, the curved row now sits near the top of the stage
+  instead of in the middle, with the heading just under the nav.
+- The cards are smaller: `tileHeight` went from 46 to 40.
+- The row sits 10vh lower than before, relative to the heading.
+
+The phone measures the heading and the row on every frame. It is as tall as
+the space between the heading and the bottom of the screen allows (at most
+52% of the screen height on narrow screens). It is placed so the row
+crosses its glass 40% of the way down, above the campaign card.

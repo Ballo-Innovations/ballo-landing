@@ -39,7 +39,7 @@ export function WhoCurvedSection() {
       <TiltedGridHero
         images={IMAGES}
         className="who-curved__band"
-        tileHeight={46}
+        tileHeight={40}
         aspectRatio={1.35}
         axis={50}
         speed={8}

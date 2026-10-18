@@ -237,11 +237,24 @@ export function JourneyPhone({
     };
     // The active slide of the curved row, which runs across the lower middle
     // of the stage under the Who heading.
+    const whoHeading = document.querySelector<HTMLElement>(".who-curved__h2");
+    const whoRow = document.querySelector<HTMLElement>(".who-curved__band");
     const who = (): Pose => {
-      // Large on desktop: its top just under the heading (the subtitle was
-      // removed for it), its foot near the bottom of the screen.
-      const h = Math.min(H * (narrow ? 0.4 : 0.66), narrow ? 460 : 640);
-      return { x: W / 2, y: narrow ? H * 0.68 : H * 0.31 + h / 2, h, r: 0 };
+      // As large as the screen allows below the heading: on desktop down to
+      // just above the bottom edge. Placed so the row of cards crosses the
+      // upper part of the glass (40% down), above the campaign card. Measured
+      // live, because the stage is still settling when the phone arrives.
+      const hr = whoHeading?.getBoundingClientRect();
+      const top0 = (hr && hr.height ? hr.bottom : H * 0.2) + 18;
+      const bottom = H - 22;
+      const h = Math.max(
+        H * 0.36,
+        Math.min(bottom - top0, narrow ? H * 0.52 : 760),
+      );
+      const rr = whoRow?.getBoundingClientRect();
+      const rowY = rr && rr.height ? rr.top + rr.height / 2 : top0 + h * 0.4;
+      const top = Math.min(Math.max(rowY - h * 0.4, top0), bottom - h);
+      return { x: W / 2, y: top + h / 2, h, r: 0 };
     };
     // Where a section's content runs the full width and is meant to be read,
     // the phone waits in the bottom-left corner as a miniature.

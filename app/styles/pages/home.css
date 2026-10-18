@@ -3453,6 +3453,23 @@
   margin-bottom: 0.75rem;
 }
 
+/* On the Brutus stage the curved row hangs from the top rather than sitting
+   centred, with the heading just under the nav, so the journey phone below
+   it (ADR 0017) has the height. */
+.brutus-stage__after:has(.who-curved) {
+  align-items: flex-start;
+}
+
+.brutus-stage__after .who-curved {
+  padding-top: clamp(4.75rem, 10vh, 6rem);
+}
+
+/* The row drops a little under the raised heading, so it crosses the upper
+   part of the tall phone's glass rather than its top edge. */
+.brutus-stage__after .who-curved__band {
+  margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1 + 10vh);
+}
+
 .who-curved__cta {
   display: flex;
   justify-content: center;
