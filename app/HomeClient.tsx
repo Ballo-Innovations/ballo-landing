@@ -207,14 +207,6 @@ export default function HomeClient({
     ...logo,
     invert: logo.src === logoBayport,
   }));
-  // On the shared wall the backers already have their own row, so the client
-  // rows leave them out rather than show Airtel, MTN, Meta and ZICTA twice.
-  const backerNames = new Set(
-    backerLogos.map((l) => l.alt.trim().toLowerCase()),
-  );
-  const clientLogos = trustedLogos.filter(
-    (l) => !backerNames.has(l.alt.trim().toLowerCase()),
-  );
 
   // <main> clips the x axis with `overflow-x: clip`, NOT `hidden`.
   // `overflow-x: hidden` forces overflow-y to compute as `auto`, making the
@@ -512,18 +504,23 @@ export default function HomeClient({
       <BrutusSection
         then={
           /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
-          /* One wall of glass tiles for every logo (2026-10-18): the
-             backers first, then the clients, each under its own header. */
-          <section ref={trustedByRef} className="logo-wall">
-            <h3 className="logo-wall__head">
-              <span>Backed by</span>
-            </h3>
-            <LogoCloud logos={backerLogos} title="" className="logo-wall__backers" />
-            <h3 className="logo-wall__head">
-              <span>Trusted by the very best</span>
-            </h3>
-            <LogoCloud logos={clientLogos} title="" className="logo-wall__clients" />
-          </section>
+          <>
+            <div className="backers-section">
+              <BackedBy logos={backerLogos} />
+            </div>
+            {/* "Trusted by" fades in with it, below (2026-10-18). */}
+            <section
+              ref={trustedByRef}
+              className="trusted-by-section trusted-by-section--in-stage"
+            >
+              <FadeUpReveal yOffset={50}>
+                <LogoCloud
+                  logos={trustedLogos}
+                  title="Trusted by the very best"
+                />
+              </FadeUpReveal>
+            </section>
+          </>
         }
         after={
           whoCurved ? (
