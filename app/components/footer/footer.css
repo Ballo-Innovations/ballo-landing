@@ -6,6 +6,7 @@
 }
 
 .footer__container {
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px;
 }
@@ -154,31 +155,52 @@
   color: black;
 }
 
+.footer__logo-section { grid-area: logo; }
+.footer__column--info { grid-area: info; }
+.footer__column--help { grid-area: help; }
+.footer__column--socials { grid-area: socials; }
+.footer__column--contact { grid-area: contact; }
+
+.footer__grid {
+  grid-template-areas: "logo info help socials contact";
+}
+
+/* Tablets: small logo on top, then three columns with the socials stacked above the contact details. */
 @media (max-width: 1024px) {
   .footer__grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 60px 40px;
+    grid-template-columns: 1fr 1fr 1.3fr;
+    grid-template-areas:
+      "logo logo logo"
+      "info help socials"
+      "info help contact";
+    grid-template-rows: auto auto 1fr;
+    gap: 32px;
   }
 
   .footer__logo-section {
-    grid-column: 1 / -1;
-    height: 96px;
+    height: 64px;
+  }
+
+  .footer {
+    padding: 64px 0;
   }
 }
 
-/* Phones: small logo on top, then the columns in pairs. */
+/* Phones: the two link lists side by side, then socials and contact at full width. */
 @media (max-width: 640px) {
   .footer__grid {
     grid-template-columns: 1fr 1fr;
-    gap: 36px 24px;
+    grid-template-areas:
+      "logo logo"
+      "info help"
+      "socials socials"
+      "contact contact";
+    grid-template-rows: auto;
+    gap: 32px 16px;
   }
 
   .footer__logo-section {
-    height: 72px;
-  }
-
-  .footer__column--contact {
-    grid-column: 1 / -1;
+    height: 56px;
   }
 
   .footer__column-title {
@@ -197,5 +219,16 @@
 
   .footer {
     padding: 48px 0;
+  }
+}
+
+/* Small phones: keep "Help & Support" and its links on one line each. */
+@media (max-width: 380px) {
+  .footer__column-title {
+    font-size: 16px;
+  }
+
+  .footer__link-disabled {
+    font-size: 14px;
   }
 }
