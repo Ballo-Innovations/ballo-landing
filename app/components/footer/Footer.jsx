@@ -40,7 +40,7 @@ const Footer = () => {
           </div>
 
           {/* Information Column */}
-          <div className="footer__column">
+          <div className="footer__column footer__column--info">
             <h3 className="footer__column-title">Information</h3>
             <ul className="footer__link-list">
               <li><span className="footer__link-disabled">Features</span></li>
@@ -53,7 +53,7 @@ const Footer = () => {
           </div>
 
           {/* Help & Support Column */}
-          <div className="footer__column">
+          <div className="footer__column footer__column--help">
             <h3 className="footer__column-title">Help & Support</h3>
             <ul className="footer__link-list">
               <li><span className="footer__link-disabled">Knowledge Base</span></li>
@@ -65,7 +65,7 @@ const Footer = () => {
           </div>
 
           {/* Our Socials Column */}
-          <div className="footer__column">
+          <div className="footer__column footer__column--socials">
             <h3 className="footer__column-title">Our Socials</h3>
             <div className="footer__socials-grid">
               <Link href="#" className="footer__social-icon"><Facebook size={24} fill="white" stroke="none" /></Link>
