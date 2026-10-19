@@ -183,7 +183,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section
-        className="relative min-h-screen flex items-center justify-center px-4 md:px-8 py-20 overflow-hidden"
+        className="relative md:min-h-screen flex items-center justify-center px-4 md:px-8 pt-20 pb-0 md:py-20 overflow-hidden"
         style={{
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -196,12 +196,14 @@ export default function Home() {
         />
 
         <div className="container mx-auto relative z-10">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center min-h-[70vh]">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-12 items-center md:min-h-[70vh]">
             {/* Left Side - Content */}
-            <div className="flex flex-col gap-6 md:gap-8">
-              <div className="relative min-h-[180px] md:min-h-[220px]">
+            {/* z-20 keeps the copy above the ring art, which spills upward on narrow screens */}
+            <div className="relative z-20 flex flex-col gap-5 md:gap-8">
+              {/* Mobile reserves three lines (every title wraps to three at these sizes) so the button and dots don't jump between slides */}
+              <div className="relative min-h-[2.9em] text-[clamp(2rem,10.5vw,3rem)] sm:text-6xl md:min-h-[220px] md:text-7xl">
                 <div key={`hero-text-${currentSlide}`} className="w-full fade-swap">
-                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl font-extrabold leading-[0.95] tracking-tight uppercase max-w-[18ch] features-hero">
+                    <h1 className="text-[1em] font-extrabold leading-[0.95] tracking-tight uppercase max-w-[18ch] features-hero">
                       {features[currentSlide].title}
                     </h1>
                 </div>
@@ -209,7 +211,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
-                className="inline-flex items-center gap-3 w-fit bg-white text-[var(--dark-blue-2)] px-5 py-2 rounded-full font-bold text-2xl md:text-3xl leading-none hover:bg-white/90 transition-all group shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-3 w-fit bg-white text-[var(--dark-blue-2)] px-5 py-2 rounded-full font-bold text-xl sm:text-2xl md:text-3xl leading-none hover:bg-white/90 transition-all group shadow-sm cursor-pointer"
               >
                 Try it now
                 <div className="w-8 h-8 rounded-full bg-[var(--dark-blue-2)]/15 flex items-center justify-center group-hover:bg-[var(--dark-blue-2)]/25 transition-colors">
@@ -236,14 +238,14 @@ export default function Home() {
 
             {/* Right Side - Image */}
             <div className="relative flex justify-center items-center">
-              <div className="relative w-full max-w-md h-[260px] sm:h-[380px] md:h-[560px]">
+              <div className="relative w-full max-w-md h-[340px] sm:h-[400px] md:h-[560px]">
                 <div className="relative w-full h-full">
                   <Image
                     src={ring}
                     alt="Circles Ring"
                     width={1600}
                     height={1900}
-                    className="w-full h-auto absolute right-0 bottom-0 scale-[2]"
+                    className="w-full h-auto absolute right-0 bottom-0 scale-[1.25] origin-bottom md:origin-center md:scale-[2]"
                     priority
                   />
                   <div key={`hero-image-${currentSlide}`} className="z-10 relative w-full h-full fade-swap">
