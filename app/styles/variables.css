@@ -13,6 +13,16 @@
   --purple-light: #a855f7;
   --cyan: #3fdbff;
   --cyan-light: #67e8f9;
+  --blue: #1a3aff;
+  --cyan-bright: #00d4ff;
+  --landing-body-size: 1.125rem;
+  --landing-body-leading: 1.625;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --landing-body-size: 1.25rem;
+  }
 }
 
 @theme inline {
