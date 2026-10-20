@@ -156,19 +156,27 @@ export function CoverflowCarousel({
     // Read after every transform is written: one layout per frame, not one
     // per card. A card is fully shown only with `band` px to spare and is gone
     // by the time it touches the edge, so the clip never cuts one visibly.
+    // The card nearest the centre is exempt: where only one card fits (a
+    // phone), fading it too would blank the ring halfway through every step.
+    // At rest it is whole anyway; it only meets the edge while sliding.
     const frame = frameRef.current;
     if (!fitToFrame || !frame) return;
     const room = frame.getBoundingClientRect();
     const band = width * 0.12;
-    cardRefs.current.forEach((card) => {
+    const front = indexAt(pos);
+    cardRefs.current.forEach((card, index) => {
       if (!card) return;
+      if (index === front) {
+        card.style.visibility = "";
+        return;
+      }
       const box = card.getBoundingClientRect();
       const spare = Math.min(box.left - room.left, room.right - box.right);
       const fit = Math.min(1, Math.max(0, spare / band));
       card.style.opacity = String(Number(card.style.opacity) * fit);
       card.style.visibility = fit > 0 ? "" : "hidden";
     });
-  }, [count, depth, fade, falloff, fitToFrame, gap, loop, rotate]);
+  }, [count, depth, fade, falloff, fitToFrame, gap, indexAt, loop, rotate]);
 
   const settle = React.useCallback(
     (target: number) => {
