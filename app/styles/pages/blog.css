@@ -23,6 +23,44 @@
     radial-gradient(circle, rgba(70, 80, 220, 0.28) 0%, rgba(30, 30, 140, 0.18) 40%, transparent 70%);
 }
 
+/* Featured coverflow (behind `blogCoverflow`): one screen tall, edge to edge.
+   The card is as big as the viewport allows in both directions: the height
+   term leaves room for the header above and the ring's padding, so the whole
+   card is on screen. On a phone the front card takes most of the width. */
+.blog-cf {
+  --blog-cf-card: clamp(240px, min(84vw, calc(100svh - 15rem)), 760px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 6.5rem 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .blog-cf {
+    --blog-cf-card: clamp(260px, min(36vw, calc(100svh - 14rem)), 760px);
+    padding-top: 7rem;
+  }
+}
+
+.blog-cf .blog-hero-rings {
+  width: min(1400px, 150vw);
+}
+
+/* Bigger cards, bigger overlay text. */
+.blog-cf .cf-overlay {
+  padding: clamp(1rem, 2.2vw, 2rem);
+}
+
+.blog-cf .cf-overlay > p:first-child {
+  font-size: clamp(1.05rem, 1.7vw, 1.75rem);
+}
+
+.blog-cf .cf-overlay__action {
+  font-size: clamp(0.85rem, 1vw, 1rem);
+  padding: 0.6rem 1.15rem;
+}
+
 /* Search */
 .blog-search {
   display: flex;

@@ -163,16 +163,22 @@ export default function BlogPageClient({
   return (
     <main className="blog-page min-h-screen text-white">
       {carouselItems.length > 0 && (
-        <section className="relative overflow-hidden px-4 pt-32 pb-4 md:px-8">
+        <section
+          className={
+            coverflow
+              ? "blog-cf relative overflow-hidden"
+              : "relative overflow-hidden px-4 pt-32 pb-4 md:px-8"
+          }
+        >
           <div className="blog-hero-rings" aria-hidden="true" />
-          {/* The coverflow takes the section's full width: it hides any card that
-              wouldn't fit whole, so the 1200px column would only cost cards. */}
+          {/* The coverflow fills the viewport edge to edge: it hides any card
+              that wouldn't fit whole, so a column would only cost cards. */}
           <div className={`relative w-full mx-auto ${coverflow ? "" : "max-w-[1200px]"}`}>
             {coverflow ? (
               <CoverflowCarousel
                 slides={coverflowSlides}
                 label="Featured articles"
-                cardWidth="clamp(220px, 22vw, 320px)"
+                cardWidth="var(--blog-cf-card)"
                 showOverlay
                 overlayAlways
                 actionLabel="Read Article"
