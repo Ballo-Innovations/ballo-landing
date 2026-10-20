@@ -185,6 +185,8 @@ export default function BlogPageClient({
                 actionLabel="Read Article"
                 fitToFrame
                 autoPlay={4500}
+                pauseOnHover={false}
+                wheel
               />
             ) : (
               <StackedCardCarousel items={carouselItems} initialCenter={0} />
