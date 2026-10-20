@@ -27,11 +27,12 @@
    tall less the search bar beneath it, so the search is on the first screen.
    The card is as big as the viewport allows in both directions: the height
    term leaves room for the header above, the ring's padding and the search
-   bar below, so the whole card and the search are on screen. Cards are 1.25x as tall as wide (cardAspect), hence the
-   division. On a phone the front card takes most of the width. */
+   bar below, so the whole card and the search are on screen. Cards are 1.4x
+   as tall as wide (cardAspect), hence the division. On a phone the front
+   card takes most of the width. */
 .blog-cf {
   /* Phones keep the search clear of the floating Ask Brutus bubble. */
-  --blog-cf-card: clamp(220px, min(80vw, calc((100svh - 23.5rem) / 1.25)), 760px);
+  --blog-cf-card: clamp(220px, min(80vw, calc((100svh - 23.5rem) / 1.4)), 760px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -41,7 +42,7 @@
 
 @media (min-width: 768px) {
   .blog-cf {
-    --blog-cf-card: clamp(240px, min(36vw, calc((100svh - 19rem) / 1.25)), 760px);
+    --blog-cf-card: clamp(240px, min(36vw, calc((100svh - 19rem) / 1.4)), 760px);
     min-height: calc(100svh - 5.5rem);
     padding-top: 7rem;
   }
@@ -51,7 +52,7 @@
    laptop or desktop (checked at 1280-1920px wide); 24vw drops to three. */
 @media (min-width: 1024px) {
   .blog-cf {
-    --blog-cf-card: clamp(240px, min(23vw, calc((100svh - 19rem) / 1.25)), 760px);
+    --blog-cf-card: clamp(240px, min(23vw, calc((100svh - 19rem) / 1.4)), 760px);
   }
 }
 

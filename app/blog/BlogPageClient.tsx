@@ -179,7 +179,7 @@ export default function BlogPageClient({
                 slides={coverflowSlides}
                 label="Featured articles"
                 cardWidth="var(--blog-cf-card)"
-                cardAspect={1.25}
+                cardAspect={1.4}
                 showOverlay
                 overlayAlways
                 actionLabel="Read Article"
