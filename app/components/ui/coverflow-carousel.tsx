@@ -25,7 +25,7 @@ export interface CoverflowSlide {
   title?: string;
   subtitle?: string;
   meta?: { label: string; value: string }[];
-  /** Where the caption's action button goes for this slide. */
+  /** Where the overlay's action button goes for this slide. */
   href?: string;
 }
 
@@ -51,8 +51,15 @@ export interface CoverflowCarouselProps {
   showNavigation?: boolean;
   /** Title and subtitle over the card on hover (the front card on touch). */
   showOverlay?: boolean;
-  /** Label for the caption button on slides with an `href`. */
+  /** Keep every card's overlay up instead of showing it on hover. */
+  overlayAlways?: boolean;
+  /** Label for the front card's overlay button on slides with an `href`. */
   actionLabel?: string;
+  /**
+   * Fade a card out before it reaches the frame's edge, so no card is ever
+   * shown cut off. Measured from where each card actually lands on screen.
+   */
+  fitToFrame?: boolean;
   /**
    * Advance one card every this many ms; 0 is off. Paused while hovered,
    * dragged or focused, off-screen, in a hidden tab, and under reduced motion.
@@ -78,7 +85,9 @@ export function CoverflowCarousel({
   showPagination = false,
   showNavigation = false,
   showOverlay = false,
+  overlayAlways = false,
   actionLabel = "Open",
+  fitToFrame = false,
   autoPlay = 0,
   label = "Cover carousel",
   className,
@@ -143,7 +152,23 @@ export function CoverflowCarousel({
       card.style.opacity = String(Math.max(0, 1 - fade * distance) * edge);
       card.style.zIndex = String(100 - Math.round(distance));
     });
-  }, [count, depth, fade, falloff, gap, loop, rotate]);
+
+    // Read after every transform is written: one layout per frame, not one
+    // per card. A card is fully shown only with `band` px to spare and is gone
+    // by the time it touches the edge, so the clip never cuts one visibly.
+    const frame = frameRef.current;
+    if (!fitToFrame || !frame) return;
+    const room = frame.getBoundingClientRect();
+    const band = width * 0.12;
+    cardRefs.current.forEach((card) => {
+      if (!card) return;
+      const box = card.getBoundingClientRect();
+      const spare = Math.min(box.left - room.left, room.right - box.right);
+      const fit = Math.min(1, Math.max(0, spare / band));
+      card.style.opacity = String(Number(card.style.opacity) * fit);
+      card.style.visibility = fit > 0 ? "" : "hidden";
+    });
+  }, [count, depth, fade, falloff, fitToFrame, gap, loop, rotate]);
 
   const settle = React.useCallback(
     (target: number) => {
@@ -188,7 +213,14 @@ export function CoverflowCarousel({
     [clamp, settle],
   );
 
+  /** Set once a press travels far enough to be a drag; swallows the click. */
+  const draggedRef = React.useRef(false);
+
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    // A press on a link stays a click: capturing the pointer here would
+    // retarget its click to the frame and the link would never open.
+    if ((event.target as HTMLElement).closest("a")) return;
+    draggedRef.current = false;
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -211,6 +243,7 @@ export function CoverflowCarousel({
     const pitch = widthRef.current * (1 + gap);
     if (!pitch) return;
 
+    if (Math.abs(event.clientX - drag.x) > 6) draggedRef.current = true;
     const now = performance.now();
     const previous = posRef.current;
     posRef.current = clamp(drag.pos - (event.clientX - drag.x) / pitch);
@@ -329,9 +362,10 @@ export function CoverflowCarousel({
                 aria-label={`${index + 1} of ${count}`}
                 onClick={() => {
                   // A click (not a drag) on a side card brings it forward.
-                  if (index !== selected) goTo(index);
+                  if (!draggedRef.current && index !== selected) goTo(index);
                 }}
                 data-front={index === selected ? "" : undefined}
+                data-overlay={overlayAlways ? "always" : undefined}
                 className={cn(
                   "cf-card group absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
                   cardClassName,
@@ -354,6 +388,16 @@ export function CoverflowCarousel({
                       <p className="mt-1 text-xs leading-snug text-white/80 md:text-sm">
                         {slide.subtitle}
                       </p>
+                    ) : null}
+                    {slide.href && index === selected ? (
+                      <Link
+                        href={slide.href}
+                        draggable={false}
+                        className="cf-overlay__action pointer-events-auto mt-3 self-start"
+                      >
+                        {actionLabel}
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                      </Link>
                     ) : null}
                   </div>
                 ) : null}
@@ -395,11 +439,6 @@ export function CoverflowCarousel({
           </p>
           {active.subtitle && (
             <p className="mt-1 max-w-md text-sm text-white/70">{active.subtitle}</p>
-          )}
-          {active.href && (
-            <Link href={active.href} className="btn-primary mt-4">
-              {actionLabel}
-            </Link>
           )}
           {active.meta && active.meta.length > 0 && (
             <dl className="mt-4 w-full max-w-[300px] text-[12px]">

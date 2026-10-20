@@ -145,7 +145,6 @@ export default function BlogPageClient({
     src: p.coverImageUrl!,
     alt: p.title,
     title: p.title,
-    subtitle: p.excerpt,
     href: `/blog/${p.slug}`,
   }));
 
@@ -166,16 +165,19 @@ export default function BlogPageClient({
       {carouselItems.length > 0 && (
         <section className="relative overflow-hidden px-4 pt-32 pb-4 md:px-8">
           <div className="blog-hero-rings" aria-hidden="true" />
-          <div className="relative w-full max-w-[1200px] mx-auto">
+          {/* The coverflow takes the section's full width: it hides any card that
+              wouldn't fit whole, so the 1200px column would only cost cards. */}
+          <div className={`relative w-full mx-auto ${coverflow ? "" : "max-w-[1200px]"}`}>
             {coverflow ? (
               <CoverflowCarousel
                 slides={coverflowSlides}
                 label="Featured articles"
-                cardWidth="clamp(220px, 28vw, 360px)"
-                showCaption
+                cardWidth="clamp(220px, 22vw, 320px)"
+                showOverlay
+                overlayAlways
                 actionLabel="Read Article"
+                fitToFrame
                 autoPlay={4500}
-                showPagination
               />
             ) : (
               <StackedCardCarousel items={carouselItems} initialCenter={0} />

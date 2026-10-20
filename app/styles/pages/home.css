@@ -3671,6 +3671,36 @@
   }
 }
 
+.cf-card[data-overlay="always"] .cf-overlay {
+  opacity: 1;
+}
+
+/* The front card's "Read Article" pill in the overlay; the same white pill
+   and arrow the blog's earlier fanned carousel used on its cards. */
+.cf-overlay__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  color: #020055;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cf-overlay__action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.cf-overlay__action:focus-visible {
+  outline: 2px solid var(--cyan-bright, #00d4ff);
+  outline-offset: 2px;
+}
+
 /* Stands in for tailwindcss-animate's `animate-in fade-in` on the caption. */
 .cf-caption-in {
   animation: cf-caption-in 0.3s ease both;
