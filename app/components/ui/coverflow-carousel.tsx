@@ -43,6 +43,8 @@ export interface CoverflowCarouselProps {
   fade?: number;
   /** Any CSS length. Everything else is derived from it, so the rake scales. */
   cardWidth?: string;
+  /** Card height as a multiple of its width; 1 is square. */
+  cardAspect?: number;
   /** Space between cards, as a fraction of card width. */
   gap?: number;
   loop?: boolean;
@@ -79,6 +81,7 @@ export function CoverflowCarousel({
   falloff = 0.56,
   fade = 0.1,
   cardWidth = "clamp(148px, 22vw, 260px)",
+  cardAspect = 1,
   gap = 0.05,
   loop = true,
   showCaption = false,
@@ -357,7 +360,10 @@ export function CoverflowCarousel({
         >
           <div
             className="relative select-none"
-            style={{ height: "var(--cf-card)", transformStyle: "preserve-3d" }}
+            style={{
+              height: `calc(var(--cf-card) * ${cardAspect})`,
+              transformStyle: "preserve-3d",
+            }}
           >
             {slides.map((slide, index) => (
               <div
@@ -375,10 +381,14 @@ export function CoverflowCarousel({
                 data-front={index === selected ? "" : undefined}
                 data-overlay={overlayAlways ? "always" : undefined}
                 className={cn(
-                  "cf-card group absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
+                  "cf-card group absolute left-1/2 top-0 overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
                   cardClassName,
                 )}
-                style={{ width: "var(--cf-card)", backgroundColor: "#0d1347" }}
+                style={{
+                  width: "var(--cf-card)",
+                  height: `calc(var(--cf-card) * ${cardAspect})`,
+                  backgroundColor: "#0d1347",
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
