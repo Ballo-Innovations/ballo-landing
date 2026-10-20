@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCarousel";
+import { CoverflowCarousel, type CoverflowSlide } from "../components/ui/coverflow-carousel";
 import { FadeUpReveal } from "../components/ui/FadeUpReveal";
 import ConcentricRings from "../components/ui/ConcentricRings";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import type { BlogPost, BlogPostPagination } from "@/lib/blogApi";
 import { ArticleCard } from "./ArticleCard";
 
@@ -105,6 +107,10 @@ export default function BlogPageClient({
   activeTag: string | null;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  // Read after mount: a `?features=` override lives in localStorage, which the
+  // server render can't see.
+  const [coverflow, setCoverflow] = useState(false);
+  useEffect(() => setCoverflow(isFeatureEnabled("blogCoverflow")), []);
 
   // Only the current (already server-paginated + server-filtered) page of posts is
   // available client-side, so search can only ever narrow down what's already on
@@ -135,6 +141,14 @@ export default function BlogPageClient({
     href: `/blog/${p.slug}`,
   }));
 
+  const coverflowSlides: CoverflowSlide[] = featuredPosts.map((p) => ({
+    src: p.coverImageUrl!,
+    alt: p.title,
+    title: p.title,
+    subtitle: p.excerpt,
+    href: `/blog/${p.slug}`,
+  }));
+
   const headingText = activeCategory ? `${activeCategory} articles` : isSearching ? "Search results" : "Latest articles";
 
   // Default view: one band per category, in the order categories first appear.
@@ -153,7 +167,19 @@ export default function BlogPageClient({
         <section className="relative overflow-hidden px-4 pt-32 pb-4 md:px-8">
           <div className="blog-hero-rings" aria-hidden="true" />
           <div className="relative w-full max-w-[1200px] mx-auto">
-            <StackedCardCarousel items={carouselItems} initialCenter={0} />
+            {coverflow ? (
+              <CoverflowCarousel
+                slides={coverflowSlides}
+                label="Featured articles"
+                cardWidth="clamp(220px, 28vw, 360px)"
+                showCaption
+                actionLabel="Read Article"
+                autoPlay={4500}
+                showPagination
+              />
+            ) : (
+              <StackedCardCarousel items={carouselItems} initialCenter={0} />
+            )}
           </div>
         </section>
       )}

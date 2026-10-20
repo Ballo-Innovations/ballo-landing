@@ -13,6 +13,7 @@ export type FeatureName =
   | "whoRoll"
   | "whoHoverList"
   | "whoCoverflow"
+  | "blogCoverflow"
   | "tubesCursor";
 
 const STORAGE_KEY = "balloads.feature-overrides";
@@ -41,6 +42,7 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   whohoverlist: "whoHoverList",
   coverflow: "whoCoverflow",
   whocoverflow: "whoCoverflow",
+  blogcoverflow: "blogCoverflow",
   tubes: "tubesCursor",
   tubescursor: "tubesCursor",
 };
@@ -73,6 +75,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   whoRoll: process.env.NEXT_PUBLIC_FEATURE_WHO_ROLL,
   whoHoverList: process.env.NEXT_PUBLIC_FEATURE_WHO_HOVER_LIST,
   whoCoverflow: process.env.NEXT_PUBLIC_FEATURE_WHO_COVERFLOW,
+  blogCoverflow: process.env.NEXT_PUBLIC_FEATURE_BLOG_COVERFLOW,
   tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
 };
 

@@ -11,6 +11,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ export interface CoverflowSlide {
   title?: string;
   subtitle?: string;
   meta?: { label: string; value: string }[];
+  /** Where the caption's action button goes for this slide. */
+  href?: string;
 }
 
 export interface CoverflowCarouselProps {
@@ -48,6 +51,8 @@ export interface CoverflowCarouselProps {
   showNavigation?: boolean;
   /** Title and subtitle over the card on hover (the front card on touch). */
   showOverlay?: boolean;
+  /** Label for the caption button on slides with an `href`. */
+  actionLabel?: string;
   /**
    * Advance one card every this many ms; 0 is off. Paused while hovered,
    * dragged or focused, off-screen, in a hidden tab, and under reduced motion.
@@ -73,6 +78,7 @@ export function CoverflowCarousel({
   showPagination = false,
   showNavigation = false,
   showOverlay = false,
+  actionLabel = "Open",
   autoPlay = 0,
   label = "Cover carousel",
   className,
@@ -389,6 +395,11 @@ export function CoverflowCarousel({
           </p>
           {active.subtitle && (
             <p className="mt-1 max-w-md text-sm text-white/70">{active.subtitle}</p>
+          )}
+          {active.href && (
+            <Link href={active.href} className="btn-primary mt-4">
+              {actionLabel}
+            </Link>
           )}
           {active.meta && active.meta.length > 0 && (
             <dl className="mt-4 w-full max-w-[300px] text-[12px]">
