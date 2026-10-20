@@ -55,6 +55,9 @@
   }
 }
 
+/* No clip on the section: the glow and the card shadows run on into the
+   search below instead of stopping at a hard edge. .blog-page's
+   overflow-x: clip still stops the wide glow from scrolling the page. */
 .blog-cf .blog-hero-rings {
   width: min(1400px, 150vw);
 }

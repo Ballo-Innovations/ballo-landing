@@ -166,7 +166,7 @@ export default function BlogPageClient({
         <section
           className={
             coverflow
-              ? "blog-cf relative overflow-hidden"
+              ? "blog-cf relative"
               : "relative overflow-hidden px-4 pt-32 pb-4 md:px-8"
           }
         >
@@ -194,7 +194,9 @@ export default function BlogPageClient({
       )}
 
       {/* Search and Categories */}
-      <section className={`px-4 pb-4 md:px-8 ${carouselItems.length > 0 ? "pt-6" : "pt-32"}`}>
+      {/* Positioned above the featured section, whose glow now spills down
+          into this one rather than being clipped. */}
+      <section className={`relative z-[1] px-4 pb-4 md:px-8 ${carouselItems.length > 0 ? "pt-6" : "pt-32"}`}>
         <FadeUpReveal yOffset={40} duration={0.7} className="mx-auto flex max-w-[1200px] flex-col items-center gap-10">
           <label className="blog-search">
             <span className="blog-search__icon" aria-hidden="true">

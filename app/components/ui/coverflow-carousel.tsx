@@ -351,8 +351,10 @@ export function CoverflowCarousel({
               nudge(1);
             }
           }}
-          // Vertical padding keeps the drop shadows clear of the clip.
-          className="cursor-grab overflow-hidden py-8 outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:cursor-grabbing"
+          // Clip sideways only, for cards sliding off the ends; `clip` (unlike
+          // `hidden`) lets the other axis stay visible, so the drop shadows
+          // fall below the ring instead of being sliced off.
+          className="cursor-grab overflow-x-clip overflow-y-visible py-8 outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:cursor-grabbing"
           style={{
             perspective: `calc(var(--cf-card) * ${perspective})`,
             touchAction: "pan-y",
