@@ -43,6 +43,14 @@
   }
 }
 
+/* 23vw is the largest card that still leaves room for five whole cards on a
+   laptop or desktop (checked at 1280-1920px wide); 24vw drops to three. */
+@media (min-width: 1024px) {
+  .blog-cf {
+    --blog-cf-card: clamp(260px, min(23vw, calc(100svh - 14rem)), 760px);
+  }
+}
+
 .blog-cf .blog-hero-rings {
   width: min(1400px, 150vw);
 }
