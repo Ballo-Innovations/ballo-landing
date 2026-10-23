@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — BalloAds",
+  title: "Terms of Service - BalloAds",
   description: "Read the Terms of Service governing your use of the BalloAds platform and services.",
 };
 

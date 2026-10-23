@@ -38,12 +38,12 @@ export function TrustedBySection() {
   return (
     <section className="ds-section" id="trusted-by">
       <div className="ds-grid-12" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
-        {/* Sidebar — cols 1–3 */}
+        {/* Sidebar - cols 1–3 */}
         <div className="ds-sidebar">
           <span className="ds-sidebar-label">Trusted by</span>
         </div>
 
-        {/* Content — cols 4–12 */}
+        {/* Content - cols 4–12 */}
         <div className="ds-content">
           <p
             className="ds-section-head mb-10"

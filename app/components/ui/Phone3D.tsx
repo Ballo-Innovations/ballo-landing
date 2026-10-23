@@ -58,7 +58,7 @@ export function Phone3D({ children, floating }: Props) {
     );
     observer.observe(phoneEl);
 
-    // Start immediately (optimistic — likely visible on load)
+    // Start immediately (optimistic - likely visible on load)
     isVisible = true;
     rafId = requestAnimationFrame(tick);
 

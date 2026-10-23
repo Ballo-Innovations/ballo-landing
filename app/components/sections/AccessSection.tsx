@@ -4,12 +4,12 @@ export function AccessSection() {
   return (
     <section className="ds-section ds-access" id="access">
       <div className="ds-grid-12">
-        {/* Sidebar — cols 1–3 */}
+        {/* Sidebar - cols 1–3 */}
         <div className="ds-sidebar">
           <span className="ds-sidebar-label">Access</span>
         </div>
 
-        {/* Content — cols 4–12 */}
+        {/* Content - cols 4–12 */}
         <div className="ds-content py-16">
           <h2
             className="ds-poster"
@@ -29,7 +29,7 @@ export function AccessSection() {
               BalloAds gives you the tools to launch impactful marketing campaigns with ease.
             </p>
             <p className="ds-body">
-              Whether you&apos;re a startup, an enterprise, or a service provider — reach the right
+              Whether you&apos;re a startup, an enterprise, or a service provider - reach the right
               audience today.
             </p>
           </div>
