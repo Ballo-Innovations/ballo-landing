@@ -73,7 +73,7 @@ export function WhyScrollSection() {
       gsap.set(items, { opacity: 1 });
     });
 
-    // Entrance reveal for the heading block (heading, subtitle, CTA) — fires
+    // Entrance reveal for the heading block (heading, subtitle, CTA) - fires
     // once as the section scrolls in, before the pin engages. Kept separate
     // from the pinned timeline so it never fights GSAP's opacity scrubbing.
     mm.add("(prefers-reduced-motion: no-preference)", () => {

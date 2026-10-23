@@ -165,7 +165,7 @@
   transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
 }
 
-/* Center slide — straight, raised, full colour */
+/* Center slide - straight, raised, full colour */
 .swiper-slide-active .custom-card {
   transform: scale(1.08) translateY(-28px) translateZ(0) !important;
   opacity: 1 !important;
@@ -173,7 +173,7 @@
   z-index: 5;
 }
 
-/* Next slide (one to the right) — fans outward, tilts clockwise */
+/* Next slide (one to the right) - fans outward, tilts clockwise */
 .swiper-slide-next .custom-card {
   transform: translateX(-70px) translateY(14px) rotate(7deg) scale(0.9);
   opacity: 0.97;
@@ -187,7 +187,7 @@
   filter: brightness(0.64);
 }
 
-/* Previous slide (one to the left) — fans outward, tilts anti-clockwise */
+/* Previous slide (one to the left) - fans outward, tilts anti-clockwise */
 .swiper-slide-prev .custom-card {
   transform: translateX(70px) translateY(14px) rotate(-7deg) scale(0.9);
   opacity: 0.97;

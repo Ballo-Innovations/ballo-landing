@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — BalloAds",
+  title: "Privacy Policy - BalloAds",
   description: "Learn how BalloAds collects, uses, and protects your personal information.",
 };
 
@@ -506,12 +506,12 @@ export default function PrivacyPolicyPage() {
             <SectionHeading>13. California Privacy Rights (CCPA/CPRA)</SectionHeading>
             <Body>If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA):</Body>
             <BulletList items={[
-              "Right to Know — Request what personal information we collect, use, share, and sell",
-              "Right to Delete — Request deletion of personal information we have collected, subject to certain exceptions",
-              "Right to Opt-Out — Opt out of the sale or sharing of your personal information",
-              "Right to Correct — Request correction of inaccurate personal information",
-              "Right to Limit Use — Limit our use of sensitive personal information",
-              "Non-Discrimination — We will not discriminate against you for exercising your California privacy rights",
+              "Right to Know - Request what personal information we collect, use, share, and sell",
+              "Right to Delete - Request deletion of personal information we have collected, subject to certain exceptions",
+              "Right to Opt-Out - Opt out of the sale or sharing of your personal information",
+              "Right to Correct - Request correction of inaccurate personal information",
+              "Right to Limit Use - Limit our use of sensitive personal information",
+              "Non-Discrimination - We will not discriminate against you for exercising your California privacy rights",
             ]} />
           </div>
 
@@ -523,7 +523,7 @@ export default function PrivacyPolicyPage() {
             <Body>If you are located in the European Union or European Economic Area, you have rights under the General Data Protection Regulation (GDPR). We process your information under lawful bases including contract performance, legitimate interests, legal compliance, and consent.</Body>
             <InfoCard>
               <InfoRow label="Data Protection Officer">lombe.lusale@balloinnovations.com</InfoRow>
-              <InfoRow label="DPA Requests">Available for business customers as required by GDPR — contact privacy@balloads.com</InfoRow>
+              <InfoRow label="DPA Requests">Available for business customers as required by GDPR - contact privacy@balloads.com</InfoRow>
               <InfoRow label="Supervisory Authority">You have the right to lodge a complaint with your local data protection authority</InfoRow>
             </InfoCard>
           </div>

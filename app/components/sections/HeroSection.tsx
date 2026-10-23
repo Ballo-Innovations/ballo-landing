@@ -41,7 +41,7 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-svh flex items-center justify-center overflow-hidden">
-      {/* Grainient background — pointer-events-none so fixed nav above receives clicks */}
+      {/* Grainient background - pointer-events-none so fixed nav above receives clicks */}
       <div className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
         <Grainient
           color1="#E3E2DE"
@@ -81,7 +81,7 @@ export function HeroSection() {
       </div>
 
 
-      {/* Centered content — pt-24 clears the floating nav pill */}
+      {/* Centered content - pt-24 clears the floating nav pill */}
       <div className="relative z-10 flex flex-col items-center text-center px-4 md:px-8 pt-24 pb-20 w-full max-w-5xl mx-auto" style={{ color: "#ffffff" }}>
         <div className="relative min-h-[180px] md:min-h-[220px] flex items-center justify-center w-full">
           <AnimatePresence mode="wait">

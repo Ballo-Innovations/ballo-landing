@@ -10,11 +10,11 @@
   --brand-color-3: #2273af;
   --brand-color-4: #3fdbff;
   --brand-color-5: #bdd4dc;
-  /* Liquid UI — geometry & motion (colors: use --brand-color-1 … 5) */
+  /* Liquid UI - geometry & motion (colors: use --brand-color-1 … 5) */
   --radius-liquid: 24px;
   --liquid-ease: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Standardized primary CTA gradient — sourced from the header "Sign Up"
+  /* Standardized primary CTA gradient - sourced from the header "Sign Up"
      button. Shared by .btn-primary, .glow-button and the header signup link
      so every primary action across the landing page reads identically. */
   --btn-cta-text: #061044;
@@ -95,7 +95,7 @@ a[aria-disabled="true"] {
   color: #fff;
 }
 
-/* ——— Liquid / carved backoffice design system ——— */
+/* --- Liquid / carved backoffice design system --- */
 
 /* Hook for carved/selected UI (sidebar uses .admin-sidebar-nav-item-active; tables use tr.admin-row-carved) */
 .carved-active {
@@ -154,7 +154,7 @@ a[aria-disabled="true"] {
 }
 
 /*
- * Header nav: circular triggers — white surface, hairline border, soft lift
+ * Header nav: circular triggers - white surface, hairline border, soft lift
  * (aligned with reference search pill / icon row).
  */
 .admin-header-icon-btn {
@@ -313,7 +313,7 @@ a[aria-disabled="true"] {
   transition: all 0.3s var(--liquid-ease);
 }
 
-/* Cards — pure white on off-white canvas */
+/* Cards - pure white on off-white canvas */
 .admin-liquid-card {
   border-radius: 16px;
   background: var(--admin-card);
@@ -381,7 +381,7 @@ a[aria-disabled="true"] {
   color: #e2e8f0;
 }
 
-/* Horizontal page tabs — rounded-top active pill, full-width rule, brand accent bar */
+/* Horizontal page tabs - rounded-top active pill, full-width rule, brand accent bar */
 .admin-tab-bar {
   --admin-tab-radius: 12px;
   --admin-tab-indicator-h: 3px;
@@ -462,7 +462,7 @@ a[aria-disabled="true"] {
 }
 
 /*
- * Sidebar — full brand palette on a 168deg sweep:
+ * Sidebar - full brand palette on a 168deg sweep:
  * cyan highlight (4+2) → ocean blue (2) → primary blue (3+1) → deep navy (1), shallow 5-tint on text/hover only.
  */
 .admin-sidebar-surface {
@@ -523,7 +523,7 @@ a[aria-disabled="true"] {
     0 8px 22px rgba(0, 0, 0, 0.22);
 }
 
-/* Curved inverse-fillets: opacity only (no geometry / shadow tween — avoids “slide”) */
+/* Curved inverse-fillets: opacity only (no geometry / shadow tween - avoids “slide”) */
 @keyframes admin-sidebar-fillet-fade-in {
   from {
     opacity: 0;
@@ -547,13 +547,13 @@ a[aria-disabled="true"] {
   background: var(--admin-sidebar-tab-fill) !important;
   color: var(--brand-color-1);
   box-shadow: none;
-  /* Don’t transition border-radius / width / padding — that reads as sliding; fillets fade in via pseudos */
+  /* Don’t transition border-radius / width / padding - that reads as sliding; fillets fade in via pseudos */
   transition:
     background-color 0.3s var(--liquid-ease),
     color 0.3s var(--liquid-ease);
 }
 
-/* Inactive row: inset pill; hover = same shape, straight edges (no inverse fillet — only active uses curves) */
+/* Inactive row: inset pill; hover = same shape, straight edges (no inverse fillet - only active uses curves) */
 .admin-sidebar-nav-item-inactive {
   position: relative;
   z-index: 1;
@@ -645,7 +645,7 @@ a[aria-disabled="true"] {
     calc(var(--admin-sidebar-inverse-size) / 2) calc(-1 * var(--admin-sidebar-inverse-size) / 2) 0 calc(var(--admin-sidebar-inverse-size) / 2) var(--admin-sidebar-tab-fill);
 }
 
-/* Default tables — light separators */
+/* Default tables - light separators */
 .admin-shell table {
   border-collapse: separate;
   border-spacing: 0 8px;
@@ -716,7 +716,7 @@ a[aria-disabled="true"] {
   background: #303450;
 }
 
-/* Layered “floating” tables — add class admin-liquid-table on <table> */
+/* Layered “floating” tables - add class admin-liquid-table on <table> */
 .admin-shell table.admin-liquid-table {
   border-spacing: 0 10px;
 }
@@ -744,7 +744,7 @@ a[aria-disabled="true"] {
   border-bottom-right-radius: 12px;
 }
 
-/* Compact / inline tables — no row islands */
+/* Compact / inline tables - no row islands */
 .admin-shell table.admin-table-plain {
   border-collapse: collapse;
   border-spacing: 0;
@@ -770,7 +770,7 @@ a[aria-disabled="true"] {
 }
 
 /*
- * Letter of consent — match jsPDF autotable (square corners, full grid).
+ * Letter of consent - match jsPDF autotable (square corners, full grid).
  * Overrides .admin-shell table “floating row” styles that add border-spacing
  * and 12px radius on tbody cells (message-preview look).
  */

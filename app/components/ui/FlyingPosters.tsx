@@ -215,7 +215,7 @@ class Canvas {
 
   // ── public API ──
 
-  /** Drive scroll to centre item at `index` — called from GSAP onUpdate */
+  /** Drive scroll to centre item at `index` - called from GSAP onUpdate */
   scrollToIndex(index: number) {
     if (!this.medias?.length) return;
     const { height, heightTotal } = this.medias[0];
@@ -306,7 +306,7 @@ class Canvas {
   }
 
   destroy() {
-    cancelAnimationFrame(this.rafId); // stop condition — terminates the rAF loop
+    cancelAnimationFrame(this.rafId); // stop condition - terminates the rAF loop
     window.removeEventListener('resize',     this.onResize);
     window.removeEventListener('wheel',      this.onWheel);
     window.removeEventListener('mousedown',  this.onTouchDown);
