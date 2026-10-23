@@ -8,7 +8,7 @@ export type StackedCard = {
   href?: string;
 };
 
-/* Sample data — portrait Unsplash photos + blog-style titles */
+/* Sample data - portrait Unsplash photos + blog-style titles */
 const DEFAULT_ITEMS: StackedCard[] = [
   { title: "Get to know about Insurance", img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=640&h=900&q=70" },
   { title: "The latest on AI Technology", img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=640&h=900&q=70" },
@@ -177,7 +177,7 @@ export function StackedCardCarousel({
           );
         })}
 
-        {/* Carousel controls — sit over the outermost cards */}
+        {/* Carousel controls - sit over the outermost cards */}
         <button
           type="button"
           className="scc-arrow scc-prev"

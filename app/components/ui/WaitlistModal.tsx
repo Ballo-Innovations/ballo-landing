@@ -85,13 +85,13 @@ export function WaitlistModal() {
   const [hint, setHint] = useState("");
   const [invalidField, setInvalidField] = useState<string | null>(null);
 
-  // Stage 1 — contact details, submitted on their own.
+  // Stage 1 - contact details, submitted on their own.
   const [name, setName] = useState("");
   const [mail, setMail] = useState("");
   const [phone, setPhone] = useState("");
   const [joined, setJoined] = useState(false);
 
-  // Stage 2 — the playbook questions.
+  // Stage 2 - the playbook questions.
   const [biz, setBiz] = useState("");
   const [loc, setLoc] = useState("");
   const [ind, setInd] = useState(INDUSTRIES[0]);
@@ -436,7 +436,7 @@ export function WaitlistModal() {
                 {step === 3 && (
                   <div>
                     <h2 id="waitlist-title" className="wl-step__q">What line of work are you in?</h2>
-                    <p className="wl-step__sub">Be specific — this is what makes the playbook yours and not a template.</p>
+                    <p className="wl-step__sub">Be specific - this is what makes the playbook yours and not a template.</p>
                     <div className="wl-field">
                       <div className="wl-field__body">
                         <label htmlFor="wl-ind" className="wl-field__label">Industry</label>

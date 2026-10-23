@@ -22,7 +22,7 @@ interface FadeUpRevealProps {
  * Scroll-in reveal: opacity + translateY, driven entirely by CSS.
  *
  * One IntersectionObserver per instance, disconnected the moment it fires, and
- * a single class toggle — no animation library, no re-render, and nothing left
+ * a single class toggle - no animation library, no re-render, and nothing left
  * running after the reveal. The transform/opacity pair is compositor-only, so
  * a reveal never costs layout or paint.
  *
@@ -47,7 +47,7 @@ export function FadeUpReveal({
     // Watch the untransformed parent, not the node itself. The node's `out`
     // state can park it a long way off-screen (the Who grid throws tiles 22vw
     // sideways and 30vh down), and a transformed box reports that displaced
-    // rect — so observing the node meant it never intersected and never
+    // rect - so observing the node meant it never intersected and never
     // revealed. The parent keeps its real layout position.
     const target = node.parentElement ?? node;
 

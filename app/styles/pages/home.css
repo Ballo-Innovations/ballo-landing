@@ -3,7 +3,7 @@
    File: app/page.tsx
    ============================================ */
 
-/* Hero marquee — CSS-driven, zero JS */
+/* Hero marquee - CSS-driven, zero JS */
 @keyframes marquee-scroll {
   from {
     transform: translateX(0);
@@ -110,7 +110,7 @@
   /* Add about description styles here */
 }
 
-/* Why Choose — color system (mirrors CodePen approach) */
+/* Why Choose - color system (mirrors CodePen approach) */
 @property --bg-hue {
   syntax: "<number>";
   inherits: true;
@@ -149,7 +149,7 @@
   width: 100%;
 }
 
-/* Left column — gradient heading like CodePen's h2 */
+/* Left column - gradient heading like CodePen's h2 */
 .why-scroll-heading {
   width: fit-content;
   flex-shrink: 0;
@@ -159,7 +159,7 @@
   line-height: 1.1;
 }
 
-/* Right column — fills remaining space, contains bg images + phone */
+/* Right column - fills remaining space, contains bg images + phone */
 .why-right-area {
   position: relative;
   flex: 1;
@@ -185,7 +185,7 @@
   z-index: 1;
 }
 
-/* Phone frame wrapper — sits above bg images */
+/* Phone frame wrapper - sits above bg images */
 .why-phone-wrapper {
   position: relative;
   z-index: 10;
@@ -202,7 +202,7 @@
   pointer-events: none;
 }
 
-/* Feature list — absolutely fills the phone screen area */
+/* Feature list - absolutely fills the phone screen area */
 .why-scroll-items {
   --step: calc((var(--why-end) - var(--why-start)) / (var(--count, 5) - 1));
   position: absolute;
@@ -222,7 +222,7 @@
   height: 96%;
 }
 
-/* Each item fills the full screen — stacked, GSAP crossfades between them */
+/* Each item fills the full screen - stacked, GSAP crossfades between them */
 .why-scroll-item {
   position: absolute;
   inset: 0;
@@ -296,7 +296,7 @@
 }
 
 /* =============================================
-   Who Can Use — scroll-pinned section
+   Who Can Use - scroll-pinned section
    ============================================= */
 
 .who-scroll-sticky {
@@ -367,7 +367,7 @@
   margin-top: 0.25rem;
 }
 
-/* Right — cross-fading image stack */
+/* Right - cross-fading image stack */
 .who-image-stack {
   position: relative;
   width: 100%;
@@ -622,7 +622,7 @@
   position: absolute;
   width: 60vw;
   height: 60vw;
-  /* All items start centered; keyframes use transform: translate() — GPU compositable, no layout recalc */
+  /* All items start centered; keyframes use transform: translate() - GPU compositable, no layout recalc */
   top: 50%;
   left: 50%;
   filter: blur(2rem);

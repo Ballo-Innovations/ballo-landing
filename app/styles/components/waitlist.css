@@ -1,5 +1,5 @@
 /* =============================================================
-   Waitlist — liquid-glass card.
+   Waitlist - liquid-glass card.
    A dark, blue-tinted glass panel with an aurora corner glow, a
    bright top rim, pill inputs, and a gradient cyan "send" arrow.
    Styled to match the reference sign-in card, re-themed to the
@@ -7,7 +7,7 @@
    Brand tokens from styles/variables.css.
    ============================================================= */
 
-/* Backdrop — dark blue wash so the glass "takes up" the brand blue. */
+/* Backdrop - dark blue wash so the glass "takes up" the brand blue. */
 .wl-backdrop {
   position: fixed;
   inset: 0;
@@ -206,7 +206,7 @@
   color: rgba(255, 255, 255, 0.34);
 }
 
-/* Primary submit — full width so it reads as the action for the whole form
+/* Primary submit - full width so it reads as the action for the whole form
    (the fields are Email + Name + Phone, all required by the backend). Carries
    the card's gradient + arrow so the glass language is preserved. */
 .wl-submit {
@@ -264,7 +264,7 @@
   background: rgba(255, 255, 255, 0.14);
 }
 
-/* Social (scaffold — coming soon) */
+/* Social (scaffold - coming soon) */
 .wl-socials {
   display: flex;
   flex-direction: column;

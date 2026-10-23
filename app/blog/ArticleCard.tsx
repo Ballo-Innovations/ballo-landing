@@ -13,7 +13,7 @@ export function ArrowCircle({ className = "" }: { className?: string }) {
   );
 }
 
-/** Square photo card with title, excerpt and arrow — used on /blog and on post pages. */
+/** Square photo card with title, excerpt and arrow - used on /blog and on post pages. */
 export function ArticleCard({ post, className = "" }: { post: BlogPost; className?: string }) {
   return (
     <Link href={`/blog/${post.slug}`} className={`blog-card group ${className}`}>
