@@ -9,9 +9,9 @@ export function isHtmlContent(value: string): boolean {
 }
 
 // Elements TipTap's toolbar (see ballo-cms/components/blog/RichTextEditor.tsx) can
-// actually produce - StarterKit (paragraph/heading[2,3]/bold/italic/strike/code/
+// actually produce — StarterKit (paragraph/heading[2,3]/bold/italic/strike/code/
 // blockquote/lists/codeBlock/hr/br), Underline, TextAlign, Link, Image, Youtube
-// (renders an <iframe>), and the Table/TableRow/TableHeader/TableCell extensions -
+// (renders an <iframe>), and the Table/TableRow/TableHeader/TableCell extensions —
 // plus a few legacy tags (h1/h4/div/span/figure/figcaption) kept for older posts
 // authored before TipTap.
 const ALLOWED_TAGS = [
@@ -53,7 +53,7 @@ const ALLOWED_TAGS = [
   "figcaption",
 ];
 
-// Uploaded audio/video must come from our own CMS asset storage - no hotlinked
+// Uploaded audio/video must come from our own CMS asset storage — no hotlinked
 // media from arbitrary hosts.
 const MEDIA_HOSTS = new Set(["s3.balloads.com", "assets.balloads.com"]);
 

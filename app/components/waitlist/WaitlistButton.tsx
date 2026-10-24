@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * WaitlistButton - a button that opens the shared waitlist modal.
+ * WaitlistButton — a button that opens the shared waitlist modal.
  *
  * Lets server-component pages trigger the waitlist flow without becoming client
  * components themselves. WaitlistModal listens for the `open-waitlist` event,

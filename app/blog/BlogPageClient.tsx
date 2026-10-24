@@ -108,7 +108,7 @@ export default function BlogPageClient({
 
   // Only the current (already server-paginated + server-filtered) page of posts is
   // available client-side, so search can only ever narrow down what's already on
-  // screen - it is not a full-dataset search.
+  // screen — it is not a full-dataset search.
   const query = searchQuery.trim().toLowerCase();
   const isSearching = query !== "";
   const filteredPosts = posts.filter((p) => {
@@ -116,7 +116,7 @@ export default function BlogPageClient({
     return `${p.title} ${p.excerpt} ${p.category}`.toLowerCase().includes(query);
   });
 
-  // The featured carousel is a "hero" for the default blog view only - showing it
+  // The featured carousel is a "hero" for the default blog view only — showing it
   // for an arbitrary filtered/paginated slice of posts would be misleading.
   const isDefaultView = pagination.page === 1 && !activeCategory && !activeTag;
   const featuredPosts = useMemo(() => {

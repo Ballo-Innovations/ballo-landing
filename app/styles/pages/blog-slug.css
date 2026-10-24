@@ -8,7 +8,7 @@
   padding-top: 6.5rem;
 }
 
-/* Hero banner - near full-bleed photo with the title over it */
+/* Hero banner — near full-bleed photo with the title over it */
 .post-hero {
   position: relative;
   display: flex;
@@ -209,7 +209,7 @@
   font-weight: 700;
 }
 
-/* Related list - translucent panel, rows split by blue rules */
+/* Related list — translucent panel, rows split by blue rules */
 .post-related {
   display: flex;
   flex-direction: column;
