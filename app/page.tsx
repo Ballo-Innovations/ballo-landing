@@ -283,7 +283,7 @@ export default function Home() {
           backgroundPosition: "center",
         }}
       >
-        {/* Parallax depth layers - behind all content */}
+        {/* Parallax depth layers — behind all content */}
         <div className="prlx-hero-1" aria-hidden="true" />
         <div className="prlx-hero-2" aria-hidden="true" />
 
@@ -293,7 +293,7 @@ export default function Home() {
           style={{ backgroundSize: "cover" }}
         />
 
-        {/* Large Faded Text - pure CSS marquee */}
+        {/* Large Faded Text — pure CSS marquee */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none">
           <div className="marquee-track flex whitespace-nowrap">
             <span className="text-[50px] md:text-[100px] font-bold text-white/5 select-none pr-10 shrink-0">REBRANDING THE FUTURE</span>
@@ -397,7 +397,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* What We're About - opaque (z-50) panel with the "Powerful and Versatile"
+      {/* What We're About — opaque (z-50) panel with the "Powerful and Versatile"
           heading at its top. It scrolls up normally and covers the PINNED hero
           (see HeroPinSetup); no pin/translate of its own. */}
       <section
@@ -406,7 +406,7 @@ export default function Home() {
       >
         <div className="prlx-about-1" aria-hidden="true" />
 
-        {/* Relocated "POWERFUL AND VERSATILE" heading - styles kept identical */}
+        {/* Relocated "POWERFUL AND VERSATILE" heading — styles kept identical */}
         <div className="container mx-auto flex justify-center relative z-40">
           <FadeUpReveal>
             <h2
@@ -509,7 +509,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose BalloAds - lazy-loaded, self-contained GSAP section */}
+      {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhyScrollSection />
 
       {/* Trusted By Section */}
@@ -555,7 +555,7 @@ export default function Home() {
         </FadeUpReveal>
       </section>
 
-      {/* Who can use BalloAds - lazy-loaded, self-contained GSAP section */}
+      {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhoScrollSection />
 
       {/* Testimonials Section */}

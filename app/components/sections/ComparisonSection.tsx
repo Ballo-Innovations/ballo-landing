@@ -35,12 +35,12 @@ export function ComparisonSection() {
   return (
     <section className="ds-section" id="who-we-serve">
       <div className="ds-grid-12">
-        {/* Sidebar - cols 1–3 */}
+        {/* Sidebar — cols 1–3 */}
         <div className="ds-sidebar">
           <span className="ds-sidebar-label">Who We Serve</span>
         </div>
 
-        {/* Content - cols 4–12 */}
+        {/* Content — cols 4–12 */}
         <div className="ds-content">
           <h2
             className="ds-section-head"

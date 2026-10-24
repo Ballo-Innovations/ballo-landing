@@ -133,9 +133,9 @@ Reference these guidelines when:
 
 ```js
 // measurement: batch reads before writes (FLIP)
-// before - layout thrash
+// before — layout thrash
 el.style.left = el.getBoundingClientRect().left + 10 + 'px';
-// after - measure once, animate via transform
+// after — measure once, animate via transform
 const first = el.getBoundingClientRect();
 el.classList.add('moved');
 const last = el.getBoundingClientRect();

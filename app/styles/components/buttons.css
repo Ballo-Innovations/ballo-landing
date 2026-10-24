@@ -54,7 +54,7 @@
     background 0.22s ease;
 }
 
-/* Hover gradient overlay - matches the header "Sign Up" button */
+/* Hover gradient overlay — matches the header "Sign Up" button */
 .btn-primary::before {
   content: "";
   position: absolute;

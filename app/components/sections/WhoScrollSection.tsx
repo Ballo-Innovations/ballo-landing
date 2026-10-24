@@ -9,7 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { Building, Landmark, Globe, ShoppingCart, Heart, GraduationCap } from "lucide-react";
 import type { FlyingPostersHandle } from "../ui/FlyingPosters";
 
-// OGL canvas - browser only
+// OGL canvas — browser only
 const FlyingPosters = dynamic(() => import("../ui/FlyingPosters"), { ssr: false });
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -66,7 +66,7 @@ const useCases = [
   },
 ];
 
-// Stable reference - prevents FlyingPosters from remounting on every render
+// Stable reference — prevents FlyingPosters from remounting on every render
 const IMAGE_SRCS = useCases.map((c) => c.src);
 
 export function WhoScrollSection() {
@@ -98,7 +98,7 @@ export function WhoScrollSection() {
     // Trigger on the OUTER section so GSAP measures position from the section's
     // natural top (not from the pin-spacer wrapper). Pin the inner sticky div
     // explicitly. This ensures the pin fires exactly when the logo section above
-    // has scrolled fully out of view - no early-pin overlap.
+    // has scrolled fully out of view — no early-pin overlap.
     const onUpdate = (self: ScrollTrigger) => {
       const newIdx = Math.min(Math.floor(self.progress * n), n - 1);
       if (newIdx === activeIdxRef.current) return;
@@ -108,7 +108,7 @@ export function WhoScrollSection() {
 
     mm.add("(prefers-reduced-motion: no-preference) and (min-width: 769px)", () => {
       ScrollTrigger.create({
-        trigger: outer,         // outer <section> - position unaffected by pin-spacer
+        trigger: outer,         // outer <section> — position unaffected by pin-spacer
         pin: stickyEl,          // pin the inner sticky div, not the trigger itself
         start: "top top",
         end: `+=${n * 100}vh`,
@@ -139,7 +139,7 @@ export function WhoScrollSection() {
       gsap.set(listItems, { opacity: 1 });
     });
 
-    // Entrance reveals - fire once as the section scrolls in. The list items
+    // Entrance reveals — fire once as the section scrolls in. The list items
     // animate transform only (y), leaving opacity to the scroll-driven highlight
     // above so the two never fight. The posters column fades opacity only (no
     // transform/scale) to avoid blurring the WebGL canvas.
@@ -198,7 +198,7 @@ export function WhoScrollSection() {
                 <li key={item.id} className="who-redesign-item">
                   <span className="who-item-num">{item.num}</span>
 
-                  {/* Bare icon - no wrapper box */}
+                  {/* Bare icon — no wrapper box */}
                   {React.cloneElement(
                     item.icon as React.ReactElement<{ className?: string; strokeWidth?: number }>,
                     { className: "who-item-icon", strokeWidth: 1.5 }
@@ -228,7 +228,7 @@ export function WhoScrollSection() {
               />
             </div>
 
-            {/* FlyingPosters - GSAP-driven via scrollToIndex, wheel disabled */}
+            {/* FlyingPosters — GSAP-driven via scrollToIndex, wheel disabled */}
             <div className="who-flying-wrap">
               <FlyingPosters
                 ref={flyingRef}
