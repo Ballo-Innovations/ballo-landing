@@ -85,13 +85,13 @@ export function WaitlistModal() {
   const [hint, setHint] = useState("");
   const [invalidField, setInvalidField] = useState<string | null>(null);
 
-  // Stage 1 - contact details, submitted on their own.
+  // Stage 1 — contact details, submitted on their own.
   const [name, setName] = useState("");
   const [mail, setMail] = useState("");
   const [phone, setPhone] = useState("");
   const [joined, setJoined] = useState(false);
 
-  // Stage 2 - the playbook questions.
+  // Stage 2 — the playbook questions.
   const [biz, setBiz] = useState("");
   const [loc, setLoc] = useState("");
   const [ind, setInd] = useState(INDUSTRIES[0]);

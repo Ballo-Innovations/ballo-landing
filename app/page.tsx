@@ -376,7 +376,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose BalloAds - lazy-loaded, self-contained GSAP section */}
+      {/* Why Choose BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhyScrollSection />
 
       {/* Trusted By Section */}
@@ -420,7 +420,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Who can use BalloAds - lazy-loaded, self-contained GSAP section */}
+      {/* Who can use BalloAds — lazy-loaded, self-contained GSAP section */}
       <WhoScrollSection />
 
       {/* Testimonials Section */}
