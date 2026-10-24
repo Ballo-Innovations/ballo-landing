@@ -3,7 +3,7 @@
  *
  * Blog posts, waitlist, and announcements live on the full app-api surface.
  * The path-restricted developer hosts (api / api-dev / api-staging) do NOT
- * expose `/v1/blog-posts` — Traefik only forwards messaging/otp/dev-portal/
+ * expose `/v1/blog-posts` - Traefik only forwards messaging/otp/dev-portal/
  * callbacks/payments there.
  */
 export const DEV_APP_API_BASE =

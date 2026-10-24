@@ -1,5 +1,5 @@
 /* =============================================
-   Silk Background — static diagonal sheen only
+   Silk Background - static diagonal sheen only
    ============================================= */
 
 .silk-bg {
@@ -10,7 +10,7 @@
   pointer-events: none;
 }
 
-/* Diagonal light sheen — static */
+/* Diagonal light sheen - static */
 .silk-sheen {
   position: absolute;
   inset: 0;

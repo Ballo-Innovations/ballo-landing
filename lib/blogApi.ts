@@ -2,7 +2,7 @@ import { PROD_APP_API_BASE, normalizeApiBase } from "@/lib/publicApiBase";
 import { cmsFetchInit } from "@/lib/cmsFetch";
 
 // balloads-classic is the production site, so the blog always reads the
-// production CMS — including on previews and localhost.
+// production CMS - including on previews and localhost.
 async function getBackendBaseUrl(): Promise<string> {
   return normalizeApiBase(PROD_APP_API_BASE);
 }

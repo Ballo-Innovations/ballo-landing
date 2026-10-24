@@ -9,13 +9,13 @@
  *    root layout, so two of them sat in front of the first byte of every page on
  *    the site.
  *  - No timeout meant a hung upstream held the render open with it. That is the
- *    likely source of the intermittent "[siteSettingsApi] fetch failed" — the
+ *    likely source of the intermittent "[siteSettingsApi] fetch failed" - the
  *    endpoint answers, just slowly and not always.
  *
  * All of it is public marketing content, so a short revalidate window is safe:
  * one upstream request per window instead of one per visitor.
  *
- * This is a function, not a constant, because an AbortSignal is single-use —
+ * This is a function, not a constant, because an AbortSignal is single-use -
  * one timeout per request.
  */
 
