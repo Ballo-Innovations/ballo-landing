@@ -181,28 +181,42 @@
     linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(98, 197, 255, 0.1));
 }
 
+/* Matches the glow-button above the footer, with the pill radius of Blog. */
 .header__action-link--signup {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
-  color: var(--btn-cta-text);
-  border: 1px solid var(--btn-cta-border);
-  background: var(--btn-cta-bg);
-  box-shadow: var(--btn-cta-shadow);
+  color: #fff;
+  border: 0;
+  background: linear-gradient(45deg, #04084d, #007f7f, #0983fc);
 }
 
 .header__action-link--signup::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 1.5px;
   z-index: -1;
   border-radius: inherit;
-  background: var(--btn-cta-bg-hover);
-  opacity: 0;
-  transition: opacity 0.24s ease;
+  background: #0b0d1f;
+  transition: opacity 0.5s;
 }
 
 .header__action-link--signup:hover::before {
+  opacity: 0.75;
+}
+
+.header__action-link--signup::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -2;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc);
+  opacity: 0.7;
+  filter: blur(8px);
+  transition: opacity 0.5s;
+}
+
+.header__action-link--signup:hover::after {
   opacity: 1;
 }
 
