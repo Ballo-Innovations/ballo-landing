@@ -148,17 +148,21 @@
   margin-top: 2.6em;
   padding-top: 1.1em;
   font-size: 1.65em;
-  border-top: 1px solid rgba(189, 212, 220, 0.14);
 }
 .post-article .prose h2::before {
   content: "";
   position: absolute;
-  top: -1px;
+  top: 0;
   left: 0;
-  width: 3.5rem;
+  right: 0;
   height: 3px;
   border-radius: 3px;
-  background: linear-gradient(90deg, var(--brand-color-4), var(--brand-color-3));
+  background: linear-gradient(
+    90deg,
+    var(--brand-color-4),
+    var(--brand-color-3) 45%,
+    color-mix(in srgb, var(--brand-color-3) 15%, transparent)
+  );
 }
 .post-article .prose h3 {
   margin-top: 2em;
