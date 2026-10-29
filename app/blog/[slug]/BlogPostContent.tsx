@@ -117,25 +117,44 @@ export default function BlogPostContent({
 
         <aside className="post-aside">
           {relatedPosts.length > 0 && (
-            <section>
-              <h2 className="post-aside__title">Related Articles</h2>
+            <section className="post-related-panel">
+              <h2 className="post-aside__label">Related articles</h2>
               <div className="post-related">
                 {relatedPosts.map((article) => (
-                  <Link key={article.id} href={`/blog/${article.slug}`} className="post-related__item">
-                    <span className="post-related__name">{article.title}</span>
-                    <span className="post-related__by">
-                      By {article.authorName}
-                      <ArrowCircle />
+                  <Link key={article.id} href={`/blog/${article.slug}`} className="post-related__item group">
+                    <span className="post-related__thumb">
+                      {article.coverImageUrl && (
+                        <Image src={article.coverImageUrl} alt="" fill sizes="64px" className="object-cover" />
+                      )}
                     </span>
+                    <span className="post-related__text">
+                      <span className="post-related__name">{article.title}</span>
+                      <span className="post-related__by">
+                        {article.tags[0] ?? article.authorName}
+                        {article.publishedAt && (
+                          <>
+                            {" · "}
+                            {new Date(article.publishedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    <ArrowCircle className="post-related__arrow" />
                   </Link>
                 ))}
                 <Link href="/blog" className="post-related__all">
-                  View all
+                  View all articles
+                  <ArrowCircle />
                 </Link>
               </div>
             </section>
           )}
-          {promoPost && <ArticleCard post={promoPost} className="post-aside__card" />}
+          {promoPost && (
+            <section>
+              <h2 className="post-aside__label">Read next</h2>
+              <ArticleCard post={promoPost} className="post-aside__card" />
+            </section>
+          )}
         </aside>
       </div>
 
