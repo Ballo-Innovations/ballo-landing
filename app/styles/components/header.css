@@ -197,27 +197,32 @@
   z-index: -1;
   border-radius: inherit;
   background: #0b0d1f;
-  transition: opacity 0.5s;
-}
-
-.header__action-link--signup:hover::before {
   opacity: 0.75;
 }
 
+/* Always-on glow that drifts through the gradient and gently pulses. */
 .header__action-link--signup::after {
   content: "";
   position: absolute;
   inset: -2px;
   z-index: -2;
   border-radius: inherit;
-  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc);
-  opacity: 0.7;
+  background: linear-gradient(45deg, #0ce39a, #005f7f, #0983fc, #0ce39a);
+  background-size: 300% 300%;
   filter: blur(8px);
-  transition: opacity 0.5s;
+  animation: header-cta-glow 4s ease-in-out infinite;
 }
 
-.header__action-link--signup:hover::after {
-  opacity: 1;
+@keyframes header-cta-glow {
+  0%, 100% { background-position: 0% 50%; opacity: 0.85; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__action-link--signup::after {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @media (max-width: 640px) {
