@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 //import background from "@/public/Backgrounds/hero-bg.png";
 //import pattern from "@/public/Backgrounds/pattern.png";
 import woman from "@/public/Assets/11.png";
@@ -375,7 +376,7 @@ export default function FeaturesPage() {
               unlock new revenue, accelerate growth and engage your audience in real time.
             </p>
             <Link
-              href="/book-demo"
+              href={isFeatureEnabled("bookDemo") ? "/book-demo?from=features" : "/book-demo"}
               className="inline-flex items-center gap-3 w-fit px-8 py-4 rounded-full bg-[var(--brand-color-1)] text-white font-semibold text-lg shadow-lg hover:bg-[var(--brand-color-2)] transition-colors"
             >
               Book a free demo
