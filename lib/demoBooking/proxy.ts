@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublicBackendBaseUrl } from "@/lib/serverBackendApi";
+import { getDemoBookingBackendBaseUrl } from "@/lib/serverBackendApi";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 
 /**
@@ -59,7 +59,7 @@ export async function callBackend(
   init: { method: "GET" | "POST"; body?: unknown },
   messages: Messages = {},
 ): Promise<UpstreamResult> {
-  const base = getPublicBackendBaseUrl(request);
+  const base = getDemoBookingBackendBaseUrl(request);
   const headers: Record<string, string> = { Accept: "application/json" };
   if (init.body !== undefined) headers["Content-Type"] = "application/json";
   const ip = clientIp(request);

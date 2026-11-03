@@ -21,3 +21,13 @@ export function getPublicBackendBaseUrl(request: NextRequest): string {
   }
   return normalizeBase(PROD_API_BASE);
 }
+
+/**
+ * Backend for the demo booking routes. DEMO_BOOKING_API_URL overrides it so a preview build can book
+ * against the dev backend (the only one with demo booking switched on) while production keeps the
+ * production backend. Unset means the same backend as the waitlist.
+ */
+export function getDemoBookingBackendBaseUrl(request: NextRequest): string {
+  const override = process.env.DEMO_BOOKING_API_URL?.trim();
+  return override ? normalizeBase(override) : getPublicBackendBaseUrl(request);
+}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPublicBackendBaseUrl } from "@/lib/serverBackendApi";
+import { getDemoBookingBackendBaseUrl } from "@/lib/serverBackendApi";
 import { clientIp, flagOffResponse } from "@/lib/demoBooking/proxy";
 import { isPlausibleToken } from "@/lib/demoBooking/shared";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   let res: Response;
   try {
     res = await fetch(
-      `${getPublicBackendBaseUrl(request)}/v1/demo-bookings/manage/${encodeURIComponent(token)}/ics`,
+      `${getDemoBookingBackendBaseUrl(request)}/v1/demo-bookings/manage/${encodeURIComponent(token)}/ics`,
       { headers, cache: "no-store", signal: AbortSignal.timeout(15_000) },
     );
   } catch (error) {
