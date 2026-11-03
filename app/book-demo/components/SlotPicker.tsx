@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { Globe } from "lucide-react";
 import type { Slot } from "@/lib/demoBooking/shared";
 import { ZAMBIA_TZ } from "@/lib/demoBooking/shared";
 import { formatDayParts, formatTime, groupSlotsByDay, sameOffsets, zoneLabel } from "@/lib/demoBooking/time";
@@ -110,7 +109,22 @@ export function SlotPicker({
 
   return (
     <div className="bd-picker">
-      <p id={dayLabelId} className="bd-picker__label">Pick a day</p>
+      <p className="bd-tz">
+        30 minutes, shown in {zoneLabel(displayTimeZone)}.
+        {!visitorIsZambia && (
+          <>
+            {" "}
+            <button
+              type="button"
+              className="bd-link-btn"
+              onClick={() => onDisplayTimeZoneChange(showingZambia ? visitorTimeZone : ZAMBIA_TZ)}
+            >
+              {showingZambia ? `Show my time (${zoneLabel(visitorTimeZone)})` : "Show Zambia time"}
+            </button>
+          </>
+        )}
+      </p>
+      <p id={dayLabelId} className="sr-only">Day</p>
       <div className="bd-days" role="radiogroup" aria-labelledby={dayLabelId}>
         {days.map((d, i) => {
           const parts = formatDayParts(d.key);
@@ -139,7 +153,7 @@ export function SlotPicker({
       {activeDay && (
         <>
           <p id={timeLabelId} className="bd-picker__label">
-            Pick a time on {formatDayParts(activeDay.key).long}
+            Times on {formatDayParts(activeDay.key).long}
           </p>
           <div ref={gridRef} className="bd-times" role="radiogroup" aria-labelledby={timeLabelId}>
             {activeDay.slots.map((slot, i) => {
@@ -164,19 +178,6 @@ export function SlotPicker({
         </>
       )}
 
-      <div className="bd-tz">
-        <Globe size={15} aria-hidden="true" />
-        <span>Times shown in {zoneLabel(displayTimeZone)}</span>
-        {!visitorIsZambia && (
-          <button
-            type="button"
-            className="bd-link-btn"
-            onClick={() => onDisplayTimeZoneChange(showingZambia ? visitorTimeZone : ZAMBIA_TZ)}
-          >
-            {showingZambia ? `Show my time (${zoneLabel(visitorTimeZone)})` : "Show Zambia time"}
-          </button>
-        )}
-      </div>
     </div>
   );
 }

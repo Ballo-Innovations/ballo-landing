@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, CalendarClock, CalendarX, Check, CircleAlert, Phone, Video } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { SlotPicker } from "../components/SlotPicker";
 import { Confirmation } from "../components/Confirmation";
 import { demoApi } from "@/lib/demoBooking/client";
@@ -136,29 +136,28 @@ export default function ManageClient() {
 
   return (
     <div ref={cardRef} className="bd-card bd-card--manage" data-lenis-prevent>
-      <div className="wl-card__aurora" aria-hidden="true" />
-      <div className="bd-card__inner">
+      <div>
         {load.kind === "loading" && (
           <div aria-busy="true">
-            <p className="bd-eyebrow">Your demo</p>
+            <p className="bd-kicker">Your demo</p>
             <p className="bd-card__sub">Loading your booking...</p>
           </div>
         )}
 
         {load.kind === "missing" && (
-          <StateBlock icon={<CircleAlert size={22} />} title="We couldn't find that booking">
+          <StateBlock title="We couldn't find that booking">
             <p className="bd-card__sub">
               The link may be incomplete or out of date. Open the link from your confirmation email again,
               or book a new time below.
             </p>
-            <Link href="/book-demo" className="wl-submit bd-primary bd-link-primary">Book a demo</Link>
+            <Link href="/book-demo" className="bd-btn">Book a demo</Link>
           </StateBlock>
         )}
 
         {load.kind === "error" && (
-          <StateBlock icon={<CircleAlert size={22} />} title="We couldn't load your booking">
+          <StateBlock title="We couldn't load your booking">
             <p className="bd-card__sub" role="alert">{load.message}</p>
-            <button type="button" className="wl-submit bd-primary" onClick={() => void fetchBooking()}>
+            <button type="button" className="bd-btn" onClick={() => void fetchBooking()}>
               Try again
             </button>
           </StateBlock>
@@ -191,10 +190,9 @@ export default function ManageClient() {
   );
 }
 
-function StateBlock({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function StateBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bd-state">
-      <span className="bd-state__icon" aria-hidden="true">{icon}</span>
       <h1 className="bd-card__title" tabIndex={-1} data-autofocus>{title}</h1>
       {children}
     </div>
@@ -228,7 +226,7 @@ function ManageBody(p: BodyProps) {
 
   const errorRegion = (
     <div aria-live="assertive" aria-atomic="true">
-      {p.error && <p className="wl-error bd-error" role="alert">{p.error}</p>}
+      {p.error && <p className="bd-error" role="alert">{p.error}</p>}
     </div>
   );
 
@@ -246,20 +244,20 @@ function ManageBody(p: BodyProps) {
 
   if (booking.status === "cancelled") {
     return (
-      <StateBlock icon={<CalendarX size={22} />} title={p.mode === "cancelled" ? "Your demo is cancelled" : "This demo was cancelled"}>
+      <StateBlock title={p.mode === "cancelled" ? "Your demo is cancelled" : "This demo was cancelled"}>
         <p className="bd-card__sub">
           {p.mode === "cancelled"
             ? <>Thanks for letting us know{booking.name ? `, ${booking.name.split(/\s+/)[0]}` : ""}. Your time slot has been freed up for someone else.</>
             : <>The demo for {booking.company || "your company"} on {formatRange(booking.start, booking.end, p.displayTz)} is no longer happening.</>}
         </p>
         <p className="bd-card__sub">Whenever you&apos;re ready, you can pick a new time.</p>
-        <Link href="/book-demo?from=book-demo/manage" className="wl-submit bd-primary bd-link-primary">Book a new time</Link>
+        <Link href="/book-demo?from=book-demo/manage" className="bd-btn">Book a new time</Link>
       </StateBlock>
     );
   }
 
   const summary = (
-    <dl className="wl-recap bd-recap">
+    <dl className="bd-recap">
       <div>
         <dt>When</dt>
         <dd>
@@ -272,10 +270,10 @@ function ManageBody(p: BodyProps) {
         <dd>
           {booking.meetingUrl ? (
             <a className="bd-inline-link" href={booking.meetingUrl} target="_blank" rel="noopener noreferrer">
-              <Video size={15} aria-hidden="true" /> Join the video call
+              Join the video call
             </a>
           ) : (
-            <span className="bd-inline"><Phone size={15} aria-hidden="true" /> We&apos;ll call you</span>
+            <span>We&apos;ll call you</span>
           )}
         </dd>
       </div>
@@ -288,12 +286,12 @@ function ManageBody(p: BodyProps) {
   if (!booking.canChange || booking.status !== "booked" || past) {
     const happened = booking.status === "completed" || booking.status === "no_show" || past;
     return (
-      <StateBlock icon={<CalendarClock size={22} />} title={happened ? "This demo has already taken place" : "This demo can't be changed online"}>
+      <StateBlock title={happened ? "This demo has already taken place" : "This demo can't be changed online"}>
         {summary}
         <p className="bd-card__sub">
           Want another look, or have more questions? Book a new demo and we&apos;ll pick up where we left off.
         </p>
-        <Link href="/book-demo?from=book-demo/manage" className="wl-submit bd-primary bd-link-primary">Book another demo</Link>
+        <Link href="/book-demo?from=book-demo/manage" className="bd-btn">Book another demo</Link>
       </StateBlock>
     );
   }
@@ -310,8 +308,8 @@ function ManageBody(p: BodyProps) {
         </p>
         <div aria-live="polite" aria-atomic="true">
           {p.notice && (
-            <p className="bd-notice bd-notice--warn" role="alert">
-              <CalendarClock size={16} aria-hidden="true" /> {p.notice}
+            <p className="bd-notice" role="alert">
+              {p.notice}
             </p>
           )}
         </div>
@@ -323,7 +321,6 @@ function ManageBody(p: BodyProps) {
         )}
         {(p.slots.kind === "none" || p.slots.kind === "error") && (
           <p className="bd-notice bd-notice--info">
-            <CalendarClock size={16} aria-hidden="true" />
             {p.slots.kind === "none"
               ? "There are no other free times in the next two weeks. Reply to your confirmation email and we'll find a time that works."
               : "We couldn't load free times just now. Please try again in a minute."}
@@ -341,7 +338,7 @@ function ManageBody(p: BodyProps) {
               onSelect={p.setSelected}
             />
             {errorRegion}
-            <button type="button" className="wl-submit bd-primary" disabled={!p.selected || p.busy} onClick={p.confirmReschedule}>
+            <button type="button" className="bd-btn" disabled={!p.selected || p.busy} onClick={p.confirmReschedule}>
               {p.busy
                 ? "Moving your demo..."
                 : p.selected
@@ -365,18 +362,16 @@ function ManageBody(p: BodyProps) {
           {formatRange(booking.start, booking.end, p.displayTz)}. If another time would suit you better, you
           can <button type="button" className="bd-link-btn bd-link-btn--inline" onClick={p.startReschedule}>move it instead</button>.
         </p>
-        <div className="wl-field bd-field">
-          <div className="wl-field__body">
-            <label htmlFor="bd-reason" className="wl-field__label">Want to tell us why? (optional)</label>
-            <textarea id="bd-reason" className="wl-field__input wl-field__textarea" rows={3} maxLength={LIMITS.reason}
-              value={p.reason} onChange={(e) => p.setReason(e.target.value)}
-              placeholder="Something came up, we'll book again next month." />
-          </div>
+        <div className="bd-field">
+          <label htmlFor="bd-reason" className="bd-label">Want to tell us why? (optional)</label>
+          <textarea id="bd-reason" className="bd-input bd-textarea" rows={3} maxLength={LIMITS.reason}
+            value={p.reason} onChange={(e) => p.setReason(e.target.value)}
+            placeholder="Something came up, we'll book again next month." />
         </div>
         {errorRegion}
         <div className="bd-actions bd-actions--stack">
-          <button type="button" className="wl-step-btn bd-back" onClick={() => p.setMode("view")}>Keep my demo</button>
-          <button type="button" className="wl-submit bd-primary bd-danger" disabled={p.busy} onClick={p.confirmCancel}>
+          <button type="button" className="bd-btn bd-btn--ghost" onClick={() => p.setMode("view")}>Keep my demo</button>
+          <button type="button" className="bd-btn bd-btn--danger" disabled={p.busy} onClick={p.confirmCancel}>
             {p.busy ? "Cancelling..." : "Yes, cancel my demo"}
           </button>
         </div>
@@ -386,15 +381,15 @@ function ManageBody(p: BodyProps) {
 
   return (
     <section aria-labelledby="bd-manage-title">
-      <p className="bd-eyebrow"><Check size={14} strokeWidth={3} aria-hidden="true" /> Booked</p>
+      <p className="bd-kicker">Booked</p>
       <h1 id="bd-manage-title" className="bd-card__title" tabIndex={-1} data-autofocus>
         Your BalloAds demo
       </h1>
       {summary}
       <div className="bd-actions bd-actions--stack">
-        <button type="button" className="wl-step-btn bd-back" onClick={() => p.setMode("cancel")}>Cancel demo</button>
-        <button type="button" className="wl-submit bd-primary" onClick={p.startReschedule}>
-          <CalendarClock size={18} aria-hidden="true" /> Reschedule
+        <button type="button" className="bd-btn bd-btn--ghost" onClick={() => p.setMode("cancel")}>Cancel demo</button>
+        <button type="button" className="bd-btn" onClick={p.startReschedule}>
+          Reschedule
         </button>
       </div>
     </section>

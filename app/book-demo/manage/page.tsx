@@ -16,9 +16,8 @@ export default function ManageDemoPage() {
 
   return (
     <main className="bd-page bd-page--manage">
-      <div className="bd-page__glow" aria-hidden="true" />
       <div className="bd-manage">
-        <Suspense fallback={<div className="bd-card"><div className="bd-card__inner"><p className="bd-card__sub">Loading your booking...</p></div></div>}>
+        <Suspense fallback={<div className="bd-card"><p className="bd-card__sub">Loading your booking...</p></div>}>
           <ManageClient />
         </Suspense>
       </div>

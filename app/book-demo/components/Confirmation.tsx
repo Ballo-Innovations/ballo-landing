@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarPlus, Check, Download, Phone, Video } from "lucide-react";
 import type { BookedBooking } from "@/lib/demoBooking/shared";
 import { googleCalendarUrl, icsUrl, manageUrl, outlookCalendarUrl } from "@/lib/demoBooking/calendarLinks";
 import { formatRange, zoneLabel } from "@/lib/demoBooking/time";
@@ -29,17 +28,14 @@ export function Confirmation({ booking, timeZone, phone, email, heading = "Your 
 
   return (
     <div className="bd-confirm">
-      <span className="wl-success__check bd-confirm__check" aria-hidden="true">
-        <Check size={22} strokeWidth={3} />
-      </span>
-      <h2 className="bd-card__title bd-confirm__title" tabIndex={-1} data-autofocus>
+      <h2 className="bd-card__title" tabIndex={-1} data-autofocus>
         {heading}
       </h2>
-      <p className="bd-confirm__sub">
+      <p className="bd-card__sub">
         {email ? <>We&apos;ve sent the details to <strong>{email}</strong>.</> : <>We&apos;ve emailed you the new details.</>}
       </p>
 
-      <dl className="wl-recap bd-recap">
+      <dl className="bd-recap">
         <div>
           <dt>When</dt>
           <dd>
@@ -52,12 +48,12 @@ export function Confirmation({ booking, timeZone, phone, email, heading = "Your 
           <dd>
             {booking.meetingUrl ? (
               <a className="bd-inline-link" href={booking.meetingUrl} target="_blank" rel="noopener noreferrer">
-                <Video size={15} aria-hidden="true" /> Join the video call
+                Join the video call
               </a>
             ) : phone ? (
-              <span className="bd-inline"><Phone size={15} aria-hidden="true" /> We&apos;ll call you on {phone}</span>
+              <span>We&apos;ll call you on {phone}</span>
             ) : (
-              <span className="bd-inline"><Phone size={15} aria-hidden="true" /> We&apos;ll email you how to join</span>
+              <span>We&apos;ll email you how to join</span>
             )}
           </dd>
         </div>
@@ -74,16 +70,16 @@ export function Confirmation({ booking, timeZone, phone, email, heading = "Your 
       </dl>
 
       <div className="bd-cal">
-        <p className="bd-picker__label">Add it to your calendar</p>
+        <p className="bd-label">Add it to your calendar</p>
         <div className="bd-cal__row">
           <a className="bd-cal__btn" href={googleCalendarUrl(event)} target="_blank" rel="noopener noreferrer">
-            <CalendarPlus size={16} aria-hidden="true" /> Google
+            Google Calendar
           </a>
           <a className="bd-cal__btn" href={outlookCalendarUrl(event)} target="_blank" rel="noopener noreferrer">
-            <CalendarPlus size={16} aria-hidden="true" /> Outlook
+            Outlook
           </a>
           <a className="bd-cal__btn" href={icsUrl(booking.manageToken)} download="balloads-demo.ics">
-            <Download size={16} aria-hidden="true" /> .ics file
+            Download .ics
           </a>
         </div>
       </div>
