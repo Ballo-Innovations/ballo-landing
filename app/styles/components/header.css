@@ -265,3 +265,26 @@
     width: 3rem;
   }
 }
+
+/* With the Book a demo button there are three actions; on narrow screens the
+   wordmark would run into them, so show only the logo mark (as at 390px). */
+@media (max-width: 600px) {
+  .header__nav--with-demo .header__logo-wordmark {
+    display: none;
+  }
+
+  .header__nav--with-demo .header__logo-icon {
+    width: 3rem;
+  }
+}
+
+@media (max-width: 350px) {
+  .header__nav--with-demo .header__actions {
+    gap: 0.3rem;
+  }
+
+  .header__nav--with-demo .header__action-link {
+    padding: 0.55rem 0.55rem;
+    font-size: 0.74rem;
+  }
+}
