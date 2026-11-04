@@ -3,11 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import logo_1 from "@/public/BalloAds Logo New/BalloAds-logo.png";
 import logo_2 from "@/public/BalloAds Logo New/BalloAds-logo-full.png";
 
 const Header = () => {
   const pathname = usePathname();
+  const showBookDemo = isFeatureEnabled("bookDemo");
 
   if (pathname.startsWith("/admin")) {
     return null;
@@ -16,7 +18,7 @@ const Header = () => {
   return (
     <header className="header header--sticky">
       <nav
-        className="header__nav glass-surface-nav"
+        className={`header__nav glass-surface-nav ${showBookDemo ? "header__nav--with-demo" : ""}`}
         style={{ zIndex: 100, transform: "translateX(-50%)" }}
         aria-label="Primary navigation"
       >
@@ -50,6 +52,15 @@ const Header = () => {
           <Link href="/blog" className="header__action-link header__action-link--signin">
             Blog
           </Link>
+          {showBookDemo && (
+            <Link
+              href="/book-demo?from=header"
+              className="header__action-link header__action-link--signin header__action-link--demo"
+              aria-current={pathname === "/book-demo" ? "page" : undefined}
+            >
+              Book a demo
+            </Link>
+          )}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("open-waitlist"))}
             className="header__action-link header__action-link--signup"
