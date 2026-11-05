@@ -1,41 +1,46 @@
-.footer {
+/* Every rule is scoped under the footer (`footer.footer` for the root) so it
+   outranks the older global app/styles/components/footer.css whatever order
+   Next.js emits the two stylesheets in. Equal specificity let a CSS chunk
+   reorder (2026-11-05) hand the phone footer to the global rules: 48px titles,
+   a tall logo, and every page 539px wide on a 390px phone. */
+footer.footer {
   background-color: #000000;
   padding: 80px 0;
   color: white;
   font-family: var(--font-ubuntu), sans-serif;
 }
 
-.footer__container {
+.footer .footer__container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-.footer__grid {
+.footer .footer__grid {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr;
   gap: 40px;
 }
 
 /* Logo Section */
-.footer__logo-section {
+.footer .footer__logo-section {
   display: flex;
   justify-content: flex-start;
 }
 
-.footer__stylized-logo {
+.footer .footer__stylized-logo {
   position: relative;
   width: 120px;
   height: 160px;
 }
 
-.footer__logo-svg {
+.footer .footer__logo-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
 
-.logo-dot-glow {
+.footer .logo-dot-glow {
   position: absolute;
   top: 30px;
   left: 30px;
@@ -48,44 +53,44 @@
   opacity: 0.8;
 }
 
-.logo-dot {
+.footer .logo-dot {
   filter: drop-shadow(0 0 5px #3fdbff);
 }
 
-.logo-shape {
+.footer .logo-shape {
   opacity: 0.4;
 }
 
 /* Columns */
-.footer__column-title {
+.footer .footer__column-title {
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 24px;
   color: white;
 }
 
-.footer__link-list {
+.footer .footer__link-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.footer__link-list li {
+.footer .footer__link-list li {
   margin-bottom: 12px;
 }
 
-.footer__link-list a {
+.footer .footer__link-list a {
   color: #cbd5e1;
   text-decoration: none;
   font-size: 16px;
   transition: color 0.2s;
 }
 
-.footer__link-list a:hover {
+.footer .footer__link-list a:hover {
   color: white;
 }
 
-.footer__link-disabled {
+.footer .footer__link-disabled {
   color: #cbd5e1;
   font-size: 16px;
   cursor: default;
@@ -93,13 +98,13 @@
 }
 
 /* Socials */
-.footer__socials-grid {
+.footer .footer__socials-grid {
   display: flex;
   gap: 16px;
   align-items: center;
 }
 
-.footer__social-icon {
+.footer .footer__social-icon {
   display: inline-flex;
   padding: 10px;
   margin: -10px -4px;
@@ -107,18 +112,18 @@
   transition: transform 0.2s;
 }
 
-.footer__social-icon:hover {
+.footer .footer__social-icon:hover {
   transform: scale(1.1);
 }
 
 /* Contact Info */
-.footer__contact-info {
+.footer .footer__contact-info {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.footer__contact-item {
+.footer .footer__contact-item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -127,7 +132,7 @@
   margin-bottom: 12px;
 }
 
-.footer__contact-item a {
+.footer .footer__contact-item a {
   display: inline-block;
   padding: 11px 0;
   margin: -11px 0;
@@ -136,11 +141,11 @@
   transition: color 0.2s;
 }
 
-.footer__contact-item a:hover {
+.footer .footer__contact-item a:hover {
   color: white;
 }
 
-.footer__contact-icon-wrapper {
+.footer .footer__contact-icon-wrapper {
   background-color: white;
   width: 24px;
   height: 24px;
@@ -151,23 +156,23 @@
   flex-shrink: 0;
 }
 
-.footer__contact-icon-inner {
+.footer .footer__contact-icon-inner {
   color: black;
 }
 
-.footer__logo-section { grid-area: logo; }
-.footer__column--info { grid-area: info; }
-.footer__column--help { grid-area: help; }
-.footer__column--socials { grid-area: socials; }
-.footer__column--contact { grid-area: contact; }
+.footer .footer__logo-section { grid-area: logo; }
+.footer .footer__column--info { grid-area: info; }
+.footer .footer__column--help { grid-area: help; }
+.footer .footer__column--socials { grid-area: socials; }
+.footer .footer__column--contact { grid-area: contact; }
 
-.footer__grid {
+.footer .footer__grid {
   grid-template-areas: "logo info help socials contact";
 }
 
 /* Tablets: small logo on top, then three columns with the socials stacked above the contact details. */
 @media (max-width: 1024px) {
-  .footer__grid {
+  .footer .footer__grid {
     grid-template-columns: 1fr 1fr 1.3fr;
     grid-template-areas:
       "logo logo logo"
@@ -177,18 +182,18 @@
     gap: 32px;
   }
 
-  .footer__logo-section {
+  .footer .footer__logo-section {
     height: 64px;
   }
 
-  .footer {
+  footer.footer {
     padding: 64px 0;
   }
 }
 
 /* Phones: the two link lists side by side, then socials and contact at full width. */
 @media (max-width: 640px) {
-  .footer__grid {
+  .footer .footer__grid {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "logo logo"
@@ -199,36 +204,36 @@
     gap: 32px 16px;
   }
 
-  .footer__logo-section {
+  .footer .footer__logo-section {
     height: 56px;
   }
 
-  .footer__column-title {
+  .footer .footer__column-title {
     font-size: 17px;
     margin-bottom: 16px;
   }
 
-  .footer__link-list li {
+  .footer .footer__link-list li {
     margin-bottom: 10px;
   }
 
-  .footer__link-disabled,
-  .footer__contact-item {
+  .footer .footer__link-disabled,
+  .footer .footer__contact-item {
     font-size: 15px;
   }
 
-  .footer {
+  footer.footer {
     padding: 48px 0;
   }
 }
 
 /* Small phones: keep "Help & Support" and its links on one line each. */
 @media (max-width: 380px) {
-  .footer__column-title {
+  .footer .footer__column-title {
     font-size: 16px;
   }
 
-  .footer__link-disabled {
+  .footer .footer__link-disabled {
     font-size: 14px;
   }
 }
