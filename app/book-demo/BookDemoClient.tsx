@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { ArrowLeft } from "lucide-react";
 import { SlotPicker } from "./components/SlotPicker";
 import { Confirmation } from "./components/Confirmation";
 import { Turnstile, TURNSTILE_SITE_KEY } from "./components/Turnstile";
@@ -15,7 +16,7 @@ import {
   type Slot,
   type SlotsResponse,
 } from "@/lib/demoBooking/shared";
-import { browserTimeZone, formatDayParts, formatTime, dayKey } from "@/lib/demoBooking/time";
+import { browserTimeZone, formatDayParts, formatTime, dayKey, zoneLabel } from "@/lib/demoBooking/time";
 import { ZAMBIA_TZ } from "@/lib/demoBooking/shared";
 
 type SlotsState =
@@ -25,12 +26,25 @@ type SlotsState =
 
 type Done = { response: BookResponse; phone: string | null; email: string; firstName: string; timeZone: string };
 
-export default function BookDemoClient() {
+type Props = {
+  /**
+   * Stepped: time first, then details (the header modal). Otherwise both sections
+   * show together in one card (the /book-demo page).
+   */
+  stepped?: boolean;
+  /** Page the visitor booked from; defaults to ?from= or the referrer. */
+  sourcePage?: string;
+  /** Id for the heading that names the current step (the modal's aria-labelledby). */
+  titleId?: string;
+};
+
+export default function BookDemoClient({ stepped = false, sourcePage, titleId = "bd-flow-title" }: Props) {
   const [slotsState, setSlotsState] = useState<SlotsState>({ kind: "loading" });
   const [visitorTz, setVisitorTz] = useState(ZAMBIA_TZ);
   const [displayTz, setDisplayTz] = useState(ZAMBIA_TZ);
   const [selected, setSelected] = useState<Slot | null>(null);
   const [notice, setNotice] = useState("");
+  const [step, setStep] = useState<"time" | "details">("time");
 
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
@@ -50,6 +64,8 @@ export default function BookDemoClient() {
 
   const cardRef = useRef<HTMLDivElement>(null);
   const timeRef = useRef<HTMLElement>(null);
+  // Move focus to the step heading only after the visitor changes step, not on first render.
+  const stepChanged = useRef(false);
 
   useEffect(() => {
     const tz = browserTimeZone();
@@ -84,17 +100,36 @@ export default function BookDemoClient() {
     }
   }, [slotsState]);
 
+  const fullCalendar = slotsState.kind === "full";
+  // With no free times there is nothing to pick: the stepped flow goes straight to details.
+  const currentStep = stepped && fullCalendar ? "details" : step;
+
+  useEffect(() => {
+    if (!stepped || !stepChanged.current) return;
+    cardRef.current?.querySelector<HTMLElement>("[data-step-title]")?.focus();
+    const scroller = cardRef.current?.closest("[data-scroll-root]");
+    scroller?.scrollTo({ top: 0 });
+  }, [currentStep, stepped]);
+
   // After booking, move focus to the confirmation heading.
   useEffect(() => {
     if (!done) return;
     cardRef.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
-    const top = cardRef.current?.getBoundingClientRect().top ?? 0;
-    if (top < 0) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [done]);
+    if (!stepped) {
+      const top = cardRef.current?.getBoundingClientRect().top ?? 0;
+      if (top < 0) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [done, stepped]);
 
   const captchaRequired = slotsState.kind !== "loading" && slotsState.captchaRequired;
   const showTurnstile = captchaRequired && !!TURNSTILE_SITE_KEY;
-  const fullCalendar = slotsState.kind === "full";
+
+  const goTo = (next: "time" | "details") => {
+    stepChanged.current = true;
+    setError("");
+    setInvalidField(null);
+    setStep(next);
+  };
 
   const fail = (msg: string, field?: string) => {
     setError(msg);
@@ -111,6 +146,10 @@ export default function BookDemoClient() {
     setInterests((prev) => (prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]));
 
   const focusTimes = () => {
+    if (stepped) {
+      goTo("time");
+      return;
+    }
     timeRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     timeRef.current?.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus({ preventScroll: true });
   };
@@ -154,7 +193,7 @@ export default function BookDemoClient() {
         message: message.trim() || undefined,
         start: !fullCalendar && selected ? selected.start : undefined,
         timeZone: visitorTz,
-        sourcePage: detectSourcePage(),
+        sourcePage: sourcePage ?? detectSourcePage(),
         utm: detectUtm(),
         turnstileToken: turnstileToken || undefined,
         website,
@@ -188,22 +227,32 @@ export default function BookDemoClient() {
     fail(res.error);
   };
 
+  const when = selected
+    ? `${formatDayParts(dayKey(selected.start, displayTz)).long}, ${formatTime(selected.start, displayTz)}`
+    : "";
+  const shortWhen = selected
+    ? (() => {
+        const d = formatDayParts(dayKey(selected.start, displayTz));
+        return `${d.weekday} ${d.day} ${d.month}, ${formatTime(selected.start, displayTz)}`;
+      })()
+    : "";
+
   const submitLabel = submitting
     ? "Sending..."
     : fullCalendar
       ? "Ask for a call"
       : selected
-        ? `Book ${formatDayParts(dayKey(selected.start, displayTz)).long}, ${formatTime(selected.start, displayTz)}`
+        ? `Book ${when}`
         : "Book my demo";
 
   if (done) {
     return (
-      <div ref={cardRef} className="bd-card" data-lenis-prevent>
+      <div ref={cardRef} className={stepped ? "bd-flow" : "bd-card"} data-lenis-prevent>
         {done.response.status === "booked" && done.response.booking ? (
-          <Confirmation booking={done.response.booking} timeZone={done.timeZone} phone={done.phone} email={done.email} />
+          <Confirmation booking={done.response.booking} timeZone={done.timeZone} phone={done.phone} email={done.email} titleId={titleId} />
         ) : (
           <div className="bd-confirm" aria-live="polite">
-            <h2 className="bd-card__title" tabIndex={-1} data-autofocus>Thanks, {done.firstName}</h2>
+            <h2 id={titleId} className="bd-card__title" tabIndex={-1} data-autofocus>Thanks, {done.firstName}</h2>
             <p className="bd-card__sub">
               {done.phone
                 ? <>We&apos;ll call you on <strong>{done.phone}</strong> within one working day to set a time that suits you.</>
@@ -215,126 +264,170 @@ export default function BookDemoClient() {
     );
   }
 
+  const showTime = !stepped || currentStep === "time";
+  const showDetails = !stepped || currentStep === "details";
+  const stepOf = stepped && !fullCalendar ? (currentStep === "time" ? "Step 1 of 2" : "Step 2 of 2") : null;
+
+  const timeSection = (
+    <section ref={timeRef} className="bd-section" aria-labelledby={stepped ? titleId : "bd-time-title"}>
+      {stepOf && <p className="bd-step">{stepOf}</p>}
+      <h2 id={stepped ? titleId : "bd-time-title"} className="bd-card__title" tabIndex={-1} data-step-title>
+        Pick a time
+      </h2>
+      <div aria-live="polite" aria-atomic="true">
+        {notice && <p className="bd-notice" role="alert">{notice}</p>}
+      </div>
+      {slotsState.kind === "loading" ? (
+        <div className="bd-skeleton" aria-busy="true" aria-label="Loading free times">
+          <div className="bd-skeleton__row">
+            {Array.from({ length: 6 }, (_, i) => <span key={i} className="bd-skeleton__day" />)}
+          </div>
+          <div className="bd-skeleton__grid">
+            {Array.from({ length: 8 }, (_, i) => <span key={i} className="bd-skeleton__time" />)}
+          </div>
+        </div>
+      ) : slotsState.kind === "ready" ? (
+        <SlotPicker
+          idPrefix={stepped ? "bd-modal" : "bd-book"}
+          slots={slotsState.slots}
+          visitorTimeZone={visitorTz}
+          displayTimeZone={displayTz}
+          onDisplayTimeZoneChange={setDisplayTz}
+          selectedStart={selected?.start ?? null}
+          onSelect={(slot) => { setSelected(slot); setNotice(""); }}
+        />
+      ) : null}
+      {stepped && (
+        <button type="button" className="bd-btn bd-btn--block" disabled={!selected} onClick={() => goTo("details")}>
+          {selected ? `Continue with ${shortWhen}` : "Pick a time to continue"}
+        </button>
+      )}
+    </section>
+  );
+
+  const detailsHeading = fullCalendar ? "Ask for a call back" : "Your details";
+
   return (
-    <div ref={cardRef} className="bd-card" data-lenis-prevent>
+    <div ref={cardRef} className={stepped ? "bd-flow" : "bd-card"} data-lenis-prevent>
       <form noValidate onSubmit={submit} onChange={clearError}>
-        <section ref={timeRef} className="bd-section" aria-labelledby="bd-time-title">
-          {fullCalendar ? (
-            <>
-              <h2 id="bd-time-title" className="bd-card__title">Ask for a call back</h2>
+        {!stepped && fullCalendar && (
+          <section className="bd-section" aria-labelledby="bd-time-title">
+            <h2 id="bd-time-title" className="bd-card__title">Ask for a call back</h2>
+            <p className="bd-card__sub">
+              Our calendar is full right now. Leave your details and we&apos;ll call you to set a time.
+            </p>
+          </section>
+        )}
+        {showTime && !fullCalendar && timeSection}
+
+        {!stepped && <hr className="bd-rule" />}
+
+        {showDetails && (
+          <section className="bd-section" aria-labelledby={stepped ? titleId : "bd-details-title"}>
+            {stepped && (
+              <>
+                {stepOf && (
+                  <button type="button" className="bd-link-btn bd-backlink" onClick={() => goTo("time")}>
+                    <ArrowLeft size={15} aria-hidden="true" /> Back to times
+                  </button>
+                )}
+                {stepOf && <p className="bd-step">{stepOf}</p>}
+              </>
+            )}
+            {(stepped || !fullCalendar) && (
+              <h2 id={stepped ? titleId : "bd-details-title"} className="bd-card__title" tabIndex={-1} data-step-title>
+                {stepped ? detailsHeading : "Your details"}
+              </h2>
+            )}
+            {stepped && fullCalendar && (
               <p className="bd-card__sub">
                 Our calendar is full right now. Leave your details and we&apos;ll call you to set a time.
               </p>
-            </>
-          ) : (
-            <>
-              <h2 id="bd-time-title" className="bd-card__title">Pick a time</h2>
-              <div aria-live="polite" aria-atomic="true">
-                {notice && <p className="bd-notice" role="alert">{notice}</p>}
-              </div>
-              {slotsState.kind === "loading" ? (
-                <div className="bd-skeleton" aria-busy="true" aria-label="Loading free times">
-                  <div className="bd-skeleton__row">
-                    {Array.from({ length: 6 }, (_, i) => <span key={i} className="bd-skeleton__day" />)}
-                  </div>
-                  <div className="bd-skeleton__grid">
-                    {Array.from({ length: 8 }, (_, i) => <span key={i} className="bd-skeleton__time" />)}
-                  </div>
-                </div>
-              ) : slotsState.kind === "ready" ? (
-                <SlotPicker
-                  idPrefix="bd-book"
-                  slots={slotsState.slots}
-                  visitorTimeZone={visitorTz}
-                  displayTimeZone={displayTz}
-                  onDisplayTimeZoneChange={setDisplayTz}
-                  selectedStart={selected?.start ?? null}
-                  onSelect={(slot) => { setSelected(slot); setNotice(""); }}
-                />
-              ) : null}
-            </>
-          )}
-        </section>
+            )}
+            {stepped && selected && !fullCalendar && (
+              <p className="bd-chosen">
+                <span>
+                  <strong>{when}</strong> <span className="bd-chosen__tz">{zoneLabel(displayTz)}</span>
+                </span>
+                <button type="button" className="bd-link-btn" onClick={() => goTo("time")}>Change</button>
+              </p>
+            )}
 
-        <hr className="bd-rule" />
-
-        <section className="bd-section" aria-labelledby="bd-details-title">
-          <h2 id="bd-details-title" className="bd-card__title">Your details</h2>
-
-          <div className="bd-grid">
-            <Field id="bd-name" label="Your name" invalid={invalidField === "bd-name"}>
-              <input id="bd-name" className="bd-input" type="text" autoComplete="name" required
-                maxLength={LIMITS.name} placeholder="Mutale Banda" value={name}
-                aria-invalid={invalidField === "bd-name"} onChange={(e) => setName(e.target.value)} />
-            </Field>
-            <Field id="bd-company" label="Company" invalid={invalidField === "bd-company"}>
-              <input id="bd-company" className="bd-input" type="text" autoComplete="organization" required
-                maxLength={LIMITS.company} placeholder="Kabwata Fresh Foods" value={company}
-                aria-invalid={invalidField === "bd-company"} onChange={(e) => setCompany(e.target.value)} />
-            </Field>
-            <Field id="bd-email" label="Work email" invalid={invalidField === "bd-email"}>
-              <input id="bd-email" className="bd-input" type="email" autoComplete="email" required inputMode="email"
-                maxLength={LIMITS.email} placeholder="name@company.co.zm" value={email}
-                aria-invalid={invalidField === "bd-email"} onChange={(e) => setEmail(e.target.value)} />
-            </Field>
-            <Field id="bd-phone" label={fullCalendar ? "Phone" : "Phone (optional)"} invalid={invalidField === "bd-phone"}>
-              <input id="bd-phone" className="bd-input" type="tel" autoComplete="tel" inputMode="tel"
-                maxLength={LIMITS.phone} placeholder="0971 234 567" value={phone}
-                aria-invalid={invalidField === "bd-phone"} aria-describedby="bd-phone-hint"
-                onChange={(e) => setPhone(e.target.value)} />
-              <span id="bd-phone-hint" className="sr-only">Zambian numbers can start with 09, 07, 05 or +260. Other countries need their country code.</span>
-            </Field>
-          </div>
-
-          <Field id="bd-size" label="Team size">
-            <select id="bd-size" className="bd-input bd-select" value={companySize}
-              onChange={(e) => setCompanySize(e.target.value)}>
-              <option value="">Choose one (optional)</option>
-              {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-          </Field>
-
-          <fieldset className="bd-checks">
-            <legend className="bd-label">What would you like to see?</legend>
-            <div className="bd-checks__grid">
-              {INTERESTS.map((i) => (
-                <label key={i.value} className="bd-check">
-                  <input type="checkbox" checked={interests.includes(i.value)} onChange={() => toggleInterest(i.value)} />
-                  <span>{i.label}</span>
-                </label>
-              ))}
+            <div className="bd-grid">
+              <Field id="bd-name" label="Your name" invalid={invalidField === "bd-name"}>
+                <input id="bd-name" className="bd-input" type="text" autoComplete="name" required
+                  maxLength={LIMITS.name} placeholder="Mutale Banda" value={name}
+                  aria-invalid={invalidField === "bd-name"} onChange={(e) => setName(e.target.value)} />
+              </Field>
+              <Field id="bd-company" label="Company" invalid={invalidField === "bd-company"}>
+                <input id="bd-company" className="bd-input" type="text" autoComplete="organization" required
+                  maxLength={LIMITS.company} placeholder="Kabwata Fresh Foods" value={company}
+                  aria-invalid={invalidField === "bd-company"} onChange={(e) => setCompany(e.target.value)} />
+              </Field>
+              <Field id="bd-email" label="Work email" invalid={invalidField === "bd-email"}>
+                <input id="bd-email" className="bd-input" type="email" autoComplete="email" required inputMode="email"
+                  maxLength={LIMITS.email} placeholder="name@company.co.zm" value={email}
+                  aria-invalid={invalidField === "bd-email"} onChange={(e) => setEmail(e.target.value)} />
+              </Field>
+              <Field id="bd-phone" label={fullCalendar ? "Phone" : "Phone (optional)"} invalid={invalidField === "bd-phone"}>
+                <input id="bd-phone" className="bd-input" type="tel" autoComplete="tel" inputMode="tel"
+                  maxLength={LIMITS.phone} placeholder="0971 234 567" value={phone}
+                  aria-invalid={invalidField === "bd-phone"} aria-describedby="bd-phone-hint"
+                  onChange={(e) => setPhone(e.target.value)} />
+                <span id="bd-phone-hint" className="sr-only">Zambian numbers can start with 09, 07, 05 or +260. Other countries need their country code.</span>
+              </Field>
             </div>
-          </fieldset>
 
-          <Field id="bd-message" label="Anything else? (optional)">
-            <textarea id="bd-message" className="bd-input bd-textarea" rows={3}
-              maxLength={LIMITS.message} value={message}
-              placeholder="We send about 2,000 SMS a month and want to try WhatsApp."
-              onChange={(e) => setMessage(e.target.value)} />
-          </Field>
+            <Field id="bd-size" label="Team size">
+              <select id="bd-size" className="bd-input bd-select" value={companySize}
+                onChange={(e) => setCompanySize(e.target.value)}>
+                <option value="">Choose one (optional)</option>
+                {COMPANY_SIZES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </Field>
 
-          {/* Honeypot: people never see or fill this; bots that fill every field do. */}
-          <div className="bd-hp" aria-hidden="true">
-            <label htmlFor="bd-website">Website</label>
-            <input id="bd-website" name="website" type="text" tabIndex={-1} autoComplete="off"
-              value={website} onChange={(e) => setWebsite(e.target.value)} />
-          </div>
+            <fieldset className="bd-checks">
+              <legend className="bd-label">What would you like to see?</legend>
+              <div className="bd-checks__grid">
+                {INTERESTS.map((i) => (
+                  <label key={i.value} className="bd-check">
+                    <input type="checkbox" checked={interests.includes(i.value)} onChange={() => toggleInterest(i.value)} />
+                    <span>{i.label}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
-          {showTurnstile && <Turnstile onToken={setTurnstileToken} resetKey={turnstileReset} />}
+            <Field id="bd-message" label="Anything else? (optional)">
+              <textarea id="bd-message" className="bd-input bd-textarea" rows={3}
+                maxLength={LIMITS.message} value={message}
+                placeholder="We send about 2,000 SMS a month and want to try WhatsApp."
+                onChange={(e) => setMessage(e.target.value)} />
+            </Field>
 
-          <div aria-live="assertive" aria-atomic="true">
-            {error && <p className="bd-error" role="alert">{error}</p>}
-          </div>
+            {/* Honeypot: people never see or fill this; bots that fill every field do. */}
+            <div className="bd-hp" aria-hidden="true">
+              <label htmlFor="bd-website">Website</label>
+              <input id="bd-website" name="website" type="text" tabIndex={-1} autoComplete="off"
+                value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </div>
 
-          <button type="submit" className="bd-btn bd-btn--block" disabled={submitting || slotsState.kind === "loading"}>
-            {submitLabel}
-          </button>
-          <p className="bd-fineprint">
-            {fullCalendar
-              ? "We'll only use your details to arrange the demo."
-              : "You'll get a calendar invite by email, with a link to reschedule or cancel."}
-          </p>
-        </section>
+            {showTurnstile && <Turnstile onToken={setTurnstileToken} resetKey={turnstileReset} />}
+
+            <div aria-live="assertive" aria-atomic="true">
+              {error && <p className="bd-error" role="alert">{error}</p>}
+            </div>
+
+            <button type="submit" className="bd-btn bd-btn--block" disabled={submitting || slotsState.kind === "loading"}>
+              {submitLabel}
+            </button>
+            <p className="bd-fineprint">
+              {fullCalendar
+                ? "We'll only use your details to arrange the demo."
+                : "You'll get a calendar invite by email, with a link to reschedule or cancel."}
+            </p>
+          </section>
+        )}
       </form>
     </div>
   );
