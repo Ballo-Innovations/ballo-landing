@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 import Link from 'next/link';
 import { isFeatureEnabled } from '@/lib/featureFlags';
+import { openBookDemo } from '@/lib/demoBooking/open';
 import clsx from 'clsx'; // Utility for conditionally joining class names
 import person from "@/public/Assets/15.png";
 import circle from "@/public/Assets/9.png";
@@ -200,6 +201,7 @@ const HeroSection: React.FC = () => {
             </p>
             <Link
               href={isFeatureEnabled("bookDemo") ? "/book-demo?from=business" : "/book-demo"}
+              onClick={(e) => openBookDemo(e, "business")}
               className="inline-flex items-center gap-3 w-fit px-8 py-4 rounded-full bg-white text-[var(--dark-blue)] font-semibold text-lg shadow-lg hover:bg-[var(--brand-color-2)] transition-colors"
             >
               Book a free demo

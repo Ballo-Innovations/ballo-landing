@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import { openBookDemo } from "@/lib/demoBooking/open";
 import logo_1 from "@/public/BalloAds Logo New/BalloAds-logo.png";
 import logo_2 from "@/public/BalloAds Logo New/BalloAds-logo-full.png";
 
@@ -57,6 +58,8 @@ const Header = () => {
               href="/book-demo?from=header"
               className="header__action-link header__action-link--signin header__action-link--demo"
               aria-current={pathname === "/book-demo" ? "page" : undefined}
+              aria-haspopup={pathname.startsWith("/book-demo") ? undefined : "dialog"}
+              onClick={(e) => openBookDemo(e, "header")}
             >
               Book a demo
             </Link>

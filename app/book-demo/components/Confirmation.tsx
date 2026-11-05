@@ -12,9 +12,10 @@ type Props = {
   email?: string;
   heading?: string;
   showManageLink?: boolean;
+  titleId?: string;
 };
 
-export function Confirmation({ booking, timeZone, phone, email, heading = "Your demo is booked", showManageLink = true }: Props) {
+export function Confirmation({ booking, timeZone, phone, email, heading = "Your demo is booked", showManageLink = true, titleId }: Props) {
   const absoluteManage =
     typeof window !== "undefined" ? `${window.location.origin}${manageUrl(booking.manageToken)}` : null;
   const event = {
@@ -28,7 +29,7 @@ export function Confirmation({ booking, timeZone, phone, email, heading = "Your 
 
   return (
     <div className="bd-confirm">
-      <h2 className="bd-card__title" tabIndex={-1} data-autofocus>
+      <h2 id={titleId} className="bd-card__title" tabIndex={-1} data-autofocus>
         {heading}
       </h2>
       <p className="bd-card__sub">
