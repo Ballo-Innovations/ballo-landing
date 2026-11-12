@@ -32,13 +32,12 @@ export function renderLegalHtml(bodyHtml: string): { html: string; toc: LegalToc
       // An H1 in the body would compete with the page title.
       h1: "h2",
       a: (tagName, attribs) => {
-        const external = /^https?:\/\//i.test(attribs.href ?? "") && !/^https?:\/\/(www\.)?balloads\.com/i.test(attribs.href ?? "");
-        return {
-          tagName,
-          attribs: external
-            ? { ...attribs, target: "_blank", rel: "noopener noreferrer" }
-            : { href: attribs.href ?? "" },
-        };
+        const href = attribs.href ?? "";
+        const external = /^https?:\/\//i.test(href) && !/^https?:\/\/(www\.)?balloads\.com/i.test(href);
+        const out: Record<string, string> = external
+          ? { href, target: "_blank", rel: "noopener noreferrer" }
+          : { href };
+        return { tagName, attribs: out };
       },
     },
   });
