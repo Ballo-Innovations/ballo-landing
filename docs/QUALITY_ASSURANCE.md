@@ -207,7 +207,7 @@ Audited 2026-11-12 on `main` at 71cb48b with Node 20.19.
 | --- | --- | --- |
 | Lint | `npm run lint` | FAIL: 113 errors (108 `react/no-unescaped-entities`, 5 `no-explicit-any`) and 45 warnings, all pre-existing |
 | Type check | `npm run typecheck` (`tsc --noEmit`) | PASS, 0 errors. Needs `next-env.d.ts`, which `next dev` or `next build` writes (it is git-ignored); in a fresh clone build first |
-| Build | `npm run build` | NOT COMPLETED locally: compiled in 6.5 min and generated all 30 pages, then hit a 15 min timeout while collecting build traces on a machine busy with parallel builds. CI runs it on every pull request. `next.config.ts` sets `ignoreDuringBuilds` and `ignoreBuildErrors`, so the build does not catch lint or type errors |
+| Build | `npm run build` | PASS in CI (PR #22, 1m37s). Locally it compiled and generated all 30 pages but hit a 15 min timeout while collecting traces on an overloaded machine. `next.config.ts` sets `ignoreDuringBuilds` and `ignoreBuildErrors`, so the build does not catch lint or type errors |
 | Unit tests | none | NOT RUN: no test framework |
 | End-to-end, visual, accessibility | none in the repo | NOT RUN: use the scratch Playwright workflow below |
 | CI | `.github/workflows/ci.yml` | build, then type check, on every pull request into `main` or `balloads-classic` |
