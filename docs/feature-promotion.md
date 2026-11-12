@@ -17,6 +17,7 @@ New UI takes `isFeatureEnabled` from `lib/featureFlags.ts`.
 | `whyFeatureChips` | `NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS` |
 | `whoStackSpread` | `NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD` |
 | `blogCoverflow` | `NEXT_PUBLIC_FEATURE_BLOG_COVERFLOW` |
+| `legalPages` | `NEXT_PUBLIC_FEATURE_LEGAL_PAGES` |
 
 QA: `?features=cms`, `?features=chips`, `?features=stack`, or `?features=blogcoverflow`, or `?features=all`. A CMS-backed landing slice needs matching PRs in
 `ballo-ads-backend-v2` and usually `ballo-cms`.
