@@ -30,7 +30,7 @@ export default async function LegalIndexPage() {
         </p>
       </header>
 
-      {anyInReview ? <LegalDraftNotice /> : null}
+      {anyInReview ? <LegalDraftNotice plural /> : null}
 
       {groups.length === 0 ? (
         <p className="mt-14 text-lg text-white/60">No documents are published yet.</p>
