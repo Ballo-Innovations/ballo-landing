@@ -207,7 +207,7 @@ Audited 2026-11-12 on `balloads-classic` at c602ce5 with Node 20.19.
 | Category | Command | Result on 2026-11-12 |
 | --- | --- | --- |
 | Lint | `npm run lint` | FAIL: 58 errors (`react/no-unescaped-entities`) and 31 warnings (`no-unused-vars`), all pre-existing |
-| Type check | `npm run typecheck` (`tsc --noEmit`) | PASS, 0 errors |
+| Type check | `npm run typecheck` (`tsc --noEmit`) | PASS, 0 errors. Needs `next-env.d.ts`, which `next dev` or `next build` writes (it is git-ignored); in a fresh clone build first |
 | Build | `npm run build` | PASS, 36 routes. `next.config.ts` sets `ignoreDuringBuilds` and `ignoreBuildErrors`, so the build does not catch lint or type errors; run `typecheck` separately |
 | Unit tests | none | NOT RUN: no test framework |
 | End-to-end, visual, accessibility | none in the repo | NOT RUN: use the scratch Playwright workflow below |

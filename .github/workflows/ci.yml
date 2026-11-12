@@ -18,7 +18,8 @@ jobs:
       # balloads-classic has no package-lock.json yet (see docs/QUALITY_ASSURANCE.md, gaps).
       - name: Install
         run: if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
-      - name: Type check
-        run: npm run typecheck
+      # next build writes next-env.d.ts (git-ignored), which declares the image module types tsc needs.
       - name: Build
         run: npm run build
+      - name: Type check
+        run: npm run typecheck
