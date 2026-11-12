@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import logo from "@/public/BalloAds Logo New/BalloAds-logo.png";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 // Custom WhatsApp icon as Lucide doesn't have it by default
 const WhatsAppIcon = ({ className }) => (
@@ -58,7 +59,15 @@ const Footer = () => {
             <ul className="footer__link-list">
               <li><span className="footer__link-disabled">Knowledge Base</span></li>
               <li><span className="footer__link-disabled">Live Chat</span></li>
-              <li><span className="footer__link-disabled">Privacy Policy</span></li>
+              {isFeatureEnabled("legalPages") ? (
+                <>
+                  <li><Link href="/legal/privacy">Privacy Policy</Link></li>
+                  <li><Link href="/legal/terms">Terms of Service</Link></li>
+                  <li><Link href="/legal">Legal</Link></li>
+                </>
+              ) : (
+                <li><span className="footer__link-disabled">Privacy Policy</span></li>
+              )}
               <li><span className="footer__link-disabled">Resources</span></li>
               <li><span className="footer__link-disabled">What&apos;s New</span></li>
             </ul>

@@ -9,13 +9,14 @@
  * | Flag       | Env var                         |
  * | ---------- | ------------------------------- |
  * | `bookDemo` | `NEXT_PUBLIC_FEATURE_BOOK_DEMO` |
+ * | `legalPages` | `NEXT_PUBLIC_FEATURE_LEGAL_PAGES` |
  *
- * `bookDemo` has no `?features=` runtime override on purpose: the pages it
+ * `bookDemo` and `legalPages` have no `?features=` runtime override on purpose: the pages it
  * guards 404 on the server, so a browser-only override could never reach them,
  * and a client-only value would make server and client render different links.
  */
 
-export type FeatureName = "bookDemo";
+export type FeatureName = "bookDemo" | "legalPages";
 
 /**
  * Each flag's environment value, read through a LITERAL `process.env.X`.
@@ -25,6 +26,7 @@ export type FeatureName = "bookDemo";
  */
 const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   bookDemo: process.env.NEXT_PUBLIC_FEATURE_BOOK_DEMO,
+  legalPages: process.env.NEXT_PUBLIC_FEATURE_LEGAL_PAGES,
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
