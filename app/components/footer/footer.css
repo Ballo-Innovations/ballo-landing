@@ -217,6 +217,7 @@ footer.footer {
     margin-bottom: 10px;
   }
 
+  .footer .footer__link-list a,
   .footer .footer__link-disabled,
   .footer .footer__contact-item {
     font-size: 15px;
@@ -233,6 +234,7 @@ footer.footer {
     font-size: 16px;
   }
 
+  .footer .footer__link-list a,
   .footer .footer__link-disabled {
     font-size: 14px;
   }
