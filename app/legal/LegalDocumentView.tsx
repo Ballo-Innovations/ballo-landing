@@ -20,7 +20,7 @@ export function LegalDocumentView({ doc, versions, others, archived }: Props) {
   const older = versions.filter((v) => v.version !== doc.version);
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 pb-24 pt-16 md:pt-24">
+    <div className="container mx-auto max-w-6xl px-4 pb-24 pt-28 md:pt-36">
       <nav aria-label="Breadcrumb" className="legal-no-print mb-6 text-sm text-white/55">
         <Link href="/legal" className="hover:text-white">
           Legal
@@ -91,7 +91,7 @@ export function LegalDocumentView({ doc, versions, others, archived }: Props) {
                         {vDate ? `, ${formatLegalDate(vDate)}` : ""}
                         {v.isCurrent ? " (current)" : ""}
                       </Link>
-                      {v.changeNote ? <span className="block text-sm text-white/50">{v.changeNote}</span> : null}
+                      {v.changeNote ? <span className="block text-sm text-white/65">{v.changeNote}</span> : null}
                     </li>
                   );
                 })}

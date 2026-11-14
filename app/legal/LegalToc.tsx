@@ -18,7 +18,7 @@ export function LegalToc({ items }: { items: Item[] }) {
 
   return (
     <nav aria-label="On this page">
-      <p className="mb-3 text-sm font-bold uppercase tracking-wider text-white/50">On this page</p>
+      <p className="mb-3 text-sm font-bold uppercase tracking-wider text-white/65">On this page</p>
       <ol className="flex flex-col gap-2 border-l border-white/15">
         {items.map((item, index) => (
           <li key={item.id}>

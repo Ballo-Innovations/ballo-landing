@@ -21,7 +21,7 @@ export default async function LegalIndexPage() {
   ].filter((g) => g.docs.length > 0);
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 pb-24 pt-16 md:pt-24">
+    <div className="container mx-auto max-w-4xl px-4 pb-24 pt-28 md:pt-36">
       <header className="mb-10">
         <h1 className="text-4xl font-bold leading-tight md:text-5xl">Legal</h1>
         <p className="landing-body mt-4 max-w-2xl text-white/75">
@@ -51,12 +51,12 @@ export default async function LegalIndexPage() {
                             {doc.title}
                           </span>
                           {date ? (
-                            <span className="text-sm text-white/45">Updated {formatLegalDate(date)}</span>
+                            <span className="text-sm text-white/65">Updated {formatLegalDate(date)}</span>
                           ) : null}
                         </span>
                         {doc.summary ? <span className="mt-1 block text-white/70">{doc.summary}</span> : null}
                         {doc.audience ? (
-                          <span className="mt-1 block text-sm text-white/45">For: {doc.audience}</span>
+                          <span className="mt-1 block text-sm text-white/65">For: {doc.audience}</span>
                         ) : null}
                       </Link>
                     </li>
