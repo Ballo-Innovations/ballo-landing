@@ -18,6 +18,10 @@ import {
 } from "@/lib/demoBooking/shared";
 import { browserTimeZone, formatDayParts, formatTime, dayKey, zoneLabel } from "@/lib/demoBooking/time";
 import { ZAMBIA_TZ } from "@/lib/demoBooking/shared";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { PrivacyPolicyLink } from "@/app/components/ui/PrivacyPolicyLink";
+
+const showPrivacyLink = isFeatureEnabled("legalPages");
 
 type SlotsState =
   | { kind: "loading" }
@@ -425,6 +429,12 @@ export default function BookDemoClient({ stepped = false, sourcePage, titleId = 
               {fullCalendar
                 ? "We'll only use your details to arrange the demo."
                 : "You'll get a calendar invite by email, with a link to reschedule or cancel."}
+              {showPrivacyLink && (
+                <>
+                  {" "}Read our{" "}
+                  <PrivacyPolicyLink className="bd-fineprint__link" />.
+                </>
+              )}
             </p>
           </section>
         )}
