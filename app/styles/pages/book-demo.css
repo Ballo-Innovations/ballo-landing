@@ -346,6 +346,8 @@
 .bd-actions--stack { margin-top: 0.4rem; }
 
 .bd-fineprint { margin: 0.75rem 0 0; font-size: 0.85rem; line-height: 1.5; text-align: center; color: var(--bd-faint); }
+/* Keeps the page's accent link colour (.bd-page a, .bd-modal a). */
+.bd-fineprint__link { text-decoration: underline; text-underline-offset: 2px; }
 
 /* ---------- Confirmation, manage ---------- */
 

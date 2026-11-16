@@ -2,6 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import { PrivacyPolicyLink } from "@/app/components/ui/PrivacyPolicyLink";
+
+const showPrivacyLink = isFeatureEnabled("legalPages");
 
 type Status =
   | { type: "idle" }
@@ -556,6 +560,12 @@ export function WaitlistModal() {
                     {!isSubmitting && <ArrowRight size={18} aria-hidden="true" />}
                   </button>
                 </div>
+                {step === 1 && showPrivacyLink && (
+                  <p className="wl-fineprint">
+                    See how we use your details in our{" "}
+                    <PrivacyPolicyLink className="wl-fineprint__link" />.
+                  </p>
+                )}
                 </form>
               </>
             )}
