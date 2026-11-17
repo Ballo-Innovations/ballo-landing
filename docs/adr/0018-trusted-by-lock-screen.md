@@ -15,11 +15,12 @@ bottom.
 
 Heading: "Trusted by" / "From their brand to their customer's phone".
 
-"Backed by" becomes one line above it, as George asked: "Delivered over",
-the Airtel, MTN and Meta marks, a hairline, then ZICTA (`DeliveredOver`).
-Partners whose role mentions a regulator go after the hairline, so the line
-never says messages are delivered over ZICTA. It does not move, so it shows
-under reduced motion too.
+"Backed by" becomes one line above it, as George asked: "Backed by", the
+Airtel, MTN and Meta marks, a hairline, then ZICTA (`DeliveredOver`; the
+label first read "Delivered over", and George chose "Backed by"). Partners
+whose role mentions a regulator go after the hairline, so the networks and
+the regulator read as two groups. It does not move, so it shows under
+reduced motion too.
 
 Which phone: the journey phone (ADR 0017) stops beside this section when it
 is on, so it shows the lock screen and the section adds no phone. It

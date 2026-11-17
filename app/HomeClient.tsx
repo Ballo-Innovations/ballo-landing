@@ -534,9 +534,9 @@ export default function HomeClient({
             /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
             <>
               <div className="backers-section">
-                {/* With the lock screen, "Backed by" is one line naming what
-                  the messages below travel over (ADR 0018). It does not
-                  move, so it stays under reduced motion too. */}
+                {/* With the lock screen, "Backed by" is one flat line of
+                  marks (ADR 0018). It does not move, so it stays under
+                  reduced motion too. */}
                 {trustedLockFlag ? (
                   <DeliveredOver logos={backerLogos} />
                 ) : (

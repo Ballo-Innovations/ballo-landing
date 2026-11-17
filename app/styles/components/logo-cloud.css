@@ -350,7 +350,8 @@
 }
 
 /* ── "Backed by" as one line (ADR 0018) ──
-   Paired with DeliveredOver.tsx, behind `trustedLockScreen`: a muted label,
+   Paired with DeliveredOver.tsx, behind `trustedLockScreen`: a muted
+   "Backed by" label,
    the networks' marks, a hairline, then the regulator. Flat, no cards. */
 
 .delivered-over {

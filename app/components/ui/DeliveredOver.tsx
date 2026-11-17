@@ -5,14 +5,14 @@ import Image from "next/image";
 import type { HomeLogoItem } from "@/app/HomeClient";
 
 /**
- * "Backed by" as one line (ADR 0018, behind `trustedLockScreen`):
- * "Delivered over", the networks' marks, a hairline, then the regulator.
+ * "Backed by" as one line (ADR 0018, behind `trustedLockScreen`): the label,
+ * the networks' marks, a hairline, then the regulator. Flat, in place of the
+ * taped cards.
  *
- * It sits above the "Trusted by" runway, so it names what the messages there
- * travel over instead of repeating the taped cards. Partners whose role
- * mentions a regulator go after the hairline: ZICTA is not something a
- * message is delivered over, and the line must not say it is. The roles come
- * from the CMS row, or the fallback map in app/page.tsx.
+ * Partners whose role mentions a regulator go after the hairline, so the
+ * networks and the regulator read as two groups. The roles come from the CMS
+ * row, or the fallback map in app/page.tsx. The label was "Delivered over"
+ * at first; George chose "Backed by" (2026-11-17).
  */
 
 const isRegulator = (logo: HomeLogoItem) => /regulat/i.test(logo.role ?? "");
@@ -35,7 +35,7 @@ function Mark({ logo }: { logo: HomeLogoItem }) {
 
 export function DeliveredOver({
   logos,
-  label = "Delivered over",
+  label = "Backed by",
 }: {
   logos: HomeLogoItem[];
   label?: string;
