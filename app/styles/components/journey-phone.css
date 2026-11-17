@@ -533,3 +533,117 @@
   0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
   30% { transform: translateY(-1.2cqw); opacity: 1; }
 }
+
+/* ── Lock screen, live (ADR 0018, behind `trustedLockScreen`) ──
+   One notification per brand from the "Trusted by" runway, newest on top.
+   The stack is absolutely placed so a new arrival can push the others down
+   by transition; `--slot` is the note's place from the top. Selectors carry
+   `[data-screen]` to outrank the static notes' lock-state rules above. */
+
+.jp-screens .jp-notes--live {
+  position: relative;
+  display: block;
+  height: calc(4 * 22.4cqw);
+}
+
+.jp-screens[data-screen] .jp-notes--live > .jp-note--live {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 20cqw;
+  box-sizing: border-box;
+  align-items: center;
+  opacity: 1;
+  transform: translateY(calc(var(--slot) * 22.4cqw));
+  transition:
+    opacity 360ms ease,
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: 0ms;
+  animation: jp-live-in 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.jp-screens[data-screen] .jp-notes--live > .jp-note--live[data-leaving] {
+  opacity: 0;
+}
+
+@keyframes jp-live-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8cqw) scale(0.94);
+  }
+}
+
+.jp-note__avatar {
+  position: relative;
+  flex: none;
+  width: 10cqw;
+  height: 10cqw;
+  border-radius: 2.8cqw;
+  background: rgba(3, 6, 32, 0.85);
+  display: grid;
+  place-items: center;
+  padding: 1.2cqw;
+}
+
+.jp-note__logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.jp-note__logo--word {
+  font-size: 2.2cqw;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  overflow: hidden;
+}
+
+.jp-note__badge {
+  position: absolute;
+  right: -1.2cqw;
+  bottom: -1.2cqw;
+  width: 4.6cqw;
+  height: 4.6cqw;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #03061f;
+  box-shadow: 0 0 0 0.6cqw rgba(3, 6, 32, 0.85);
+}
+
+.jp-note__badge svg {
+  width: 2.8cqw;
+  height: 2.8cqw;
+}
+
+.jp-note__badge--sms { background: #22d3ee; }
+.jp-note__badge--whatsapp { background: #25d366; }
+
+.jp-note--live .jp-note__text {
+  flex: 1;
+}
+
+.jp-note--live .jp-note__text b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The message itself stays a shape: these are real clients, and the copy
+   would be ours, not theirs. */
+.jp-note__lines {
+  display: grid;
+  gap: 1cqw;
+  margin-top: 1cqw;
+}
+
+.jp-note__lines i {
+  display: block;
+  height: 1.5cqw;
+  border-radius: 1cqw;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.jp-note__lines i + i { width: 62%; }

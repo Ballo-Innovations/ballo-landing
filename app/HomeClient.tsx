@@ -42,6 +42,8 @@ import {
 } from "./components/sections/WhyScrollSection";
 import { BackedBy } from "./components/ui/BackedBy";
 import { LogoCloud } from "./components/ui/LogoCloud";
+import { TrustedLockLane } from "./components/ui/TrustedLockScreen";
+import { withoutBackers } from "@/lib/trustedLockScreen";
 import { TubesCursor } from "./components/ui/TubesCursor";
 import { JourneyPhone } from "./components/ui/JourneyPhone";
 
@@ -175,6 +177,11 @@ export default function HomeClient({
   // one heavy dependency on this page can be switched off per environment.
   const [tubesCursor, setTubesCursor] = useState(false);
   useEffect(() => setTubesCursor(isFeatureEnabled("tubesCursor")), []);
+  // "Trusted by" as a runway into a phone's lock screen (ADR 0018). Its notes
+  // move every couple of seconds, so reduced motion keeps the logo grid.
+  const [trustedLockFlag, setTrustedLockFlag] = useState(false);
+  useEffect(() => setTrustedLockFlag(isFeatureEnabled("trustedLockScreen")), []);
+  const trustedLock = trustedLockFlag && !shouldReduceMotion;
 
   useEffect(() => {
     return () => {
@@ -212,6 +219,9 @@ export default function HomeClient({
     ...logo,
     invert: logo.src === logoBayport,
   }));
+  // The lock screen turns every client into a sender, so the backers come out
+  // of its list (see `withoutBackers`). The logo grid keeps its list as is.
+  const laneLogos = trustedLock ? withoutBackers(trustedLogos, backerLogos) : [];
 
   // <main> clips the x axis with `overflow-x: clip`, NOT `hidden`.
   // `overflow-x: hidden` forces overflow-y to compute as `auto`, making the
@@ -531,10 +541,14 @@ export default function HomeClient({
                 className="trusted-by-section trusted-by-section--in-stage"
               >
                 <FadeUpReveal yOffset={50}>
-                  <LogoCloud
-                    logos={trustedLogos}
-                    title="Trusted by the very best"
-                  />
+                  {trustedLock ? (
+                    <TrustedLockLane logos={laneLogos} />
+                  ) : (
+                    <LogoCloud
+                      logos={trustedLogos}
+                      title="Trusted by the very best"
+                    />
+                  )}
                 </FadeUpReveal>
               </section>
             </>

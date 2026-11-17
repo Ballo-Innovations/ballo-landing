@@ -15,6 +15,8 @@ import {
 
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { industries } from "../sections/WhoCinematicSection";
+import type { LogoCloudItem } from "./LogoCloud";
+import { TrustedLockNotes } from "./TrustedLockNotes";
 
 /**
  * The screens the journey phone shows below the hero (ADR 0017), one per
@@ -159,29 +161,44 @@ const NOTES = [
   },
 ];
 
-/** "Backed by" / "Trusted by": a lock screen of glass notifications. */
-function LockScreen() {
+/**
+ * "Backed by" / "Trusted by": a lock screen of glass notifications. With
+ * `brands`, the notes are the clients arriving from the "Trusted by" runway
+ * instead of the static product notes: the section's own phone renders it
+ * that way (`trustedLockScreen`, ADR 0018).
+ */
+export function LockScreen({
+  brands,
+  runwaySteps,
+}: {
+  brands?: LogoCloudItem[];
+  runwaySteps?: number;
+}) {
   return (
     <div className="jp-screen jp-screen--lock">
       <StatusBar />
       <div className="jp-lock__date">Saturday 18 October</div>
       <div className="jp-lock__time">09:41</div>
-      <ul className="jp-notes">
-        {NOTES.map(({ icon: Icon, title, body }) => (
-          <li key={title} className="jp-note">
-            <span className="jp-note__icon">
-              <Icon />
-            </span>
-            <span className="jp-note__text">
-              <span className="jp-note__app">
-                BalloAds <time>now</time>
+      {brands && brands.length > 0 ? (
+        <TrustedLockNotes brands={brands} runwaySteps={runwaySteps} />
+      ) : (
+        <ul className="jp-notes">
+          {NOTES.map(({ icon: Icon, title, body }) => (
+            <li key={title} className="jp-note">
+              <span className="jp-note__icon">
+                <Icon />
               </span>
-              <b>{title}</b>
-              <small>{body}</small>
-            </span>
-          </li>
-        ))}
-      </ul>
+              <span className="jp-note__text">
+                <span className="jp-note__app">
+                  BalloAds <time>now</time>
+                </span>
+                <b>{title}</b>
+                <small>{body}</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
