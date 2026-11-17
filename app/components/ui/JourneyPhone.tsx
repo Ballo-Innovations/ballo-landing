@@ -302,6 +302,7 @@ export function JourneyPhone({
     // the phone waits in the bottom-left corner as a miniature.
     const mini = (): Pose => ({ x: 62, y: H - 128, h: 170, r: -6 });
     // Beside the logos where there is room; they sit in a ~46rem column.
+    // Upright (George, 2026-11-17): it used to lean 5 degrees to the right.
     const margin = (W - 760) / 2;
     const trusted = (): Pose =>
       margin >= 230
@@ -309,7 +310,7 @@ export function JourneyPhone({
             x: W - margin / 2,
             y: H * 0.55,
             h: Math.min(H * 0.62, margin * 1.75),
-            r: 5,
+            r: 0,
           }
         : mini();
     // Low enough to clear the section's heading once it has scrolled up.
