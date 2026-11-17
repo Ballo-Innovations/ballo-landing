@@ -292,14 +292,48 @@
   display: block;
 }
 
-/* Mark to phone, across the column gap. */
-.trusted-lane__wire {
+/* Mark to phone, across the column gap: three arcs ripple out of the mark
+   on each clock step, like a network signal (option D). The box is the gap
+   itself and clips them, so only the arcs' right sides show and the largest
+   ends exactly at the phone's edge. Each arc grows from the mark's size to
+   the mark plus twice the gap, centred on the mark (32px left of the box). */
+.trusted-lane__waves {
   position: absolute;
   left: 100%;
   top: 50%;
   width: var(--lane-gap);
-  height: 1px;
-  background: repeating-linear-gradient(90deg, rgba(63, 219, 255, 0.55) 0 6px, transparent 6px 12px);
+  height: 200px;
+  margin-top: -100px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.trusted-lane__waves i {
+  position: absolute;
+  left: -32px;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-right-color: rgba(63, 219, 255, 0.75);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: trusted-wave 1100ms ease-out forwards;
+}
+
+.trusted-lane__waves i:nth-child(2) { animation-delay: 140ms; }
+.trusted-lane__waves i:nth-child(3) { animation-delay: 280ms; }
+
+@keyframes trusted-wave {
+  0% { width: 64px; height: 64px; opacity: 0; }
+  10% { opacity: 0.9; }
+  75% { opacity: 0.5; }
+  100% {
+    width: calc(64px + 2 * var(--lane-gap));
+    height: calc(64px + 2 * var(--lane-gap));
+    opacity: 0;
+  }
 }
 
 .trusted-lane__slot {
@@ -379,7 +413,7 @@
       "slot"
       "backers";
   }
-  .trusted-lane__wire { display: none; }
+  .trusted-lane__waves { display: none; }
   .trusted-lane__track { margin-top: 1.25rem; }
   .trusted-lane__slot { justify-self: center; margin-top: 1.25rem; }
   .trusted-lane__backers { margin-top: 1.5rem; padding-top: 1rem; }

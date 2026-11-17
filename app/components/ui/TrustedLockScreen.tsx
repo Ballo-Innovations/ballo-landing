@@ -120,8 +120,9 @@ export function TrustedLockLane({
         <p className="trusted-lane__title">{title}</p>
       </div>
 
-      {/* The wire carries the message from the mark to the phone across the
-          column gap (desktop only, see logo-cloud.css). */}
+      {/* Signal waves (option D) carry each message from the mark across
+          the column gap to the phone (split layout only, see
+          logo-cloud.css). */}
       <div className="trusted-lane__track" aria-hidden="true">
         <div
           ref={runwayRef}
@@ -147,7 +148,14 @@ export function TrustedLockLane({
         <span className="trusted-lane__hub">
           <Image src={balloMark} alt="" width={64} height={64} sizes="64px" />
         </span>
-        <span className="trusted-lane__wire" />
+        {/* Keyed by the clock step, so the waves play once on every step,
+            as the logo goes into the mark. A looping CSS animation would
+            drift from the clock whenever the section's animations pause. */}
+        <span key={`waves-${state.step}`} className="trusted-lane__waves">
+          <i />
+          <i />
+          <i />
+        </span>
       </div>
 
       {/* Where the phone stands. With the journey phone on, the slot stays

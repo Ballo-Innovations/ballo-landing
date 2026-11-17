@@ -44,7 +44,13 @@ runway at 1440 x 900.
 - Empty first and last grid rows centre the left block on the phone. The
   stage centres the whole section under the nav
   (`.brutus-stage__then:has(.trusted-by-section--split)`).
-- A dashed line runs from the mark across the column gap to the phone.
+- Signal waves cross the column gap: on every clock step, as a logo goes
+  into the mark, three arcs ripple from the mark to the phone's edge (George
+  chose them over the first dashed line, from five drawn options). The
+  waves element is keyed by the step so it plays once per step; a looping
+  CSS animation drifted from the clock whenever the section's animations
+  paused. Hidden in the stacked layout, where there is no gap beside the
+  phone.
 - "Backed by" moves into the section, under the runway. Under reduced motion
   it stays above the logo grid as before.
 - Below 1024px the columns stack: heading, runway, the phone centred, then
