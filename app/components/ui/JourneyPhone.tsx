@@ -32,6 +32,11 @@ import { useRegisterJourneyPhone } from "./TrustedLockNotes";
  *     is where the journey ends: once the section is on its way out, the
  *     phone rides up off the screen with it. Nothing below it has the phone.
  *
+ * Since 2026-11-17 (George) the path is shorter: it passes the Who section
+ * by (`STOP_AT_WHO`) and ends at "Backed by" / "Trusted by"
+ * (`END_AT_TRUSTED`), riding off the top with that section. The Who and
+ * testimonials stops above are kept behind those two switches.
+ *
  * A pose is where the phone's centre is (viewport px), how tall it is in
  * portrait (px) and its turn. Each stop pins a pose to a scroll position
  * measured off the sections themselves, so the timeline follows the page's
@@ -74,6 +79,15 @@ interface Timeline {
  * by". Set to true for the stop in the row (ADR 0017) as it was.
  */
 const STOP_AT_WHO = false;
+
+/**
+ * Whether the journey ends at "Backed by" / "Trusted by" or carries on to the
+ * testimonials. Ends there since 2026-11-17 (George): the lock screen is the
+ * phone's last stage. It holds its place while the stage is pinned, then
+ * rides off the top with the section, pixel for pixel, and nothing below
+ * has the phone. Set to false for the testimonials chat (ADR 0017) as it was.
+ */
+const END_AT_TRUSTED = true;
 
 function docTop(el: Element) {
   return el.getBoundingClientRect().top + window.scrollY;
@@ -375,7 +389,17 @@ export function JourneyPhone({
           y: rideStart,
           pose: () => ({ ...rest, y: rest.y - (window.scrollY - rideStart) }),
         };
-    const end = narrow ? leave.y + 1 : rideStart + rest.y + rest.h * 0.6 + 40;
+    const endAfterReviews = narrow
+      ? leave.y + 1
+      : rideStart + rest.y + rest.h * 0.6 + 40;
+    // Ending at Trusted by: once the stage lets go, the phone moves with the
+    // section. Its centre is never lower than the screen and it is at most
+    // 600px tall, so a screen and 400px of scroll take it off the top.
+    const rideOff = (): Pose => {
+      const p = trusted();
+      return { ...p, y: p.y - Math.max(0, window.scrollY - release) };
+    };
+    const end = END_AT_TRUSTED ? release + H + 400 : endAfterReviews;
     // Passing Who by: off the top as Who arrives (still landscape, as it left
     // the film), held there through the row, then moved under the bottom edge
     // while it cannot be seen, and up into place as "Backed by" fades in.
@@ -403,12 +427,16 @@ export function JourneyPhone({
       { y: start, pose: handoff },
       ...toTrusted,
       { y: trustedIn, pose: trusted },
-      { y: release, pose: trusted },
-      { y: reviewsAside, pose: trustedAside },
-      { y: reviewsIn, pose: reviewsPose },
-      { y: reviewsHold, pose: reviewsPose },
-      ...(narrow ? [{ y: rideStart, pose: reviewsPose }] : []),
-      leave,
+      ...(END_AT_TRUSTED
+        ? [{ y: release, pose: rideOff }]
+        : [
+            { y: release, pose: trusted },
+            { y: reviewsAside, pose: trustedAside },
+            { y: reviewsIn, pose: reviewsPose },
+            { y: reviewsHold, pose: reviewsPose },
+            ...(narrow ? [{ y: rideStart, pose: reviewsPose }] : []),
+            leave,
+          ]),
     ];
     // Never let a later stop sit above an earlier one, whatever the layout.
     for (let i = 1; i < stops.length; i++) {
@@ -428,7 +456,11 @@ export function JourneyPhone({
               [mid(rowEnd, trustedIn), "lock"],
             ] as Array<[number, JourneyScreenId]>)
           : ([[whoIn, "lock"]] as Array<[number, JourneyScreenId]>)),
-        [mid(reviewsAside, reviewsIn), "reviews"],
+        ...(END_AT_TRUSTED
+          ? []
+          : ([[mid(reviewsAside, reviewsIn), "reviews"]] as Array<
+              [number, JourneyScreenId]
+            >)),
       ],
       row: [stageY(ROW_TURN[0]), rowEnd],
     };

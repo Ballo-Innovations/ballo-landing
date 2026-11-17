@@ -55,6 +55,16 @@ runway at 1440 x 900.
   as the testimonials come in. The section's own phone (journey phone off)
   is Phone3D scaled to the slot, with the scene's `scale-110` cancelled.
 
+## The journey ends here (2026-11-17)
+
+George: the lock screen is the journey phone's last stage. With
+`END_AT_TRUSTED` (JourneyPhone.tsx) the phone holds its place in the slot
+while the stage is pinned, then moves up with the section, pixel for pixel,
+until it is off the screen. It no longer goes on to the testimonials chat,
+and nothing below this section has the phone. Together with `STOP_AT_WHO`,
+its path is now: the Brutus film, off the top through Who, up from below
+into the slot, off the top with the section.
+
 ## How it is built
 
 - `lib/trustedLockScreen.ts` holds the timing, with unit tests. One step
