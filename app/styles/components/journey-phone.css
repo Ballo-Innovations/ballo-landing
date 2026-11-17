@@ -556,11 +556,14 @@
   align-items: center;
   opacity: 1;
   transform: translateY(calc(var(--slot) * 22.4cqw));
+  /* Held back 420ms so the new note lands as the "Trusted by" message hop
+     reaches the phone (logo-cloud.css), and the rest of the stack moves
+     with it. */
   transition:
     opacity 360ms ease,
     transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: 0ms;
-  animation: jp-live-in 520ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  transition-delay: 420ms;
+  animation: jp-live-in 520ms cubic-bezier(0.22, 1, 0.36, 1) 420ms backwards;
 }
 
 .jp-screens[data-screen] .jp-notes--live > .jp-note--live[data-leaving] {

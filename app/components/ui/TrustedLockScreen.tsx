@@ -120,9 +120,8 @@ export function TrustedLockLane({
         <p className="trusted-lane__title">{title}</p>
       </div>
 
-      {/* Signal waves (option D) carry each message from the mark across
-          the column gap to the phone (split layout only, see
-          logo-cloud.css). */}
+      {/* A message hops (option C) from the mark across the column gap into
+          the phone on every step (split layout only, see logo-cloud.css). */}
       <div className="trusted-lane__track" aria-hidden="true">
         <div
           ref={runwayRef}
@@ -148,13 +147,18 @@ export function TrustedLockLane({
         <span className="trusted-lane__hub">
           <Image src={balloMark} alt="" width={64} height={64} sizes="64px" />
         </span>
-        {/* Keyed by the clock step, so the waves play once on every step,
-            as the logo goes into the mark. A looping CSS animation would
-            drift from the clock whenever the section's animations pause. */}
-        <span key={`waves-${state.step}`} className="trusted-lane__waves">
-          <i />
-          <i />
-          <i />
+        {/* Keyed by the clock step, so the hop plays once on every step, as
+            the logo goes into the mark. A looping CSS animation would drift
+            from the clock whenever the section's animations pause. The arc
+            is two animations: the outer span crosses the gap, the inner one
+            rises and falls. */}
+        <span key={`hop-${state.step}`} className="trusted-lane__hop">
+          <span className="trusted-lane__hop-lift">
+            <span className="trusted-lane__bubble">
+              <i />
+              <i />
+            </span>
+          </span>
         </span>
       </div>
 
