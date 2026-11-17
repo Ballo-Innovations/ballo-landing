@@ -3748,6 +3748,19 @@
   padding-top: clamp(2rem, 6vh, 4rem);
 }
 
+/* Layout A of the lock screen (ADR 0018): "Backed by" lives inside the
+   section, so the stage centres the whole split under the nav instead of
+   stacking two blocks from the top. */
+.brutus-stage__then:has(.trusted-by-section--split) {
+  justify-content: center;
+  padding-top: clamp(4.75rem, 9vh, 5.5rem);
+  padding-bottom: 1.5rem;
+}
+
+.trusted-by-section--split {
+  padding-top: 0;
+}
+
 /* The Backed by band without its glass panel (2026-10-18): the marks and
    dashed dividers sit straight on the page. */
 .backers__band {

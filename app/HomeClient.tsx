@@ -533,24 +533,27 @@ export default function HomeClient({
           then={
             /* "Backed by" fades in at the centre once Who has left (ADR 0014). */
             <>
-              <div className="backers-section">
-                {/* With the lock screen, "Backed by" is one flat line of
-                  marks (ADR 0018). It does not move, so it stays under
-                  reduced motion too. */}
-                {trustedLockFlag ? (
-                  <DeliveredOver logos={backerLogos} />
-                ) : (
-                  <BackedBy logos={backerLogos} />
-                )}
-              </div>
+              {/* With the lock screen, "Backed by" is one flat line of marks
+                (ADR 0018). With the runway it sits inside the section, under
+                the runway (layout A); under reduced motion it stays up here,
+                above the logo grid. */}
+              {trustedLock ? null : (
+                <div className="backers-section">
+                  {trustedLockFlag ? (
+                    <DeliveredOver logos={backerLogos} />
+                  ) : (
+                    <BackedBy logos={backerLogos} />
+                  )}
+                </div>
+              )}
               {/* "Trusted by" fades in with it, below (2026-10-18). */}
               <section
                 ref={trustedByRef}
-                className="trusted-by-section trusted-by-section--in-stage"
+                className={`trusted-by-section trusted-by-section--in-stage${trustedLock ? " trusted-by-section--split" : ""}`}
               >
                 <FadeUpReveal yOffset={50}>
                   {trustedLock ? (
-                    <TrustedLockLane logos={laneLogos} />
+                    <TrustedLockLane logos={laneLogos} backers={backerLogos} />
                   ) : (
                     <LogoCloud
                       logos={trustedLogos}

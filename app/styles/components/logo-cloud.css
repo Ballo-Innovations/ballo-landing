@@ -166,30 +166,35 @@
 
 /* ── "Trusted by" as a runway into a lock screen (ADR 0018) ──
    Paired with TrustedLockLane in app/components/ui/TrustedLockScreen.tsx,
-   behind `trustedLockScreen`. Logos ride left to right into the BalloAds
-   mark, and the section's own phone shows each one arriving. The phone sits
-   beside the copy and runway, not under them, because the pinned stage
-   clips whatever falls below the screen; on phones it sits beside the
-   runway and the mark is dropped. The runway is a size container, so a
-   runner's travel is measured in `cqw`, no JS. */
+   behind `trustedLockScreen`. Layout A, "Split stage": one 1200px container;
+   the heading, the runway and "Backed by" on the left, the phone slot on the
+   right, the left block centred on the phone by the empty first and last
+   rows. Below 1024px the columns stack and the phone stands centred between
+   the runway and "Backed by". The journey phone lines up with
+   `.trusted-lane__slot` (JourneyPhone), or the section's own phone sits in
+   it. The runway is a size container, so a runner's travel is in `cqw`. */
 
 .trusted-lane {
-  --phone-scale: 0.74;
-  max-width: 60rem;
+  --lane-gap: clamp(3rem, 8vw, 9rem);
+  --slot-h: min(600px, calc(100svh - 230px));
+  width: min(100%, 79rem);
   margin-inline: auto;
   padding-inline: clamp(1rem, 5vw, 2rem);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 1fr auto auto auto 1fr;
   grid-template-areas:
-    "head phone"
-    "track phone";
-  align-items: center;
-  column-gap: clamp(1.25rem, 3vw, 2.5rem);
+    ".       slot"
+    "head    slot"
+    "track   slot"
+    "backers slot"
+    ".       slot";
+  column-gap: var(--lane-gap);
+  text-align: left;
 }
 
 .trusted-lane__head {
   grid-area: head;
-  align-self: end;
   min-width: 0;
 }
 
@@ -202,34 +207,23 @@
   color: rgba(255, 255, 255, 0.55);
 }
 
+/* Solid, not shimmer: the shimmer left half of each line at low contrast. */
 .trusted-lane__title {
-  margin: 0.6rem 0 0;
-  max-width: 20ch;
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  line-height: 1.15;
+  margin: 0.5rem 0 0;
+  max-width: 12em;
+  font-size: clamp(1.75rem, 3.2vw, 2.875rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.005em;
+  color: #f3f4ff;
   text-wrap: balance;
-}
-
-/* With the journey phone on, there is no phone in the section: one centred
-   column, as wide as the old grid, with the journey phone in the margin. */
-.trusted-lane:not([data-own-phone]) {
-  max-width: 46rem;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "head"
-    "track";
-  text-align: center;
-}
-
-.trusted-lane:not([data-own-phone]) .trusted-lane__title {
-  margin-inline: auto;
 }
 
 .trusted-lane__track {
   grid-area: track;
-  align-self: start;
+  position: relative;
   min-width: 0;
-  margin-top: clamp(1.5rem, 5vh, 3rem);
+  margin-top: 3rem;
   display: flex;
   align-items: center;
 }
@@ -238,19 +232,19 @@
   position: relative;
   flex: 1;
   min-width: 0;
-  height: 112px;
+  height: 100px;
   overflow: hidden;
   container-type: inline-size;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%);
-  mask-image: linear-gradient(90deg, transparent, #000 18%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%);
+  mask-image: linear-gradient(90deg, transparent, #000 16%);
 }
 
 .trusted-lane__runner {
   position: absolute;
   left: 0;
   top: 50%;
-  height: 56px;
-  margin-top: -28px;
+  height: 52px;
+  margin-top: -26px;
   display: flex;
   align-items: center;
   opacity: 0;
@@ -268,7 +262,7 @@
 }
 
 .trusted-lane__logo {
-  height: 56px;
+  height: 52px;
   width: auto;
   max-width: 150px;
   object-fit: contain;
@@ -298,55 +292,117 @@
   display: block;
 }
 
-/* The phone is Phone3D at its native 256 x 516, scaled as a whole so the
-   lock screen's `cqw` sizes hold. The size is pinned here because home.css
-   resizes `.phone3d` at its mobile breakpoint. */
-.trusted-lane__phone {
-  grid-area: phone;
-  width: calc(256px * var(--phone-scale));
-  height: calc(516px * var(--phone-scale));
-  justify-self: end;
+/* Mark to phone, across the column gap. */
+.trusted-lane__wire {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: var(--lane-gap);
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(63, 219, 255, 0.55) 0 6px, transparent 6px 12px);
 }
 
+.trusted-lane__slot {
+  grid-area: slot;
+  align-self: center;
+  position: relative;
+  height: var(--slot-h);
+  aspect-ratio: 256 / 516;
+}
+
+/* Phone3D at its native 256 x 516, scaled as a whole so the lock screen's
+   `cqw` sizes hold; the scale comes from the slot's height. The size is
+   pinned because home.css resizes `.phone3d` at its mobile breakpoint. */
 .trusted-lane__phone-scale {
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 256px;
   height: 516px;
-  transform: scale(var(--phone-scale));
+  transform: scale(var(--phone-scale, 1));
   transform-origin: 0 0;
 }
 
-.trusted-lane__phone .phone3d {
+/* Phone3D's scene carries Tailwind's `scale-110` for its other uses; here
+   the slot already sets the size, so the extra 10% would overflow it. */
+.trusted-lane__slot .phone3d-scene {
+  scale: none;
+}
+
+.trusted-lane__slot .phone3d {
   width: 256px;
   height: 516px;
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), 0 10px 26px rgba(0, 0, 0, 0.3);
 }
 
-@media (max-height: 820px) and (min-width: 641px) {
-  .trusted-lane { --phone-scale: 0.66; }
+.trusted-lane__backers {
+  grid-area: backers;
+  min-width: 0;
+  margin-top: 3.875rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(206, 212, 255, 0.14);
+}
+
+.trusted-lane__backers .delivered-over {
+  justify-content: flex-start;
+  padding-inline: 0;
+  gap: 1rem 2.9rem;
+}
+
+.trusted-lane__backers .delivered-over__marks {
+  justify-content: flex-start;
+  gap: 1rem 2.9rem;
+}
+
+.trusted-lane__backers .delivered-over__label {
+  font-size: 1.375rem;
+}
+
+.trusted-lane__backers .delivered-over__logo {
+  height: 44px;
+}
+
+.trusted-lane__backers .delivered-over__item--regulator[data-first]::before {
+  height: 40px;
+  margin-right: 2.9rem;
+}
+
+/* Stacked: heading, runway, the phone centred, then "Backed by". */
+@media (max-width: 1023px) {
+  .trusted-lane {
+    --slot-h: clamp(260px, calc(100svh - 440px), 420px);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "head"
+      "track"
+      "slot"
+      "backers";
+  }
+  .trusted-lane__wire { display: none; }
+  .trusted-lane__track { margin-top: 1.25rem; }
+  .trusted-lane__slot { justify-self: center; margin-top: 1.25rem; }
+  .trusted-lane__backers { margin-top: 1.5rem; padding-top: 1rem; }
 }
 
 @media (max-width: 640px) {
-  .trusted-lane {
-    --phone-scale: 0.5;
-    grid-template-areas:
-      "head head"
-      "track phone";
-    column-gap: 0.75rem;
-    text-align: center;
+  .trusted-lane__runway { height: 72px; }
+  .trusted-lane__runner { height: 34px; margin-top: -17px; }
+  .trusted-lane__logo { height: 34px; max-width: 84px; }
+  .trusted-lane__hub { width: 48px; height: 48px; border-radius: 12px; }
+  .trusted-lane__backers .delivered-over { gap: 0.75rem 1rem; flex-wrap: nowrap; }
+  .trusted-lane__backers .delivered-over__label {
+    flex-basis: auto;
+    text-align: left;
+    font-size: 0.875rem;
+    white-space: nowrap;
   }
-  .trusted-lane__title { margin-inline: auto; }
-  .trusted-lane__track { align-self: center; margin-top: 0; }
-  .trusted-lane__phone { margin-top: 1.25rem; }
-  .trusted-lane[data-own-phone] .trusted-lane__hub { display: none; }
-  .trusted-lane:not([data-own-phone]) .trusted-lane__track { margin-top: 1.25rem; }
-  .trusted-lane:not([data-own-phone]) .trusted-lane__hub { width: 52px; height: 52px; border-radius: 13px; }
-  .trusted-lane__runway { height: 84px; }
-  .trusted-lane__runner { height: 36px; margin-top: -18px; }
-  .trusted-lane__logo { height: 36px; max-width: 84px; }
-}
-
-@media (max-width: 640px) and (max-height: 740px) {
-  .trusted-lane { --phone-scale: 0.42; }
+  .trusted-lane__backers .delivered-over__marks { gap: 1rem; }
+  .trusted-lane__backers .delivered-over__logo { height: 30px; max-width: 62px; }
+  .trusted-lane__backers .delivered-over__item--regulator[data-first]::before {
+    height: 26px;
+    margin-right: 1rem;
+  }
 }
 
 /* ── "Backed by" as one line (ADR 0018) ──

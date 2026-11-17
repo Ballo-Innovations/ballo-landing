@@ -310,11 +310,30 @@ export function JourneyPhone({
     // Where a section's content runs the full width and is meant to be read,
     // the phone waits in the bottom-left corner as a miniature.
     const mini = (): Pose => ({ x: 62, y: H - 128, h: 170, r: -6 });
-    // Beside the logos where there is room; they sit in a ~46rem column.
-    // Upright (George, 2026-11-17): it used to lean 5 degrees to the right.
+    // Beside the logos. With the lock screen's split layout (ADR 0018) the
+    // section leaves a slot for the phone: stand in it, at the place it has
+    // while the stage is pinned (its offset inside `.brutus-stage`, whose top
+    // is the top of the screen then), so the pose holds still while the stage
+    // fades in and after it lets go. Without the slot: in the margin where
+    // there is room, else the corner miniature. Upright (George, 2026-11-17):
+    // it used to lean 5 degrees to the right.
     const margin = (W - 760) / 2;
-    const trusted = (): Pose =>
-      margin >= 230
+    const trusted = (): Pose => {
+      const slot = document.querySelector<HTMLElement>(".trusted-lane__slot");
+      const stage = slot?.closest<HTMLElement>(".brutus-stage");
+      if (slot && stage) {
+        const s = slot.getBoundingClientRect();
+        const st = stage.getBoundingClientRect();
+        if (s.height > 0) {
+          return {
+            x: s.left + s.width / 2,
+            y: s.top - st.top + s.height / 2,
+            h: s.height,
+            r: 0,
+          };
+        }
+      }
+      return margin >= 230
         ? {
             x: W - margin / 2,
             y: H * 0.55,
@@ -322,6 +341,11 @@ export function JourneyPhone({
             r: 0,
           }
         : mini();
+    };
+    // While the testimonials heading scrolls up: the same place on desktop;
+    // on narrow screens the corner miniature, since the slot's big phone
+    // would sit over the testimonials.
+    const trustedAside = (): Pose => (narrow ? mini() : trusted());
     // Low enough to clear the section's heading once it has scrolled up.
     const reviewsPose = (): Pose =>
       narrow
@@ -380,7 +404,7 @@ export function JourneyPhone({
       ...toTrusted,
       { y: trustedIn, pose: trusted },
       { y: release, pose: trusted },
-      { y: reviewsAside, pose: trusted },
+      { y: reviewsAside, pose: trustedAside },
       { y: reviewsIn, pose: reviewsPose },
       { y: reviewsHold, pose: reviewsPose },
       ...(narrow ? [{ y: rideStart, pose: reviewsPose }] : []),
