@@ -13,6 +13,7 @@ import {
   type JourneyScreenId,
 } from "./JourneyScreens";
 import { Phone3D } from "./Phone3D";
+import { useRegisterJourneyPhone } from "./TrustedLockNotes";
 
 /**
  * The phone, for the rest of the page (ADR 0017).
@@ -78,6 +79,9 @@ export function JourneyPhone({
   film: { src: string; poster: string };
   testimonials: HomeTestimonialItem[];
 }) {
+  // Tells the "Trusted by" section this phone will show its lock screen, so
+  // it does not add a phone of its own (ADR 0018).
+  useRegisterJourneyPhone();
   const layerRef = React.useRef<HTMLDivElement>(null);
   const rigRef = React.useRef<HTMLDivElement>(null);
   const stackRef = React.useRef<HTMLDivElement>(null);

@@ -14,12 +14,19 @@ beside it. The lock screen keeps four notes and the oldest slides off the
 bottom.
 
 Heading: "Trusted by" / "From their brand to their customer's phone".
-"Backed by" is unchanged above it.
 
-The phone is the section's own. The journey phone (ADR 0017) used to sit here
-with a lock screen of its own, but it was archived the same day, so the
-section brings a phone. It is the same `Phone3D` device with the journey
-phone's `LockScreen`, so it looks as it did there.
+"Backed by" becomes one line above it, as George asked: "Delivered over",
+the Airtel, MTN and Meta marks, a hairline, then ZICTA (`DeliveredOver`).
+Partners whose role mentions a regulator go after the hairline, so the line
+never says messages are delivered over ZICTA. It does not move, so it shows
+under reduced motion too.
+
+Which phone: the journey phone (ADR 0017) stops beside this section when it
+is on, so it shows the lock screen and the section adds no phone. It
+registers itself while mounted, and the section publishes its clients for
+its lock screen to read. When the journey phone is off (`PHONE_JOURNEY`
+false, or reduced motion), the section shows its own `Phone3D` with the same
+`LockScreen`, beside the copy.
 
 ## How it is built
 
@@ -53,8 +60,8 @@ phone's `LockScreen`, so it looks as it did there.
 ## Consequences
 
 - One 2.2s timer while the section is near the screen.
-- If the journey phone comes back (`PHONE_JOURNEY`), it would sit beside this
-  section's phone. Turn one of them off.
+- Without the journey phone and below 1220px wide, the section's own phone
+  is used; with it, narrow screens show the journey phone's corner miniature.
 - On short phones (about 667px tall) the bottom of the phone is clipped by
   the stage, as the old grid's last rows were.
 - Logo files with a lot of padding (several client PNGs are large squares)

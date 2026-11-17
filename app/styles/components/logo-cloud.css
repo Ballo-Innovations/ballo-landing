@@ -210,6 +210,21 @@
   text-wrap: balance;
 }
 
+/* With the journey phone on, there is no phone in the section: one centred
+   column, as wide as the old grid, with the journey phone in the margin. */
+.trusted-lane:not([data-own-phone]) {
+  max-width: 46rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "head"
+    "track";
+  text-align: center;
+}
+
+.trusted-lane:not([data-own-phone]) .trusted-lane__title {
+  margin-inline: auto;
+}
+
 .trusted-lane__track {
   grid-area: track;
   align-self: start;
@@ -322,7 +337,9 @@
   .trusted-lane__title { margin-inline: auto; }
   .trusted-lane__track { align-self: center; margin-top: 0; }
   .trusted-lane__phone { margin-top: 1.25rem; }
-  .trusted-lane__hub { display: none; }
+  .trusted-lane[data-own-phone] .trusted-lane__hub { display: none; }
+  .trusted-lane:not([data-own-phone]) .trusted-lane__track { margin-top: 1.25rem; }
+  .trusted-lane:not([data-own-phone]) .trusted-lane__hub { width: 52px; height: 52px; border-radius: 13px; }
   .trusted-lane__runway { height: 84px; }
   .trusted-lane__runner { height: 36px; margin-top: -18px; }
   .trusted-lane__logo { height: 36px; max-width: 84px; }
@@ -330,4 +347,79 @@
 
 @media (max-width: 640px) and (max-height: 740px) {
   .trusted-lane { --phone-scale: 0.42; }
+}
+
+/* ── "Backed by" as one line (ADR 0018) ──
+   Paired with DeliveredOver.tsx, behind `trustedLockScreen`: a muted label,
+   the networks' marks, a hairline, then the regulator. Flat, no cards. */
+
+.delivered-over {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 3.25rem;
+  padding-inline: clamp(1rem, 5vw, 2rem);
+}
+
+.delivered-over__label {
+  margin: 0;
+  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+  font-weight: 400;
+  color: rgba(206, 212, 255, 0.62);
+}
+
+.delivered-over__marks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 3.25rem;
+}
+
+.delivered-over__item {
+  display: flex;
+  align-items: center;
+}
+
+/* The hairline before the first regulator, part of its item so it wraps
+   with it. */
+.delivered-over__item--regulator[data-first]::before {
+  content: "";
+  width: 1px;
+  height: 52px;
+  margin-right: 3.25rem;
+  background: rgba(206, 212, 255, 0.22);
+}
+
+.delivered-over__logo {
+  display: block;
+  height: 56px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+}
+
+.delivered-over__word {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 640px) {
+  .delivered-over { gap: 0.75rem; }
+  .delivered-over__label {
+    flex-basis: 100%;
+    text-align: center;
+    font-size: 1rem;
+  }
+  /* All four marks on one row at 375px. */
+  .delivered-over__marks { flex-wrap: nowrap; gap: 1.1rem; }
+  .delivered-over__item--regulator[data-first]::before {
+    height: 28px;
+    margin-right: 1.1rem;
+  }
+  .delivered-over__logo { height: 32px; max-width: 70px; }
 }

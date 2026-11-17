@@ -20,6 +20,53 @@ import type { LogoCloudItem } from "./LogoCloud";
  * `TrustedLockScreen`.
  */
 
+/**
+ * Which phone shows the notes. The journey phone (ADR 0017) stops beside
+ * "Trusted by" when it is on, so the section must not add a second phone:
+ * the journey phone registers itself while mounted, the section publishes its
+ * clients (and runway length), and the journey phone's lock screen reads them.
+ * With no journey phone, the section shows its own.
+ */
+interface TrustedStage {
+  journeyPhones: number;
+  brands: LogoCloudItem[] | null;
+  runwaySteps: number;
+}
+
+let stage: TrustedStage = { journeyPhones: 0, brands: null, runwaySteps: RUNWAY_STEPS };
+const stageListeners = new Set<() => void>();
+const setStage = (patch: Partial<TrustedStage>) => {
+  stage = { ...stage, ...patch };
+  stageListeners.forEach((l) => l());
+};
+const subscribeStage = (listener: () => void) => {
+  stageListeners.add(listener);
+  return () => {
+    stageListeners.delete(listener);
+  };
+};
+const getStage = () => stage;
+
+export function useTrustedStage() {
+  return React.useSyncExternalStore(subscribeStage, getStage, getStage);
+}
+
+/** Called by `JourneyPhone` while it is mounted. */
+export function useRegisterJourneyPhone() {
+  React.useEffect(() => {
+    setStage({ journeyPhones: stage.journeyPhones + 1 });
+    return () => setStage({ journeyPhones: stage.journeyPhones - 1 });
+  }, []);
+}
+
+/** Called by the "Trusted by" runway, so the journey phone can show its clients. */
+export function usePublishTrustedBrands(brands: LogoCloudItem[], runwaySteps: number) {
+  React.useEffect(() => {
+    setStage({ brands, runwaySteps });
+    return () => setStage({ brands: null });
+  }, [brands, runwaySteps]);
+}
+
 export function useTrustedTicker() {
   return React.useSyncExternalStore(
     trustedTicker.subscribe,

@@ -16,7 +16,7 @@ import {
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { industries } from "../sections/WhoCinematicSection";
 import type { LogoCloudItem } from "./LogoCloud";
-import { TrustedLockNotes } from "./TrustedLockNotes";
+import { TrustedLockNotes, useTrustedStage } from "./TrustedLockNotes";
 
 /**
  * The screens the journey phone shows below the hero (ADR 0017), one per
@@ -259,6 +259,8 @@ export function JourneyScreens({
   film: { src: string; poster: string };
   testimonials: HomeTestimonialItem[];
 }) {
+  // The "Trusted by" clients, when that section is showing them (ADR 0018).
+  const trusted = useTrustedStage();
   return (
     <div ref={stackRef} className="jp-screens" data-screen="film">
       {/* The same landscape film layer as the hero's phone, so the hand-off
@@ -276,7 +278,10 @@ export function JourneyScreens({
         />
       </div>
       <WhoScreen indexRef={postsRef} />
-      <LockScreen />
+      <LockScreen
+        brands={trusted.brands ?? undefined}
+        runwaySteps={trusted.runwaySteps}
+      />
       <ReviewsScreen testimonials={testimonials} />
     </div>
   );

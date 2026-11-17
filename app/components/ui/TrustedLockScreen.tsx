@@ -15,16 +15,21 @@ import {
 import { LockScreen } from "./JourneyScreens";
 import type { LogoCloudItem } from "./LogoCloud";
 import { Phone3D } from "./Phone3D";
-import { LogoMark, useTrustedTicker } from "./TrustedLockNotes";
+import {
+  LogoMark,
+  usePublishTrustedBrands,
+  useTrustedStage,
+  useTrustedTicker,
+} from "./TrustedLockNotes";
 
 /**
  * "Trusted by" as a lock screen (ADR 0018, behind `trustedLockScreen`).
  *
  * Client logos travel along a runway into the BalloAds mark, and each one
- * lands as a notification from that brand on the phone beside it. The phone
- * is the section's own: the journey phone that used to sit here was archived
- * on 2026-11-17 (ADR 0017). It reuses the journey phone's lock screen, so the
- * device and the glass notes look the same as they did there.
+ * lands as a notification from that brand on the phone beside it. That phone
+ * is the journey phone (ADR 0017) when it is on, since it stops beside this
+ * section anyway; when it is off (`PHONE_JOURNEY`), the section shows its own
+ * Phone3D with the same lock screen, so it looks the same either way.
  *
  * The runway and the notes share `trustedTicker` rather than each running a
  * CSS loop, so the logo going in and the message coming out are always the
@@ -59,6 +64,10 @@ export function TrustedLockLane({
   const state = useTrustedTicker();
   const runwaySteps = useCompact() ? COMPACT_RUNWAY_STEPS : RUNWAY_STEPS;
   const count = logos.length;
+  // When the journey phone is on, it is the phone (it stops beside this
+  // section); otherwise the section shows its own.
+  const ownPhone = useTrustedStage().journeyPhones === 0;
+  usePublishTrustedBrands(logos, runwaySteps);
 
   React.useEffect(() => {
     const node = runwayRef.current;
@@ -80,7 +89,7 @@ export function TrustedLockLane({
   if (count === 0) return null;
 
   return (
-    <div className="trusted-lane">
+    <div className="trusted-lane" data-own-phone={ownPhone ? "" : undefined}>
       <div className="trusted-lane__head">
         <p className="trusted-lane__eyebrow">{eyebrow}</p>
         <p className="trusted-lane__title text-shimmer">{title}</p>
@@ -115,17 +124,19 @@ export function TrustedLockLane({
         </span>
       </div>
 
-      {/* Scenery, like the journey phone was: hidden from assistive tech and
-          out of the tab order. The names are in the list below. */}
-      <div className="trusted-lane__phone" aria-hidden="true" inert>
-        <div className="trusted-lane__phone-scale">
-          <Phone3D>
-            <div className="jp-screens" data-screen="lock">
-              <LockScreen brands={logos} runwaySteps={runwaySteps} />
-            </div>
-          </Phone3D>
+      {/* Scenery, like the journey phone: hidden from assistive tech and out
+          of the tab order. The names are in the list below. */}
+      {ownPhone ? (
+        <div className="trusted-lane__phone" aria-hidden="true" inert>
+          <div className="trusted-lane__phone-scale">
+            <Phone3D>
+              <div className="jp-screens" data-screen="lock">
+                <LockScreen brands={logos} runwaySteps={runwaySteps} />
+              </div>
+            </Phone3D>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <ul className="sr-only">
         {logos.map((logo, i) => (
