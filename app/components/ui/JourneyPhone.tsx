@@ -66,6 +66,15 @@ interface Timeline {
   row: [number, number];
 }
 
+/**
+ * Whether the phone stops in the Who section, as the curved row's active
+ * slide, or passes it by. Off since 2026-11-17 (George): after the Brutus film
+ * the phone carries on up and off the screen with the page, misses Who
+ * entirely, and comes up from below to wait beside "Backed by" / "Trusted
+ * by". Set to true for the stop in the row (ADR 0017) as it was.
+ */
+const STOP_AT_WHO = false;
+
 function docTop(el: Element) {
   return el.getBoundingClientRect().top + window.scrollY;
 }
@@ -343,10 +352,32 @@ export function JourneyPhone({
           pose: () => ({ ...rest, y: rest.y - (window.scrollY - rideStart) }),
         };
     const end = narrow ? leave.y + 1 : rideStart + rest.y + rest.h * 0.6 + 40;
+    // Passing Who by: off the top as Who arrives (still landscape, as it left
+    // the film), held there through the row, then moved under the bottom edge
+    // while it cannot be seen, and up into place as "Backed by" fades in.
+    const offTop = (): Pose => {
+      const p = handoff();
+      return { ...p, y: -p.h * 0.6 };
+    };
+    const offBottom = (): Pose => {
+      const p = trusted();
+      return { ...p, y: H + p.h * 0.6 };
+    };
+    const thenStart = Math.max(rowEnd + 2, stageY(THEN_IN[0]));
+    const toTrusted: Stop[] = STOP_AT_WHO
+      ? [
+          { y: whoIn, pose: who },
+          { y: rowEnd, pose: who },
+        ]
+      : [
+          { y: whoIn, pose: offTop },
+          { y: rowEnd, pose: offTop },
+          { y: rowEnd + 1, pose: offBottom },
+          { y: thenStart, pose: offBottom },
+        ];
     const stops: Stop[] = [
       { y: start, pose: handoff },
-      { y: whoIn, pose: who },
-      { y: rowEnd, pose: who },
+      ...toTrusted,
       { y: trustedIn, pose: trusted },
       { y: release, pose: trusted },
       { y: reviewsAside, pose: trusted },
@@ -365,8 +396,14 @@ export function JourneyPhone({
       end,
       stops,
       cues: [
-        [mid(start, whoIn), "who"],
-        [mid(rowEnd, trustedIn), "lock"],
+        // Passing Who by, the screen turns to the lock screen once the phone
+        // is off the top, so the film stops playing where no one sees it.
+        ...(STOP_AT_WHO
+          ? ([
+              [mid(start, whoIn), "who"],
+              [mid(rowEnd, trustedIn), "lock"],
+            ] as Array<[number, JourneyScreenId]>)
+          : ([[whoIn, "lock"]] as Array<[number, JourneyScreenId]>)),
         [mid(reviewsAside, reviewsIn), "reviews"],
       ],
       row: [stageY(ROW_TURN[0]), rowEnd],
