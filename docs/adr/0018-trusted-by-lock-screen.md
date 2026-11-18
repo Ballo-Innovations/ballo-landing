@@ -93,10 +93,17 @@ into the slot, off the top with the section.
   screen every client becomes a sender, and the CMS has carried Airtel, MTN,
   "MTN Zambia", Meta and ZICTA in both lists. A network or the regulator
   must not appear to send marketing through BalloAds.
-- The notes show the brand's logo with an SMS or WhatsApp badge and the brand
-  name. The message is two grey bars, not copy: these are real clients and any
-  wording would be ours. The channel mix (every third brand on WhatsApp) is
-  illustrative.
+- The notes show the brand's logo with the app it came through as an icon
+  on the avatar's corner (Messages for SMS, WhatsApp, Gmail for email; drawn
+  inline, simplified from the real icons), and the brand name. The message
+  is two lines of sample text, blurred the way a phone hides previews (option
+  A, "Blurred previews", George's pick on 2026-11-18): it reads as a message
+  without putting words in a real client's mouth, and the lines are neutral
+  receipts and reminders in case the blur is off. The channel mix (the
+  clients take turns on SMS, WhatsApp and email) is illustrative.
+- With the clients' notes, the lock screen clock is live: the time and date
+  in Lusaka (`lockScreenClock`), refreshed every 20 seconds. It used to read
+  a fixed "Saturday 18 October, 09:41".
 - Under reduced motion the section keeps the old logo grid. With the flag
   off, nothing changes.
 

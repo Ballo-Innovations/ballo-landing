@@ -16,7 +16,11 @@ import {
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { industries } from "../sections/WhoCinematicSection";
 import type { LogoCloudItem } from "./LogoCloud";
-import { TrustedLockNotes, useTrustedStage } from "./TrustedLockNotes";
+import {
+  TrustedLockNotes,
+  useLockScreenClock,
+  useTrustedStage,
+} from "./TrustedLockNotes";
 
 /**
  * The screens the journey phone shows below the hero (ADR 0017), one per
@@ -79,10 +83,10 @@ function initials(name: string) {
     .join("");
 }
 
-function StatusBar() {
+function StatusBar({ time = "9:41" }: { time?: string }) {
   return (
     <div className="jp-status" aria-hidden="true">
-      <span>9:41</span>
+      <span>{time}</span>
       <span className="jp-status__icons">
         <Signal />
         <Wifi />
@@ -174,11 +178,14 @@ export function LockScreen({
   brands?: LogoCloudItem[];
   runwaySteps?: number;
 }) {
+  // With the clients' notes (ADR 0018) the clock is live, in Lusaka; the
+  // product notes keep the fixed 09:41 mock time.
+  const clock = useLockScreenClock(Boolean(brands && brands.length > 0));
   return (
     <div className="jp-screen jp-screen--lock">
-      <StatusBar />
-      <div className="jp-lock__date">Saturday 18 October</div>
-      <div className="jp-lock__time">09:41</div>
+      <StatusBar time={clock?.time} />
+      <div className="jp-lock__date">{clock?.date ?? "Saturday 18 October"}</div>
+      <div className="jp-lock__time">{clock?.time ?? "09:41"}</div>
       {brands && brands.length > 0 ? (
         <TrustedLockNotes brands={brands} runwaySteps={runwaySteps} />
       ) : (

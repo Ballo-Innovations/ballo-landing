@@ -9,6 +9,8 @@ import {
   channelFor,
   createTicker,
   itemAt,
+  lockScreenClock,
+  previewFor,
   runwayAt,
   stackAt,
   withoutBackers,
@@ -103,11 +105,42 @@ describe("a shorter runway (small screens)", () => {
 });
 
 describe("channelFor", () => {
-  it("makes every third brand a WhatsApp message", () => {
+  it("rotates SMS, WhatsApp and email", () => {
     assert.deepEqual(
       [0, 1, 2, 3, 4, 5].map(channelFor),
-      ["sms", "sms", "whatsapp", "sms", "sms", "whatsapp"],
+      ["sms", "whatsapp", "email", "sms", "whatsapp", "email"],
     );
+  });
+});
+
+describe("previewFor", () => {
+  it("gives every launch a sample line, the same one each time", () => {
+    for (const n of [0, 1, 7, 42, -3]) {
+      assert.ok(previewFor(n).length > 10);
+      assert.equal(previewFor(n), previewFor(n));
+    }
+  });
+
+  it("varies from one launch to the next", () => {
+    assert.notEqual(previewFor(0), previewFor(1));
+  });
+});
+
+describe("lockScreenClock", () => {
+  it("shows the time and date in Lusaka (UTC+2)", () => {
+    // 08:35 UTC on Wednesday 18 November 2026 is 10:35 in Lusaka.
+    assert.deepEqual(lockScreenClock(new Date(Date.UTC(2026, 10, 18, 8, 35))), {
+      time: "10:35",
+      date: "Wednesday 18 November",
+    });
+  });
+
+  it("rolls the date over at Lusaka midnight, not UTC midnight", () => {
+    // 22:30 UTC on the 18th is already 00:30 on the 19th in Lusaka.
+    assert.deepEqual(lockScreenClock(new Date(Date.UTC(2026, 10, 18, 22, 30))), {
+      time: "00:30",
+      date: "Thursday 19 November",
+    });
   });
 });
 

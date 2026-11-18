@@ -101,9 +101,51 @@ export function withoutBackers<T extends { alt: string }>(
   });
 }
 
-/** Illustrative mix of channels: every third brand arrives on WhatsApp. */
-export function channelFor(brandIndex: number): "sms" | "whatsapp" {
-  return brandIndex % 3 === 2 ? "whatsapp" : "sms";
+export type Channel = "sms" | "whatsapp" | "email";
+
+/** Illustrative mix of channels: the clients take turns on SMS, WhatsApp and email. */
+export function channelFor(brandIndex: number): Channel {
+  const channels: Channel[] = ["sms", "whatsapp", "email"];
+  return channels[((brandIndex % 3) + 3) % 3];
+}
+
+/**
+ * Sample message text for a notification. It is shown blurred, the way a
+ * phone hides previews on the lock screen, so it reads as a real message
+ * without saying anything on a real client's behalf; the lines are neutral
+ * anyway (receipts, reminders, opening hours), in case the blur is off.
+ */
+const PREVIEWS = [
+  "Your statement for this month is ready to view in the app.",
+  "We are open this Saturday from 08:00 to 13:00. See you then.",
+  "Reply YES to confirm your booking for tomorrow at 10:30.",
+  "Thank you for your payment. Your receipt is attached.",
+  "New stock arrived today. Visit us before the weekend.",
+  "Your order is on its way and should arrive tomorrow.",
+  "Reminder: your appointment is on Friday at 14:00.",
+];
+
+export function previewFor(launch: number): string {
+  return PREVIEWS[((launch % PREVIEWS.length) + PREVIEWS.length) % PREVIEWS.length];
+}
+
+const LUSAKA = "Africa/Lusaka";
+const timeFormat = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LUSAKA,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+const dateFormat = new Intl.DateTimeFormat("en-GB", {
+  timeZone: LUSAKA,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+/** The lock screen's clock: the time and date in Lusaka, whatever the visitor's zone. */
+export function lockScreenClock(now: Date): { time: string; date: string } {
+  return { time: timeFormat.format(now), date: dateFormat.format(now).replace(",", "") };
 }
 
 export interface Ticker {
