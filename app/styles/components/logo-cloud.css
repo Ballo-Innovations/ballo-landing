@@ -542,3 +542,96 @@
   }
   .delivered-over__logo { height: 32px; max-width: 70px; }
 }
+
+/* ── Entrance, option C (flag `trustedEntrance`, George 2026-11-18) ──
+   TrustedLockLane sets `data-entrance` to "out" until the section is showing
+   (useArrival), then "in". Transitions live on "in" only, so leaving resets
+   everything at once and it plays again on the next arrival. Order: eyebrow,
+   the headline's lines up out of their masks, the runway from the left, the
+   mark with a small overshoot, then "Backed by". The journey phone comes in
+   from the right on the scroll (JourneyPhone); the section's own phone,
+   when there is no journey phone, does the same here on a timer. Only the
+   own phone's slot moves: the journey phone measures the empty slot to know
+   where to stop, so that one must stay put. */
+.trusted-lane {
+  --enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --enter-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* The headline word by word, each word in its own mask; TrustedLockLane
+   numbers the line each word sits on (`--line`), so a line's words rise
+   together. Same face and size as the section titles when `sectionTitles`
+   is on. */
+.trusted-lane__word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* Room for descenders inside the mask, given back below. */
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+.trusted-lane__word {
+  display: inline-block;
+}
+:root[data-section-titles] .trusted-lane__title--lines {
+  font-weight: 900;
+  font-size: clamp(2.25rem, 4.4vw, 3.875rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+@media (max-width: 640px) {
+  :root[data-section-titles] .trusted-lane__title--lines {
+    font-size: clamp(1.875rem, 8.5vw, 2.25rem);
+  }
+}
+
+.trusted-lane[data-entrance="out"] .trusted-lane__eyebrow { opacity: 0; }
+.trusted-lane[data-entrance="out"] .trusted-lane__word { transform: translateY(110%); }
+.trusted-lane[data-entrance="out"] .trusted-lane__runway {
+  opacity: 0;
+  transform: translateX(-18px);
+}
+.trusted-lane[data-entrance="out"] .trusted-lane__hub {
+  opacity: 0;
+  transform: scale(0.8);
+}
+.trusted-lane[data-entrance="out"] .trusted-lane__backers { border-top-color: transparent; }
+.trusted-lane[data-entrance="out"] .trusted-lane__backers .delivered-over__label,
+.trusted-lane[data-entrance="out"] .trusted-lane__backers .delivered-over__item { opacity: 0; }
+.trusted-lane[data-entrance="out"] .trusted-lane__slot--own {
+  opacity: 0;
+  transform: translateX(90px) perspective(1200px) rotateY(-14deg);
+}
+
+.trusted-lane[data-entrance="in"] .trusted-lane__eyebrow {
+  transition: opacity 500ms ease;
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__word {
+  transition: transform 850ms var(--enter-ease) calc(60ms + var(--line, 0) * 110ms);
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__runway {
+  transition:
+    opacity 650ms var(--enter-ease) 520ms,
+    transform 650ms var(--enter-ease) 520ms;
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__hub {
+  transition:
+    opacity 600ms var(--enter-ease) 860ms,
+    transform 600ms var(--enter-spring) 860ms;
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__backers {
+  transition: border-top-color 700ms ease 700ms;
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__label,
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__item {
+  transition: opacity 500ms ease 900ms;
+}
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__item:nth-child(2) { transition-delay: 950ms; }
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__item:nth-child(3) { transition-delay: 1000ms; }
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__item:nth-child(4) { transition-delay: 1050ms; }
+.trusted-lane[data-entrance="in"] .trusted-lane__backers .delivered-over__item:nth-child(n + 5) { transition-delay: 1100ms; }
+.trusted-lane[data-entrance="in"] .trusted-lane__slot--own {
+  transition:
+    opacity 1100ms var(--enter-ease) 200ms,
+    transform 1100ms var(--enter-ease) 200ms;
+}

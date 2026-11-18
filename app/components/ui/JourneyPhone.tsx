@@ -4,6 +4,7 @@ import * as React from "react";
 
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { clamp01, easeInOut, lerp } from "@/lib/cinematic";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import { AFTER_IN, ROW_TURN, THEN_IN } from "../sections/BrutusSection";
 import { HANDOFF, PHONE_HANDOFF } from "./HeroSideExit";
 import {
@@ -53,6 +54,8 @@ interface Pose {
   /** Portrait height on screen; landscape, this is the width. */
   h: number;
   r: number;
+  /** Turn about the vertical axis, degrees (0 = facing the viewer). */
+  ry?: number;
 }
 
 interface Stop {
@@ -177,12 +180,19 @@ export function JourneyPhone({
         y: lerp(pa.y, pb.y, k),
         h: lerp(pa.h, pb.h, k),
         r: lerp(pa.r, pb.r, k),
+        ry: lerp(pa.ry ?? 0, pb.ry ?? 0, k),
       };
     }
     const { h, w, hh } = base.current;
     const transform =
       `translate3d(${(pose.x - w / 2).toFixed(1)}px, ${(pose.y - hh / 2).toFixed(1)}px, 0) ` +
-      `rotate(${pose.r.toFixed(2)}deg) scale(${(pose.h / h).toFixed(4)})`;
+      `rotate(${pose.r.toFixed(2)}deg) ` +
+      // Only while it is turning in from the side (trustedEntrance), so
+      // every other pose keeps the plain 2D transform it always had. Under
+      // half a degree it is dropped: a 3D transform rasterizes the screen
+      // softly, which shows if the scroll stops just short of the slot.
+      (pose.ry && Math.abs(pose.ry) > 0.5 ? `perspective(1200px) rotateY(${pose.ry.toFixed(2)}deg) ` : "") +
+      `scale(${(pose.h / h).toFixed(4)})`;
     rig.style.transform = transform;
 
     // Screen.
@@ -409,11 +419,22 @@ export function JourneyPhone({
       const p = handoff();
       return { ...p, y: -p.h * 0.6 };
     };
+    // With the "Trusted by" entrance (option C, flag `trustedEntrance`,
+    // George 2026-11-18) it waits off the right edge instead, turned away a
+    // little, and glides in at the slot's height, straightening as it lands.
+    const fromRight = isFeatureEnabled("trustedEntrance");
     const offBottom = (): Pose => {
       const p = trusted();
-      return { ...p, y: H + p.h * 0.6 };
+      return fromRight
+        ? { ...p, x: W + p.h * 0.45, ry: -14 }
+        : { ...p, y: H + p.h * 0.6 };
     };
-    const thenStart = Math.max(rowEnd + 2, stageY(THEN_IN[0]));
+    // From the right it sets off half a fade earlier, so the glide has 30%
+    // of a screen of scroll rather than 20% and reads as a glide, not a jump.
+    const thenFrom = fromRight
+      ? THEN_IN[0] - (THEN_IN[1] - THEN_IN[0]) * 0.5
+      : THEN_IN[0];
+    const thenStart = Math.max(rowEnd + 2, stageY(thenFrom));
     const toTrusted: Stop[] = STOP_AT_WHO
       ? [
           { y: whoIn, pose: who },

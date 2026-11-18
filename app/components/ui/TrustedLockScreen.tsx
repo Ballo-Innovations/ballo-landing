@@ -19,6 +19,7 @@ import { DeliveredOver } from "./DeliveredOver";
 import type { LogoCloudItem } from "./LogoCloud";
 import { Phone3D } from "./Phone3D";
 import { SectionTitle } from "./SectionTitle";
+import { useArrival } from "./useArrival";
 import {
   LogoMark,
   usePublishTrustedBrands,
@@ -81,6 +82,52 @@ function Runner({ startAt, children }: { startAt: number; children: React.ReactN
   );
 }
 
+/**
+ * The headline for the masked entrance (option C). Each word sits in its own
+ * mask, and the words on one line share a delay, so the lines rise one after
+ * another however the heading wraps: two lines on a laptop, three or four on
+ * a phone. The line of each word is measured after layout and again whenever
+ * the heading's width changes.
+ */
+function MaskedTitle({ text }: { text: string }) {
+  const ref = React.useRef<HTMLHeadingElement>(null);
+  const words = text.split(/\s+/).filter(Boolean);
+
+  React.useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const number = () => {
+      const masks = Array.from(el.querySelectorAll<HTMLElement>(".trusted-lane__word-mask"));
+      let line = -1;
+      let top = -Infinity;
+      for (const m of masks) {
+        if (m.offsetTop > top + 2) {
+          line++;
+          top = m.offsetTop;
+        }
+        m.style.setProperty("--line", String(line));
+      }
+    };
+    number();
+    const ro = new ResizeObserver(number);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+
+  return (
+    <h2 ref={ref} className="trusted-lane__title trusted-lane__title--lines">
+      {words.map((word, i) => (
+        <React.Fragment key={`${word}-${i}`}>
+          <span className="trusted-lane__word-mask">
+            <span className="trusted-lane__word text-gradient-silver">{word}</span>
+          </span>
+          {i < words.length - 1 ? " " : null}
+        </React.Fragment>
+      ))}
+    </h2>
+  );
+}
+
 /** Phone3D's own height; the slot scales it to fit. */
 const PHONE_BASE_H = 516;
 
@@ -89,13 +136,25 @@ export function TrustedLockLane({
   backers = [],
   eyebrow = "Trusted by",
   title = "The brands that trust BalloAds to reach their customers",
+  entrance = false,
 }: {
   logos: LogoCloudItem[];
   /** "Backed by", shown under the runway (layout A, ADR 0018). */
   backers?: HomeLogoItem[];
   eyebrow?: string;
   title?: string;
+  /**
+   * Option C entrance (flag `trustedEntrance`, George 2026-11-18): once the
+   * section is showing, the eyebrow fades in, the headline's lines slide up
+   * out of a mask, the runway follows from the left, the BalloAds mark pops
+   * and "Backed by" comes last. Timings live in logo-cloud.css under
+   * `[data-entrance]`. The journey phone does its part on the scroll: it
+   * comes in from the right (JourneyPhone).
+   */
+  entrance?: boolean;
 }) {
+  const laneRef = React.useRef<HTMLDivElement>(null);
+  const arrived = useArrival(laneRef, { enabled: entrance });
   const runwayRef = React.useRef<HTMLDivElement>(null);
   const slotRef = React.useRef<HTMLDivElement>(null);
   const [phoneScale, setPhoneScale] = React.useState(1);
@@ -138,10 +197,18 @@ export function TrustedLockLane({
   if (count === 0) return null;
 
   return (
-    <div className="trusted-lane">
+    <div
+      ref={laneRef}
+      className="trusted-lane"
+      data-entrance={entrance ? (arrived ? "in" : "out") : undefined}
+    >
       <div className="trusted-lane__head">
         <p className="trusted-lane__eyebrow">{eyebrow}</p>
-        <SectionTitle as="h2" className="trusted-lane__title" text={title} />
+        {entrance ? (
+          <MaskedTitle text={title} />
+        ) : (
+          <SectionTitle as="h2" className="trusted-lane__title" text={title} />
+        )}
       </div>
 
       {/* A message hops (option C) from the mark across the column gap into
@@ -190,7 +257,12 @@ export function TrustedLockLane({
           `.trusted-lane__slot`); otherwise the section's own phone is in it.
           Scenery either way: hidden from assistive tech and out of the tab
           order. The names are in the list below. */}
-      <div ref={slotRef} className="trusted-lane__slot" aria-hidden="true" inert>
+      <div
+        ref={slotRef}
+        className={`trusted-lane__slot${ownPhone ? " trusted-lane__slot--own" : ""}`}
+        aria-hidden="true"
+        inert
+      >
         {ownPhone ? (
           <div
             className="trusted-lane__phone-scale"

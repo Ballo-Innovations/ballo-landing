@@ -19,7 +19,8 @@ export type FeatureName =
   | "trustedLockScreen"
   | "sectionTitles"
   | "defaultPageBg"
-  | "whySilk";
+  | "whySilk"
+  | "trustedEntrance";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
@@ -60,6 +61,8 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   defaultpagebg: "defaultPageBg",
   silk: "whySilk",
   whysilk: "whySilk",
+  entrance: "trustedEntrance",
+  trustedentrance: "trustedEntrance",
 };
 
 /**
@@ -97,6 +100,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   sectionTitles: process.env.NEXT_PUBLIC_FEATURE_SECTION_TITLES,
   defaultPageBg: process.env.NEXT_PUBLIC_FEATURE_DEFAULT_PAGE_BG,
   whySilk: process.env.NEXT_PUBLIC_FEATURE_WHY_SILK,
+  trustedEntrance: process.env.NEXT_PUBLIC_FEATURE_TRUSTED_ENTRANCE,
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
