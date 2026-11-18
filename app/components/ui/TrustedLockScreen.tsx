@@ -135,7 +135,7 @@ export function TrustedLockLane({
   logos,
   backers = [],
   eyebrow = "Trusted by",
-  title = "The brands that trust BalloAds to reach their customers",
+  title = "The brands that trust BalloAds",
   entrance = false,
 }: {
   logos: LogoCloudItem[];
