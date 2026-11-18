@@ -207,23 +207,21 @@
    `font-black` sits in a cascade layer and loses to unlayered rules. */
 .reveal-text.section-title-fx {
   font-weight: 900;
-  /* The same size as "Why Choose BalloAds?" (`.aside-copy-title` in
-     cinematic-hero.css), at each of its breakpoints. */
-  font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+  /* Between the titles' old size and "Why Choose BalloAds?" (George,
+     2026-11-18): the hero's size (76px on a laptop) was too big for every
+     section, the old one (about 52px) too small. 62px at 1440. */
+  font-size: clamp(2.25rem, 4.4vw, 3.875rem);
   line-height: 0.98;
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
-@media (max-width: 900px) {
-  .reveal-text.section-title-fx {
-    font-size: clamp(2.5rem, 11vw, 4rem);
-  }
-}
-
+/* The laptop rule shrinks with the screen down to 36px (from about 818px
+   wide); phones go from 36px to about 32px at 375 (was 39). Capped at
+   36px so nothing grows at the breakpoint. */
 @media (max-width: 640px) {
   .reveal-text.section-title-fx {
-    font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+    font-size: clamp(1.875rem, 8.5vw, 2.25rem);
   }
 }
 
