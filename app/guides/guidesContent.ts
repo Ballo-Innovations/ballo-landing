@@ -19,6 +19,11 @@ export type Guide = {
    * How dark the artwork is where the label and button sit. Dark artwork takes
    * white text and a white button; light artwork takes navy text and a navy
    * button. See the tile styles in styles/pages/guides.css.
+   *
+   * This follows the picture each tile actually uses, not the design's: the
+   * design's SMS and WhatsApp artwork is light, but the files on the site are
+   * dark in the corner the label sits in, and navy on navy cannot be read.
+   * Set these back to "light" if those two pictures are ever replaced.
    */
   tone: "dark" | "light";
   /** The guide this links through to. */
@@ -43,7 +48,9 @@ export const guides: Guide[] = [
     label: "Email Marketing",
     headline: "Seamless email Marketing and at your fingertips",
     image: heroPhoto,
-    tone: "light",
+    // A cut-out with a see-through background, so in a tile it sits on the
+    // tile's dark navy, not on the big card's light grey.
+    tone: "dark",
     href: "/email-marketing",
   },
   {
@@ -67,7 +74,7 @@ export const guides: Guide[] = [
     label: "SMS Marketing just for you",
     headline: "SMS Marketing just for you",
     image: smsTile,
-    tone: "light",
+    tone: "dark",
     href: "/sms-marketing",
   },
   {
@@ -83,7 +90,7 @@ export const guides: Guide[] = [
     label: "WhatsApp Marketing",
     headline: "WhatsApp Marketing your customers answer",
     image: whatsappTile,
-    tone: "light",
+    tone: "dark",
     href: "/whatsapp-marketing",
   },
   {

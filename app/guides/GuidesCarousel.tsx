@@ -102,12 +102,17 @@ export default function GuidesCarousel() {
     for (const old of flightsRef.current) old.cancel();
     flightsRef.current = [];
 
-    const legs: { el: HTMLElement; from: Box; to: Box; real: HTMLElement }[] = [
-      // The promoted tile's artwork, flying into the big card.
-      { el: bigArt, from: pending.tile, to: bigNow, real: bigArt },
-      // The artwork it replaced, flying out to the slot the tile just left.
-      { el: tileArt, from: pending.big, to: tileNow, real: tileArt },
-    ];
+    // Artwork is black and white in the big card and in colour in the tiles,
+    // so each leg drains or restores its colour as it travels. Without this the
+    // picture jumps to its new treatment the instant it leaves, which reads as
+    // a glitch rather than a move.
+    const legs: { el: HTMLElement; from: Box; to: Box; real: HTMLElement; grey: [string, string] }[] =
+      [
+        // The promoted tile's artwork, flying into the big card.
+        { el: bigArt, from: pending.tile, to: bigNow, real: bigArt, grey: ["grayscale(0)", "grayscale(1)"] },
+        // The artwork it replaced, flying out to the slot the tile just left.
+        { el: tileArt, from: pending.big, to: tileNow, real: tileArt, grey: ["grayscale(1)", "grayscale(0)"] },
+      ];
 
     for (const leg of legs) {
       const clone = leg.el.cloneNode(true) as HTMLElement;
@@ -123,12 +128,18 @@ export default function GuidesCarousel() {
 
       leg.real.style.visibility = "hidden";
 
+      const timing = { duration: FLIGHT_MS, easing: FLIGHT_EASE, fill: "both" as const };
       const [from, to] = flightFrames(leg.from, leg.to);
-      const anim = clone.animate([from, to], {
-        duration: FLIGHT_MS,
-        easing: FLIGHT_EASE,
-        fill: "both",
-      });
+      const anim = clone.animate([from, to], timing);
+
+      // The filter lives on the <img> inside, so it animates on its own track.
+      // The inline value is what lets the animation beat the stylesheet's.
+      const img = clone.querySelector("img");
+      if (img instanceof HTMLElement) {
+        img.style.filter = leg.grey[0];
+        img.animate([{ filter: leg.grey[0] }, { filter: leg.grey[1] }], timing);
+      }
+
       const done = () => {
         clone.remove();
         leg.real.style.visibility = "";
