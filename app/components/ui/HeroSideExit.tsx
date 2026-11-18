@@ -15,6 +15,7 @@ import {
 import { at, clamp01, easeInOut, easeOut, lerp, staggered, type Range } from "@/lib/cinematic";
 import { LATCH_FLIP, useLatchedBeat } from "./useLatchedBeat";
 import { DustMirrorProvider } from "./DustMirror";
+import { PHONE_ASIDE_SCALE_NARROW, asideScaleFor } from "@/lib/heroAsideScale";
 
 /**
  * The hero's handover to the phone.
@@ -144,7 +145,8 @@ const BAND_SCALE: Range = [1, 1.3];
 const PHONE_ASIDE: Range = hand([0.54, 0.66]);
 /** As a percentage of the stage, so it holds at any viewport width. */
 const PHONE_ASIDE_X = -26;
-const PHONE_ASIDE_SCALE = 0.86;
+/** Narrow (<=900px) aside scale; wider viewports use `asideScaleFor`. */
+const PHONE_ASIDE_SCALE = PHONE_ASIDE_SCALE_NARROW;
 
 /**
  * The copy arrives from the right, into the half the phone just left.
@@ -554,7 +556,16 @@ function HeroPhone({
     mql.addEventListener("change", apply);
     return () => mql.removeEventListener("change", apply);
   }, []);
+  const [wideScale, setWideScale] = React.useState(PHONE_ASIDE_SCALE);
+  React.useEffect(() => {
+    const apply = () =>
+      setWideScale(asideScaleFor(window.innerWidth, window.innerHeight));
+    apply();
+    window.addEventListener("resize", apply);
+    return () => window.removeEventListener("resize", apply);
+  }, []);
   const asideX = narrow ? 0 : PHONE_ASIDE_X;
+  const asideScale = narrow ? PHONE_ASIDE_SCALE : wideScale;
 
   // Travel only, no opacity. The device arrives at full strength: a fade made
   // it materialise rather than move, and the movement is the point.
@@ -590,7 +601,7 @@ function HeroPhone({
   const scale = useTransform(
     scrollYProgress,
     [0, PHONE_ASIDE[0], PHONE_ASIDE[1], PHONE_HOME[0], PHONE_HOME[1], 1],
-    [1, 1, PHONE_ASIDE_SCALE, PHONE_ASIDE_SCALE, 1, 1],
+    [1, 1, asideScale, asideScale, 1, 1],
     { ease: easeInOut },
   );
 
