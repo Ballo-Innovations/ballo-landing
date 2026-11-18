@@ -196,7 +196,8 @@ export function TrustedLockLane({
             className="trusted-lane__phone-scale"
             style={{ ["--phone-scale" as string]: phoneScale } as React.CSSProperties}
           >
-            <Phone3D>
+            {/* No pointer tilt in this section (George, 2026-11-18). */}
+            <Phone3D interactive={false}>
               <div className="jp-screens" data-screen="lock">
                 <LockScreen brands={logos} runwaySteps={runwaySteps} />
               </div>
