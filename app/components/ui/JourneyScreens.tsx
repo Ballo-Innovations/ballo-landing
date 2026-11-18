@@ -180,9 +180,12 @@ export function LockScreen({
 }) {
   // With the clients' notes (ADR 0018) the clock is live, in Lusaka; the
   // product notes keep the fixed 09:41 mock time.
-  const clock = useLockScreenClock(Boolean(brands && brands.length > 0));
+  const live = Boolean(brands && brands.length > 0);
+  const clock = useLockScreenClock(live);
+  // The clients' lock screen has the Daylight wallpaper (ADR 0018); the
+  // product notes keep the original blue.
   return (
-    <div className="jp-screen jp-screen--lock">
+    <div className={`jp-screen jp-screen--lock${live ? " jp-screen--day" : ""}`}>
       <StatusBar time={clock?.time} />
       <div className="jp-lock__date">{clock?.date ?? "Saturday 18 October"}</div>
       <div className="jp-lock__time">{clock?.time ?? "09:41"}</div>

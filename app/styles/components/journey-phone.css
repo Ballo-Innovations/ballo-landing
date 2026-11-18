@@ -331,6 +331,43 @@
   align-items: center;
 }
 
+/* Daylight (ADR 0018, George 2026-11-18): the clients' lock screen is a pale
+   sky, so the phone is the brightest thing on the navy stage. Text turns
+   navy and the notes white; the logos keep their dark tiles. A soft cyan
+   haze sits low on the screen, behind everything (`isolation` keeps the
+   pseudo-element inside the screen). */
+.jp-screen--lock.jp-screen--day {
+  background: linear-gradient(180deg, #bfe9ff 0%, #e8f6ff 45%, #ffffff 72%, #d7f2fb 100%);
+  color: #0b1650;
+  isolation: isolate;
+}
+
+.jp-screen--day::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 55%;
+  background: radial-gradient(120% 90% at 50% 100%, rgba(63, 219, 255, 0.24), transparent 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.jp-screen--day .jp-status { color: #0b1650; }
+.jp-screen--day .jp-lock__date { color: rgba(11, 22, 80, 0.75); }
+
+.jp-screen--day .jp-note {
+  background: rgba(255, 255, 255, 0.74);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1.6cqw 4.5cqw rgba(11, 22, 80, 0.1);
+}
+
+.jp-screen--day .jp-note__app { color: rgba(11, 22, 80, 0.6); }
+.jp-screen--day .jp-note__preview { color: rgba(11, 22, 80, 0.8); }
+.jp-screen--day .jp-note__avatar { background: #0b1650; }
+.jp-screen--day .jp-note__badge { box-shadow: 0 0 0 0.6cqw #fff; }
+
 .jp-lock__date {
   margin-top: 4cqw;
   font-size: 4.4cqw;

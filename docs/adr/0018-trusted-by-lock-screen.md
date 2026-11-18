@@ -101,6 +101,11 @@ into the slot, off the top with the section.
   without putting words in a real client's mouth, and the lines are neutral
   receipts and reminders in case the blur is off. The channel mix (the
   clients take turns on SMS, WhatsApp and email) is illustrative.
+- The clients' lock screen has the Daylight wallpaper (George's pick from
+  six drawn wallpapers on 2026-11-18): a pale sky with a soft cyan haze low
+  down, navy clock and text, white notes. It makes the phone the brightest
+  thing on the navy stage. The logos keep their dark tiles. The product
+  notes (flag off) keep the original blue.
 - With the clients' notes, the lock screen clock is live: the time and date
   in Lusaka (`lockScreenClock`), refreshed every 20 seconds. It used to read
   a fixed "Saturday 18 October, 09:41".
