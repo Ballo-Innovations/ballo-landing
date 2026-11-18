@@ -199,7 +199,9 @@ export function JourneyPhone({
     if (glass && backdropRigRef.current) {
       backdropRigRef.current.style.transform = transform;
     }
-    setUpright(Math.abs(pose.r) < 12 && !glass);
+    // No pointer tilt on the lock screen either: the "Trusted by" phone stays
+    // still (George, 2026-11-18).
+    setUpright(Math.abs(pose.r) < 12 && !glass && screen !== "lock");
     const v = videoRef.current;
     if (v) {
       if (screen === "film" && v.paused) void v.play().catch(() => {});
