@@ -10,6 +10,7 @@ import {
   channelFor,
   createTicker,
   itemAt,
+  launchTime,
   lockScreenClock,
   previewFor,
   runwayAt,
@@ -33,7 +34,7 @@ describe("itemAt", () => {
 
 describe("runwayAt", () => {
   it("holds the logos launched in the last RUNWAY_STEPS steps, oldest first", () => {
-    const runway = runwayAt({ step: 10, epoch: 2, epochStart: 4 });
+    const runway = runwayAt({ step: 10, epoch: 2, epochStart: 4, epochT0: 0 });
     assert.deepEqual(
       runway.map((r) => r.launch),
       [7, 8, 9, 10],
@@ -42,7 +43,7 @@ describe("runwayAt", () => {
   });
 
   it("starts logos already in flight when the clock (re)starts part-way along", () => {
-    const runway = runwayAt({ step: 10, epoch: 3, epochStart: 10 });
+    const runway = runwayAt({ step: 10, epoch: 3, epochStart: 10, epochT0: 0 });
     assert.deepEqual(
       runway.map((r) => r.delayMs),
       [-3 * STEP_MS, -2 * STEP_MS, -1 * STEP_MS, 0],
@@ -50,7 +51,7 @@ describe("runwayAt", () => {
   });
 
   it("starts logos launched after the clock started from the left edge", () => {
-    const runway = runwayAt({ step: 10, epoch: 3, epochStart: 8 });
+    const runway = runwayAt({ step: 10, epoch: 3, epochStart: 8, epochT0: 0 });
     assert.deepEqual(
       runway.map((r) => r.delayMs),
       [-1 * STEP_MS, 0, 0, 0],
@@ -58,8 +59,8 @@ describe("runwayAt", () => {
   });
 
   it("keys runners by epoch, so a restart remounts them with fresh delays", () => {
-    const a = runwayAt({ step: 10, epoch: 1, epochStart: 4 });
-    const b = runwayAt({ step: 10, epoch: 2, epochStart: 10 });
+    const a = runwayAt({ step: 10, epoch: 1, epochStart: 4, epochT0: 0 });
+    const b = runwayAt({ step: 10, epoch: 2, epochStart: 10, epochT0: 0 });
     assert.notEqual(a[0].key, b[0].key);
   });
 });
@@ -83,7 +84,7 @@ describe("stackAt", () => {
 
   it("never names a launch the runway is still carrying", () => {
     const step = 21;
-    const onRunway = new Set(runwayAt({ step, epoch: 1, epochStart: 0 }).map((r) => r.launch));
+    const onRunway = new Set(runwayAt({ step, epoch: 1, epochStart: 0, epochT0: 0 }).map((r) => r.launch));
     for (const note of stackAt(step)) assert.equal(onRunway.has(note.launch), false);
   });
 
@@ -95,7 +96,7 @@ describe("stackAt", () => {
 describe("a shorter runway (small screens)", () => {
   it("carries fewer logos and lands each one sooner, still in step", () => {
     const steps = COMPACT_RUNWAY_STEPS;
-    const state = { step: 30, epoch: 1, epochStart: 0 };
+    const state = { step: 30, epoch: 1, epochStart: 0, epochT0: 0 };
     assert.deepEqual(
       runwayAt(state, steps).map((r) => r.launch),
       [29, 30],
@@ -147,17 +148,19 @@ describe("lockScreenClock", () => {
 });
 
 describe("createTicker", () => {
+  // The clock is real time: the step is worked out from how long the clock
+  // has been running, not counted per timer callback.
   it("advances one step per interval while running, and not after stop", () => {
-    mock.timers.enable({ apis: ["setInterval"] });
+    mock.timers.enable({ apis: ["setTimeout", "Date"] });
     try {
-      const ticker = createTicker(1000, 5);
+      const ticker = createTicker(1000, 5, () => Date.now());
       const seen: number[] = [];
       const unsubscribe = ticker.subscribe(() => seen.push(ticker.getState().step));
 
       ticker.start();
-      mock.timers.tick(3000);
+      for (let i = 0; i < 3; i++) mock.timers.tick(1000);
       ticker.stop();
-      mock.timers.tick(3000);
+      for (let i = 0; i < 3; i++) mock.timers.tick(1000);
       unsubscribe();
 
       assert.equal(ticker.getState().step, 8);
@@ -168,28 +171,52 @@ describe("createTicker", () => {
     }
   });
 
-  it("opens a new epoch at the current step on each start", () => {
-    mock.timers.enable({ apis: ["setInterval"] });
+  it("catches up from the clock when a tick runs late", () => {
+    mock.timers.enable({ apis: ["setTimeout"] });
     try {
-      const ticker = createTicker(1000, 5);
+      let now = 0;
+      const ticker = createTicker(1000, 0, () => now);
+      ticker.start();
+      // The first timer fires 1.6s late (a busy page or a background tab).
+      now = 2600;
+      mock.timers.tick(1000);
+      assert.equal(ticker.getState().step, 2);
+      // The next one is aimed at the next whole step from the start, 3000.
+      now = 3000;
+      mock.timers.tick(400);
+      assert.equal(ticker.getState().step, 3);
+      ticker.stop();
+    } finally {
+      mock.timers.reset();
+    }
+  });
+
+  it("opens a new epoch at the current step and time on each start", () => {
+    mock.timers.enable({ apis: ["setTimeout", "Date"] });
+    try {
+      const ticker = createTicker(1000, 5, () => Date.now());
       ticker.start();
       mock.timers.tick(2000);
       ticker.stop();
       ticker.start();
-      assert.deepEqual(ticker.getState(), { step: 7, epoch: 2, epochStart: 7 });
+      const s = ticker.getState();
+      assert.deepEqual([s.step, s.epoch, s.epochStart], [7, 2, 7]);
+      assert.equal(s.epochT0, Date.now());
+      ticker.stop();
     } finally {
       mock.timers.reset();
     }
   });
 
   it("ignores a second start while running", () => {
-    mock.timers.enable({ apis: ["setInterval"] });
+    mock.timers.enable({ apis: ["setTimeout", "Date"] });
     try {
-      const ticker = createTicker(1000, 0);
+      const ticker = createTicker(1000, 0, () => Date.now());
       ticker.start();
       ticker.start();
       mock.timers.tick(1000);
-      assert.deepEqual(ticker.getState(), { step: 1, epoch: 1, epochStart: 0 });
+      const s = ticker.getState();
+      assert.deepEqual([s.step, s.epoch, s.epochStart], [1, 1, 0]);
       ticker.stop();
     } finally {
       mock.timers.reset();
@@ -197,8 +224,17 @@ describe("createTicker", () => {
   });
 
   it("returns the same snapshot object until something changes", () => {
-    const ticker = createTicker(1000, 0);
+    const ticker = createTicker(1000, 0, () => 0);
     assert.equal(ticker.getState(), ticker.getState());
+  });
+});
+
+describe("launchTime", () => {
+  it("is when a logo should set off, from the epoch's start time", () => {
+    const state = { step: 12, epoch: 3, epochStart: 10, epochT0: 50_000 };
+    assert.equal(launchTime(state, 10, 2200), 50_000);
+    assert.equal(launchTime(state, 12, 2200), 54_400);
+    assert.equal(launchTime(state, 8, 2200), 45_600);
   });
 });
 

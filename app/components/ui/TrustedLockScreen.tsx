@@ -8,6 +8,7 @@ import {
   RUNWAY_STEPS,
   STEP_MS,
   itemAt,
+  launchTime,
   runwayAt,
   runwayStepsFor,
   trustedTicker,
@@ -63,6 +64,21 @@ function useRunwaySteps(runwayRef: React.RefObject<HTMLDivElement | null>) {
     return () => ro.disconnect();
   }, [runwayRef]);
   return steps;
+}
+
+/**
+ * One logo's run. Its delay is fixed when it mounts, from when it should
+ * have set off on the clock (`launchTime`), so a step that renders late
+ * still puts the logo exactly where it belongs: the spacing comes from the
+ * clock, not from when React got round to it.
+ */
+function Runner({ startAt, children }: { startAt: number; children: React.ReactNode }) {
+  const [delayMs] = React.useState(() => Math.round(startAt - performance.now()));
+  return (
+    <span className="trusted-lane__runner" style={{ animationDelay: `${delayMs}ms` }}>
+      {children}
+    </span>
+  );
 }
 
 /** Phone3D's own height; the slot scales it to fit. */
@@ -142,13 +158,12 @@ export function TrustedLockLane({
             const logo = itemAt(logos, runner.launch);
             if (!logo) return null;
             return (
-              <span
+              <Runner
                 key={`${runwaySteps}:${runner.key}`}
-                className="trusted-lane__runner"
-                style={{ animationDelay: `${runner.delayMs}ms` }}
+                startAt={launchTime(state, runner.launch, STEP_MS)}
               >
                 <LogoMark logo={logo} className="trusted-lane__logo" sizes="176px" />
-              </span>
+              </Runner>
             );
           })}
         </div>

@@ -52,6 +52,17 @@ export interface TickerState {
   epoch: number;
   /** The step the current epoch started on. */
   epochStart: number;
+  /**
+   * When the current epoch started, on the page's clock
+   * (`performance.now()`). Steps and every logo's position are worked out
+   * from it, so a timer that fires late cannot bunch or space them.
+   */
+  epochT0: number;
+}
+
+/** When the logo launched on `launch` should set off, on the epoch's clock. */
+export function launchTime(state: TickerState, launch: number, stepMs: number): number {
+  return state.epochT0 + (launch - state.epochStart) * stepMs;
 }
 
 export interface Runner {
@@ -176,11 +187,37 @@ export interface Ticker {
   stop: () => void;
 }
 
-export function createTicker(stepMs: number, initialStep: number): Ticker {
-  let state: TickerState = { step: initialStep, epoch: 0, epochStart: initialStep };
-  let timer: ReturnType<typeof setInterval> | null = null;
+const pageClock = () =>
+  typeof performance !== "undefined" ? performance.now() : Date.now();
+
+export function createTicker(
+  stepMs: number,
+  initialStep: number,
+  now: () => number = pageClock,
+): Ticker {
+  let state: TickerState = {
+    step: initialStep,
+    epoch: 0,
+    epochStart: initialStep,
+    epochT0: now(),
+  };
+  let timer: ReturnType<typeof setTimeout> | null = null;
   const listeners = new Set<() => void>();
   const emit = () => listeners.forEach((l) => l());
+
+  // Each wake-up works out the step from the time since the epoch began and
+  // aims the next one at the next whole step. A late timer (a busy page, a
+  // tab coming back) therefore catches up instead of pushing every later
+  // step back, and never fires two steps close together.
+  const wake = () => {
+    const due = state.epochStart + Math.floor((now() - state.epochT0) / stepMs);
+    if (due !== state.step) {
+      state = { ...state, step: due };
+      emit();
+    }
+    const next = state.epochT0 + (due - state.epochStart + 1) * stepMs;
+    timer = setTimeout(wake, Math.max(0, next - now()));
+  };
 
   return {
     getState: () => state,
@@ -192,16 +229,13 @@ export function createTicker(stepMs: number, initialStep: number): Ticker {
     },
     start() {
       if (timer) return;
-      state = { ...state, epoch: state.epoch + 1, epochStart: state.step };
+      state = { ...state, epoch: state.epoch + 1, epochStart: state.step, epochT0: now() };
       emit();
-      timer = setInterval(() => {
-        state = { ...state, step: state.step + 1 };
-        emit();
-      }, stepMs);
+      timer = setTimeout(wake, stepMs);
     },
     stop() {
       if (!timer) return;
-      clearInterval(timer);
+      clearTimeout(timer);
       timer = null;
     },
   };

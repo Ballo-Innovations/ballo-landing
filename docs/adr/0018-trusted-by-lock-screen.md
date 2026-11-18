@@ -95,6 +95,18 @@ what changed:
   logos (Bayport, Shreeji) about 27px apart; it is three there now, at least
   69px apart. Measured: three at 1440 and 1280, two at 1024 and on phones,
   three at 768. The phone's notes use the same count, so they stay in step.
+- The clock keeps real time. Each step is worked out from the time since
+  the clock started (`epochT0`), and the next wake-up is aimed at the next
+  whole step, so a late timer catches up instead of bunching or spreading
+  the steps. Each logo's run takes its delay, once, from when it should
+  have set off (`launchTime`), so a step that renders late still puts it in
+  the right place. Before this, a throttled or busy page could launch two
+  logos together and overlap them. Measured with the main thread frozen for
+  1.5 seconds: no visible overlap (smallest gap 98px), no logo moving
+  backwards, and the steps back on the 2.2s grid straight after.
+- There is no end to the runway: logos are sent one per step and the client
+  list simply wraps (the last client, then the first), so there is nothing
+  to restart and nothing to jump.
 - Logos load eagerly, so a new one never appears late.
 - The hop is a 720ms arc (steady across, decelerating up, accelerating
   down) with a small pop; notes land 560ms after the step, as the bubble
