@@ -184,6 +184,11 @@ export default function HomeClient({
   const [trustedLockFlag, setTrustedLockFlag] = useState(false);
   useEffect(() => setTrustedLockFlag(isFeatureEnabled("trustedLockScreen")), []);
   const trustedLock = trustedLockFlag && !shouldReduceMotion;
+  // "Trusted by" arrives with its own timed entrance (option C, George
+  // 2026-11-18) instead of the whole block fading up as one.
+  const [trustedEntranceFlag, setTrustedEntranceFlag] = useState(false);
+  useEffect(() => setTrustedEntranceFlag(isFeatureEnabled("trustedEntrance")), []);
+  const trustedEntrance = trustedLock && trustedEntranceFlag;
   // The silk behind the phone during "Why Choose" (ADR 0019). The pin it lives
   // on does not exist under reduced motion, so neither does the silk.
   const [whySilk, setWhySilk] = useState(false);
@@ -561,16 +566,22 @@ export default function HomeClient({
                 ref={trustedByRef}
                 className={`trusted-by-section trusted-by-section--in-stage${trustedLock ? " trusted-by-section--split" : ""}`}
               >
-                <FadeUpReveal yOffset={50}>
-                  {trustedLock ? (
-                    <TrustedLockLane logos={laneLogos} backers={backerLogos} />
-                  ) : (
-                    <LogoCloud
-                      logos={trustedLogos}
-                      title="Trusted by the very best"
-                    />
-                  )}
-                </FadeUpReveal>
+                {trustedEntrance ? (
+                  /* Its pieces arrive one by one (TrustedLockLane), so no
+                     block-level fade on top. */
+                  <TrustedLockLane logos={laneLogos} backers={backerLogos} entrance />
+                ) : (
+                  <FadeUpReveal yOffset={50}>
+                    {trustedLock ? (
+                      <TrustedLockLane logos={laneLogos} backers={backerLogos} />
+                    ) : (
+                      <LogoCloud
+                        logos={trustedLogos}
+                        title="Trusted by the very best"
+                      />
+                    )}
+                  </FadeUpReveal>
+                )}
               </section>
             </>
           }
