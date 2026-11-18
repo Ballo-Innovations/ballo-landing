@@ -229,42 +229,51 @@
 }
 
 .trusted-lane__runway {
+  /* Every logo rides in a box this wide, so all of them move at one speed
+     and keep even gaps whatever the shape of the logo. */
+  --slot-w: 200px;
   position: relative;
   flex: 1;
   min-width: 0;
-  height: 100px;
+  height: 120px;
   overflow: hidden;
   container-type: inline-size;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%);
-  mask-image: linear-gradient(90deg, transparent, #000 16%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 92%, transparent);
 }
 
-.trusted-lane__runner {
+/* One straight, constant-speed run per logo: from just off the left edge
+   until its centre reaches the mark at the right edge, which happens on the
+   clock step, the moment its message hops out. It fades over the last part
+   as it goes into the mark. The run is exempt from the section's off-screen
+   pause (`[data-anim="paused"]` in utilities.css): the clock stops on its
+   own off screen, and a paused run would come back out of step with it. */
+.trusted-lane .trusted-lane__runner {
   position: absolute;
   left: 0;
-  top: 50%;
-  height: 52px;
-  margin-top: -26px;
+  top: 0;
+  bottom: 0;
+  width: var(--slot-w);
   display: flex;
   align-items: center;
+  justify-content: center;
   opacity: 0;
+  will-change: transform, opacity;
   animation: trusted-run var(--run-ms, 8800ms) linear forwards;
+  animation-play-state: running !important;
 }
 
-/* From off the left edge to the runway's right edge, where the mark sits,
-   then into it. The runway clips at that edge, so the logo goes in rather
-   than over. */
 @keyframes trusted-run {
-  0% { transform: translateX(-100%); opacity: 0; }
-  8% { opacity: 0.9; }
-  86% { transform: translateX(calc(100cqw - 100%)); opacity: 0.9; }
-  100% { transform: translateX(100cqw) scale(0.5); opacity: 0; }
+  0% { transform: translateX(calc(-1 * var(--slot-w))); opacity: 0; }
+  8% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateX(calc(100cqw - var(--slot-w) / 2)); opacity: 0; }
 }
 
 .trusted-lane__logo {
-  height: 52px;
+  height: 72px;
   width: auto;
-  max-width: 150px;
+  max-width: calc(var(--slot-w) - 24px);
   object-fit: contain;
 }
 
@@ -303,12 +312,12 @@
   top: 50%;
   margin-top: -11px;
   pointer-events: none;
-  animation: trusted-hop-x 640ms cubic-bezier(0.45, 0, 0.55, 1) forwards;
+  animation: trusted-hop-x 720ms cubic-bezier(0.33, 0, 0.67, 1) forwards;
 }
 
 .trusted-lane__hop-lift {
   display: block;
-  animation: trusted-hop-y 640ms forwards;
+  animation: trusted-hop-y 720ms forwards;
 }
 
 .trusted-lane__bubble {
@@ -322,7 +331,8 @@
   background: #eef0ff;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   opacity: 0;
-  animation: trusted-hop-pop 640ms ease-out forwards;
+  will-change: transform, opacity;
+  animation: trusted-hop-pop 720ms linear forwards;
 }
 
 .trusted-lane__bubble i {
@@ -339,17 +349,19 @@
   to { transform: translateX(calc(var(--lane-gap) - 18px)); }
 }
 
+/* A projectile's arc: decelerating up, accelerating down, so with the
+   steady crossing above it reads as one curve. */
 @keyframes trusted-hop-y {
-  0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); }
-  50% { transform: translateY(-58px); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4); }
+  0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.33, 0.66, 0.66, 1); }
+  50% { transform: translateY(-60px); animation-timing-function: cubic-bezier(0.33, 0, 0.66, 0.34); }
   100% { transform: translateY(0); }
 }
 
 @keyframes trusted-hop-pop {
-  0% { opacity: 0; transform: scale(0.4); }
-  14% { opacity: 1; transform: scale(1); }
-  82% { opacity: 1; transform: scale(0.9); }
-  100% { opacity: 0; transform: scale(0.3); }
+  0% { opacity: 0; transform: scale(0.5); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  20% { opacity: 1; transform: scale(1); }
+  80% { opacity: 1; transform: scale(1); animation-timing-function: ease-in; }
+  100% { opacity: 0; transform: scale(0.6); }
 }
 .trusted-lane__slot {
   grid-area: slot;
@@ -419,7 +431,7 @@
 /* Stacked: heading, runway, the phone centred, then "Backed by". */
 @media (max-width: 1023px) {
   .trusted-lane {
-    --slot-h: clamp(260px, calc(100svh - 440px), 420px);
+    --slot-h: clamp(240px, calc(100svh - 480px), 400px);
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
     grid-template-areas:
@@ -429,15 +441,16 @@
       "backers";
   }
   .trusted-lane__hop { display: none; }
+  .trusted-lane__runway { --slot-w: 172px; }
+  .trusted-lane__logo { height: 62px; }
   .trusted-lane__track { margin-top: 1.25rem; }
   .trusted-lane__slot { justify-self: center; margin-top: 1.25rem; }
   .trusted-lane__backers { margin-top: 1.5rem; padding-top: 1rem; }
 }
 
 @media (max-width: 640px) {
-  .trusted-lane__runway { height: 72px; }
-  .trusted-lane__runner { height: 34px; margin-top: -17px; }
-  .trusted-lane__logo { height: 34px; max-width: 84px; }
+  .trusted-lane__runway { height: 84px; --slot-w: 128px; }
+  .trusted-lane__logo { height: 48px; }
   .trusted-lane__hub { width: 48px; height: 48px; border-radius: 12px; }
   .trusted-lane__backers .delivered-over { gap: 0.75rem 1rem; flex-wrap: nowrap; }
   .trusted-lane__backers .delivered-over__label {

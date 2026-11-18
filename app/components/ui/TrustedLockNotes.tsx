@@ -97,6 +97,9 @@ export function LogoMark({
       height={80}
       sizes={sizes}
       className={className}
+      // Eager: logos mount as they set off along the runway or land on the
+      // lock screen, and a lazy one could appear a beat late.
+      loading="eager"
       style={{ filter: logo.invert ? "brightness(0) invert(1)" : undefined }}
     />
   );
@@ -201,7 +204,7 @@ export function TrustedLockNotes({
             style={{ ["--slot" as string]: note.slot } as React.CSSProperties}
           >
             <span className="jp-note__avatar">
-              <LogoMark logo={brand} className="jp-note__logo" sizes="48px" />
+              <LogoMark logo={brand} className="jp-note__logo" sizes="64px" />
               <span className="jp-note__badge">
                 <AppIcon channel={channel} />
               </span>

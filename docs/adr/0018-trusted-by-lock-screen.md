@@ -49,7 +49,7 @@ runway at 1440 x 900.
   the phone (option C, George's pick from five drawn options, after trying
   signal waves; it replaced the first dashed line). The arc is two
   animations, one across the gap and one up and down, so it fits any gap
-  width. It lands at 640ms, and each new notification is held back 420ms
+  width. It lands at 720ms, and each new notification is held back 560ms
   to land with it. The hop is keyed by the step so it plays once per step;
   a looping CSS animation drifted from the clock whenever the section's
   animations paused. Hidden in the stacked layout, where there is no gap
@@ -73,6 +73,28 @@ until it is off the screen. It no longer goes on to the testimonials chat,
 and nothing below this section has the phone. Together with `STOP_AT_WHO`,
 its path is now: the Brutus film, off the top through Who, up from below
 into the slot, off the top with the section.
+
+## Smooth motion (2026-11-18)
+
+George found the runway, the hop and the notes clunky. What was wrong and
+what changed:
+- Each logo's run was measured in its own width, so wide and narrow logos
+  moved at different speeds with uneven gaps, and the run sped up and
+  shrank over its last stretch. Every logo now rides in a box of one width
+  (`--slot-w`, 200px; 172px stacked, 128px on phones) at one constant speed,
+  from just off the left edge until its centre reaches the mark, exactly on
+  the clock step that sends its message. Measured: one speed for every logo
+  (92 px/s at 1440), no backward jumps, steps 2200ms apart.
+- The runs were paused by the section's off-screen rule
+  (`[data-anim="paused"]`) while the clock kept its own time, so they could
+  come back out of step. Runs are exempt; the clock already stops off
+  screen.
+- Logos load eagerly, so a new one never appears late.
+- The hop is a 720ms arc (steady across, decelerating up, accelerating
+  down) with a small pop; notes land 560ms after the step, as the bubble
+  arrives, with the rest of the stack moving on the same easing.
+- Logos are bigger: 72px on the runway (62px stacked, 48px on phones), and
+  the avatars on the notes are larger with less padding.
 
 ## How it is built
 

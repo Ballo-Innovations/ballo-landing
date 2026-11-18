@@ -140,7 +140,7 @@ export function TrustedLockLane({
                 className="trusted-lane__runner"
                 style={{ animationDelay: `${runner.delayMs}ms` }}
               >
-                <LogoMark logo={logo} className="trusted-lane__logo" sizes="150px" />
+                <LogoMark logo={logo} className="trusted-lane__logo" sizes="176px" />
               </span>
             );
           })}
