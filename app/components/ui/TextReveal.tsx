@@ -42,7 +42,10 @@ export function TextReveal({
   as: Tag = "span",
   /** Seconds between one character and the next. */
   stagger = 0.012,
+  /** The heading element itself, for callers that measure it (SectionTitle). */
+  elRef,
 }: {
+  elRef?: React.Ref<HTMLElement>;
   text: string;
   play?: boolean;
   className?: string;
@@ -58,6 +61,7 @@ export function TextReveal({
 
   return (
     <Tag
+      ref={elRef as React.Ref<HTMLHeadingElement>}
       /* `reveal-text` is the hook the stylesheet needs on the element itself:
          a split heading must stop painting its own text, or a gradient one
          paints a broken copy of the whole string behind the characters. */

@@ -6,6 +6,7 @@ import { useScroll, useSpring } from "framer-motion";
 import type { HomeTestimonialItem } from "@/app/HomeClient";
 import { FadeUpReveal } from "../ui/FadeUpReveal";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
+import { SectionTitle } from "../ui/SectionTitle";
 
 /**
  * The 21st.dev "3D testimonials": vertical marquee columns on a tilted
@@ -431,9 +432,10 @@ export function Testimonials3D({ items }: { items: HomeTestimonialItem[] }) {
       <div className="page-inner">
         <FadeUpReveal className="t3d__head">
           <span className="section-eyebrow">Testimonials</span>
-          <h2 className="section-h2 text-gradient-silver">
-            Hear from those who have tried and tested.
-          </h2>
+          <SectionTitle
+            className="section-h2 text-gradient-silver"
+            text="Hear from those who have tried and tested."
+          />
         </FadeUpReveal>
       </div>
 

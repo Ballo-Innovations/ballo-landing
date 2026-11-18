@@ -198,3 +198,73 @@
     opacity: 0;
   }
 }
+
+/* ── Section titles (SectionTitle.tsx, behind `sectionTitles`) ──
+   The hero's "Why Choose BalloAds?" treatment on every section title: the
+   heaviest weight with the silver ramp (`text-gradient-silver`), and the
+   characters rising in as above. Two classes so it outranks the titles' own
+   weights (`.section-h2` is 800, the Trusted by title 400); Tailwind's
+   `font-black` sits in a cascade layer and loses to unlayered rules. */
+.reveal-text.section-title-fx {
+  font-weight: 900;
+  /* The same size as "Why Choose BalloAds?" (`.aside-copy-title` in
+     cinematic-hero.css), at each of its breakpoints. */
+  font-size: clamp(2.5rem, 5.6vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+@media (max-width: 900px) {
+  .reveal-text.section-title-fx {
+    font-size: clamp(2.5rem, 11vw, 4rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .reveal-text.section-title-fx {
+    font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+  }
+}
+
+/* The paragraphs under those titles, a step up to sit with them. They keep
+   their own soft white (plain white was tried and rejected, 2026-11-18). Home
+   page classes only, so other pages using `.landing-body` are untouched.
+   `data-section-titles` is set on <html> by SectionTitle when the flag is on. */
+:root[data-section-titles] .aside-copy-body {
+  font-size: clamp(1.1875rem, 1.7vw, 1.5rem);
+}
+
+:root[data-section-titles] .brutus-stage__lede,
+:root[data-section-titles] .cta-mq__lede {
+  font-size: 1.375rem;
+}
+
+@media (max-width: 640px) {
+  :root[data-section-titles] .aside-copy-body,
+  :root[data-section-titles] .hero-brutus .brutus-stage__lede,
+  :root[data-section-titles] .cta-mq__lede {
+    font-size: 1.125rem;
+  }
+}
+
+/* "Who can use BalloAds?" sat right under the nav, a position it took for the
+   journey phone, which no longer stops in that section. With the bigger
+   titles it comes down by 10vh, and the same 10vh comes out of the drop
+   above the curved row, so the row stays where it was (home.css,
+   `.brutus-stage__after .who-curved` and its `__band`). */
+:root[data-section-titles] .brutus-stage__after .who-curved {
+  padding-top: calc(clamp(4.75rem, 10vh, 6rem) + 10vh);
+}
+
+:root[data-section-titles] .brutus-stage__after .who-curved__band {
+  margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1);
+}
+
+/* Phones keep the drop: their row is short, so without it the row hugs the
+   heading and leaves most of the screen empty below. */
+@media (max-width: 640px) {
+  :root[data-section-titles] .brutus-stage__after .who-curved__band {
+    margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1 + 10vh);
+  }
+}

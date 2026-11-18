@@ -2930,9 +2930,9 @@
    that was a whole demo page, and this is one section of a route that already
    opens with a 900vh hero pin. */
 .brutus-stage-track {
-  /* Brutus in (170vh), Brutus out, Who in, hold, Who out, Backed by in:
-     390vh in all (BrutusSection TRACK_VH, ADR 0014). */
-  height: 440vh;
+  /* Who in, hold, Who out, Backed by in (BrutusSection TRACK_VH). Brutus
+     itself plays on the hero's pin now (ADR 0016). */
+  height: 317vh;
 }
 
 .brutus-stage {
@@ -2976,26 +2976,6 @@
   color: rgba(255, 255, 255, 0.76);
 }
 
-/* The clip window the film opens out of. `ContainerInset` writes the
-   `clip-path` itself; this only has to give it a box. */
-.brutus-stage__inset {
-  width: min(100%, 68rem);
-  /* The film absorbs whatever the copy and the CTA do not need. `min-height:
-     0` is what lets it: a flex item will not shrink below its base size
-     without it, and its base here is a 16:9 frame at the column's width. */
-  min-height: 0;
-  max-height: min(46vh, 26rem);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brutus-stage__video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
 .brutus-stage__cta {
   display: flex;
   flex-wrap: wrap;
@@ -3016,11 +2996,6 @@
   .brutus-stage {
     position: static;
     min-height: 0;
-  }
-
-  .brutus-stage__inset {
-    border-radius: 1rem;
-    overflow: hidden;
   }
 }
 
@@ -3478,6 +3453,23 @@
   margin-bottom: 0.75rem;
 }
 
+/* On the Brutus stage the curved row hangs from the top rather than sitting
+   centred, with the heading just under the nav, so the journey phone below
+   it (ADR 0017) has the height. */
+.brutus-stage__after:has(.who-curved) {
+  align-items: flex-start;
+}
+
+.brutus-stage__after .who-curved {
+  padding-top: clamp(4.75rem, 10vh, 6rem);
+}
+
+/* The row drops a little under the raised heading, so it crosses the upper
+   part of the tall phone's glass rather than its top edge. */
+.brutus-stage__after .who-curved__band {
+  margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1 + 10vh);
+}
+
 .who-curved__cta {
   display: flex;
   justify-content: center;
@@ -3719,16 +3711,18 @@
   }
 }
 
-/* Brutus rises over the end of the hero pin (ADR 0009), the way the phone
-   rises into the hero: pulled up over the outro (the last 1/7 of the pin's
-   600vh of scroll, ~86vh), so it comes up from the bottom while "Why Choose"
-   leaves sideways. Only when the
-   pin exists: under reduced motion the hero is static and nothing overlaps. */
+/* Pulled up a whole viewport over the end of the hero pin (ADR 0016), so
+   this stage pins the moment the hero's releases and Who arrives without an
+   empty screen of scroll between them. It overlaps the Brutus act's last
+   viewport while doing so, so it lets the pointer through; `After` and `Then`
+   switch their own pointer-events back on. Only when the pin exists: under
+   reduced motion the hero is static and nothing overlaps. */
 @media (prefers-reduced-motion: no-preference) {
   .brutus-home {
     position: relative;
     z-index: 5;
-    margin-top: -86vh;
+    margin-top: -100vh;
+    pointer-events: none;
   }
 }
 
@@ -3782,6 +3776,19 @@
 .trusted-by-section--in-stage {
   width: 100%;
   padding-top: clamp(2rem, 6vh, 4rem);
+}
+
+/* Layout A of the lock screen (ADR 0018): "Backed by" lives inside the
+   section, so the stage centres the whole split under the nav instead of
+   stacking two blocks from the top. */
+.brutus-stage__then:has(.trusted-by-section--split) {
+  justify-content: center;
+  padding-top: clamp(4.75rem, 9vh, 5.5rem);
+  padding-bottom: 1.5rem;
+}
+
+.trusted-by-section--split {
+  padding-top: 0;
 }
 
 /* The Backed by band without its glass panel (2026-10-18): the marks and

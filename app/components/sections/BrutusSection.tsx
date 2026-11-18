@@ -6,241 +6,95 @@ import { Sparkles } from "lucide-react";
 import { motion, useMotionValueEvent, useTransform } from "framer-motion";
 
 import {
-  ContainerInset,
   ContainerScroll,
   ContainerSticky,
-  HeroVideo,
   useContainerScrollContext,
 } from "../ui/AnimatedVideoOnScroll";
 import { ShinyButton } from "../ui/ShinyButton";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
 import { at, easeOut } from "@/lib/cinematic";
 import { StageRowProgress } from "../ui/stageRowProgress";
+import { SectionTitle } from "../ui/SectionTitle";
 
 /**
- * Brutus, as a section of the home page.
+ * Brutus on the home page (ADR 0016).
  *
- * A trailer for /brutus rather than a copy of it: a pinned stage where the
- * copy rises out of a blur and the demo film opens from a rounded pill to full
- * bleed as you scroll.
+ * The film no longer opens out of a pill on a stage of its own. The hero's
+ * phone carries on into it: once the last "Why Choose" card has had its dwell
+ * the device returns to the centre, turns to landscape and plays the film on
+ * its own screen, and this copy rises in underneath it — all on the hero's pin
+ * (see `HeroSideExit`). This module supplies the two pieces that pin needs,
+ * `BrutusStageCopy` and `BRUTUS_FILM`, and keeps the stage that follows it:
+ * Who, then "Backed by" and "Trusted by".
  *
- * The stage is the 21st.dev "animated video on scroll" component, which this
- * project already had at `ui/AnimatedVideoOnScroll` — the hero's own pin runs
- * on the same four primitives (see `HeroSideExit`), so this adds no dependency
- * and no second copy of them. `HeroVideo` was the one export that had never
- * been needed before and is ported now.
- *
- * What this replaced, and why: a "lamp" header, a phone mock and pulse beams
- * running between them, and below the stage a set of capability cards and
- * chips. The film is a far stronger centrepiece than any of it, and all of
- * that detail still lives on /brutus, which is where the CTA sends anyone who
- * wants it — the six capabilities included, from the same shared module.
- *
+ * The class names are the old stage's, so the shared copy styling still
+ * applies wherever it is rendered.
+ */
+export function BrutusStageCopy() {
+  return (
+    <>
+      <div className="brutus-stage__copy">
+        <span className="section-eyebrow">
+          <Sparkles size={13} aria-hidden="true" />
+          Meet Brutus
+        </span>
+        <SectionTitle
+          className="section-h2 brutus-stage__h2"
+          text="Your AI assistant that never clocks off."
+        />
+        <p className="landing-body brutus-stage__lede">
+          Brutus answers customers, qualifies leads and sends campaigns for
+          you, across WhatsApp, SMS, email and the web, in a voice that sounds
+          like your brand.
+        </p>
+      </div>
+      <div className="brutus-stage__cta">
+        <ShinyButton href="/brutus">Meet Brutus</ShinyButton>
+        <Link href="/live-chat" className="btn-secondary group">
+          Talk to us
+        </Link>
+      </div>
+    </>
+  );
+}
+
+/**
+ * The demo film, self-hosted rather than pointed at `cdn.21st.dev`, and
+ * re-encoded to 1152 wide with no audio track (it only ever plays muted).
+ */
+export const BRUTUS_FILM = {
+  src: "/brutus/demo.mp4",
+  poster: "/brutus/demo-poster.jpg",
+};
+
 /*
  * ── The stage's timeline ────────────────────────────────────────────────
  *
- * The pin runs one thing at a time: the film opens, and only then does the
- * copy arrive under it.
- *
- * This is NOT what `ContainerAnimated` gives you, which is why neither the
- * copy nor the CTA uses it any more. That component fades its content in on
- * `whileInView` with `once: true` — so it fires the moment the element enters
- * the viewport, which on a pinned stage is the very first frame of the pin,
- * with the film still a capsule. The heading was fully readable before the
- * film had opened at all. Its CTA variant also carried `outputRange={[-120,
- * 0]}`, lifting the buttons 120px at zero progress, which parked them on top
- * of the heading.
- *
- * So every beat below is driven by scroll progress instead, in sequence.
+ * Ranges are stated in vh of scroll and divided by the track's length. The
+ * track starts as the section's top enters the bottom of the screen
+ * (`offset` below), and the section is pulled up a whole viewport over the end
+ * of the hero's pin (`.brutus-home` in home.css), so the stage pins at vh 100
+ * — the moment the hero's pin releases, with its stage already empty.
  */
-
-/**
- * When the film opens.
- *
- * The track starts a whole viewport before this section owns the screen (see
- * the `offset` on `ContainerScroll` below), so progress 0 is NOT the moment
- * the stage takes over — it is the moment the section first appears at the
- * bottom of the screen.
- *
- * Zero: the capsule starts widening as soon as it appears, which is what
- * George asked for. It used to hold until 0.5, because the hero's "Why Choose
- * BalloAds?" copy is measured to leave the viewport only at about 0.47, and
- * holding kept the two scenes from animating over each other. They now
- * overlap through the entry by design — the film opens across the whole
- * approach instead of the back half of it.
- *
- * `FILM_OPEN` is unchanged, so the film still finishes opening exactly where
- * it did and the copy and CTA beats below keep their cues.
- */
-/** The track grew 170vh → 240vh for the outro; the entrance keeps its scroll. */
-// The track grew 240vh → 390vh for the Who outro and "Backed by" (ADR 0014).
-// Ranges are stated in vh of that track and divided by its length.
-const TRACK_VH = 440;
+// Was 440vh with the film's 123vh at the front (ADR 0014); the film moved to
+// the hero's pin and every beat below moved up by that much.
+const TRACK_VH = 317;
 const vh = (a: number, b: number): [number, number] => [a / TRACK_VH, b / TRACK_VH];
-const TRACK_SCALE = 170 / TRACK_VH;
-
-const FILM_OPEN_FROM = 0;
-/** Progress at which the film has finished opening to full bleed. */
-const FILM_OPEN = 0.78 * TRACK_SCALE;
 
 /**
- * How far below its resting place the film starts, in pixels.
- *
- * The capsule sat high in the stage with the copy's reserved space empty
- * beneath it, so the section opened on a sliver of film under the nav and a
- * void. Starting it lower and letting it rise as it widens puts the expansion
- * nearer the middle of the screen, where there is something to look at.
+ * Where Who comes in: just before the stage pins, so it arrives as the hero's
+ * Brutus act finishes leaving rather than onto an empty screen.
  */
-const FILM_DROP = 150;
-
-/** The copy, then the buttons — each after the beat before it. */
-const COPY_IN: [number, number] = [0.79 * TRACK_SCALE, 0.9 * TRACK_SCALE];
-const CTA_IN: [number, number] = [0.87 * TRACK_SCALE, 0.97 * TRACK_SCALE];
-
-/**
- * The outro (like the hero's exit, see HeroSideExit): the pieces leave
- * sideways at their own speeds over the track's added tail, before the pin
- * releases. Travel only; written to CSS `translate` so it composes with the
- * film's rise and the copy's own `y`.
- */
-const OUTRO: [number, number] = vh(178, 240);
-const OUTRO_PARTS: Array<[selector: string, dir: 1 | -1, speed: number]> = [
-  [".brutus-stage__cta", 1, 2],
-  [".brutus-stage__lede", -1, 1.7],
-  [".brutus-stage__h2", 1, 1.4],
-  [".brutus-stage__copy .section-eyebrow", -1, 1.9],
-  [".brutus-stage__inset", -1, 1.05],
-];
-
-function BrutusOutro() {
-  const { scrollYProgress } = useContainerScrollContext();
-  const ref = React.useRef<HTMLSpanElement>(null);
-  const place = React.useCallback((p: number) => {
-    const stage = ref.current?.parentElement;
-    if (!stage) return;
-    const u0 = at(p, OUTRO);
-    const dist = window.innerWidth + 120;
-    OUTRO_PARTS.forEach(([sel, dir, speed], i) => {
-      const u = Math.min(1, Math.max(0, (u0 - i * 0.04) * speed));
-      const t = u * u * (3 - 2 * u);
-      const el = stage.querySelector<HTMLElement>(sel);
-      if (el) el.style.translate = t > 0.0005 ? `${(dir * dist * t).toFixed(1)}px 0` : "";
-    });
-  }, []);
-  useMotionValueEvent(scrollYProgress, "change", place);
-  React.useEffect(() => place(scrollYProgress.get()), [place, scrollYProgress]);
-  return <span ref={ref} hidden />;
-}
-
-/**
- * One beat of the stage: fades and rises over its own slice of the pin.
- *
- * `pointerEvents` is gated on the same range. Opacity alone leaves a button
- * clickable and focusable while it is invisible, which on this stage means a
- * CTA sitting unseen over the heading for the first half of the pin.
- */
-function Beat({
-  range,
-  className,
-  children,
-}: {
-  range: [number, number];
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const { scrollYProgress } = useContainerScrollContext();
-
-  /**
-   * Derived with `at()` — this project's own "how far through this range is
-   * the scroll" primitive, the one the hero's pin is built on — rather than
-   * handed to `useTransform` as keyframe arrays.
-   *
-   * Both earlier attempts at the array form misbehaved. Two stops (`[from,
-   * to]`) do not hold the end value: the copy faded in on cue and then faded
-   * back out again over the rest of the pin. Spelling out the flats across the
-   * whole domain (`[0, from, to, 1]` against `[0, 0, 1, 1]`) then produced
-   * values that did not match the stops at all — measured 0.77 at a progress
-   * of 0.515, where the stops say 0.
-   *
-   * A function transform has no interpolation semantics to get wrong: it
-   * clamps at both ends by construction, and what it returns can be read
-   * straight off the source.
-   */
-  const t = useTransform(scrollYProgress, (p) => at(p, range));
-  const opacity = t;
-  const y = useTransform(t, (v) => (1 - easeOut(v)) * 28);
-  const pointerEvents = useTransform(scrollYProgress, (p) =>
-    p > range[0] + (range[1] - range[0]) * 0.6 ? "auto" : "none",
-  );
-
-  return (
-    <motion.div className={className} style={{ opacity, y, pointerEvents }}>
-      {children}
-    </motion.div>
-  );
-}
-
-/** The film, rising as it widens. */
-function Film() {
-  const { scrollYProgress } = useContainerScrollContext();
-  // Held low until the film starts opening, then rising with it. Same function
-  // form as `Beat`, for the same reason.
-  const y = useTransform(
-    scrollYProgress,
-    (p) => (1 - easeOut(at(p, [FILM_OPEN_FROM, FILM_OPEN]))) * FILM_DROP,
-  );
-
-  const filmScale = useTransform(
-    scrollYProgress,
-    (p) => 0.7 + 0.3 * at(p, [FILM_OPEN_FROM, FILM_OPEN]),
-  );
-
-  return (
-    <ContainerInset
-      openFrom={FILM_OPEN_FROM}
-      closeAt={FILM_OPEN}
-      // Ends rounder than the component's default 16px.
-      roundednessRange={[1000, 40]}
-      className="brutus-stage__inset"
-      style={{ y }}
-    >
-      {/* The clip from the component's own demo, self-hosted rather than
-          pointed at `cdn.21st.dev`: a third-party demo asset can be moved or
-          rate-limited at any time, and a hotlink would put a render of this
-          section in someone else's hands.
-
-          Re-encoded from the 2560x1440, 14MB source to 1152 wide with its
-          audio track dropped — the player is muted, so the AAC stream was pure
-          overhead.
-
-          `aria-hidden`, not a label: it is atmosphere, and the heading below
-          already says what the section is. */}
-      <HeroVideo
-        className="brutus-stage__video"
-        // HeroVideo scales 0.7→1 over the first 80% of the track, which was
-        // tuned for a short track. This one is far longer, so the film ended
-        // at ~0.84 scale, narrower than its frame, and the frame's rounded
-        // corners fell outside the picture. Reach full size as the frame opens.
-        style={{ scale: filmScale }}
-        src="/brutus/demo.mp4"
-        poster="/brutus/demo-poster.jpg"
-        aria-hidden="true"
-      />
-    </ContainerInset>
-  );
-}
-
-/** Where the next section fades in, over the end of the outro. */
-const AFTER_IN: [number, number] = vh(223, 240);
+export const AFTER_IN: [number, number] = vh(92, 110);
 /**
  * The hold (ADR 0015): Who and "Backed by" share the screen while the scroll
  * turns Who's curved row one full lap; only then does it all leave, the way
  * Who came in.
  */
-const ROW_TURN: [number, number] = vh(240, 330);
-const AFTER_OUT: [number, number] = vh(330, 385);
+export const ROW_TURN: [number, number] = vh(117, 207);
+export const AFTER_OUT: [number, number] = vh(207, 262);
 /** Then "Backed by" fades in alone, high on the stage (ADR 0014). */
-const THEN_IN: [number, number] = vh(380, 400);
+export const THEN_IN: [number, number] = vh(257, 277);
 
 function After({ children }: { children: React.ReactNode }) {
   const { scrollYProgress } = useContainerScrollContext();
@@ -335,49 +189,12 @@ export function BrutusSection({
   const animRef = useAnimateWhenVisible<HTMLElement>();
 
   return (
-    <section id="brutus" ref={animRef} className="brutus-home">
-      {/* ── The pinned stage ── */}
-      {/* Progress starts as the section RISES into view, not once it is
-          already pinned. The default ["start start", ...] leaves an entire
-          viewport of scroll — the whole entry — sitting at progress 0, so this
-          section came up from the bottom as a capsule of film over a void
-          while the hero's own composition was still leaving through the top.
-          That stretch was the "gap between the sections": neither section had
-          anything in the middle of the screen.
-
-          Shifted to the viewport's bottom edge, the track is the same length
-          and still ends exactly where the pin releases — the film simply opens
-          on the way in, so the arriving section fills the screen the departing
-          one is vacating. */}
+    <section ref={animRef} className="brutus-home">
       <ContainerScroll
         className="brutus-stage-track"
         offset={["start end", "end end"]}
       >
         <ContainerSticky className="brutus-stage">
-          <BrutusOutro />
-          <Film />
-
-          <Beat range={COPY_IN} className="brutus-stage__copy">
-            <span className="section-eyebrow">
-              <Sparkles size={13} aria-hidden="true" />
-              Meet Brutus
-            </span>
-            <h2 className="section-h2 brutus-stage__h2">
-              Your AI assistant that never clocks off.
-            </h2>
-            <p className="landing-body brutus-stage__lede">
-              Brutus answers customers, qualifies leads and sends campaigns for
-              you, across WhatsApp, SMS, email and the web, in a voice that
-              sounds like your brand.
-            </p>
-          </Beat>
-
-          <Beat range={CTA_IN} className="brutus-stage__cta">
-            <ShinyButton href="/brutus">Meet Brutus</ShinyButton>
-            <Link href="/live-chat" className="btn-secondary group">
-              Talk to us
-            </Link>
-          </Beat>
           {after ? <After>{after}</After> : null}
           {then ? <Then>{then}</Then> : null}
         </ContainerSticky>

@@ -756,3 +756,80 @@
   transition: none !important;
   animation: none !important;
 }
+
+/* ── Act four: Brutus (ADR 0016) ─────────────────────────────────────────
+   The phone returns to the middle, turns to landscape and plays the Brutus
+   film; the copy rises in underneath it. `HeroPhone` writes the wrapper's
+   transform and origin; `BrutusAct` writes each copy piece's `translate`. */
+.hero-phone-turn {
+  will-change: transform;
+}
+
+/* Fills the portrait screen. A size container, so the video inside can be
+   sized to the screen's swapped dimensions and turned upright. */
+.hero-phone-film {
+  position: absolute;
+  inset: 0;
+  /* Over the card sequence, whose list sets z-index 5 (`.why-scroll-items`);
+     the camera island stays on top, as on a real phone playing video. The
+     home bar does not. */
+  z-index: 6;
+  container-type: size;
+  background: #000;
+}
+
+.hero-phone-film ~ .phone3d-island {
+  z-index: 7;
+}
+
+.hero-phone-film__video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100cqh;
+  height: 100cqw;
+  max-width: none;
+  object-fit: cover;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.hero-brutus {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(1.5rem, 6vh, 3.5rem);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.4vh, 1.5rem);
+  padding-inline: clamp(1rem, 5vw, 2rem);
+  pointer-events: none;
+}
+
+/* One line where there is room: the phone above takes whatever height the
+   copy leaves it. */
+.hero-brutus .brutus-stage__h2 {
+  max-width: 30ch;
+}
+
+@media (max-width: 640px) {
+  .hero-brutus .brutus-stage__lede {
+    font-size: 0.95rem;
+  }
+}
+
+/* Reduced motion: no pin and no turn — the film's poster and the copy, in
+   flow after the hero. */
+.hero-brutus--static {
+  position: relative;
+  bottom: auto;
+  margin: 3rem auto;
+  max-width: 68rem;
+  pointer-events: auto;
+}
+
+.hero-brutus__poster {
+  width: 100%;
+  border-radius: 1rem;
+}

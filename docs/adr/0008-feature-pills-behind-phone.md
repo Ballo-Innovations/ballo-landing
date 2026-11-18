@@ -64,3 +64,11 @@ Reverted to the first version's width (`min(60rem, 120vw)`) at George's request.
 The pills now fade in on `TEXT_SWAP` (the heading turning over to "Why Choose
 BalloAds?") instead of `HALO_IN`, so they are absent during "What We're
 About".
+
+## Update (2026-10-18): archived
+
+At George's request the pills no longer scroll behind the phone.
+`SHOW_PHONE_CHIPS` in HeroSideExit is false, so they are not rendered. The
+store badges still ride in from the left on `ASIDE_IN`, and their code no
+longer depends on the pills being there. Flip the flag to bring the pills
+back as they were.

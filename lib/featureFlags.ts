@@ -15,7 +15,9 @@ export type FeatureName =
   | "whoCoverflow"
   | "blogCoverflow"
   | "tubesCursor"
-  | "legalPages";
+  | "legalPages"
+  | "trustedLockScreen"
+  | "sectionTitles";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
@@ -48,6 +50,10 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   tubescursor: "tubesCursor",
   legal: "legalPages",
   legalpages: "legalPages",
+  lockscreen: "trustedLockScreen",
+  trustedlockscreen: "trustedLockScreen",
+  titles: "sectionTitles",
+  sectiontitles: "sectionTitles",
 };
 
 /**
@@ -81,6 +87,8 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   blogCoverflow: process.env.NEXT_PUBLIC_FEATURE_BLOG_COVERFLOW,
   tubesCursor: process.env.NEXT_PUBLIC_FEATURE_TUBES_CURSOR,
   legalPages: process.env.NEXT_PUBLIC_FEATURE_LEGAL_PAGES,
+  trustedLockScreen: process.env.NEXT_PUBLIC_FEATURE_TRUSTED_LOCK_SCREEN,
+  sectionTitles: process.env.NEXT_PUBLIC_FEATURE_SECTION_TITLES,
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
