@@ -35,7 +35,7 @@ export function SectionTitle({
   // Read after mount: the flag honours a localStorage override, which only
   // exists client side, so the server and the first render must agree.
   // The flag also lifts the home page's paragraphs to match the bigger titles
-  // (white, a step larger: text-reveal.css), through an attribute on <html>
+  // (a step larger: text-reveal.css), through an attribute on <html>
   // because those paragraphs are spread over several components.
   React.useEffect(() => {
     const enabled = isFeatureEnabled("sectionTitles");
