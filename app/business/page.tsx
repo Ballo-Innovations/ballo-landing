@@ -1,15 +1,24 @@
 "use client";
 // components/marketing/HeroSection.tsx
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 import clsx from 'clsx'; // Utility for conditionally joining class names
 import person from "@/public/Assets/15.png";
 import circle from "@/public/Assets/9.png";
 import man from "@/public/BalloAds Assets 2/18.png";
+import { GapTypewriter } from "./GapTypewriter";
+import { BusinessDesign } from "./BusinessDesign";
+import { isFeatureEnabled, resolveFlag } from "@/lib/featureFlags";
+
+// The value the server and the first client render agree on. A `?features=`
+// override is applied after mount, like every other flag on the site.
+const DESIGN_BY_DEFAULT = resolveFlag({
+  env: process.env.NEXT_PUBLIC_FEATURE_BUSINESS_DESIGN,
+  defaultEnabled: process.env.NODE_ENV === "development",
+});
 
 // --- Prop Types & Variants ---
 
@@ -75,112 +84,6 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
-// --- Typewriter blank for the fill-in-the-blank hero ---
-
-// A real text input whose placeholder is an animated typewriter cycling
-// example words. The animation only runs while the field is empty and
-// unfocused, so it never fights with what the user types. Adapted from the
-// KokonutUI Typewriter reference, using the project's framer-motion for the
-// blinking caret instead of the "motion/react" package.
-const GapTypewriter: React.FC<{
-  name: string;
-  words: string[];
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  className?: string;
-  startDelay?: number;
-}> = ({ name, words, value, onChange, className = '', startDelay = 200 }) => {
-  const [display, setDisplay] = useState('');
-  const [focused, setFocused] = useState(false);
-  const wordIndex = useRef(0);
-  const charIndex = useRef(0);
-  const deleting = useRef(false);
-  const timeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wordsRef = useRef(words);
-  wordsRef.current = words;
-
-  // The animated placeholder is only visible while the blank is untouched.
-  const showPlaceholder = value.length === 0 && !focused;
-
-  useEffect(() => {
-    if (!showPlaceholder) {
-      if (timeout.current) clearTimeout(timeout.current);
-      return;
-    }
-
-    const typingSpeed = 90;
-    const deleteSpeed = 45;
-    const holdAfterType = 1600;
-    const holdAfterDelete = 350;
-
-    // +/- variance so each keystroke feels hand-typed rather than metronomic.
-    const jitter = (base: number) => base * (0.7 + Math.random() * 0.6);
-
-    const tick = () => {
-      const current = wordsRef.current[wordIndex.current] ?? '';
-
-      if (deleting.current) {
-        charIndex.current -= 1;
-        setDisplay(current.slice(0, Math.max(0, charIndex.current)));
-        if (charIndex.current <= 0) {
-          deleting.current = false;
-          wordIndex.current = (wordIndex.current + 1) % wordsRef.current.length;
-          timeout.current = setTimeout(tick, holdAfterDelete);
-        } else {
-          timeout.current = setTimeout(tick, jitter(deleteSpeed));
-        }
-      } else {
-        charIndex.current += 1;
-        setDisplay(current.slice(0, charIndex.current));
-        if (charIndex.current >= current.length) {
-          deleting.current = true;
-          timeout.current = setTimeout(tick, holdAfterType);
-        } else {
-          timeout.current = setTimeout(tick, jitter(typingSpeed));
-        }
-      }
-    };
-
-    timeout.current = setTimeout(tick, startDelay);
-    return () => {
-      if (timeout.current) clearTimeout(timeout.current);
-    };
-  }, [showPlaceholder, startDelay]);
-
-  return (
-    <span
-      className={`relative inline-block mx-2 border-b-2 border-white/40 align-baseline focus-within:border-white ${className}`}
-    >
-      <input
-        type="text"
-        name={name}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        aria-label={name}
-        autoComplete="off"
-        className="w-full bg-transparent px-2 text-white outline-none"
-      />
-      {showPlaceholder && (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 flex items-center overflow-hidden px-2 whitespace-nowrap"
-          style={{ color: '#535A8D' }}
-        >
-          {display}
-          <motion.span
-            className="ml-[2px] inline-block w-[3px] align-middle bg-[var(--cyan-bright)]"
-            style={{ height: '0.9em' }}
-            animate={{ opacity: [1, 1, 0, 0] }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          />
-        </span>
-      )}
-    </span>
-  );
-};
-
 // --- Component Definition ---
 
 const HeroSection: React.FC = () => {
@@ -199,6 +102,11 @@ const HeroSection: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  const [design, setDesign] = useState(DESIGN_BY_DEFAULT);
+  useEffect(() => setDesign(isFeatureEnabled("businessDesign")), []);
+
+  if (design) return <BusinessDesign values={formData} onChange={handleChange} />;
 
   return (
     <div className="bg-[var(--brand-color-1)]">
