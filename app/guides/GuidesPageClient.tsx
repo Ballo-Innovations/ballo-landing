@@ -14,6 +14,9 @@ import uploadContacts from "@/public/Assets/14.png";
 import whatsappTile from "@/public/BalloAds Assets 2/22.png";
 
 import type { FaqEntry } from "@/lib/faqApi";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import GuidesCarousel from "./GuidesCarousel";
+import { guideSteps } from "./guidesContent";
 
 const tiles = [
   { label: "Push Notifications", image: pushNotifications },
@@ -28,6 +31,10 @@ const steps =
 
 export default function GuidesPageClient({ faqs }: { faqs: FaqEntry[] }) {
   const [openFaq, setOpenFaq] = useState<number | null>(faqs.length > 0 ? 0 : null);
+  // Read after mount, like the flags on the home page: the server has no
+  // localStorage, so checking during render would mismatch on hydration.
+  const [carousel, setCarousel] = useState(false);
+  React.useEffect(() => setCarousel(isFeatureEnabled("guidesCarousel")), []);
 
   const toggleFaq = (index: number) =>
     setOpenFaq((current) => (current === index ? null : index));
@@ -36,6 +43,9 @@ export default function GuidesPageClient({ faqs }: { faqs: FaqEntry[] }) {
     <main className="guides-page">
       {/* Hero */}
       <section className="guides-hero">
+        {carousel ? (
+          <GuidesCarousel />
+        ) : (
         <div className="guides-hero__grid">
           {/* Demo card */}
           <div className="guides-hero__main">
@@ -83,8 +93,24 @@ export default function GuidesPageClient({ faqs }: { faqs: FaqEntry[] }) {
             </div>
           </div>
         </div>
+        )}
 
-        <p className="guides-steps">{steps}</p>
+        <p className="guides-steps">
+          {carousel
+            ? guideSteps.map((step, i) => (
+                <React.Fragment key={step}>
+                  {i > 0 && <span className="guides-steps__sep">-</span>}
+                  <span
+                    className={
+                      i === 0 || i === guideSteps.length - 1 ? "guides-steps__step--end" : undefined
+                    }
+                  >
+                    {step}
+                  </span>
+                </React.Fragment>
+              ))
+            : steps}
+        </p>
       </section>
 
       {/* FAQ band */}

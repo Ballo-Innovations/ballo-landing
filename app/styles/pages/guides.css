@@ -141,6 +141,272 @@
   color: var(--dark-blue);
 }
 
+/* =============================================================
+   Carousel hero (flag `guidesCarousel`).
+   One guide in the big card on the left, the rest as tiles on the
+   right; choosing a tile flies it into the big card. The flight is
+   measured off these boxes at run time (GuidesCarousel.tsx), so the
+   sizes below are the single source of truth for where cards land.
+   ============================================================= */
+.guides-stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.85rem;
+  align-items: stretch;
+}
+
+/* ---- Big card ---- */
+.guides-big {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding: clamp(1.1rem, 2.6vw, 2.25rem);
+  border-radius: clamp(1.5rem, 2.4vw, 2.25rem);
+  background: linear-gradient(135deg, #eef1f6 0%, #dfe3ea 100%);
+  box-shadow: 0 26px 52px -34px rgba(2, 0, 85, 0.45);
+}
+
+.guides-big__art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: clamp(1rem, 1.8vw, 1.6rem);
+  overflow: hidden;
+  background: #cfd6e2;
+}
+
+.guides-big__img {
+  object-fit: cover;
+  /* The design's artwork is black and white in the big card only. */
+  filter: grayscale(1) contrast(1.04);
+}
+
+.guides-big__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1.1rem, 2.4vw, 1.9rem);
+}
+
+.guides-big__headline {
+  margin: 0;
+  max-width: 13ch;
+  font-size: clamp(1.7rem, 3.6vw, 2.9rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--dark-blue);
+  animation: guides-headline-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes guides-headline-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ---- Watch Demo button, on the big card and on every tile ---- */
+.guides-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.62rem 0.95rem 0.62rem 1.15rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  background: #fff;
+  color: var(--dark-blue);
+  box-shadow: 0 12px 26px -16px rgba(2, 0, 85, 0.55);
+  transition: transform 0.2s ease, box-shadow 0.22s ease;
+}
+
+.guides-watch svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+}
+
+.guides-watch--tile {
+  padding: 0.44rem 0.6rem 0.44rem 0.8rem;
+  font-size: clamp(0.62rem, 1.1vw, 0.74rem);
+}
+
+.guides-watch--tile svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.guides-big__cta {
+  text-decoration: none;
+}
+
+.guides-big__cta:hover .guides-watch,
+.guides-tile__cta:hover .guides-watch {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -16px rgba(2, 0, 85, 0.6);
+}
+
+.guides-big__cta:focus-visible,
+.guides-tile__cta:focus-visible,
+.guides-tile__pick:focus-visible {
+  outline: 3px solid var(--brand-color-3, #2273af);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.guides-tile__pick:focus-visible {
+  border-radius: inherit;
+}
+
+/* ---- Tiles ---- */
+.guides-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guides-tile {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: clamp(0.9rem, 1.4vw, 1.25rem);
+  overflow: hidden;
+  background: var(--dark-blue-2, #0e0e39);
+  box-shadow: 0 16px 34px -24px rgba(2, 0, 85, 0.6);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.guides-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 40px -22px rgba(2, 0, 85, 0.65);
+}
+
+.guides-tile__art {
+  position: absolute;
+  inset: 0;
+}
+
+.guides-tile__img {
+  object-fit: cover;
+}
+
+.guides-tile__label {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.8rem;
+  z-index: 2;
+  max-width: 58%;
+  font-size: clamp(0.78rem, 1.5vw, 1.02rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+  pointer-events: none;
+}
+
+/* The whole tile is the control that brings a guide into the big card. */
+.guides-tile__pick {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+/* Sits above the tile-wide button so it can be clicked on its own. */
+.guides-tile__cta {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 0.7rem;
+  transform: translateX(-50%);
+  text-decoration: none;
+}
+
+.guides-tile__play {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -62%);
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--dark-blue);
+  pointer-events: none;
+}
+
+/* Dark artwork takes white text and a white button... */
+.guides-tile--dark .guides-tile__label {
+  color: #fff;
+  text-shadow: 0 2px 14px rgba(2, 0, 85, 0.55);
+}
+
+/* ...light artwork takes navy text and a navy button. */
+.guides-tile--light .guides-tile__label {
+  color: var(--dark-blue);
+}
+
+.guides-tile--light .guides-watch {
+  background: var(--dark-blue);
+  color: #fff;
+}
+
+/* Cards in flight between a tile and the big card. */
+.guides-flight {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.guides-flight > * {
+  border-radius: clamp(0.9rem, 1.4vw, 1.25rem);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guides-big__headline {
+    animation: none;
+  }
+
+  .guides-tile {
+    transition: none;
+  }
+}
+
+@media (min-width: 900px) {
+  .guides-stage {
+    grid-template-columns: 1.45fr 1fr;
+    gap: 1rem;
+  }
+
+  .guides-big {
+    grid-template-columns: 0.82fr 1fr;
+  }
+
+  .guides-tiles {
+    grid-auto-rows: 1fr;
+  }
+
+  .guides-tile {
+    aspect-ratio: auto;
+  }
+}
+
 /* Step breadcrumb */
 .guides-steps {
   margin: clamp(1.25rem, 3vw, 1.75rem) 0 0;
@@ -149,6 +415,17 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   color: color-mix(in srgb, var(--dark-blue) 70%, transparent);
+}
+
+/* The first and last step are the ends of the journey, so they carry weight. */
+.guides-steps__step--end {
+  font-weight: 800;
+  color: var(--dark-blue);
+}
+
+.guides-steps__sep {
+  padding: 0 0.3rem;
+  opacity: 0.75;
 }
 
 @media (min-width: 560px) {
