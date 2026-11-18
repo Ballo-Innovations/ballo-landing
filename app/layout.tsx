@@ -13,6 +13,8 @@ import Header from "./components/header/Header";
 import Footer from "./components/footer/Footer";
 import { WaitlistProvider } from "./components/waitlist/WaitlistProvider";
 import { SmoothScroll } from "./components/ui/SmoothScroll";
+import { PageBgFlag } from "./components/ui/PageBgFlag";
+import { resolveFlag } from "@/lib/featureFlags";
 import { BrutusChatWidget } from "./components/brutus/BrutusChatWidget";
 import { resolveSocialLinks } from "./components/social/socialLinks";
 import { getSocialLinks } from "@/lib/socialLinksApi";
@@ -51,11 +53,23 @@ export default async function RootLayout({
   const [fetchedSocialLinks, siteSettings] = await Promise.all([getSocialLinks(), getSiteSettings()]);
   const socialLinks = resolveSocialLinks(fetchedSocialLinks);
 
+  // Flag defaultPageBg, resolved on the server so the first paint is right.
+  // PageBgFlag re-applies it on the client for `?features=` overrides.
+  const pageBgOn = resolveFlag({
+    env: process.env.NEXT_PUBLIC_FEATURE_DEFAULT_PAGE_BG,
+    defaultEnabled: process.env.NODE_ENV === "development",
+  });
+
   return (
-    <html lang="en" className={`${ubuntu.variable} ${ubuntuMono.variable}`}>
+    <html
+      lang="en"
+      className={`${ubuntu.variable} ${ubuntuMono.variable}`}
+      data-page-bg={pageBgOn ? "hero" : undefined}
+    >
       <body className="font-sans antialiased">
         <WaitlistProvider>
           <SmoothScroll />
+          <PageBgFlag />
           <Header />
           {children}
           <Footer

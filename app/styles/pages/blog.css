@@ -8,6 +8,11 @@
   overflow-x: clip;
 }
 
+/* Flag defaultPageBg: the blog (list and posts) uses the default page blue. */
+html[data-page-bg="hero"] .blog-page {
+  background: var(--page-default-bg);
+}
+
 /* Soft halo rings behind the hero carousel */
 .blog-hero-rings {
   position: absolute;
