@@ -2,7 +2,7 @@
  * The silk behind the phone during "Why Choose" (ADR 0019): the timing and
  * sizing rules, kept free of React and WebGL so they can be tested.
  */
-import { at, easeInOut, easeOut, type Range } from "./cinematic";
+import { at, easeInOut, type Range } from "./cinematic";
 
 /**
  * How much of the silk shows at pin progress `p`: up with the copy turning
@@ -11,9 +11,59 @@ import { at, easeInOut, easeOut, type Range } from "./cinematic";
  * Brutus act all keep their own background.
  */
 export function silkStrength(p: number, arrive: Range, leave: Range): number {
-  const up = easeOut(at(p, arrive));
+  const up = easeInOut(at(p, arrive));
   const down = easeInOut(at(p, leave));
   return Math.max(0, Math.min(1, up * (1 - down)));
+}
+
+/**
+ * The arrival stretched to twice the length of the copy swap it starts with,
+ * so the silk rises in more slowly than the heading turns over.
+ */
+export function silkArrival([from, to]: Range): Range {
+  return [from, to + (to - from)];
+}
+
+/**
+ * How fast the shown opacity follows its target, as the angular frequency of
+ * a critically damped spring (rad/s). Rising settles in about 1.6s, falling in
+ * about 1.2s. The scroll only sets the target, so a fast scroll can never
+ * snap the silk in or out (George, 2026-11-18: "very smooth and subtle").
+ */
+export const SILK_FADE_IN_OMEGA = 4;
+export const SILK_FADE_OUT_OMEGA = 5.5;
+
+/**
+ * One step of a critically damped spring from `x` (moving at `v` per second)
+ * toward `target`. It starts from rest, so a fade eases in rather than
+ * jumping, and settles without overshooting. Long frames are split so a
+ * stalled tab cannot make it unstable.
+ */
+export function fadeStep(
+  x: number,
+  v: number,
+  target: number,
+  dtMs: number,
+): [number, number] {
+  let t = Math.max(0, dtMs) / 1000;
+  const w = target > x ? SILK_FADE_IN_OMEGA : SILK_FADE_OUT_OMEGA;
+  while (t > 0) {
+    const h = Math.min(t, 1 / 60);
+    const a = w * w * (target - x) - 2 * w * v;
+    v += a * h;
+    x += v * h;
+    t -= h;
+  }
+  if ((v > 0 && x > target) || (v < 0 && x < target)) {
+    x = target;
+    v = 0;
+  }
+  return [Math.max(0, Math.min(1, x)), v];
+}
+
+/** True once the fade has come to rest at its target. */
+export function fadeSettled(x: number, v: number, target: number): boolean {
+  return Math.abs(target - x) < 0.001 && Math.abs(v) < 0.002;
 }
 
 /** Below this the layer is invisible, so the shader does not run at all. */

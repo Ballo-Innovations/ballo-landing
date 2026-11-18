@@ -7,6 +7,9 @@ import { useContainerScrollContext } from "./AnimatedVideoOnScroll";
 import { TEXT_SWAP, WHY_OUT } from "./HeroSideExit";
 import {
   easePull,
+  fadeSettled,
+  fadeStep,
+  silkArrival,
   silkPixelRatio,
   silkStrength,
   SILK_FRAGMENT,
@@ -74,6 +77,9 @@ function setUp(canvas: HTMLCanvasElement): GLState | null {
  * layer can be seen, the tab is visible and WebGL is available. With none of
  * that it renders nothing and the stage looks as it did before.
  */
+/** The silk rises over twice the copy swap's length (see `silkArrival`). */
+const ARRIVE = silkArrival(TEXT_SWAP);
+
 export function WhySilk() {
   const { scrollYProgress } = useContainerScrollContext();
   const wrapRef = React.useRef<HTMLDivElement>(null);
@@ -82,7 +88,11 @@ export function WhySilk() {
     gl: null as GLState | null,
     failed: false,
     raf: 0,
-    strength: 0,
+    /** Where the scroll says the opacity should be. */
+    target: 0,
+    /** The opacity on screen, chasing `target` on a spring. */
+    shown: 0,
+    vel: 0,
     pull: 0,
     pointerIn: false,
     mouse: [-1e4, -1e4] as [number, number],
@@ -103,15 +113,35 @@ export function WhySilk() {
     s.gl?.gl.viewport(0, 0, c.width, c.height);
   }, []);
 
+  const paint = React.useCallback(() => {
+    const s = st.current;
+    const el = wrapRef.current;
+    if (!el) return;
+    // Written to the DOM by hand, not as a motion value: see the halo in
+    // HeroSideExit for why a scroll-linked opacity misbehaves here.
+    el.style.opacity = s.failed ? "0" : s.shown.toFixed(3);
+    el.style.visibility = s.shown < SILK_VISIBLE_MIN ? "hidden" : "visible";
+  }, []);
+
   const frame = React.useCallback((now: number) => {
     const s = st.current;
     const c = canvasRef.current;
-    if (!s.gl || !c || s.strength < SILK_VISIBLE_MIN || document.hidden) {
+    if (!s.gl || !c || document.hidden) {
       s.raf = 0;
       return;
     }
     const dt = s.last ? now - s.last : 16;
     s.last = now;
+    [s.shown, s.vel] = fadeStep(s.shown, s.vel, s.target, dt);
+    paint();
+    if (s.shown < SILK_VISIBLE_MIN && s.target < SILK_VISIBLE_MIN) {
+      // Faded right out: stop until the scroll asks for it again.
+      s.shown = 0;
+      s.vel = 0;
+      paint();
+      s.raf = 0;
+      return;
+    }
     s.pull = easePull(s.pull, s.pointerIn ? 1 : 0, dt);
     const { gl, uRes, uTime, uMouse, uPull } = s.gl;
     gl.uniform2f(uRes, c.width, c.height);
@@ -120,11 +150,12 @@ export function WhySilk() {
     gl.uniform1f(uPull, s.pull);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     s.raf = requestAnimationFrame(frame);
-  }, []);
+  }, [paint]);
 
   const kick = React.useCallback(() => {
     const s = st.current;
-    if (s.raf || s.failed || s.strength < SILK_VISIBLE_MIN || document.hidden) return;
+    if (s.raf || s.failed || document.hidden) return;
+    if (s.target < SILK_VISIBLE_MIN && fadeSettled(s.shown, s.vel, s.target)) return;
     if (!s.gl && canvasRef.current) {
       s.gl = setUp(canvasRef.current);
       if (!s.gl) {
@@ -141,14 +172,9 @@ export function WhySilk() {
   const place = React.useCallback(
     (p: number) => {
       const s = st.current;
-      s.strength = silkStrength(p, TEXT_SWAP, WHY_OUT);
-      const el = wrapRef.current;
-      if (el) {
-        // Written to the DOM by hand, not as a motion value: see the halo in
-        // HeroSideExit for why a scroll-linked opacity misbehaves here.
-        el.style.opacity = s.failed ? "0" : (s.strength * SILK_PEAK_OPACITY).toFixed(3);
-        el.style.visibility = s.strength < SILK_VISIBLE_MIN ? "hidden" : "visible";
-      }
+      // The scroll only sets where the opacity is headed; `frame` eases the
+      // silk there on a spring, so it fades the same at any scroll speed.
+      s.target = silkStrength(p, ARRIVE, WHY_OUT) * SILK_PEAK_OPACITY;
       kick();
     },
     [kick],
