@@ -99,7 +99,7 @@ describe("fadeStep", () => {
   });
 
   it("falls smoothly to zero without going below it", () => {
-    const xs = run(0.55, 0, 1600);
+    const xs = run(0.55, 0, 2600);
     for (let i = 1; i < xs.length; i++) assert.ok(xs[i] <= xs[i - 1] + 1e-9);
     assert.ok(Math.min(...xs) >= 0);
     assert.ok(xs[xs.length - 1] < 0.01);
@@ -133,5 +133,12 @@ describe("SILK_MAX_FRAME_MS", () => {
   it("keeps one capped frame to a small, invisible step", () => {
     const [x] = fadeStep(0, 0, SILK_PEAK_OPACITY, SILK_MAX_FRAME_MS);
     assert.ok(x < 0.05, `one capped frame moved ${x}`);
+  });
+});
+
+describe("fade out", () => {
+  it("leaves gently: still more than half up a quarter second in", () => {
+    const xs = run(0.55, 0, 250);
+    assert.ok(xs[xs.length - 1] > 0.3, `at 250ms: ${xs[xs.length - 1]}`);
   });
 });
