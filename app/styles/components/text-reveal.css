@@ -247,3 +247,24 @@
     font-size: 1.125rem;
   }
 }
+
+/* "Who can use BalloAds?" sat right under the nav, a position it took for the
+   journey phone, which no longer stops in that section. With the bigger
+   titles it comes down by 10vh, and the same 10vh comes out of the drop
+   above the curved row, so the row stays where it was (home.css,
+   `.brutus-stage__after .who-curved` and its `__band`). */
+:root[data-section-titles] .brutus-stage__after .who-curved {
+  padding-top: calc(clamp(4.75rem, 10vh, 6rem) + 10vh);
+}
+
+:root[data-section-titles] .brutus-stage__after .who-curved__band {
+  margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1);
+}
+
+/* Phones keep the drop: their row is short, so without it the row hugs the
+   heading and leaves most of the screen empty below. */
+@media (max-width: 640px) {
+  :root[data-section-titles] .brutus-stage__after .who-curved__band {
+    margin-top: calc(clamp(16rem, 45vw, 34rem) * -0.1 + 10vh);
+  }
+}
