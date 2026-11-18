@@ -20,6 +20,7 @@ New UI takes `isFeatureEnabled` from `lib/featureFlags.ts`.
 | `legalPages` | `NEXT_PUBLIC_FEATURE_LEGAL_PAGES` |
 | `trustedLockScreen` | `NEXT_PUBLIC_FEATURE_TRUSTED_LOCK_SCREEN` (ADR 0018) |
 | `sectionTitles` | `NEXT_PUBLIC_FEATURE_SECTION_TITLES` (section titles in the "Why Choose" treatment) |
+| `businessDesign` | `NEXT_PUBLIC_FEATURE_BUSINESS_DESIGN` (For my business page matched to the design; `?features=business`) |
 
 QA: `?features=cms`, `?features=chips`, `?features=stack`, `?features=blogcoverflow`, `?features=lockscreen`, `?features=titles`, or `?features=all`. A CMS-backed landing slice needs matching PRs in
 `ballo-ads-backend-v2` and usually `ballo-cms`.

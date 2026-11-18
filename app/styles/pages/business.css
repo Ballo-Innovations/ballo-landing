@@ -53,3 +53,321 @@
 .biz-bulk-card__link:hover {
   text-decoration: underline;
 }
+
+/* ============================================
+   For my business, matched to the design
+   File: app/business/BusinessDesign.tsx (flag: businessDesign)
+   Measurements come from the 1355px design canvas.
+   ============================================ */
+
+.bizd {
+  --bizd-max: 1196px;
+  --bizd-gutter: clamp(1rem, 5.9vw, 5rem);
+  color: #fff;
+  overflow: hidden;
+  background: linear-gradient(180deg, #020055 0%, #02024a 30%, #010124 62%, #000 100%);
+}
+
+/* --- Hero: intro line and the fill-in-the-blank sentence --- */
+
+.bizd-hero {
+  padding: clamp(7.5rem, 16.6vw, 14rem) var(--bizd-gutter) clamp(3.5rem, 8.8vw, 7.5rem);
+}
+
+.bizd-hero__intro {
+  margin: 0 auto clamp(1.25rem, 2.2vw, 1.9rem);
+  font-family: Calibri, "Carlito", "Segoe UI", Arial, sans-serif;
+  font-size: clamp(0.9rem, 1.62vw, 1.375rem);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(196, 205, 234, 0.72);
+}
+
+.bizd-sentence {
+  max-width: 1150px;
+  margin: 0 auto;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1.2rem, 2.2vw, 1.875rem);
+  font-weight: 300;
+  line-height: 2.1;
+  color: #fff;
+}
+
+.bizd-blank {
+  margin: 0 0.22em;
+  border-bottom: 0.09em solid #5ac8fa;
+  line-height: 1.25;
+  transition: border-color 0.2s ease;
+}
+
+.bizd-blank:focus-within {
+  border-bottom-color: #fff;
+}
+
+.bizd-blank input {
+  padding: 0 0.15em;
+  font: inherit;
+}
+
+.bizd-blank > span {
+  padding: 0 0.15em;
+  color: rgba(160, 174, 220, 0.55) !important;
+}
+
+/* A full stop after a blank sits against the line, not a space away. */
+.bizd-stop {
+  margin-left: -0.2em;
+}
+
+.bizd-blank--sm { width: 3.4em; }
+.bizd-blank--md { width: 3.9em; }
+.bizd-blank--lg { width: 5em; }
+.bizd-blank--xl { width: 5.4em; }
+
+@media (min-width: 900px) {
+  /* One line that fades out at both edges, as drawn. */
+  .bizd-hero {
+    padding-inline: 0;
+  }
+
+  .bizd-hero__intro {
+    white-space: nowrap;
+    overflow: hidden;
+    color: transparent;
+    background: linear-gradient(
+      90deg,
+      rgba(196, 205, 234, 0) 2%,
+      rgba(196, 205, 234, 0.72) 22%,
+      rgba(196, 205, 234, 0.72) 78%,
+      rgba(196, 205, 234, 0) 98%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    letter-spacing: 0.17em;
+  }
+
+  .bizd-sentence {
+    width: calc(100% - 2 * var(--bizd-gutter));
+  }
+}
+
+/* --- Bulk SMS card: W 1196.1 x H 463.3 on the canvas --- */
+
+.bizd-bulk {
+  padding-inline: var(--bizd-gutter);
+}
+
+.bizd-bulk__card {
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+  max-width: var(--bizd-max);
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: 32px;
+  background: linear-gradient(100deg, #2a3276 0%, #36448a 55%, #46599d 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 30px 60px rgba(0, 0, 0, 0.35);
+}
+
+.bizd-bulk__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.75rem 1.5rem 2rem;
+}
+
+.bizd-bulk__title {
+  margin: 0;
+  font-size: clamp(2.5rem, 5.3vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.bizd-bulk__text {
+  max-width: 29em;
+  margin: clamp(0.9rem, 1.6vw, 1.4rem) 0 0;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.33vw, 1.125rem);
+  line-height: 1.45;
+  color: #fff;
+}
+
+.bizd-bulk__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.15rem;
+  padding-block: 0.35rem;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.33vw, 1.125rem);
+  font-weight: 700;
+  color: #fff;
+}
+
+.bizd-bulk__link span {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.bizd-bulk__link-icon {
+  width: 1.35em;
+  height: 1.35em;
+  transition: transform 0.2s ease;
+}
+
+.bizd-bulk__link:hover .bizd-bulk__link-icon,
+.bizd-bulk__link:focus-visible .bizd-bulk__link-icon {
+  transform: translateX(3px);
+}
+
+.bizd-bulk__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+/* The design shows the photo mirrored: the man on the right, laptop on the left. */
+.bizd-bulk__media img {
+  object-fit: cover;
+  object-position: 30% 50%;
+  transform: scaleX(-1);
+}
+
+@media (min-width: 900px) {
+  .bizd-bulk__card {
+    flex-direction: row;
+    aspect-ratio: 1196.1 / 463.3;
+    border-radius: 48px;
+  }
+
+  .bizd-bulk__copy {
+    flex: 0 0 47.4%;
+    padding: 0 1.5rem 0 4%;
+  }
+
+  .bizd-bulk__media {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    border-radius: 48px 0 0 48px;
+  }
+}
+
+/* --- Closing call to action --- */
+
+.bizd-cta {
+  padding: clamp(4rem, 10.8vw, 9.1rem) var(--bizd-gutter) 0;
+}
+
+.bizd-cta__inner {
+  --bizd-ring: clamp(15rem, 30.5vw, 25.875rem);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: var(--bizd-max);
+  margin-inline: auto;
+}
+
+.bizd-cta__title {
+  display: block;
+  margin: 0;
+  font-size: clamp(2.1rem, 5vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.bizd-cta__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: clamp(1.25rem, 2.1vw, 1.75rem);
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.33vw, 1.125rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #020055;
+  transition: background-color 0.2s ease;
+}
+
+.bizd-cta__button:hover {
+  background: #dbe6ff;
+}
+
+.bizd-cta__button:focus-visible,
+.bizd-bulk__link:focus-visible {
+  outline: 2px solid #5ac8fa;
+  outline-offset: 3px;
+}
+
+.bizd-cta__button-icon {
+  width: 1.4em;
+  height: 1.4em;
+}
+
+/* Ring with the person standing in front of it, cut off by the page edge. */
+.bizd-cta__art {
+  position: relative;
+  align-self: center;
+  width: var(--bizd-ring);
+  height: var(--bizd-ring);
+  margin-top: 2.5rem;
+}
+
+.bizd-cta__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #d3e2e3 0%, #8f98bf 38%, #2c2f7c 72%, #05054f 100%);
+  -webkit-mask: radial-gradient(closest-side, transparent 74.5%, #000 75.5%);
+  mask: radial-gradient(closest-side, transparent 74.5%, #000 75.5%);
+}
+
+.bizd-cta__person {
+  position: absolute;
+  top: 0;
+  left: 2%;
+  width: 98%;
+  max-width: none;
+  height: auto;
+}
+
+@media (min-width: 900px) {
+  .bizd-cta__inner {
+    display: block;
+    min-height: calc(var(--bizd-ring) - 1.25rem);
+    padding: 0 0 clamp(3rem, 6.3vw, 5.4rem) 1.25rem;
+  }
+
+  .bizd-cta__title span {
+    display: block;
+  }
+
+  .bizd-cta__copy {
+    position: relative;
+    z-index: 1;
+    max-width: 62%;
+  }
+
+  .bizd-cta__art {
+    position: absolute;
+    right: 4.2%;
+    bottom: 0;
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bizd-bulk__link-icon,
+  .bizd-blank,
+  .bizd-cta__button {
+    transition: none;
+  }
+}
