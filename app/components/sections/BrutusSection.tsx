@@ -14,6 +14,7 @@ import { ShinyButton } from "../ui/ShinyButton";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
 import { at, easeOut } from "@/lib/cinematic";
 import { StageRowProgress } from "../ui/stageRowProgress";
+import { SectionTitle } from "../ui/SectionTitle";
 
 /**
  * Brutus on the home page (ADR 0016).
@@ -37,9 +38,10 @@ export function BrutusStageCopy() {
           <Sparkles size={13} aria-hidden="true" />
           Meet Brutus
         </span>
-        <h2 className="section-h2 brutus-stage__h2">
-          Your AI assistant that never clocks off.
-        </h2>
+        <SectionTitle
+          className="section-h2 brutus-stage__h2"
+          text="Your AI assistant that never clocks off."
+        />
         <p className="landing-body brutus-stage__lede">
           Brutus answers customers, qualifies leads and sends campaigns for
           you, across WhatsApp, SMS, email and the web, in a voice that sounds

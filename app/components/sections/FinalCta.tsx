@@ -7,6 +7,7 @@ import { ShinyButton } from "../ui/ShinyButton";
 import { StoreBadge } from "../ui/StoreBadge";
 import { useAnimateWhenVisible } from "../ui/useAnimateWhenVisible";
 import { useWaitlist } from "../waitlist/WaitlistProvider";
+import { SectionTitle } from "../ui/SectionTitle";
 
 /**
  * The closing CTA: copy and actions on the left, channels on glass on the right.
@@ -28,9 +29,10 @@ export function FinalCta() {
         <div className="cta-mq__copy">
           <FadeUpReveal yOffset={40}>
             <span className="section-eyebrow">Ready when you are</span>
-            <h2 className="section-h2 text-gradient-silver cta-mq__h2">
-              Reach every customer, from one dashboard.
-            </h2>
+            <SectionTitle
+              className="section-h2 text-gradient-silver cta-mq__h2"
+              text="Reach every customer, from one dashboard."
+            />
             <p className="landing-body cta-mq__lede">
               Build your audience, send across every channel and see what each
               message earned you. Start free, upgrade when it pays for itself.

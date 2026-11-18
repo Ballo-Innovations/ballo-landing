@@ -4,6 +4,7 @@ import { FadeUpReveal } from "../ui/FadeUpReveal";
 import { TiltedGridHero, type TiltedGridImage } from "../ui/tilted-grid-hero";
 import { useStageRowProgress } from "../ui/stageRowProgress";
 import { industries } from "./WhoCinematicSection";
+import { SectionTitle } from "../ui/SectionTitle";
 
 /**
  * "Who can use BalloAds?" as one curved row (ADR 0003), behind `whoCurvedRow`.
@@ -32,7 +33,10 @@ export function WhoCurvedSection() {
         <div className="who-curved__copy">
           {/* Heading only: the subtitle lines went so the journey phone
               (ADR 0017) has the height. */}
-          <h2 className="section-h2 who-curved__h2">Who can use BalloAds?</h2>
+          <SectionTitle
+            className="section-h2 who-curved__h2"
+            text="Who can use BalloAds?"
+          />
         </div>
       </FadeUpReveal>
 

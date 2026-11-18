@@ -17,6 +17,7 @@ import type { HomeLogoItem } from "@/app/HomeClient";
 import { DeliveredOver } from "./DeliveredOver";
 import type { LogoCloudItem } from "./LogoCloud";
 import { Phone3D } from "./Phone3D";
+import { SectionTitle } from "./SectionTitle";
 import {
   LogoMark,
   usePublishTrustedBrands,
@@ -117,7 +118,7 @@ export function TrustedLockLane({
     <div className="trusted-lane">
       <div className="trusted-lane__head">
         <p className="trusted-lane__eyebrow">{eyebrow}</p>
-        <p className="trusted-lane__title">{title}</p>
+        <SectionTitle as="h2" className="trusted-lane__title" text={title} />
       </div>
 
       {/* A message hops (option C) from the mark across the column gap into
