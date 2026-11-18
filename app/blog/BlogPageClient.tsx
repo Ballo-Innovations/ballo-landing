@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { StackedCardCarousel, StackedCard } from "../components/ui/StackedCardCarousel";
+import { CoverflowCarousel, type CoverflowSlide } from "../components/ui/coverflow-carousel";
 import { FadeUpReveal } from "../components/ui/FadeUpReveal";
 import ConcentricRings from "../components/ui/ConcentricRings";
 import WaitlistButton from "@/app/components/waitlist/WaitlistButton";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import type { BlogPost, BlogPostPagination } from "@/lib/blogApi";
 import { ArticleCard } from "./ArticleCard";
 
@@ -105,6 +107,10 @@ export default function BlogPageClient({
   activeTag: string | null;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  // Read after mount: a `?features=` override lives in localStorage, which the
+  // server render can't see.
+  const [coverflow, setCoverflow] = useState(false);
+  useEffect(() => setCoverflow(isFeatureEnabled("blogCoverflow")), []);
 
   // Only the current (already server-paginated + server-filtered) page of posts is
   // available client-side, so search can only ever narrow down what's already on
@@ -135,6 +141,13 @@ export default function BlogPageClient({
     href: `/blog/${p.slug}`,
   }));
 
+  const coverflowSlides: CoverflowSlide[] = featuredPosts.map((p) => ({
+    src: p.coverImageUrl!,
+    alt: p.title,
+    title: p.title,
+    href: `/blog/${p.slug}`,
+  }));
+
   const headingText = activeCategory ? `${activeCategory} articles` : isSearching ? "Search results" : "Latest articles";
 
   // Default view: one band per category, in the order categories first appear.
@@ -150,16 +163,42 @@ export default function BlogPageClient({
   return (
     <main className="blog-page min-h-screen text-white">
       {carouselItems.length > 0 && (
-        <section className="relative overflow-hidden px-4 pt-32 pb-4 md:px-8">
+        <section
+          className={
+            coverflow
+              ? "blog-cf relative"
+              : "relative overflow-hidden px-4 pt-32 pb-4 md:px-8"
+          }
+        >
           <div className="blog-hero-rings" aria-hidden="true" />
-          <div className="relative w-full max-w-[1200px] mx-auto">
-            <StackedCardCarousel items={carouselItems} initialCenter={0} />
+          {/* The coverflow fills the viewport edge to edge: it hides any card
+              that wouldn't fit whole, so a column would only cost cards. */}
+          <div className={`relative w-full mx-auto ${coverflow ? "" : "max-w-[1200px]"}`}>
+            {coverflow ? (
+              <CoverflowCarousel
+                slides={coverflowSlides}
+                label="Featured articles"
+                cardWidth="var(--blog-cf-card)"
+                cardAspect={1.4}
+                showOverlay
+                overlayAlways
+                actionLabel="Read Article"
+                fitToFrame
+                autoPlay={4500}
+                pauseOnHover={false}
+                wheel
+              />
+            ) : (
+              <StackedCardCarousel items={carouselItems} initialCenter={0} />
+            )}
           </div>
         </section>
       )}
 
       {/* Search and Categories */}
-      <section className={`px-4 pb-4 md:px-8 ${carouselItems.length > 0 ? "pt-6" : "pt-32"}`}>
+      {/* Positioned above the featured section, whose glow now spills down
+          into this one rather than being clipped. */}
+      <section className={`relative z-[1] px-4 pb-4 md:px-8 ${carouselItems.length > 0 ? "pt-6" : "pt-32"}`}>
         <FadeUpReveal yOffset={40} duration={0.7} className="mx-auto flex max-w-[1200px] flex-col items-center gap-10">
           <label className="blog-search">
             <span className="blog-search__icon" aria-hidden="true">

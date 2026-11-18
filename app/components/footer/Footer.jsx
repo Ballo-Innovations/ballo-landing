@@ -4,6 +4,7 @@ import { Facebook, Instagram, Linkedin, Phone, Mail } from "lucide-react";
 import Image from "next/image";
 import logo from "@/public/Assets/1.png";
 import { socialLinks as defaultSocialLinks } from "@/app/components/social/socialLinks";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 // Lucide has no TikTok glyph either, so ship the brand path inline (same path
 // used by the header's TikTokIcon).
@@ -65,7 +66,15 @@ const Footer = ({
               <ul className="footer__link-list">
                 <li><Link href="/knowledge-base">Knowledge Base</Link></li>
                 <li><Link href="/live-chat">Live Chat</Link></li>
-                <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+                {isFeatureEnabled("legalPages") ? (
+                  <>
+                    <li><Link href="/legal/privacy">Privacy Policy</Link></li>
+                    <li><Link href="/legal/terms">Terms of Service</Link></li>
+                    <li><Link href="/legal">Legal</Link></li>
+                  </>
+                ) : (
+                  <li><Link href="/privacy-policy">Privacy Policy</Link></li>
+                )}
                 <li><Link href="/resources">Resources</Link></li>
                 <li><Link href="/whats-new">What&apos;s New</Link></li>
               </ul>

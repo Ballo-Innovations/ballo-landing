@@ -1,0 +1,161 @@
+/* Scoped to /legal. Flat and editorial: the site's navy, white text, cyan used
+   only for links and the active edge of the contents list. */
+
+.legal-page .legal-tbc {
+  background: rgba(255, 214, 102, 0.16);
+  color: #ffe08a;
+  border-bottom: 1px dashed rgba(255, 214, 102, 0.7);
+  padding: 0 0.2em;
+  border-radius: 2px;
+}
+
+.legal-page .legal-lede {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.175rem;
+  line-height: 1.6;
+  border-left: 2px solid var(--cyan);
+  padding-left: 1.25rem;
+}
+
+/* Body HTML from the CMS editor. H2s are numbered here (not in the text) so
+   editors write plain headings and the "On this page" list matches. */
+.legal-page .legal-body {
+  counter-reset: legal-section;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.legal-page .legal-body > * + * {
+  margin-top: 1rem;
+}
+
+.legal-page .legal-body h2 {
+  counter-increment: legal-section;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 3rem;
+  scroll-margin-top: 7rem;
+}
+
+.legal-page .legal-body h2:first-child {
+  margin-top: 0;
+}
+
+.legal-page .legal-body h2::before {
+  content: counter(legal-section) ". ";
+}
+
+.legal-page .legal-body h3 {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+}
+
+.legal-page .legal-body h4 {
+  color: #fff;
+  font-weight: 700;
+  margin-top: 1.25rem;
+}
+
+.legal-page .legal-body ul,
+.legal-page .legal-body ol {
+  padding-left: 1.5rem;
+}
+
+.legal-page .legal-body ul {
+  list-style: disc;
+}
+
+.legal-page .legal-body ol {
+  list-style: decimal;
+}
+
+.legal-page .legal-body li + li {
+  margin-top: 0.5rem;
+}
+
+.legal-page .legal-body li::marker {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.legal-page .legal-body li > p {
+  margin: 0;
+}
+
+.legal-page .legal-body strong,
+.legal-page .legal-body b {
+  color: #fff;
+  font-weight: 700;
+}
+
+.legal-page .legal-body a {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+
+.legal-page .legal-body a:hover {
+  color: #fff;
+}
+
+.legal-page .legal-body blockquote {
+  border-left: 2px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.legal-page .legal-body hr {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 2rem 0;
+}
+
+/* Tables scroll sideways on a phone instead of widening the page. */
+.legal-page .legal-body table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.975rem;
+}
+
+.legal-page .legal-body th,
+.legal-page .legal-body td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  min-width: 9rem;
+}
+
+.legal-page .legal-body th {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.legal-page .legal-body th p,
+.legal-page .legal-body td p {
+  margin: 0;
+}
+
+@media print {
+  .legal-page {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .legal-page .legal-body,
+  .legal-page .legal-body * {
+    color: #000 !important;
+  }
+  .legal-page .legal-no-print {
+    display: none !important;
+  }
+}

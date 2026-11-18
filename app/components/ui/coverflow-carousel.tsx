@@ -11,6 +11,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ export interface CoverflowSlide {
   title?: string;
   subtitle?: string;
   meta?: { label: string; value: string }[];
+  /** Where the overlay's action button goes for this slide. */
+  href?: string;
 }
 
 export interface CoverflowCarouselProps {
@@ -40,6 +43,8 @@ export interface CoverflowCarouselProps {
   fade?: number;
   /** Any CSS length. Everything else is derived from it, so the rake scales. */
   cardWidth?: string;
+  /** Card height as a multiple of its width; 1 is square. */
+  cardAspect?: number;
   /** Space between cards, as a fraction of card width. */
   gap?: number;
   loop?: boolean;
@@ -48,11 +53,31 @@ export interface CoverflowCarouselProps {
   showNavigation?: boolean;
   /** Title and subtitle over the card on hover (the front card on touch). */
   showOverlay?: boolean;
+  /** Keep every card's overlay up instead of showing it on hover. */
+  overlayAlways?: boolean;
+  /** Label for the front card's overlay button on slides with an `href`. */
+  actionLabel?: string;
+  /**
+   * Fade a card out before it reaches the frame's edge, so no card is ever
+   * shown cut off. Measured from where each card actually lands on screen.
+   */
+  fitToFrame?: boolean;
   /**
    * Advance one card every this many ms; 0 is off. Paused while hovered,
-   * dragged or focused, off-screen, in a hidden tab, and under reduced motion.
+   * dragged or focused, off-screen, in a hidden tab, and under reduced motion,
+   * and for one interval after any drag, scroll, click or arrow key.
    */
   autoPlay?: number;
+  /**
+   * Keep autoplay running under a resting pointer. Keyboard focus still
+   * pauses it; interaction pauses it for one interval either way.
+   */
+  pauseOnHover?: boolean;
+  /**
+   * Move the ring with a sideways trackpad swipe or Shift + wheel, settling
+   * on the nearest card. Vertical scrolling is left to the page.
+   */
+  wheel?: boolean;
   /** Names the carousel for assistive tech. */
   label?: string;
   className?: string;
@@ -67,13 +92,19 @@ export function CoverflowCarousel({
   falloff = 0.56,
   fade = 0.1,
   cardWidth = "clamp(148px, 22vw, 260px)",
+  cardAspect = 1,
   gap = 0.05,
   loop = true,
   showCaption = false,
   showPagination = false,
   showNavigation = false,
   showOverlay = false,
+  overlayAlways = false,
+  actionLabel = "Open",
+  fitToFrame = false,
   autoPlay = 0,
+  pauseOnHover = true,
+  wheel = false,
   label = "Cover carousel",
   className,
   cardClassName,
@@ -94,6 +125,8 @@ export function CoverflowCarousel({
     pos: number;
     v: number;
     t: number;
+    /** The card the press began on, if any. */
+    card: number | null;
   } | null>(null);
 
   const [selected, setSelected] = React.useState(0);
@@ -137,7 +170,31 @@ export function CoverflowCarousel({
       card.style.opacity = String(Math.max(0, 1 - fade * distance) * edge);
       card.style.zIndex = String(100 - Math.round(distance));
     });
-  }, [count, depth, fade, falloff, gap, loop, rotate]);
+
+    // Read after every transform is written: one layout per frame, not one
+    // per card. A card is fully shown only with `band` px to spare and is gone
+    // by the time it touches the edge, so the clip never cuts one visibly.
+    // The card nearest the centre is exempt: where only one card fits (a
+    // phone), fading it too would blank the ring halfway through every step.
+    // At rest it is whole anyway; it only meets the edge while sliding.
+    const frame = frameRef.current;
+    if (!fitToFrame || !frame) return;
+    const room = frame.getBoundingClientRect();
+    const band = width * 0.12;
+    const front = indexAt(pos);
+    cardRefs.current.forEach((card, index) => {
+      if (!card) return;
+      if (index === front) {
+        card.style.visibility = "";
+        return;
+      }
+      const box = card.getBoundingClientRect();
+      const spare = Math.min(box.left - room.left, room.right - box.right);
+      const fit = Math.min(1, Math.max(0, spare / band));
+      card.style.opacity = String(Number(card.style.opacity) * fit);
+      card.style.visibility = fit > 0 ? "" : "hidden";
+    });
+  }, [count, depth, fade, falloff, fitToFrame, gap, indexAt, loop, rotate]);
 
   const settle = React.useCallback(
     (target: number) => {
@@ -182,11 +239,24 @@ export function CoverflowCarousel({
     [clamp, settle],
   );
 
+  /** Set once a press travels far enough to be a drag; swallows the click. */
+  const draggedRef = React.useRef(false);
+  /** When someone last moved the ring by hand; autoplay waits an interval. */
+  const touchedRef = React.useRef(0);
+
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    // A press on a link stays a click: capturing the pointer here would
+    // retarget its click to the frame and the link would never open.
+    if ((event.target as HTMLElement).closest("a")) return;
+    draggedRef.current = false;
+    touchedRef.current = performance.now();
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+    // Note the card now: once the frame captures the pointer, the click
+    // lands on the frame, so a card's own onClick would never fire.
+    const card = (event.target as HTMLElement).closest<HTMLElement>("[data-cf-index]");
     event.currentTarget.setPointerCapture(event.pointerId);
     targetRef.current = posRef.current;
     dragRef.current = {
@@ -195,6 +265,7 @@ export function CoverflowCarousel({
       pos: posRef.current,
       v: 0,
       t: performance.now(),
+      card: card ? Number(card.dataset.cfIndex) : null,
     };
   };
 
@@ -205,6 +276,7 @@ export function CoverflowCarousel({
     const pitch = widthRef.current * (1 + gap);
     if (!pitch) return;
 
+    if (Math.abs(event.clientX - drag.x) > 6) draggedRef.current = true;
     const now = performance.now();
     const previous = posRef.current;
     posRef.current = clamp(drag.pos - (event.clientX - drag.x) / pitch);
@@ -220,6 +292,11 @@ export function CoverflowCarousel({
     const drag = dragRef.current;
     if (!drag || drag.id !== event.pointerId) return;
     dragRef.current = null;
+    // A press that never became a drag is a click: bring that card forward.
+    if (!draggedRef.current && drag.card !== null && drag.card !== indexAt(posRef.current)) {
+      goTo(drag.card);
+      return;
+    }
     // A flick carries, but never more than two cards.
     const carried = Math.max(-2, Math.min(2, drag.v * 0.18));
     settle(clamp(Math.round(posRef.current + carried)));
@@ -249,6 +326,46 @@ export function CoverflowCarousel({
     [],
   );
 
+  // Non-passive, so a sideways swipe can be claimed: React's onWheel is
+  // passive and can't preventDefault. Stopping propagation also keeps the
+  // page's smooth-scroll (Lenis, listening on window) out of it.
+  React.useEffect(() => {
+    const frame = frameRef.current;
+    if (!wheel || !frame) return;
+    let idle: number | undefined;
+
+    const onWheel = (event: WheelEvent) => {
+      const scale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? frame.clientWidth : 1;
+      let dx = event.deltaX;
+      if (event.shiftKey && !dx) dx = event.deltaY;
+      else if (Math.abs(dx) <= Math.abs(event.deltaY)) return; // a page scroll
+      const pitch = widthRef.current * (1 + gap);
+      if (!pitch || !dx) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      touchedRef.current = performance.now();
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      posRef.current = clamp(posRef.current + (dx * scale) / pitch);
+      targetRef.current = posRef.current;
+      setSelected(indexAt(posRef.current));
+      paint();
+
+      // Trackpads keep sending momentum for a while; settle once it stops.
+      window.clearTimeout(idle);
+      idle = window.setTimeout(() => settle(clamp(Math.round(posRef.current))), 140);
+    };
+
+    frame.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      frame.removeEventListener("wheel", onWheel);
+      window.clearTimeout(idle);
+    };
+  }, [clamp, gap, indexAt, paint, settle, wheel]);
+
   // Only run while someone can see it, and never under reduced motion.
   React.useEffect(() => {
     const el = rootRef.current;
@@ -264,7 +381,9 @@ export function CoverflowCarousel({
     if (!autoPlay || held || !visible) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
-      if (!document.hidden && !dragRef.current) nudge(1);
+      if (document.hidden || dragRef.current) return;
+      if (performance.now() - touchedRef.current < autoPlay) return;
+      nudge(1);
     }, autoPlay);
     return () => window.clearInterval(id);
   }, [autoPlay, held, visible, nudge]);
@@ -274,9 +393,13 @@ export function CoverflowCarousel({
   return (
     <div
       ref={rootRef}
-      onPointerEnter={() => setHeld(true)}
-      onPointerLeave={() => setHeld(false)}
-      onFocus={() => setHeld(true)}
+      onPointerEnter={() => pauseOnHover && setHeld(true)}
+      onPointerLeave={() => pauseOnHover && setHeld(false)}
+      onFocus={(event) => {
+        // Without hover-pause, only keyboard focus holds it: a click leaves
+        // focus on the ring and would otherwise stop autoplay for good.
+        if (pauseOnHover || event.target.matches(":focus-visible")) setHeld(true);
+      }}
       onBlur={() => setHeld(false)}
       className={cn("w-full", className)}
       style={{ ["--cf-card" as string]: cardWidth }}
@@ -293,6 +416,9 @@ export function CoverflowCarousel({
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
           onKeyDown={(event) => {
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+              touchedRef.current = performance.now();
+            }
             if (event.key === "ArrowLeft") {
               event.preventDefault();
               nudge(-1);
@@ -301,16 +427,27 @@ export function CoverflowCarousel({
               nudge(1);
             }
           }}
-          // Vertical padding keeps the drop shadows clear of the clip.
-          className="cursor-grab overflow-hidden py-8 outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:cursor-grabbing"
+          // Clip sideways only, for cards sliding off the ends; `clip` (unlike
+          // `hidden`) lets the other axis stay visible, so the drop shadows
+          // fall below the ring instead of being sliced off.
+          className="cursor-grab overflow-x-clip overflow-y-visible py-8 outline-none focus-visible:ring-2 focus-visible:ring-white/60 active:cursor-grabbing"
           style={{
             perspective: `calc(var(--cf-card) * ${perspective})`,
             touchAction: "pan-y",
+            // A sideways swipe at the ring's end must not turn into the
+            // browser's back/forward gesture.
+            overscrollBehaviorX: wheel ? "contain" : undefined,
           }}
         >
+          {/* pointer-events: none here, auto on the cards. The side cards sit
+              behind this plane in 3D (negative translateZ), so otherwise it
+              wins the hit-test and a click never reaches them. */}
           <div
-            className="relative select-none"
-            style={{ height: "var(--cf-card)", transformStyle: "preserve-3d" }}
+            className="pointer-events-none relative select-none"
+            style={{
+              height: `calc(var(--cf-card) * ${cardAspect})`,
+              transformStyle: "preserve-3d",
+            }}
           >
             {slides.map((slide, index) => (
               <div
@@ -321,16 +458,18 @@ export function CoverflowCarousel({
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`${index + 1} of ${count}`}
-                onClick={() => {
-                  // A click (not a drag) on a side card brings it forward.
-                  if (index !== selected) goTo(index);
-                }}
+                data-cf-index={index}
                 data-front={index === selected ? "" : undefined}
+                data-overlay={overlayAlways ? "always" : undefined}
                 className={cn(
-                  "cf-card group absolute left-1/2 top-0 aspect-square overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
+                  "cf-card group pointer-events-auto absolute left-1/2 top-0 overflow-hidden rounded-2xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] will-change-transform",
                   cardClassName,
                 )}
-                style={{ width: "var(--cf-card)", backgroundColor: "#0d1347" }}
+                style={{
+                  width: "var(--cf-card)",
+                  height: `calc(var(--cf-card) * ${cardAspect})`,
+                  backgroundColor: "#0d1347",
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -348,6 +487,16 @@ export function CoverflowCarousel({
                       <p className="mt-1 text-xs leading-snug text-white/80 md:text-sm">
                         {slide.subtitle}
                       </p>
+                    ) : null}
+                    {slide.href && index === selected ? (
+                      <Link
+                        href={slide.href}
+                        draggable={false}
+                        className="cf-overlay__action pointer-events-auto mt-3 self-start"
+                      >
+                        {actionLabel}
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                      </Link>
                     ) : null}
                   </div>
                 ) : null}

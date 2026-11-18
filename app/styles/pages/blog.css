@@ -23,6 +23,60 @@
     radial-gradient(circle, rgba(70, 80, 220, 0.28) 0%, rgba(30, 30, 140, 0.18) 40%, transparent 70%);
 }
 
+/* Featured coverflow (behind `blogCoverflow`): edge to edge, and one screen
+   tall less the search bar beneath it, so the search is on the first screen.
+   The card is as big as the viewport allows in both directions: the height
+   term leaves room for the header above, the ring's padding and the search
+   bar below, so the whole card and the search are on screen. Cards are 1.4x
+   as tall as wide (cardAspect), hence the division. On a phone the front
+   card takes most of the width. */
+.blog-cf {
+  /* Phones keep the search clear of the floating Ask Brutus bubble. */
+  --blog-cf-card: clamp(220px, min(80vw, calc((100svh - 23.5rem) / 1.4)), 760px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100svh - 9rem);
+  padding: 6.5rem 0 0;
+}
+
+@media (min-width: 768px) {
+  .blog-cf {
+    --blog-cf-card: clamp(240px, min(36vw, calc((100svh - 19rem) / 1.4)), 760px);
+    min-height: calc(100svh - 5.5rem);
+    padding-top: 7rem;
+  }
+}
+
+/* 23vw is the largest card that still leaves room for five whole cards on a
+   laptop or desktop (checked at 1280-1920px wide); 24vw drops to three. */
+@media (min-width: 1024px) {
+  .blog-cf {
+    --blog-cf-card: clamp(240px, min(23vw, calc((100svh - 19rem) / 1.4)), 760px);
+  }
+}
+
+/* No clip on the section: the glow and the card shadows run on into the
+   search below instead of stopping at a hard edge. .blog-page's
+   overflow-x: clip still stops the wide glow from scrolling the page. */
+.blog-cf .blog-hero-rings {
+  width: min(1400px, 150vw);
+}
+
+/* Bigger cards, bigger overlay text. */
+.blog-cf .cf-overlay {
+  padding: clamp(1rem, 2.2vw, 2rem);
+}
+
+.blog-cf .cf-overlay > p:first-child {
+  font-size: clamp(1.05rem, 1.7vw, 1.75rem);
+}
+
+.blog-cf .cf-overlay__action {
+  font-size: clamp(0.85rem, 1vw, 1rem);
+  padding: 0.6rem 1.15rem;
+}
+
 /* Search */
 .blog-search {
   display: flex;

@@ -16,8 +16,10 @@ New UI takes `isFeatureEnabled` from `lib/featureFlags.ts`.
 | `siteAssistant` | `NEXT_PUBLIC_FEATURE_SITE_ASSISTANT` |
 | `whyFeatureChips` | `NEXT_PUBLIC_FEATURE_WHY_FEATURE_CHIPS` |
 | `whoStackSpread` | `NEXT_PUBLIC_FEATURE_WHO_STACK_SPREAD` |
+| `blogCoverflow` | `NEXT_PUBLIC_FEATURE_BLOG_COVERFLOW` |
+| `legalPages` | `NEXT_PUBLIC_FEATURE_LEGAL_PAGES` |
 | `trustedLockScreen` | `NEXT_PUBLIC_FEATURE_TRUSTED_LOCK_SCREEN` (ADR 0018) |
 | `sectionTitles` | `NEXT_PUBLIC_FEATURE_SECTION_TITLES` (section titles in the "Why Choose" treatment) |
 
-QA: `?features=cms`, `?features=chips`, `?features=stack`, `?features=lockscreen`, `?features=titles`, or `?features=all`. A CMS-backed landing slice needs matching PRs in
+QA: `?features=cms`, `?features=chips`, `?features=stack`, `?features=blogcoverflow`, `?features=lockscreen`, `?features=titles`, or `?features=all`. A CMS-backed landing slice needs matching PRs in
 `ballo-ads-backend-v2` and usually `ballo-cms`.

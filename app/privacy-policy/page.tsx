@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import { getContentPage } from "@/lib/pagesApi";
 import { sanitizeBlogHtml } from "@/lib/contentFormat";
 
@@ -8,6 +11,9 @@ import { sanitizeBlogHtml } from "@/lib/contentFormat";
 // in front of every visitor.
 
 export default async function PrivacyPolicyPage() {
+  // The CMS copy is superseded by the full policy under /legal once that ships.
+  if (isFeatureEnabled("legalPages")) redirect("/legal/privacy");
+
   const page = await getContentPage("privacy-policy");
 
   if (!page) {
