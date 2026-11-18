@@ -22,6 +22,27 @@ export const STEP_MS = 2200;
  */
 export const RUNWAY_STEPS = 4;
 export const COMPACT_RUNWAY_STEPS = 2;
+/** The least space between two of the widest logos on the runway. */
+export const MIN_LOGO_GAP = 56;
+
+/**
+ * How many logos the runway carries at once, from its width. Each logo rides
+ * in a box `slotWidth` wide (the logo itself is at most 24px narrower) from
+ * just off the left edge until its centre reaches the mark, so consecutive
+ * logos are `(runwayWidth + slotWidth / 2) / steps` apart. The most logos
+ * that still leave MIN_LOGO_GAP between the two widest, between two and
+ * RUNWAY_STEPS.
+ */
+export function runwayStepsFor(
+  runwayWidth: number,
+  slotWidth: number,
+  minGap: number = MIN_LOGO_GAP,
+): number {
+  const widest = slotWidth - 24;
+  const fits = Math.floor((runwayWidth + slotWidth / 2) / (widest + minGap));
+  return Math.max(COMPACT_RUNWAY_STEPS, Math.min(RUNWAY_STEPS, fits));
+}
+
 /** Notifications kept on the lock screen. */
 export const STACK_SIZE = 4;
 

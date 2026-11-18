@@ -89,6 +89,12 @@ what changed:
   (`[data-anim="paused"]`) while the clock kept its own time, so they could
   come back out of step. Runs are exempt; the clock already stops off
   screen.
+- How many logos ride the runway at once is measured from its width
+  (`runwayStepsFor`): as many as still leave 56px between the two widest
+  logos, between two and four. Four 200px boxes on a 711px runway put wide
+  logos (Bayport, Shreeji) about 27px apart; it is three there now, at least
+  69px apart. Measured: three at 1440 and 1280, two at 1024 and on phones,
+  three at 768. The phone's notes use the same count, so they stay in step.
 - Logos load eagerly, so a new one never appears late.
 - The hop is a 720ms arc (steady across, decelerating up, accelerating
   down) with a small pop; notes land 560ms after the step, as the bubble

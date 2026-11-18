@@ -5,11 +5,11 @@ import Image from "next/image";
 
 import balloMark from "@/public/BalloAds Logo New/BalloAds-Icon.png";
 import {
-  COMPACT_RUNWAY_STEPS,
   RUNWAY_STEPS,
   STEP_MS,
   itemAt,
   runwayAt,
+  runwayStepsFor,
   trustedTicker,
 } from "@/lib/trustedLockScreen";
 import { LockScreen } from "./JourneyScreens";
@@ -43,19 +43,26 @@ import {
  * same brand. The runway owns the clock: it runs while the runway is near the
  * screen and stops otherwise, so nothing ticks once the section has gone.
  */
-const COMPACT_QUERY = "(max-width: 640px)";
-
-/** True on small screens, where the runway is short (see logo-cloud.css). */
-function useCompact() {
-  return React.useSyncExternalStore(
-    (onChange) => {
-      const mq = window.matchMedia(COMPACT_QUERY);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(COMPACT_QUERY).matches,
-    () => false,
-  );
+/**
+ * How many logos the runway carries at once, measured from its width and
+ * its box size (`--slot-w` in logo-cloud.css), so the widest logos never
+ * crowd each other (`runwayStepsFor`). Re-measured when the runway resizes.
+ */
+function useRunwaySteps(runwayRef: React.RefObject<HTMLDivElement | null>) {
+  const [steps, setSteps] = React.useState(RUNWAY_STEPS);
+  React.useEffect(() => {
+    const el = runwayRef.current;
+    if (!el) return;
+    const measure = () => {
+      const slot = parseFloat(getComputedStyle(el).getPropertyValue("--slot-w")) || 200;
+      setSteps(runwayStepsFor(el.clientWidth, slot));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [runwayRef]);
+  return steps;
 }
 
 /** Phone3D's own height; the slot scales it to fit. */
@@ -77,7 +84,7 @@ export function TrustedLockLane({
   const slotRef = React.useRef<HTMLDivElement>(null);
   const [phoneScale, setPhoneScale] = React.useState(1);
   const state = useTrustedTicker();
-  const runwaySteps = useCompact() ? COMPACT_RUNWAY_STEPS : RUNWAY_STEPS;
+  const runwaySteps = useRunwaySteps(runwayRef);
   const count = logos.length;
   // When the journey phone is on, it is the phone (it stops beside this
   // section); otherwise the section shows its own.
@@ -136,7 +143,7 @@ export function TrustedLockLane({
             if (!logo) return null;
             return (
               <span
-                key={runner.key}
+                key={`${runwaySteps}:${runner.key}`}
                 className="trusted-lane__runner"
                 style={{ animationDelay: `${runner.delayMs}ms` }}
               >

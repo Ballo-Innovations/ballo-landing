@@ -3,6 +3,7 @@ import { describe, it, mock } from "node:test";
 
 import {
   COMPACT_RUNWAY_STEPS,
+  MIN_LOGO_GAP,
   RUNWAY_STEPS,
   STACK_SIZE,
   STEP_MS,
@@ -12,6 +13,7 @@ import {
   lockScreenClock,
   previewFor,
   runwayAt,
+  runwayStepsFor,
   stackAt,
   withoutBackers,
 } from "./trustedLockScreen";
@@ -227,5 +229,24 @@ describe("withoutBackers", () => {
   it("returns the clients unchanged when there are no backers", () => {
     const clients = [{ alt: "Bayport" }];
     assert.deepEqual(withoutBackers(clients, []), clients);
+  });
+});
+
+describe("runwayStepsFor", () => {
+  // Boxes of 200px hold logos up to 176px wide; the gap between two of the
+  // widest must stay at least MIN_LOGO_GAP.
+  it("fits fewer logos on a narrower runway, keeping the gap", () => {
+    assert.equal(runwayStepsFor(711, 200), 3); // 1440 split layout
+    assert.equal(runwayStepsFor(277, 128), 2); // 375 phone
+    assert.equal(runwayStepsFor(2000, 200), RUNWAY_STEPS); // never more than the default
+    assert.equal(runwayStepsFor(0, 200), COMPACT_RUNWAY_STEPS); // never fewer than two
+  });
+
+  it("leaves at least MIN_LOGO_GAP between the widest logos", () => {
+    for (const [w, slot] of [[711, 200], [739, 200], [628, 172], [277, 128], [494, 200]]) {
+      const steps = runwayStepsFor(w, slot);
+      const spacing = (w + slot / 2) / steps;
+      if (steps > COMPACT_RUNWAY_STEPS) assert.ok(spacing - (slot - 24) >= MIN_LOGO_GAP, `${w}/${slot}`);
+    }
   });
 });
