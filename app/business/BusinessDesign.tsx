@@ -33,10 +33,10 @@ const BLANKS: Record<keyof BusinessBlanks, BlankSpec> = {
   businessType: { name: "businessType", label: "Type of business", words: ["retail", "salon", "bakery", "fashion"], size: "bizd-blank--md" },
   location: { name: "location", label: "Where your business is", words: ["Lusaka", "Kitwe", "Ndola", "Kabwe"], size: "bizd-blank--sm" },
   businessName: { name: "businessName", label: "Business name", words: ["my brand", "my shop", "my store", "our team"], size: "bizd-blank--lg" },
-  offering: { name: "offering", label: "What your business does", words: ["sell online", "sell food", "book jobs", "run ads"], size: "bizd-blank--lg" },
-  customerIssue: { name: "customerIssue", label: "What customers are doing", words: ["not replying", "going quiet", "not buying", "ghosting us"], size: "bizd-blank--xl" },
-  ourStruggle: { name: "ourStruggle", label: "What your team struggles with", words: ["lose track", "miss leads", "lose sales", "fall behind"], size: "bizd-blank--lg" },
-  reachCount: { name: "reachCount", label: "How many people you need to reach", words: ["50,000", "10,000", "5,000", "everyone"], size: "bizd-blank--md" },
+  offering: { name: "offering", label: "What your business does", words: ["sell food", "book jobs", "run ads", "fix cars"], size: "bizd-blank--lg" },
+  customerIssue: { name: "customerIssue", label: "What customers are doing", words: ["not buying", "going cold", "not paying", "drifting"], size: "bizd-blank--xl" },
+  ourStruggle: { name: "ourStruggle", label: "What your team struggles with", words: ["lose track", "lose sales", "lose time", "run late"], size: "bizd-blank--lg" },
+  reachCount: { name: "reachCount", label: "How many people you need to reach", words: ["50,000", "10,000", "5,000", "20,000"], size: "bizd-blank--md" },
 };
 
 const CircleArrow: React.FC<{ className?: string }> = ({ className }) => (
