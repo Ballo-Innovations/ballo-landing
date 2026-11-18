@@ -117,6 +117,32 @@
   pointer-events: none;
 }
 
+/* The silk behind the phone during "Why Choose" (ADR 0019, flag `whySilk`).
+   Opacity and visibility are written by `WhySilk` from the pin's progress.
+   The mask keeps it on the phone's side and lets it dissolve before the
+   heading, so the copy always sits on the plain page navy. */
+.why-silk {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 30%, transparent 56%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 30%, transparent 56%);
+}
+.why-silk__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Below 900px the copy stacks under the centred phone (see `.hero-aside`),
+   so the silk becomes a pool around the phone instead of a left-hand band. */
+@media (max-width: 900px) {
+  .why-silk {
+    -webkit-mask-image: radial-gradient(ellipse 90% 30% at 50% 28%, #000 30%, transparent 100%);
+    mask-image: radial-gradient(ellipse 90% 30% at 50% 28%, #000 30%, transparent 100%);
+  }
+}
+
 /* The halo behind the phone once it has stepped aside: three soft rings and a
    cyan bloom (cf. the "What We're About" artwork). Painted first inside the
    phone's layer, which is its own stacking context, so it can never cover the

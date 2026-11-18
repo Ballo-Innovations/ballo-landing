@@ -5,6 +5,7 @@ import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
 import { PageGradient } from "./components/ui/PageGradient";
 import { HeroSideExit, PHONE_CONTENT } from "./components/ui/HeroSideExit";
+import { WhySilk } from "./components/ui/WhySilk";
 import { HeroMarquee } from "./components/ui/HeroMarquee";
 import { WhyFeatureChips } from "./components/ui/FeatureChips";
 import { TextReveal } from "./components/ui/TextReveal";
@@ -183,6 +184,10 @@ export default function HomeClient({
   const [trustedLockFlag, setTrustedLockFlag] = useState(false);
   useEffect(() => setTrustedLockFlag(isFeatureEnabled("trustedLockScreen")), []);
   const trustedLock = trustedLockFlag && !shouldReduceMotion;
+  // The silk behind the phone during "Why Choose" (ADR 0019). The pin it lives
+  // on does not exist under reduced motion, so neither does the silk.
+  const [whySilk, setWhySilk] = useState(false);
+  useEffect(() => setWhySilk(isFeatureEnabled("whySilk")), []);
 
   useEffect(() => {
     return () => {
@@ -252,7 +257,12 @@ export default function HomeClient({
           /* The hero's mid-left bloom, on its own layer behind the phone. In the
            hero section below it covered the device, because the hero is
            stacked in front of the phone so it can leave across it. */
-          glow={<div className="prlx-hero-1" />}
+          glow={
+            <>
+              <div className="prlx-hero-1" />
+              {whySilk ? <WhySilk /> : null}
+            </>
+          }
           /* Act two. This copy used to sit in the section below, beside a second
            phone mockup; now that the hero's own phone arrives and steps aside
            for it, that pairing happens up here and the section keeps only its
