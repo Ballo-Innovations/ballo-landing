@@ -27,11 +27,11 @@ export function silkArrival([from, to]: Range): Range {
 /**
  * How fast the shown opacity follows its target, as the angular frequency of
  * a critically damped spring (rad/s). Rising settles in about 1.6s, falling in
- * about 1.2s. The scroll only sets the target, so a fast scroll can never
+ * about 1.9s: leaving is as quiet as arriving. The scroll only sets the target, so a fast scroll can never
  * snap the silk in or out (George, 2026-11-18: "very smooth and subtle").
  */
 export const SILK_FADE_IN_OMEGA = 4;
-export const SILK_FADE_OUT_OMEGA = 5.5;
+export const SILK_FADE_OUT_OMEGA = 3.5;
 
 /**
  * One step of a critically damped spring from `x` (moving at `v` per second)
