@@ -20,6 +20,13 @@ export function silkStrength(p: number, arrive: Range, leave: Range): number {
 export const SILK_VISIBLE_MIN = 0.002;
 
 /**
+ * The layer's opacity when fully up. The silk is atmosphere, not a feature:
+ * at full strength it competed with the phone (George, 2026-11-18: "should be
+ * more subtle"), so it peaks well below opaque.
+ */
+export const SILK_PEAK_OPACITY = 0.55;
+
+/**
  * Backing-store pixels per CSS pixel. The silk has no hard edges, so it is
  * drawn at well under native resolution and scaled up by the browser: about
  * 0.6 of a CSS pixel on a 1x screen, at most 0.9 on retina, and less again on
@@ -71,10 +78,10 @@ void main() {
   vec3 hero = vec3(0.082, 0.239, 0.529);
   vec3 cyan = vec3(0.247, 0.859, 1.0);
   vec3 violet = vec3(0.55, 0.42, 0.95);
-  vec3 col = mix(navy, hero, smoothstep(0.15, 0.95, v));
-  col += cyan * pow(v, 14.0) * 0.45;
-  col = mix(col, violet, pow(w, 10.0) * 0.35);
-  float alpha = 0.55 + 0.45 * smoothstep(0.1, 0.8, v);
+  vec3 col = mix(navy, hero, smoothstep(0.2, 1.0, v) * 0.75);
+  col += cyan * pow(v, 18.0) * 0.18;
+  col = mix(col, violet, pow(w, 12.0) * 0.2);
+  float alpha = 0.35 + 0.45 * smoothstep(0.1, 0.9, v);
   gl_FragColor = vec4(col * alpha, alpha);
 }
 `;

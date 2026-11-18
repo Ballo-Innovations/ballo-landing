@@ -10,6 +10,7 @@ import {
   silkPixelRatio,
   silkStrength,
   SILK_FRAGMENT,
+  SILK_PEAK_OPACITY,
   SILK_VERTEX,
   SILK_VISIBLE_MIN,
 } from "@/lib/whySilk";
@@ -145,7 +146,7 @@ export function WhySilk() {
       if (el) {
         // Written to the DOM by hand, not as a motion value: see the halo in
         // HeroSideExit for why a scroll-linked opacity misbehaves here.
-        el.style.opacity = s.failed ? "0" : s.strength.toFixed(3);
+        el.style.opacity = s.failed ? "0" : (s.strength * SILK_PEAK_OPACITY).toFixed(3);
         el.style.visibility = s.strength < SILK_VISIBLE_MIN ? "hidden" : "visible";
       }
       kick();
