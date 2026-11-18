@@ -21,7 +21,8 @@ export type FeatureName =
   | "defaultPageBg"
   | "whySilk"
   | "trustedEntrance"
-  | "businessDesign";
+  | "businessDesign"
+  | "guidesCarousel";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
@@ -66,6 +67,8 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   trustedentrance: "trustedEntrance",
   business: "businessDesign",
   businessdesign: "businessDesign",
+  guides: "guidesCarousel",
+  guidescarousel: "guidesCarousel",
 };
 
 /**
@@ -105,6 +108,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   whySilk: process.env.NEXT_PUBLIC_FEATURE_WHY_SILK,
   trustedEntrance: process.env.NEXT_PUBLIC_FEATURE_TRUSTED_ENTRANCE,
   businessDesign: process.env.NEXT_PUBLIC_FEATURE_BUSINESS_DESIGN,
+  guidesCarousel: process.env.NEXT_PUBLIC_FEATURE_GUIDES_CAROUSEL,
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
