@@ -134,7 +134,8 @@ const PHONE_BASE_H = 516;
 export function TrustedLockLane({
   logos,
   backers = [],
-  eyebrow = "Trusted by",
+  // No eyebrow by default: the heading says it (George, 2026-11-18).
+  eyebrow = "",
   title = "The brands that trust BalloAds",
   entrance = false,
 }: {
@@ -203,7 +204,7 @@ export function TrustedLockLane({
       data-entrance={entrance ? (arrived ? "in" : "out") : undefined}
     >
       <div className="trusted-lane__head">
-        <p className="trusted-lane__eyebrow">{eyebrow}</p>
+        {eyebrow ? <p className="trusted-lane__eyebrow">{eyebrow}</p> : null}
         {entrance ? (
           <MaskedTitle text={title} />
         ) : (

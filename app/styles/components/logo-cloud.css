@@ -219,6 +219,11 @@
   text-wrap: balance;
 }
 
+/* Without the eyebrow the heading opens the block. */
+.trusted-lane__head > .trusted-lane__title:first-child {
+  margin-top: 0;
+}
+
 .trusted-lane__track {
   grid-area: track;
   position: relative;
