@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { easePull, silkPixelRatio, silkStrength, SILK_VISIBLE_MIN } from "./whySilk";
+import { easePull, silkPixelRatio, silkStrength, SILK_PEAK_OPACITY, SILK_VISIBLE_MIN } from "./whySilk";
 
 const ARRIVE: [number, number] = [0.5, 0.6];
 const LEAVE: [number, number] = [0.8, 0.9];
@@ -55,5 +55,12 @@ describe("easePull", () => {
 
   it("ignores negative time steps", () => {
     assert.equal(easePull(0.4, 1, -50), 0.4);
+  });
+});
+
+describe("SILK_PEAK_OPACITY", () => {
+  it("keeps the silk a subtle background, well short of opaque", () => {
+    assert.ok(SILK_PEAK_OPACITY > SILK_VISIBLE_MIN);
+    assert.ok(SILK_PEAK_OPACITY <= 0.6);
   });
 });
