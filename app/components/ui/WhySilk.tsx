@@ -13,6 +13,7 @@ import {
   silkPixelRatio,
   silkStrength,
   SILK_FRAGMENT,
+  SILK_MAX_FRAME_MS,
   SILK_PEAK_OPACITY,
   SILK_VERTEX,
   SILK_VISIBLE_MIN,
@@ -132,7 +133,7 @@ export function WhySilk() {
     }
     const dt = s.last ? now - s.last : 16;
     s.last = now;
-    [s.shown, s.vel] = fadeStep(s.shown, s.vel, s.target, dt);
+    [s.shown, s.vel] = fadeStep(s.shown, s.vel, s.target, Math.min(dt, SILK_MAX_FRAME_MS));
     paint();
     if (s.shown < SILK_VISIBLE_MIN && s.target < SILK_VISIBLE_MIN) {
       // Faded right out: stop until the scroll asks for it again.

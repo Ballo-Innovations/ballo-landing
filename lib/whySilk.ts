@@ -61,6 +61,13 @@ export function fadeStep(
   return [Math.max(0, Math.min(1, x)), v];
 }
 
+/**
+ * The most time one frame may advance the fade. After a stalled frame (a busy
+ * main thread, a slow phone) the fade carries on from where it was instead of
+ * catching up in one visible step.
+ */
+export const SILK_MAX_FRAME_MS = 50;
+
 /** True once the fade has come to rest at its target. */
 export function fadeSettled(x: number, v: number, target: number): boolean {
   return Math.abs(target - x) < 0.001 && Math.abs(v) < 0.002;

@@ -8,6 +8,7 @@ import {
   silkArrival,
   silkPixelRatio,
   silkStrength,
+  SILK_MAX_FRAME_MS,
   SILK_PEAK_OPACITY,
   SILK_VISIBLE_MIN,
 } from "./whySilk";
@@ -125,5 +126,12 @@ describe("fadeSettled", () => {
 describe("silkArrival", () => {
   it("doubles the length of the copy swap", () => {
     assert.deepEqual(silkArrival([0.5, 0.6]), [0.5, 0.7]);
+  });
+});
+
+describe("SILK_MAX_FRAME_MS", () => {
+  it("keeps one capped frame to a small, invisible step", () => {
+    const [x] = fadeStep(0, 0, SILK_PEAK_OPACITY, SILK_MAX_FRAME_MS);
+    assert.ok(x < 0.05, `one capped frame moved ${x}`);
   });
 });
