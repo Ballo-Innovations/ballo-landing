@@ -281,7 +281,7 @@ const act = (from: number, to: number): Range => [
  * the copy to the right and the badges and pills to the left. The badges ride
  * on the phone, so they have to be clear before it starts to turn.
  */
-const WHY_OUT = act(0, 70);
+export const WHY_OUT = act(0, 70);
 /** The phone returns to the middle of the stage at full size… */
 const PHONE_HOME = act(10, 85);
 /** …and, overlapping that, turns a quarter to landscape and grows. */
