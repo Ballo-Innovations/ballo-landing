@@ -177,10 +177,16 @@
   background: #cfd6e2;
 }
 
+/* All seven are mounted; only the active one is drawn. See GuidesCarousel. */
 .guides-big__img {
   object-fit: cover;
   /* The design's artwork is black and white in the big card only. */
   filter: grayscale(1) contrast(1.04);
+  opacity: 0;
+}
+
+.guides-big__img.is-active {
+  opacity: 1;
 }
 
 .guides-big__copy {

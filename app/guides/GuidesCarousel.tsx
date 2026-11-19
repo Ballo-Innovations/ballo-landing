@@ -138,7 +138,8 @@ export default function GuidesCarousel() {
 
       // The filter lives on the <img> inside, so it animates on its own track.
       // The inline value is what lets the animation beat the stylesheet's.
-      const img = clone.querySelector("img");
+      // The big card holds every guide's picture, so take the drawn one.
+      const img = clone.querySelector("img.is-active") ?? clone.querySelector("img");
       if (img instanceof HTMLElement) {
         img.style.filter = leg.grey[0];
         img.animate([{ filter: leg.grey[0] }, { filter: leg.grey[1] }], timing);
@@ -175,16 +176,25 @@ export default function GuidesCarousel() {
     >
       {/* Big card */}
       <div className="guides-big">
+        {/*
+          Every guide's picture is mounted here and only the active one is
+          shown. The big card asks for a wider picture than a tile does, so it
+          is a different file: swapping the src on each change left the card
+          blank while that file was fetched, and the card in flight was blank
+          with it. Mounted together, they are all in hand before the first swap.
+        */}
         <div className="guides-big__art" ref={bigArtRef}>
-          <Image
-            key={active.id}
-            src={active.image}
-            alt=""
-            fill
-            sizes="(max-width: 900px) 92vw, 26rem"
-            priority
-            className="guides-big__img"
-          />
+          {guides.map((guide, i) => (
+            <Image
+              key={guide.id}
+              src={guide.image}
+              alt=""
+              fill
+              sizes="(max-width: 900px) 92vw, 26rem"
+              priority={i === 0}
+              className={`guides-big__img${guide.id === active.id ? " is-active" : ""}`}
+            />
+          ))}
         </div>
         <div className="guides-big__copy">
           <h1 className="guides-big__headline" key={active.id}>
