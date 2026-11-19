@@ -17,6 +17,15 @@ import {
   durationLabel,
   resolveRate,
 } from "@/lib/pricingLadderTypes";
+import { isFeatureEnabled, resolveFlag } from "@/lib/featureFlags";
+import PricingRateTable, { type RateTableTab } from "./PricingRateTable";
+
+// The value the server and the first client render agree on. A `?features=`
+// override is applied after mount, like every other flag on the site.
+const RATE_TABLE_BY_DEFAULT = resolveFlag({
+  env: process.env.NEXT_PUBLIC_FEATURE_PRICING_RATE_TABLE,
+  defaultEnabled: process.env.NODE_ENV === "development",
+});
 
 // ─── Inline icons (kept 1:1 with the pre-CMS design — selected by `channel`,
 //     a closed 3-value enum, rather than the freeform `iconName` string, so
@@ -258,12 +267,15 @@ export default function PricingPageClient({
     }
   }
 
+  const [rateTable, setRateTable] = useState(RATE_TABLE_BY_DEFAULT);
+  useEffect(() => setRateTable(isFeatureEnabled("pricingRateTable")), []);
+
   // Force the body background to match the page so no dark bar shows behind the fixed nav.
   useEffect(() => {
     const prev = document.body.style.background;
-    document.body.style.background = "#DFE0E1";
+    document.body.style.background = rateTable ? "#000" : "#DFE0E1";
     return () => { document.body.style.background = prev; };
-  }, []);
+  }, [rateTable]);
 
   const orderedSteps = useMemo(() => zigzagOrder(stepsFlow), [stepsFlow]);
   const mobileSteps = useMemo(
@@ -271,6 +283,27 @@ export default function PricingPageClient({
     [stepsFlow],
   );
   const [rowTopLeft, rowTopRight, rowBottomLeft, rowBottomRight] = orderedSteps;
+
+  if (rateTable) {
+    const tabs: RateTableTab[] = [
+      ...termDurations.map((d) => ({
+        key: String(d),
+        label: durationLabel(d),
+        bands: laddersByDuration[d] ?? [],
+        validity: `Messages are valid for ${d} days from purchase.`,
+      })),
+      { key: "no-expiry", label: "No expiry", href: "/pricing/unlimited" },
+    ];
+    // With no fixed terms published there is still a table to show: "on request".
+    if (termDurations.length === 0) tabs.unshift({ key: "term", label: "Fixed term", bands: [] });
+    return (
+      <PricingRateTable
+        tabs={tabs}
+        initialKey={tabs[0].key}
+        currency={plans[0]?.currency ?? "ZMW"}
+      />
+    );
+  }
 
   return (
     <main className="font-sans" style={{ background: "#DFE0E1" }}>
