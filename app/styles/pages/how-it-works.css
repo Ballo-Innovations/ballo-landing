@@ -722,9 +722,9 @@ a.hiwd-step:focus-visible {
   position: relative;
   z-index: 1;
   align-self: center;
-  width: min(72%, 17rem);
+  width: min(92%, 22rem);
   aspect-ratio: 2160 / 2700;
-  margin-block: -0.5rem;
+  margin-block: -1rem;
   opacity: 0;
   transform: translate3d(0, 1.5rem, 0) scale(0.94);
   transition:
@@ -742,7 +742,7 @@ a.hiwd-step:focus-visible {
   z-index: 0;
   left: 50%;
   top: 50%;
-  width: 128%;
+  width: 118%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   transform: translate(-50%, -50%);
@@ -787,10 +787,11 @@ a.hiwd-step:focus-visible {
   object-fit: cover;
   object-position: top;
   opacity: 0;
-  transform: translateY(3%);
+  transform: translateY(2.5%) scale(1.015);
   transition:
-    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
 }
 
 .hiwd-phone__screen.is-active {
@@ -813,7 +814,8 @@ a.hiwd-step:focus-visible {
   .hiwd-stage {
     display: block;
     max-width: 69.125rem;
-    aspect-ratio: 1106 / 900;
+    /* Taller than the drawing so the larger phones clear the cards. */
+    aspect-ratio: 1106 / 1060;
     will-change: transform;
   }
 
@@ -868,30 +870,46 @@ a.hiwd-step:focus-visible {
     font-size: 1.52cqw;
   }
 
-  .hiwd-step--p1 { left: 0; top: 2.2%; width: 35.5%; }
-  .hiwd-step--p2 { left: 16.6%; top: 27.4%; width: 37.8%; }
-  .hiwd-step--p3 { left: 39.8%; top: 52.4%; width: 42.7%; }
-  .hiwd-step--p4 { left: 64.3%; top: 78.5%; width: 35.7%; }
+  .hiwd-step--p1 { left: 0; top: 1.9%; width: 35.5%; }
+  .hiwd-step--p2 { left: 16.6%; top: 23.6%; width: 37.8%; }
+  .hiwd-step--p3 { left: 39.8%; top: 52.8%; width: 42.7%; }
+  .hiwd-step--p4 { left: 64.3%; top: 78.3%; width: 35.7%; }
 
   .hiwd-phone {
     position: absolute;
     margin: 0;
   }
 
-  .hiwd-phone--a { left: 63.7%; top: -4.3%; width: 32.9%; }
-  .hiwd-phone--b { left: 2.2%; top: 50%; width: 30.5%; }
+  /* The phone itself is the middle 45% of this box (the frame's canvas). */
+  .hiwd-phone--a { left: 57.4%; top: -3.8%; width: 45.2%; }
+  .hiwd-phone--b { left: -5.2%; top: 38.3%; width: 45.2%; }
 
   /* Phone A steps back once the story moves to phone B. */
+  .hiwd-phone--a {
+    transition:
+      opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .hiwd-phone--a.is-resting {
-    opacity: 0.5;
-    transform: scale(0.95);
+    opacity: 0.45;
+    transform: scale(0.96);
   }
 }
 
 /* Desktop with motion: hold the section in place while the steps play. */
 @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
   .hiwd-scroll[data-mode="pin"] {
-    height: calc(100vh + var(--hiwd-steps, 4) * 60vh);
+    height: calc(100vh + var(--hiwd-steps, 4) * 70vh);
+  }
+
+  /* These follow the scroll directly (HowItWorksScroll.tsx), so a CSS
+     transition on top would only make them lag. */
+  .hiwd-scroll[data-mode="pin"] .hiwd-step,
+  .hiwd-scroll[data-mode="pin"] .hiwd-line,
+  .hiwd-scroll[data-mode="pin"] .hiwd-phone--b {
+    transition: none;
+    will-change: opacity, transform;
   }
 
   .hiwd-scroll[data-mode="pin"] .hiwd-pin {
