@@ -350,3 +350,290 @@
     transition: none;
   }
 }
+
+/* Parts that only one of the two layouts shows. */
+.prof-label-design,
+.prof-btn__icon,
+.prof-support__check-design {
+  display: none;
+}
+
+/* =============================================================
+   Designed layout (flag: professionalDesign). Same markup, switched
+   by <main data-design="on">. Measurements come from the 1355px
+   design canvas.
+   ============================================================= */
+
+.professional-page[data-design="on"] {
+  --profd-max: 1136px;
+  --profd-gutter: clamp(1rem, 6vw, 5.1rem);
+  background: linear-gradient(180deg, #070a5c 0%, #050747 28%, #020222 68%, #000 100%);
+}
+
+/* ---- Hero ---- */
+.professional-page[data-design="on"] .prof-hero {
+  background: none;
+  padding: clamp(8rem, 20vw, 17rem) var(--profd-gutter) clamp(2.5rem, 7.2vw, 6.1rem);
+}
+
+.professional-page[data-design="on"] .prof-eyebrow {
+  display: none;
+}
+
+.professional-page[data-design="on"] .prof-hero__inner {
+  max-width: none;
+}
+
+.professional-page[data-design="on"] .prof-hero__headline {
+  font-size: clamp(2rem, 5.6vw, 4.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-shadow: -1px 0 #ff3b30, 1px 0 #00a3ff;
+}
+
+/* Fades out to the right, as drawn. */
+.professional-page[data-design="on"] .prof-hero__intro {
+  margin-top: clamp(0.9rem, 2vw, 1.7rem);
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.9rem, 1.33vw, 1.125rem);
+  line-height: 1.4;
+  color: transparent;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.82) 35%, rgba(150, 160, 215, 0.18) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ---- Accordion ---- */
+.professional-page[data-design="on"] .prof-accordion-section {
+  padding: 0 var(--profd-gutter) clamp(2.5rem, 6vw, 5rem);
+}
+
+.professional-page[data-design="on"] .prof-accordion {
+  max-width: var(--profd-max);
+  border-top: 0;
+}
+
+.professional-page[data-design="on"] .prof-accordion__item {
+  border-bottom: 3px solid #2373af;
+}
+
+.professional-page[data-design="on"] .prof-accordion__trigger {
+  gap: clamp(0.85rem, 2.95vw, 2.5rem);
+  padding: clamp(1.5rem, 4.7vw, 4rem) 0 clamp(1.25rem, 3.5vw, 3rem);
+}
+
+.professional-page[data-design="on"] .prof-accordion__item:first-child .prof-accordion__trigger {
+  padding-top: 0.25rem;
+}
+
+/* Photo set inside a thin blue frame. */
+.professional-page[data-design="on"] .prof-accordion__thumb {
+  width: clamp(7rem, 26.7vw, 362px);
+  aspect-ratio: 362 / 163;
+  padding: clamp(0.3rem, 0.9vw, 0.75rem);
+  border: 1.5px solid #2f7bd8;
+  border-radius: clamp(0.6rem, 1.2vw, 1rem);
+  background: rgba(4, 6, 60, 0.6);
+  overflow: visible;
+}
+
+.professional-page[data-design="on"] .prof-accordion__thumb img {
+  border-radius: clamp(0.3rem, 0.6vw, 0.5rem);
+}
+
+.professional-page[data-design="on"] .prof-accordion__titles {
+  gap: clamp(0.25rem, 0.7vw, 0.6rem);
+}
+
+.professional-page[data-design="on"] .prof-accordion__title {
+  font-size: clamp(1.1rem, 2.95vw, 2.5rem);
+  line-height: 1.15;
+}
+
+.professional-page[data-design="on"] .prof-accordion__subtitle {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.8rem, 1.33vw, 1.125rem);
+  font-weight: 500;
+  color: #fff;
+}
+
+.professional-page[data-design="on"] .prof-accordion__chevron {
+  width: clamp(2rem, 3.55vw, 3rem);
+  height: clamp(2rem, 3.55vw, 3rem);
+  margin-right: 0.25rem;
+  border: 2.5px solid #fff;
+  color: #fff;
+}
+
+.professional-page[data-design="on"] .prof-accordion__chevron svg {
+  width: 55%;
+  height: 55%;
+}
+
+.professional-page[data-design="on"] .is-open .prof-accordion__chevron {
+  color: #020a2a;
+}
+
+.professional-page[data-design="on"] .prof-accordion__desc {
+  max-width: 62rem;
+  padding: 0 0 clamp(1.5rem, 3.5vw, 3rem);
+  font-size: clamp(0.95rem, 1.33vw, 1.125rem);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ---- Support ---- */
+.professional-page[data-design="on"] .prof-support {
+  padding: clamp(1rem, 3vw, 2.5rem) var(--profd-gutter) clamp(3rem, 7.4vw, 6.25rem);
+}
+
+.professional-page[data-design="on"] .prof-support__inner {
+  max-width: var(--profd-max);
+  padding-left: clamp(0rem, 1.6vw, 1.35rem);
+}
+
+/* Rings centred a little left of the page centre, running off the bottom. */
+.professional-page[data-design="on"] .prof-support__rings {
+  left: 44%;
+  bottom: clamp(-15rem, -17.7vw, -6rem);
+  width: clamp(38rem, 94.5vw, 80rem);
+  opacity: 0.5;
+}
+
+/* Four thinner rings, as drawn (the shared component has five). */
+.professional-page[data-design="on"] .prof-support__rings circle {
+  stroke-width: 5;
+}
+
+.professional-page[data-design="on"] .prof-support__rings circle:first-of-type {
+  display: none;
+}
+
+.professional-page[data-design="on"] .prof-support__head {
+  justify-content: flex-start;
+  gap: clamp(1rem, 3vw, 2.6rem);
+  margin-bottom: clamp(2.25rem, 7.4vw, 6.25rem);
+}
+
+.professional-page[data-design="on"] .prof-support__title {
+  max-width: none;
+  font-size: clamp(1.35rem, 2.66vw, 2.25rem);
+  font-weight: 700;
+  color: transparent;
+  background: linear-gradient(90deg, #cfd5ea 0%, #a4abd6 35%, #5b61b5 65%, #23267f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.professional-page[data-design="on"] .prof-label-classic {
+  display: none;
+}
+
+.professional-page[data-design="on"] .prof-label-design {
+  display: inline;
+}
+
+.professional-page[data-design="on"] .prof-btn {
+  gap: 0.75rem;
+  height: clamp(2.85rem, 4.45vw, 3.75rem);
+  padding: 0 clamp(1.1rem, 1.5vw, 1.25rem) 0 clamp(1.4rem, 1.9vw, 1.6rem);
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(1rem, 1.48vw, 1.25rem);
+  box-shadow: none;
+}
+
+.professional-page[data-design="on"] .prof-btn__icon {
+  display: block;
+  width: 1.3em;
+  height: 1.3em;
+}
+
+.professional-page[data-design="on"] .prof-btn--light,
+.professional-page[data-design="on"] .prof-btn--outline {
+  background: #fff;
+  color: #020055;
+  border: 0;
+}
+
+.professional-page[data-design="on"] .prof-btn--light:hover,
+.professional-page[data-design="on"] .prof-btn--outline:hover {
+  background: #dbe6ff;
+  box-shadow: none;
+}
+
+.professional-page[data-design="on"] .prof-support__head-btn {
+  height: 2.25rem;
+  gap: 0.5rem;
+  padding: 0 0.6rem 0 0.9rem;
+  font-size: 0.8125rem;
+}
+
+/* Get Started: navy fading to pale steel blue, white text. */
+.professional-page[data-design="on"] .prof-support__ctas .prof-btn--light {
+  background: linear-gradient(90deg, #0a0c58 0%, #343a84 45%, #a3acc9 100%);
+  color: #fff;
+}
+
+.professional-page[data-design="on"] .prof-support__ctas .prof-btn--light:hover {
+  background: linear-gradient(90deg, #12157a 0%, #454ca0 45%, #bcc4dd 100%);
+}
+
+.professional-page[data-design="on"] .prof-support__grid {
+  grid-template-columns: 1fr;
+  gap: clamp(1.75rem, 5vw, 4.25rem) 2rem;
+}
+
+.professional-page[data-design="on"] .prof-support__item {
+  gap: clamp(0.75rem, 1.2vw, 1rem);
+}
+
+.professional-page[data-design="on"] .prof-support__check {
+  width: clamp(2.5rem, 4vw, 3.375rem);
+  height: clamp(2.5rem, 4vw, 3.375rem);
+  margin-top: -0.35rem;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+}
+
+.professional-page[data-design="on"] .prof-support__check-classic {
+  display: none;
+}
+
+.professional-page[data-design="on"] .prof-support__check-design {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.professional-page[data-design="on"] .prof-support__item-title {
+  font-size: clamp(1.15rem, 1.77vw, 1.5rem);
+  line-height: 1.25;
+}
+
+.professional-page[data-design="on"] .prof-support__item-desc {
+  max-width: 27em;
+  margin-top: 0.35rem;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(0.875rem, 1.03vw, 0.9375rem);
+  line-height: 1.45;
+  color: #fff;
+}
+
+.professional-page[data-design="on"] .prof-support__ctas {
+  gap: clamp(1rem, 6.6vw, 5.6rem);
+  margin-top: clamp(2.5rem, 6.6vw, 5.6rem);
+}
+
+@media (min-width: 700px) {
+  .professional-page[data-design="on"] .prof-support__grid {
+    grid-template-columns: 55% 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .professional-page[data-design="on"] .prof-btn:hover {
+    transform: none;
+  }
+}
