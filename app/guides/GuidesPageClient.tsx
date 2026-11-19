@@ -42,7 +42,7 @@ export default function GuidesPageClient({ faqs }: { faqs: FaqEntry[] }) {
   return (
     <main className="guides-page">
       {/* Hero */}
-      <section className="guides-hero">
+      <section className={`guides-hero${carousel ? " guides-hero--carousel" : ""}`}>
         {carousel ? (
           <GuidesCarousel />
         ) : (

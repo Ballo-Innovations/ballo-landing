@@ -110,13 +110,41 @@ export default function GuidesCarousel() {
     // so each leg drains or restores its colour as it travels. Without this the
     // picture jumps to its new treatment the instant it leaves, which reads as
     // a glitch rather than a move.
-    const legs: { el: HTMLElement; from: Box; to: Box; real: HTMLElement; grey: [string, string] }[] =
-      [
-        // The promoted tile's artwork, flying into the big card.
-        { el: bigArt, from: pending.tile, to: bigNow, real: bigArt, grey: ["grayscale(0)", "grayscale(1)"] },
-        // The artwork it replaced, flying out to the slot the tile just left.
-        { el: tileArt, from: pending.big, to: tileNow, real: tileArt, grey: ["grayscale(1)", "grayscale(0)"] },
-      ];
+    //
+    // The card's colour travels the same way. A tile is a coloured card and
+    // the big card is a picture standing on studio grey, so the leg going in
+    // lets its colour go and the leg coming out picks its own back up.
+    const promoted = order[0];
+    const demoted = order[pending.slot + 1];
+    const CLEAR = "rgba(0, 0, 0, 0)";
+    type Leg = {
+      el: HTMLElement;
+      from: Box;
+      to: Box;
+      real: HTMLElement;
+      grey: [string, string];
+      bg: [string, string];
+    };
+    const legs: Leg[] = [
+      // The promoted tile's artwork, flying into the big card.
+      {
+        el: bigArt,
+        from: pending.tile,
+        to: bigNow,
+        real: bigArt,
+        grey: ["grayscale(0)", "grayscale(1)"],
+        bg: [promoted.bg, CLEAR],
+      },
+      // The artwork it replaced, flying out to the slot the tile just left.
+      {
+        el: tileArt,
+        from: pending.big,
+        to: tileNow,
+        real: tileArt,
+        grey: ["grayscale(1)", "grayscale(0)"],
+        bg: [CLEAR, demoted?.bg ?? CLEAR],
+      },
+    ];
 
     for (const leg of legs) {
       const clone = leg.el.cloneNode(true) as HTMLElement;
@@ -134,7 +162,13 @@ export default function GuidesCarousel() {
 
       const timing = { duration: FLIGHT_MS, easing: FLIGHT_EASE, fill: "both" as const };
       const [from, to] = flightFrames(leg.from, leg.to);
-      const anim = clone.animate([from, to], timing);
+      const anim = clone.animate(
+        [
+          { ...from, backgroundColor: leg.bg[0] },
+          { ...to, backgroundColor: leg.bg[1] },
+        ],
+        timing,
+      );
 
       // The filter lives on the <img> inside, so it animates on its own track.
       // The inline value is what lets the animation beat the stylesheet's.
@@ -190,9 +224,11 @@ export default function GuidesCarousel() {
               src={guide.image}
               alt=""
               fill
-              sizes="(max-width: 900px) 92vw, 26rem"
+              sizes="(max-width: 1099px) 92vw, 40rem"
               priority={i === 0}
-              className={`guides-big__img${guide.id === active.id ? " is-active" : ""}`}
+              className={`guides-big__img guides-big__img--${guide.kind}${
+                guide.id === active.id ? " is-active" : ""
+              }`}
             />
           ))}
         </div>
@@ -209,9 +245,13 @@ export default function GuidesCarousel() {
       {/* Tiles */}
       <ul className="guides-tiles">
         {slots.map((guide, slot) => (
-          <li className={`guides-tile guides-tile--${guide.tone}`} key={guide.id}>
+          <li
+            className={`guides-tile guides-tile--label-${guide.labelTone} guides-tile--button-${guide.buttonTone}${guide.isFilm ? " guides-tile--film" : ""}`}
+            key={guide.id}
+          >
             <div
               className="guides-tile__art"
+              style={{ backgroundColor: guide.bg }}
               ref={(el) => {
                 slotArtRefs.current[slot] = el;
               }}
@@ -220,14 +260,15 @@ export default function GuidesCarousel() {
                 src={guide.image}
                 alt=""
                 fill
-                sizes="(max-width: 900px) 46vw, 14rem"
-                className="guides-tile__img"
+                sizes="(max-width: 1099px) 46vw, 16rem"
+                style={{ objectPosition: guide.focus }}
+                className={`guides-tile__img guides-tile__img--${guide.kind}`}
               />
             </div>
             <span className="guides-tile__label">{guide.label}</span>
             {guide.isFilm && (
               <span className="guides-tile__play" aria-hidden="true">
-                <Play size={16} fill="currentColor" />
+                <Play fill="currentColor" strokeWidth={0} />
               </span>
             )}
             {/*
