@@ -18,29 +18,27 @@ import type { StaticImageData } from "next/image";
 import { FadeUpReveal } from "@/app/components/ui/FadeUpReveal";
 import person from "@/public/Assets/15.png";
 import phoneFrame from "@/public/Assets/features-phone/frame.png";
-import screen37 from "@/public/Assets/features-phone/screen-37.webp";
-import screen38 from "@/public/Assets/features-phone/screen-38.webp";
-import screen39 from "@/public/Assets/features-phone/screen-39.webp";
-import screen40 from "@/public/Assets/features-phone/screen-40.webp";
-import screen41 from "@/public/Assets/features-phone/screen-41.webp";
-import screen42 from "@/public/Assets/features-phone/screen-42.webp";
-import screen43 from "@/public/Assets/features-phone/screen-43.webp";
-import screen44 from "@/public/Assets/features-phone/screen-44.webp";
-import screen45 from "@/public/Assets/features-phone/screen-45.webp";
+import screenSms from "@/public/Assets/features-phone/screen-sms.webp";
+import screenWhatsapp from "@/public/Assets/features-phone/screen-whatsapp.webp";
+import screenEmail from "@/public/Assets/features-phone/screen-email.webp";
+import screenNotifications from "@/public/Assets/features-phone/screen-notifications.webp";
+import screenHome from "@/public/Assets/features-phone/screen-home.webp";
+import screenCalendar from "@/public/Assets/features-phone/screen-calendar.webp";
+import screenBrutus from "@/public/Assets/features-phone/screen-brutus.webp";
+import screenAnalytics from "@/public/Assets/features-phone/screen-analytics.webp";
 
-// Screens cut out of the original phone mockups (Assets/37-45.png), shown
+// Real screenshots of the BalloAds web app on a phone, one per feature, shown
 // inside one fixed frame so only the screen changes. See
 // scripts/build-features-phone.cjs for how they were made.
 const phoneScreens: { src: StaticImageData; alt: string }[] = [
-  { src: screen37, alt: "BalloAds app screen: sign up" },
-  { src: screen38, alt: "BalloAds app screen: analytics" },
-  { src: screen39, alt: "BalloAds app screen: packages" },
-  { src: screen40, alt: "BalloAds app screen: channels" },
-  { src: screen41, alt: "BalloAds app screen: campaigns" },
-  { src: screen42, alt: "BalloAds app screen: messaging" },
-  { src: screen43, alt: "BalloAds app screen: audience" },
-  { src: screen44, alt: "BalloAds app screen: delivery" },
-  { src: screen45, alt: "BalloAds app screen: performance" },
+  { src: screenSms, alt: "BalloAds app: writing an SMS campaign" },
+  { src: screenWhatsapp, alt: "BalloAds app: connecting a WhatsApp Business account" },
+  { src: screenEmail, alt: "BalloAds app: writing an email campaign" },
+  { src: screenNotifications, alt: "BalloAds app: notifications" },
+  { src: screenHome, alt: "BalloAds app: home, with shortcuts to create a bulk message, create an ad or view the library" },
+  { src: screenCalendar, alt: "BalloAds app: campaign calendar" },
+  { src: screenBrutus, alt: "BalloAds app: Brutus AI assistant suggesting campaigns" },
+  { src: screenAnalytics, alt: "BalloAds app: analytics and reports" },
 ];
 
 const featureLabels = [
@@ -51,7 +49,7 @@ const featureLabels = [
   { text: "User-Friendly Interface for Easy Navigation", Icon: Compass, side: "right" as const, tone: "light" as const, ax: 800, ay: 150, screen: 4 },
   { text: "Comprehensive Campaign Management Tools", Icon: LayoutGrid, side: "right" as const, tone: "light" as const, ax: 832, ay: 262, screen: 5 },
   { text: "AI-Powered Integration for Smart Campaigns", Icon: Cpu, side: "right" as const, tone: "light" as const, ax: 832, ay: 378, screen: 6 },
-  { text: "Real-Time Analytics & Performance Tracking", Icon: BarChart3, side: "right" as const, tone: "dark" as const, ax: 800, ay: 490, screen: 8 },
+  { text: "Real-Time Analytics & Performance Tracking", Icon: BarChart3, side: "right" as const, tone: "dark" as const, ax: 800, ay: 490, screen: 7 },
 ];
 
 // One independent L-shaped path per feature: ring → label (no shared spine).
