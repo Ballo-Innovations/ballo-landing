@@ -371,6 +371,35 @@
   border-bottom: 3px solid #2373af;
 }
 
+/* Phones: three price columns need the room, so the headings shrink and
+   their one-line notes go. */
+@media (max-width: 559px) {
+  .prt__table th:first-child {
+    width: 30%;
+  }
+
+  .prt__table th,
+  .prt__table td {
+    padding-inline: 0.25rem;
+  }
+
+  .prt__channel {
+    font-size: 1rem;
+  }
+
+  .prt__note {
+    display: none;
+  }
+
+  .prt__total {
+    font-size: 1.0625rem;
+  }
+
+  .prt__band.is-active th:first-child {
+    padding-left: 0.5rem;
+  }
+}
+
 /* ---- Foot ---- */
 .prt__foot {
   display: flex;
