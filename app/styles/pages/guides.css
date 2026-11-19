@@ -147,39 +147,50 @@
    right; choosing a tile flies it into the big card. The flight is
    measured off these boxes at run time (GuidesCarousel.tsx), so the
    sizes below are the single source of truth for where cards land.
+
+   Proportions are lifted from the design (a 1364px artboard): the big
+   card is 849 x 555 with a 110px corner, tiles are 219 x 146 with a
+   28px corner. Inside a card everything is sized in `cqw`, a share of
+   that card's own width, so a card looks the same at any size.
    ============================================================= */
+.guides-hero--carousel {
+  max-width: none;
+  padding-inline: 1.25rem;
+  background: #dfe0e1;
+  /* The tile grid runs off the right edge on purpose (see the stage). */
+  overflow-x: clip;
+}
+
 .guides-stage {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.85rem;
-  align-items: stretch;
+  gap: 1.4rem;
+  max-width: 44rem;
+  margin: 0 auto;
 }
 
 /* ---- Big card ---- */
 .guides-big {
+  container-type: inline-size;
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: center;
-  gap: clamp(1rem, 3vw, 2rem);
-  padding: clamp(1.1rem, 2.6vw, 2.25rem);
-  border-radius: clamp(1.5rem, 2.4vw, 2.25rem);
-  background: linear-gradient(135deg, #eef1f6 0%, #dfe3ea 100%);
-  box-shadow: 0 26px 52px -34px rgba(2, 0, 85, 0.45);
+  aspect-ratio: 849 / 555;
+  border-radius: 13% / 20%;
+  overflow: hidden;
+  background: radial-gradient(120% 110% at 28% 38%, #d4d4d4 0%, #b9b9b9 52%, #9c9c9c 100%);
+  box-shadow: 1.6rem 2rem 3rem -1.4rem rgba(20, 20, 30, 0.5);
 }
 
+/* The picture stands in the left of the card; the headline has the right. */
 .guides-big__art {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: clamp(1rem, 1.8vw, 1.6rem);
-  overflow: hidden;
-  background: #cfd6e2;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 62%;
 }
 
 /* All seven are mounted; only the active one is drawn. See GuidesCarousel. */
 .guides-big__img {
-  object-fit: cover;
   /* The design's artwork is black and white in the big card only. */
   filter: grayscale(1) contrast(1.04);
   opacity: 0;
@@ -189,21 +200,53 @@
   opacity: 1;
 }
 
+/* next/image writes its box inline for `fill`, hence the !important here and
+   on the tile pictures below: these place the picture inside its card. */
+.guides-big__img--portrait {
+  top: 4% !important;
+  height: 96% !important;
+  object-fit: contain;
+  object-position: 62% 100%;
+}
+
+.guides-big__img--object {
+  top: 18% !important;
+  left: 12% !important;
+  width: 76% !important;
+  height: 64% !important;
+  object-fit: contain;
+}
+
+/* A full photograph fades out under the headline instead of ending in an edge. */
+.guides-big__img--photo {
+  object-fit: cover;
+  -webkit-mask-image: linear-gradient(90deg, #000 58%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 58%, transparent 100%);
+}
+
 .guides-big__copy {
+  position: absolute;
+  top: 50%;
+  left: 60%;
+  right: 4%;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(1.1rem, 2.4vw, 1.9rem);
+  gap: 4.4cqw;
 }
 
 .guides-big__headline {
   margin: 0;
-  max-width: 13ch;
-  font-size: clamp(1.7rem, 3.6vw, 2.9rem);
+  font-size: 6.6cqw;
   font-weight: 800;
-  line-height: 1.12;
+  line-height: 1.04;
   letter-spacing: -0.01em;
   color: var(--dark-blue);
+  /* The design's faint colour fringe: magenta low on the left, cyan above. */
+  text-shadow:
+    -0.22cqw 0.22cqw 0 rgba(196, 64, 214, 0.55),
+    0.16cqw -0.12cqw 0 rgba(63, 219, 255, 0.4);
   animation: guides-headline-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -218,101 +261,122 @@
 .guides-watch {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.7cqw;
   border-radius: 999px;
-  padding: 0.62rem 0.95rem 0.62rem 1.15rem;
-  font-size: 0.86rem;
+  padding: 2.3cqw 2.6cqw 2.3cqw 2.7cqw;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: max(2.8cqw, 0.8rem);
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
   background: #fff;
   color: var(--dark-blue);
-  box-shadow: 0 12px 26px -16px rgba(2, 0, 85, 0.55);
   transition: transform 0.2s ease, box-shadow 0.22s ease;
 }
 
 .guides-watch svg {
-  width: 1.05rem;
-  height: 1.05rem;
+  width: 1.15em;
+  height: 1.15em;
   flex-shrink: 0;
-}
-
-.guides-watch--tile {
-  padding: 0.44rem 0.6rem 0.44rem 0.8rem;
-  font-size: clamp(0.62rem, 1.1vw, 0.74rem);
-}
-
-.guides-watch--tile svg {
-  width: 0.9rem;
-  height: 0.9rem;
+  stroke-width: 1.6;
 }
 
 .guides-big__cta {
+  margin-left: 2.2cqw;
   text-decoration: none;
 }
 
 .guides-big__cta:hover .guides-watch,
 .guides-tile__cta:hover .guides-watch {
   transform: translateY(-2px);
-  box-shadow: 0 16px 30px -16px rgba(2, 0, 85, 0.6);
+  box-shadow: 0 0.8rem 1.4rem -0.8rem rgba(2, 0, 85, 0.6);
 }
 
 .guides-big__cta:focus-visible,
-.guides-tile__cta:focus-visible,
-.guides-tile__pick:focus-visible {
+.guides-tile__cta:focus-visible {
   outline: 3px solid var(--brand-color-3, #2273af);
   outline-offset: 3px;
   border-radius: 999px;
 }
 
 .guides-tile__pick:focus-visible {
+  outline: 3px solid var(--brand-color-3, #2273af);
+  outline-offset: 3px;
   border-radius: inherit;
 }
 
 /* ---- Tiles ---- */
 .guides-tiles {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.85rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.1rem 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.guides-tile {
+/* `.guides-tiles` in front of these: the older hero further up this file uses
+   the same tile class names, and its rules must not leak into the carousel. */
+.guides-tiles .guides-tile {
+  container-type: inline-size;
   position: relative;
-  aspect-ratio: 4 / 3;
-  border-radius: clamp(0.9rem, 1.4vw, 1.25rem);
-  overflow: hidden;
-  background: var(--dark-blue-2, #0e0e39);
-  box-shadow: 0 16px 34px -24px rgba(2, 0, 85, 0.6);
+  overflow: visible;
+  background: none;
+  aspect-ratio: 219 / 146;
+  border-radius: 12.8% / 19.2%;
+  box-shadow: 0.7rem 0.8rem 1.2rem -0.55rem rgba(20, 20, 30, 0.55);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.guides-tile:hover {
+.guides-tiles .guides-tile:hover {
   transform: translateY(-3px);
-  box-shadow: 0 22px 40px -22px rgba(2, 0, 85, 0.65);
+  box-shadow: 0.8rem 1.1rem 1.5rem -0.6rem rgba(20, 20, 30, 0.55);
 }
 
 .guides-tile__art {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
 }
 
-.guides-tile__img {
+.guides-tiles .guides-tile__img--photo {
   object-fit: cover;
 }
 
-.guides-tile__label {
+/* A portrait cut-out stands in the right of the tile, cropped at the chest,
+   leaving the left for the label. */
+.guides-tiles .guides-tile__img--portrait {
+  left: 27% !important;
+  width: 72% !important;
+  height: 176% !important;
+  top: 3% !important;
+  object-fit: contain;
+  object-position: 50% 0 !important;
+}
+
+/* An object cut-out (the envelope) sits low and right, under the label. */
+.guides-tiles .guides-tile__img--object {
+  left: 30% !important;
+  top: 30% !important;
+  width: 66% !important;
+  height: 66% !important;
+  object-fit: contain;
+}
+
+.guides-tiles .guides-tile__label {
   position: absolute;
-  top: 0.7rem;
-  left: 0.8rem;
+  inset: 13cqw auto auto 6cqw;
   z-index: 2;
-  max-width: 58%;
-  font-size: clamp(0.78rem, 1.5vw, 1.02rem);
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.005em;
+  display: block;
+  padding: 0;
+  background: none;
+  max-width: 56%;
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: max(9cqw, 0.8rem);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
   pointer-events: none;
 }
 
@@ -324,6 +388,7 @@
   width: 100%;
   height: 100%;
   border: none;
+  border-radius: inherit;
   background: none;
   cursor: pointer;
   appearance: none;
@@ -334,39 +399,55 @@
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: 0.7rem;
+  bottom: 7cqw;
   transform: translateX(-50%);
   text-decoration: none;
 }
 
-.guides-tile__play {
+.guides-watch--tile {
+  gap: 2.4cqw;
+  padding: 2.9cqw 3.6cqw 2.9cqw 5cqw;
+  font-size: max(4.9cqw, 0.66rem);
+}
+
+/* The design's play mark: a bare white triangle in the middle of the film. */
+.guides-tiles .guides-tile__play {
   position: absolute;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: none;
   z-index: 2;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -62%);
+  transform: translate(-50%, -50%);
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--dark-blue);
+  color: #fff;
   pointer-events: none;
 }
 
-/* Dark artwork takes white text and a white button... */
-.guides-tile--dark .guides-tile__label {
-  color: #fff;
-  text-shadow: 0 2px 14px rgba(2, 0, 85, 0.55);
+.guides-tile__play svg {
+  width: 15cqw;
+  height: 15cqw;
 }
 
-/* ...light artwork takes navy text and a navy button. */
-.guides-tile--light .guides-tile__label {
+.guides-tile--label-white .guides-tile__label {
+  color: #fff;
+  text-shadow: 0 0.1em 0.7em rgba(2, 0, 60, 0.45);
+}
+
+.guides-tile--label-navy .guides-tile__label {
   color: var(--dark-blue);
 }
 
-.guides-tile--light .guides-watch {
+/* The film tile is the play mark and the button, as drawn. Its name stays
+   for screen readers (it is on the tile's own button). */
+.guides-tiles .guides-tile--film .guides-tile__label {
+  display: none;
+}
+
+.guides-tile--button-navy .guides-watch {
   background: var(--dark-blue);
   color: #fff;
 }
@@ -380,7 +461,7 @@
 }
 
 .guides-flight > * {
-  border-radius: clamp(0.9rem, 1.4vw, 1.25rem);
+  border-radius: 1.6rem;
   overflow: hidden;
 }
 
@@ -394,24 +475,95 @@
   }
 }
 
-@media (min-width: 900px) {
+/* Phones: the headline cannot share a 335px card with a portrait, so the
+   picture takes the top of the card and the words go underneath it. */
+@media (max-width: 639px) {
+  .guides-big {
+    aspect-ratio: auto;
+    border-radius: 2.2rem;
+    padding-bottom: 8cqw;
+  }
+
+  .guides-big__art {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 5 / 4;
+  }
+
+  .guides-big__img--portrait {
+    object-position: 50% 100%;
+  }
+
+  .guides-big__img--photo {
+    -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+  }
+
+  .guides-big__copy {
+    position: static;
+    transform: none;
+    padding: 5cqw 8cqw 0;
+    gap: 6cqw;
+  }
+
+  .guides-big__headline {
+    font-size: 9cqw;
+    text-shadow:
+      -0.3cqw 0.3cqw 0 rgba(196, 64, 214, 0.55),
+      0.2cqw -0.16cqw 0 rgba(63, 219, 255, 0.4);
+  }
+
+  .guides-big__cta {
+    margin-left: 0;
+  }
+
+  .guides-big .guides-watch {
+    font-size: 4.6cqw;
+    padding: 3.6cqw 4.2cqw 3.6cqw 5cqw;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1099px) {
+  .guides-tiles {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Laptop and up: the design's composition. `--u` is one design pixel's worth
+   of the 1364px artboard (1vw, capped so a huge screen does not get a huge
+   card). The stage is 98u wide behind a 6.1u left margin, which is 4u more
+   than the screen: the second column of tiles runs off the right edge, as the
+   design draws it, until the screen is wide enough to hold it all. */
+@media (min-width: 1100px) {
+  .guides-hero--carousel {
+    padding-inline: 0;
+  }
+
   .guides-stage {
-    grid-template-columns: 1.45fr 1fr;
-    gap: 1rem;
+    --guides-u: min(1vw, 15px);
+    grid-template-columns: calc(62.2 * var(--guides-u)) calc(33.95 * var(--guides-u));
+    gap: calc(1.85 * var(--guides-u));
+    align-items: center;
+    width: max-content;
+    max-width: none;
+    margin: 0 0 0 max(calc(6.1 * var(--guides-u)), calc((100vw - 98 * var(--guides-u)) / 2));
   }
 
   .guides-big {
-    grid-template-columns: 0.82fr 1fr;
+    box-shadow: calc(2.4 * var(--guides-u)) calc(2.8 * var(--guides-u)) calc(4 * var(--guides-u)) calc(-1.6 * var(--guides-u))
+      rgba(20, 20, 30, 0.5);
   }
 
   .guides-tiles {
-    grid-auto-rows: 1fr;
+    gap: calc(1.9 * var(--guides-u)) calc(1.85 * var(--guides-u));
   }
 
-  .guides-tile {
-    aspect-ratio: auto;
+  .guides-tiles .guides-tile {
+    box-shadow: calc(0.9 * var(--guides-u)) calc(1 * var(--guides-u)) calc(1.5 * var(--guides-u)) calc(-0.6 * var(--guides-u))
+      rgba(20, 20, 30, 0.6);
   }
 }
+
 
 /* Step breadcrumb */
 .guides-steps {
@@ -432,6 +584,22 @@
 .guides-steps__sep {
   padding: 0 0.3rem;
   opacity: 0.75;
+}
+
+/* Under the carousel the line is the design's: larger, regular weight, navy. */
+.guides-hero--carousel .guides-steps {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+
+  margin-top: clamp(2rem, 5vw, 4.2rem);
+  padding-bottom: clamp(1rem, 2.5vw, 2rem);
+  font-size: clamp(0.78rem, 1.4vw, 1.3rem);
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--dark-blue);
+}
+
+.guides-hero--carousel .guides-steps__step--end {
+  font-weight: 700;
 }
 
 @media (min-width: 560px) {
