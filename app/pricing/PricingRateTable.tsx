@@ -1,8 +1,9 @@
 "use client";
 
 // Pricing as one rate table (flag: pricingRateTable). Every per-message rate
-// on the backoffice Pricing Ladder is shown, one column per volume band, with
-// a "your messages" box that fills in what each channel would cost.
+// on the backoffice Pricing Ladder is shown, one row per volume band and one
+// column per channel, with a "your messages" box that fills in what each
+// channel would cost.
 // Styles: app/styles/pages/pricing.css (`.prt-*`).
 
 import { useId, useMemo, useState } from "react";
@@ -115,11 +116,11 @@ export default function PricingRateTable({
     };
   });
 
-  const yourLabel = messages > 0 ? `Your ${count(messages)}` : "Your total";
+  const yourLabel = messages > 0 ? `Your ${count(messages)} messages` : "Your total";
   const footnote =
     bands.length === 0
       ? "These messages are priced on request. Tell us your volume and we will send a quote."
-      : `${bands.length > 1 ? "The brighter rate is the one your volume falls in. " : ""}${tab?.validity ?? ""}`.trim();
+      : `${bands.length > 1 ? "The brighter row is the rate your volume falls in. " : ""}${tab?.validity ?? ""}`.trim();
 
   return (
     <main className="prt">
@@ -127,7 +128,8 @@ export default function PricingRateTable({
         <header className="prt__head">
           <h1 className="prt__title">Dynamic, Transparent Pricing</h1>
           <p className="prt__lede">
-            Every rate we charge, in one table. Type your own volume to see what you would pay.
+            Every rate we charge per message, in one table. Type your own volume to see what you
+            would pay.
           </p>
         </header>
 
@@ -170,70 +172,43 @@ export default function PricingRateTable({
           </div>
         </div>
 
-        {/* Wide screens: the table. */}
-        <div className="prt__table-wrap">
-          <table className="prt__table">
-            <thead>
-              <tr>
-                <th scope="col">Channel</th>
-                {bands.map((band, i) => (
-                  <th key={band.thresholdStart} scope="col" className="prt__num">
-                    {bandLabel(band, i, bands.length)}
-                  </th>
-                ))}
-                <th scope="col" className="prt__num">
-                  {yourLabel}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        {/* Channels across, volume bands down: three price columns fit any
+            screen, however many bands the ladder has. */}
+        <table className="prt__table">
+          <thead>
+            <tr>
+              <th scope="col" className="prt__corner">
+                Messages
+              </th>
               {rows.map((row) => (
-                <tr key={row.platform}>
-                  <th scope="row">
-                    <span className="prt__channel">{row.name}</span>
-                    <span className="prt__note">{row.note}</span>
-                  </th>
-                  {row.rates.map((rate, i) => (
-                    <td
-                      key={bands[i].thresholdStart}
-                      className={`prt__num prt__rate${i === active ? " is-active" : ""}`}
-                    >
-                      {rate === null ? "On request" : `${symbol}${rate.toFixed(2)}`}
-                    </td>
-                  ))}
-                  <td className="prt__num prt__total" aria-live="polite">
-                    {row.total}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Narrow screens: one block per channel. */}
-        <ul className="prt__cards">
-          {rows.map((row) => (
-            <li key={row.platform} className="prt__card">
-              <div className="prt__card-head">
-                <div>
+                <th key={row.platform} scope="col" className="prt__num">
                   <span className="prt__channel">{row.name}</span>
                   <span className="prt__note">{row.note}</span>
-                </div>
-                <span className="prt__total">{row.total}</span>
-              </div>
-              {bands.length > 0 && (
-                <dl className="prt__card-rates">
-                  {bands.map((band, i) => (
-                    <div key={band.thresholdStart} className={`prt__rate${i === active ? " is-active" : ""}`}>
-                      <dt>{bandLabel(band, i, bands.length)}</dt>
-                      <dd>{row.rates[i] === null ? "On request" : `${symbol}${row.rates[i]!.toFixed(2)}`}</dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-            </li>
-          ))}
-        </ul>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="prt__yours">
+              <th scope="row">{yourLabel}</th>
+              {rows.map((row) => (
+                <td key={row.platform} className="prt__num prt__total" aria-live="polite">
+                  {row.total}
+                </td>
+              ))}
+            </tr>
+            {bands.map((band, i) => (
+              <tr key={band.thresholdStart} className={`prt__band${i === active ? " is-active" : ""}`}>
+                <th scope="row">{bandLabel(band, i, bands.length)}</th>
+                {rows.map((row) => (
+                  <td key={row.platform} className="prt__num">
+                    {row.rates[i] === null ? "On request" : `${symbol}${row.rates[i]!.toFixed(2)}`}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
         <div className="prt__foot">
           <p className="prt__footnote">{footnote}</p>
