@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
-import { flightFrames, promote, sameBox, tourSlot, type Box } from "@/lib/guidesCarousel";
+import { bringForward, flightFrames, sameBox, slideOffset, type Box } from "@/lib/guidesCarousel";
 import { guides, type Guide } from "./guidesContent";
 
 /** How long a guide holds the big card before the tour moves on. */
@@ -13,6 +13,9 @@ const TOUR_MS = 5000;
 /** How long a card takes to fly between a tile and the big card. */
 const FLIGHT_MS = 620;
 const FLIGHT_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+/** The queue closes up a beat behind the flight, one tile after another. */
+const SLIDE_MS = 520;
+const SLIDE_STAGGER_MS = 45;
 
 const WatchDemo = ({ className = "" }: { className?: string }) => (
   <span className={`guides-watch ${className}`.trim()}>
@@ -30,16 +33,16 @@ const box = (el: Element): Box => {
 };
 
 /**
- * The /guides hero: one guide in the big card on the left, the rest as tiles
- * on the right. Choosing a tile flies it into the big card while the guide it
- * replaces flies out to the slot it just left.
+ * The /guides hero: one guide in the big card on the left, the rest queued as
+ * tiles on the right. Choosing a tile flies it into the big card, the tiles
+ * behind it slide up one place to close the gap, and the guide it replaces
+ * flies out to the back of the queue.
  *
- * The flight is a FLIP: the two artworks are cloned into a fixed overlay, the
- * real ones are hidden for the duration, and the clones are animated from
- * where the artwork used to be to where it now is. Measuring real elements
- * (rather than animating the cards themselves) is what keeps the layout
- * authoritative, so the cards land on exactly the pixels CSS gave them at any
- * viewport width.
+ * Every move is a FLIP. The two flying artworks are cloned into a fixed
+ * overlay with the real ones hidden for the duration; the sliding tiles are
+ * the real tiles, started from where they used to be. Measuring real elements
+ * is what keeps the layout authoritative, so cards land on exactly the pixels
+ * CSS gave them at any viewport width.
  */
 export default function GuidesCarousel() {
   const [order, setOrder] = React.useState<Guide[]>(guides);
@@ -50,11 +53,11 @@ export default function GuidesCarousel() {
   const bigArtRef = React.useRef<HTMLDivElement>(null);
   const slotArtRefs = React.useRef<(HTMLDivElement | null)[]>([]);
   const overlayRef = React.useRef<HTMLDivElement>(null);
-  /** Rects captured just before a swap, keyed by the slot that was promoted. */
-  const pendingRef = React.useRef<{ slot: number; big: Box; tile: Box } | null>(null);
+  /** Each tile's element, by guide id: tiles keep their element as they move. */
+  const tileRefs = React.useRef(new Map<string, HTMLLIElement>());
+  /** Where everything was just before a move. */
+  const pendingRef = React.useRef<{ big: Box; tile: Box; tiles: Map<string, Box> } | null>(null);
   const flightsRef = React.useRef<Animation[]>([]);
-  /** How far the auto-tour has walked; see the tour effect below. */
-  const tickRef = React.useRef(0);
 
   const active = order[0];
   const slots = order.slice(1);
@@ -68,24 +71,22 @@ export default function GuidesCarousel() {
     const bigArt = bigArtRef.current;
     const tileArt = slotArtRefs.current[slot];
     // Only worth measuring when both are on screen and motion is wanted.
+    const tiles = new Map<string, Box>();
+    for (const [id, el] of tileRefs.current) tiles.set(id, box(el));
     pendingRef.current =
       bigArt && tileArt && !reducedMotion()
-        ? { slot, big: box(bigArt), tile: box(tileArt) }
+        ? { big: box(bigArt), tile: box(tileArt), tiles }
         : null;
-    setOrder((current) => promote(current, slot));
+    setOrder((current) => bringForward(current, slot));
   }, []);
 
   // Auto-tour until the visitor takes over, and never while they are reading a
   // card (pointer over the stage or keyboard focus inside it).
   React.useEffect(() => {
     if (tookOver || paused || reducedMotion()) return;
-    const slotCount = guides.length - 1;
-    // The count lives in a ref so pausing and resuming carries on through the
-    // guides rather than starting the walk again. Restarting it would show the
-    // same two guides over and over to anyone whose pointer keeps crossing.
-    const id = window.setInterval(() => {
-      select(tourSlot(tickRef.current++, slotCount), false);
-    }, TOUR_MS);
+    // Always the front of the queue: that alone walks through every guide,
+    // and it carries on from wherever a pause left it.
+    const id = window.setInterval(() => select(0, false), TOUR_MS);
     return () => window.clearInterval(id);
   }, [tookOver, paused, select]);
 
@@ -95,7 +96,9 @@ export default function GuidesCarousel() {
     pendingRef.current = null;
     const overlay = overlayRef.current;
     const bigArt = bigArtRef.current;
-    const tileArt = pending ? slotArtRefs.current[pending.slot] : null;
+    // The guide that left the big card is now the last tile.
+    const lastSlot = order.length - 2;
+    const tileArt = pending ? slotArtRefs.current[lastSlot] : null;
     if (!pending || !overlay || !bigArt || !tileArt) return;
 
     const bigNow = box(bigArt);
@@ -115,15 +118,17 @@ export default function GuidesCarousel() {
     // the big card is a picture standing on studio grey, so the leg going in
     // lets its colour go and the leg coming out picks its own back up.
     const promoted = order[0];
-    const demoted = order[pending.slot + 1];
+    const demoted = order[order.length - 1];
+    const demotedTile = tileRefs.current.get(demoted.id) ?? null;
     const CLEAR = "rgba(0, 0, 0, 0)";
     type Leg = {
       el: HTMLElement;
       from: Box;
       to: Box;
-      real: HTMLElement;
       grey: [string, string];
       bg: [string, string];
+      /** What to keep out of sight while the clone stands in for it. */
+      hide: HTMLElement;
     };
     const legs: Leg[] = [
       // The promoted tile's artwork, flying into the big card.
@@ -131,18 +136,20 @@ export default function GuidesCarousel() {
         el: bigArt,
         from: pending.tile,
         to: bigNow,
-        real: bigArt,
         grey: ["grayscale(0)", "grayscale(1)"],
         bg: [promoted.bg, CLEAR],
+        hide: bigArt,
       },
-      // The artwork it replaced, flying out to the slot the tile just left.
+      // The artwork it replaced, flying out to the back of the queue.
       {
         el: tileArt,
         from: pending.big,
         to: tileNow,
-        real: tileArt,
         grey: ["grayscale(1)", "grayscale(0)"],
-        bg: [CLEAR, demoted?.bg ?? CLEAR],
+        bg: [CLEAR, demoted.bg],
+        // The whole tile, not just its picture: a label and a button waiting
+        // in an empty slot for their card to arrive look like a fault.
+        hide: demotedTile ?? tileArt,
       },
     ];
 
@@ -158,7 +165,7 @@ export default function GuidesCarousel() {
       clone.style.pointerEvents = "none";
       overlay.appendChild(clone);
 
-      leg.real.style.visibility = "hidden";
+      leg.hide.style.visibility = "hidden";
 
       const timing = { duration: FLIGHT_MS, easing: FLIGHT_EASE, fill: "both" as const };
       const [from, to] = flightFrames(leg.from, leg.to);
@@ -181,11 +188,33 @@ export default function GuidesCarousel() {
 
       const done = () => {
         clone.remove();
-        leg.real.style.visibility = "";
+        leg.hide.style.visibility = "";
       };
       anim.addEventListener("finish", done);
       anim.addEventListener("cancel", done);
       flightsRef.current.push(anim);
+    }
+
+    // The queue closes up: every tile that is still a tile and has a new place
+    // starts from its old one and slides home, each a beat after the last.
+    let moved = 0;
+    for (const guide of order.slice(1)) {
+      if (guide.id === demoted.id) continue;
+      const el = tileRefs.current.get(guide.id);
+      const was = pending.tiles.get(guide.id);
+      if (!el || !was) continue;
+      const { dx, dy } = slideOffset(was, box(el));
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
+      const slide = el.animate(
+        [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0px, 0px)" }],
+        {
+          duration: SLIDE_MS,
+          delay: moved++ * SLIDE_STAGGER_MS,
+          easing: FLIGHT_EASE,
+          fill: "backwards",
+        },
+      );
+      flightsRef.current.push(slide);
     }
   }, [order]);
 
@@ -248,6 +277,10 @@ export default function GuidesCarousel() {
           <li
             className={`guides-tile guides-tile--label-${guide.labelTone} guides-tile--button-${guide.buttonTone}${guide.isFilm ? " guides-tile--film" : ""}`}
             key={guide.id}
+            ref={(el) => {
+              if (el) tileRefs.current.set(guide.id, el);
+              else tileRefs.current.delete(guide.id);
+            }}
           >
             <div
               className="guides-tile__art"
