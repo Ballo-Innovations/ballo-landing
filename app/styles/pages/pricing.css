@@ -270,27 +270,24 @@
   outline-offset: 3px;
 }
 
-/* ---- Table (wide screens) ---- */
-.prt__table-wrap {
-  overflow-x: auto;
-}
-
+/* ---- Table: channels across, volume bands down ---- */
 .prt__table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-variant-numeric: tabular-nums;
 }
 
 .prt__table th,
 .prt__table td {
-  padding: clamp(1.25rem, 2.2vw, 1.875rem) 1rem;
-  border-bottom: 3px solid #2373af;
+  padding: clamp(0.7rem, 1.15vw, 1rem) clamp(0.4rem, 1.2vw, 1rem);
+  border-bottom: 1px solid rgba(35, 115, 175, 0.55);
   text-align: left;
   vertical-align: middle;
 }
 
-.prt__table th:first-child,
-.prt__table td:first-child {
+.prt__table th:first-child {
+  width: 34%;
   padding-left: 0;
 }
 
@@ -299,22 +296,26 @@
   padding-right: 0;
 }
 
-.prt__table thead th {
-  padding-top: 0;
-  padding-bottom: 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
 .prt__table .prt__num {
   text-align: right;
 }
 
+.prt__table thead th {
+  padding-top: 0;
+  padding-bottom: clamp(0.9rem, 1.6vw, 1.4rem);
+  border-bottom: 3px solid #2373af;
+  vertical-align: bottom;
+}
+
+.prt__corner {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .prt__channel {
   display: block;
-  font-size: clamp(1.5rem, 2.95vw, 2.5rem);
+  font-size: clamp(1.2rem, 2.95vw, 2.5rem);
   font-weight: 700;
   line-height: 1.15;
 }
@@ -322,80 +323,52 @@
 .prt__note {
   display: block;
   margin-top: 0.35rem;
-  font-size: 1rem;
+  font-size: clamp(0.75rem, 1.2vw, 1rem);
   font-weight: 500;
 }
 
-/* A rate the visitor's volume is not in steps back; theirs stays white. */
-.prt__rate {
-  font-size: 1.375rem;
-  font-weight: 500;
-  color: #aeb6d8;
-  white-space: nowrap;
-  transition: color 0.25s ease;
-}
-
-.prt__rate.is-active {
-  font-weight: 700;
-  color: #fff;
-}
-
-.prt__total {
-  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* ---- Blocks (narrow screens) ---- */
-.prt__cards {
-  display: none;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.prt__card {
-  padding: 1.25rem 0;
+/* The visitor's own totals: the answer, so it comes first and largest. */
+.prt__table .prt__yours th,
+.prt__table .prt__yours td {
+  padding-block: clamp(1.1rem, 2.2vw, 1.875rem);
   border-bottom: 3px solid #2373af;
 }
 
-.prt__card:first-child {
-  border-top: 3px solid #2373af;
+.prt__yours th {
+  font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+  font-weight: 700;
 }
 
-.prt__card-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
+.prt__total {
+  font-size: clamp(1.15rem, 2.6vw, 2.25rem);
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.prt__card-rates {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin: 0.9rem 0 0;
+/* A band the visitor's volume is not in steps back; theirs stays white. */
+.prt__band th,
+.prt__band td {
+  font-size: clamp(0.9rem, 1.4vw, 1.1875rem);
+  font-weight: 500;
+  color: #aeb6d8;
+  transition: color 0.25s ease, background-color 0.25s ease;
 }
 
-.prt__card-rates > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  font-size: 1.0625rem;
+.prt__band.is-active th,
+.prt__band.is-active td {
+  font-weight: 700;
+  color: #fff;
+  background: rgba(47, 123, 216, 0.22);
 }
 
-.prt__card-rates dd {
-  margin: 0;
+.prt__band.is-active th:first-child {
+  box-shadow: inset 3px 0 0 #5ac8fa;
+  padding-left: 0.75rem;
 }
 
-@media (max-width: 719px) {
-  .prt__table-wrap {
-    display: none;
-  }
-
-  .prt__cards {
-    display: block;
-  }
+.prt__band:last-child th,
+.prt__band:last-child td {
+  border-bottom: 3px solid #2373af;
 }
 
 /* ---- Foot ---- */
@@ -462,7 +435,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .prt__tab,
-  .prt__rate,
+  .prt__band th,
+  .prt__band td,
   .prt-btn {
     transition: none;
   }
