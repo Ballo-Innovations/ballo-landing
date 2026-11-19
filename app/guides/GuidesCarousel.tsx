@@ -53,6 +53,8 @@ export default function GuidesCarousel() {
   /** Rects captured just before a swap, keyed by the slot that was promoted. */
   const pendingRef = React.useRef<{ slot: number; big: Box; tile: Box } | null>(null);
   const flightsRef = React.useRef<Animation[]>([]);
+  /** How far the auto-tour has walked; see the tour effect below. */
+  const tickRef = React.useRef(0);
 
   const active = order[0];
   const slots = order.slice(1);
@@ -78,9 +80,11 @@ export default function GuidesCarousel() {
   React.useEffect(() => {
     if (tookOver || paused || reducedMotion()) return;
     const slotCount = guides.length - 1;
-    let tick = 0;
+    // The count lives in a ref so pausing and resuming carries on through the
+    // guides rather than starting the walk again. Restarting it would show the
+    // same two guides over and over to anyone whose pointer keeps crossing.
     const id = window.setInterval(() => {
-      select(tourSlot(tick++, slotCount), false);
+      select(tourSlot(tickRef.current++, slotCount), false);
     }, TOUR_MS);
     return () => window.clearInterval(id);
   }, [tookOver, paused, select]);
