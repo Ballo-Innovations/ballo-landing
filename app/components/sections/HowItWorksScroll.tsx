@@ -4,8 +4,8 @@
 //
 // A staircase of four step cards with a phone on the right (steps 1 and 2)
 // and a phone on the left (steps 3 and 4). On a desktop the section holds in
-// place while the visitor scrolls: the steps appear one at a time, each
-// connector draws in, and only the screen inside a phone changes. From step 3
+// place while the visitor scrolls: the steps glide in one at a time with the
+// scroll, each connector draws in, and only the screen inside a phone changes. From step 3
 // the view moves down to the left phone. On a phone the cards stack and fade
 // in as they come into view. With reduced motion everything is simply shown.
 //
@@ -46,7 +46,7 @@ const VARIANTS = ["navy", "outline", "soft", "blue"] as const;
  * over the stage, so they share the percentage grid the cards sit on. Each
  * one starts and ends under a card.
  */
-const CONNECTORS = ["M 11 12 V 36.3 H 20", "M 50 36.3 H 60 V 56", "M 60 62 V 85.6 H 68"];
+const CONNECTORS = ["M 11 10 V 30.4 H 20", "M 50 30.4 H 60 V 56", "M 60 60 V 85.7 H 68"];
 
 type Mode = "static" | "pin" | "stack";
 
@@ -95,7 +95,9 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
   }, [count]);
 
   // Desktop: the wrapper is taller than the screen and its child is sticky, so
-  // scrolling through it yields a 0-1 progress that picks the step.
+  // scrolling through it yields a 0-1 progress. Everything is driven from that
+  // progress, eased a little each frame, so the steps glide in with the scroll
+  // instead of snapping at fixed points.
   useEffect(() => {
     if (mode !== "pin") return;
     const wrap = wrapRef.current;
@@ -103,14 +105,39 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
     const stage = stageRef.current;
     if (!wrap || !view || !stage) return;
 
+    const cards = cardRefs.current.filter((c): c is HTMLElement => c !== null);
+    const lines = Array.from(stage.querySelectorAll<SVGPathElement>(".hiwd-line"));
+    const phoneB = stage.querySelector<HTMLElement>(".hiwd-phone--b");
+
     let frame = 0;
-    const update = () => {
-      frame = 0;
-      if (wrap.offsetParent === null) return; // hidden: the flag is off
+    let current = -1;
+
+    const measure = () => {
+      if (wrap.offsetParent === null) return 0; // hidden: the flag is off
       const total = wrap.offsetHeight - window.innerHeight;
-      const progress =
-        total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
-      setActive(Math.min(count - 1, Math.floor(progress * count + 0.0001)));
+      return total > 0 ? Math.min(1, Math.max(0, -wrap.getBoundingClientRect().top / total)) : 0;
+    };
+
+    const paint = (progress: number) => {
+      // `at` runs 0 to `count`: step n is settled once it passes n - 1.
+      const at = progress * count;
+      setActive(Math.min(count - 1, Math.max(0, Math.floor(at + 0.25))));
+
+      cards.forEach((card, i) => {
+        const t = i === 0 ? 1 : smoothstep((at - (i - 0.5)) / 0.42);
+        card.style.opacity = t.toFixed(3);
+        card.style.transform = `translate3d(0, ${((1 - t) * 30).toFixed(1)}px, 0)`;
+      });
+      // Each line draws just before the card it leads to arrives.
+      lines.forEach((line, i) => {
+        const t = smoothstep((at - (i + 0.2)) / 0.4);
+        line.style.strokeDashoffset = (1 - t).toFixed(3);
+      });
+      if (phoneB) {
+        const t = smoothstep((at - 1.5) / 0.45);
+        phoneB.style.opacity = t.toFixed(3);
+        phoneB.style.transform = `translate3d(0, ${((1 - t) * 34).toFixed(1)}px, 0) scale(${(0.94 + 0.06 * t).toFixed(4)})`;
+      }
 
       // On screens shorter than the staircase, move down to the lower half as
       // the third step arrives.
@@ -118,13 +145,23 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
       const room =
         view.clientHeight - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom);
       const overflow = Math.max(0, stage.offsetHeight - room);
-      const shift = overflow * smoothstep((progress - 0.4) / 0.2);
-      stage.style.transform = `translate3d(0, ${-shift.toFixed(1)}px, 0)`;
+      const shift = overflow * smoothstep((at - 1.5) / 0.75);
+      stage.style.transform = `translate3d(0, ${(-shift).toFixed(1)}px, 0)`;
+    };
+
+    const tick = () => {
+      frame = 0;
+      const target = measure();
+      if (current < 0) current = target;
+      const gap = target - current;
+      current = Math.abs(gap) < 0.0004 ? target : current + gap * 0.14;
+      paint(current);
+      if (current !== target) frame = requestAnimationFrame(tick);
     };
     const queue = () => {
-      if (!frame) frame = requestAnimationFrame(update);
+      if (!frame) frame = requestAnimationFrame(tick);
     };
-    update();
+    tick();
     window.addEventListener("scroll", queue, { passive: true });
     window.addEventListener("resize", queue);
     return () => {
@@ -132,6 +169,11 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
       window.removeEventListener("scroll", queue);
       window.removeEventListener("resize", queue);
       stage.style.transform = "";
+      for (const el of [...cards, ...(phoneB ? [phoneB] : [])]) {
+        el.style.opacity = "";
+        el.style.transform = "";
+      }
+      for (const line of lines) line.style.strokeDashoffset = "";
     };
   }, [mode, count]);
 
@@ -200,7 +242,7 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
                 alt=""
                 width={600}
                 height={1336}
-                sizes="(max-width: 900px) 45vw, 12rem"
+                sizes="(max-width: 900px) 45vw, 15rem"
                 className={`hiwd-phone__screen${i === current ? " is-active" : ""}`}
               />
             );
@@ -209,7 +251,7 @@ export default function HowItWorksScroll({ steps }: { steps: HowItWorksScrollSte
         <Image
           src={phoneFrame}
           alt=""
-          sizes="(max-width: 900px) 80vw, 24rem"
+          sizes="(max-width: 900px) 90vw, 32rem"
           className="hiwd-phone__frame"
         />
       </div>
