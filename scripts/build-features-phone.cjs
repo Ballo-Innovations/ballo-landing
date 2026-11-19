@@ -9,7 +9,8 @@
  * The screenshots were taken on 2026-11-19 from the dev web app
  * (dev-ballo-ads.web.app) with a throwaway account (user 51, company 44
  * "Lusaka Fresh Market") at 390 x 824 CSS px, 2x, mobile emulation. To refresh
- * them, capture the same pages at that size and rerun this script.
+ * them, capture the same pages at that size and rerun this script. The
+ * How it works page (HowItWorksScroll.tsx) reuses the frame and these screens.
  */
 const path = require("path");
 const sharp = require("sharp");
@@ -17,6 +18,9 @@ const [src, out] = process.argv.slice(2);
 const HOLE = { l: 611, t: 276, w: 974, h: 2169, r: 160 };
 // One screenshot per feature label on the features page, in label order.
 const SCREENS = ["sms", "whatsapp", "email", "notifications", "home", "calendar", "brutus", "analytics"];
+// Extra screens used elsewhere: "signup" is step 1 on the How it works page
+// (dev web app /signup, same size).
+SCREENS.push("signup");
 (async () => {
   const fs = require("fs"); fs.mkdirSync(out, { recursive: true });
   const holeSvg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="2160" height="2700"><rect x="${HOLE.l}" y="${HOLE.t}" width="${HOLE.w}" height="${HOLE.h}" rx="${HOLE.r}" ry="${HOLE.r}" fill="#000"/></svg>`);
