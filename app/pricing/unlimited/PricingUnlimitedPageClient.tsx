@@ -10,6 +10,15 @@ import woman from "@/public/BalloAds Assets 2/25.png";
 import type { PricingPlan } from "@/lib/pricingApi";
 import { resolveIcon } from "@/lib/iconRegistry";
 import { type LadderBand, resolveRate } from "@/lib/pricingLadderTypes";
+import { isFeatureEnabled, resolveFlag } from "@/lib/featureFlags";
+import PricingRateTable from "../PricingRateTable";
+
+// The value the server and the first client render agree on. A `?features=`
+// override is applied after mount, like every other flag on the site.
+const RATE_TABLE_BY_DEFAULT = resolveFlag({
+  env: process.env.NEXT_PUBLIC_FEATURE_PRICING_RATE_TABLE,
+  defaultEnabled: process.env.NODE_ENV === "development",
+});
 
 // --- Icons (kept 1:1 with the pre-CMS design — selected by `channel`, a
 // closed 3-value enum, rather than the freeform `iconName` string) ---
@@ -172,12 +181,15 @@ export default function PricingUnlimitedPageClient({
 
   const isUnlimited = pathname === "/pricing/unlimited";
 
+  const [rateTable, setRateTable] = useState(RATE_TABLE_BY_DEFAULT);
+  useEffect(() => setRateTable(isFeatureEnabled("pricingRateTable")), []);
+
   // Force the body background to match the page so no dark bar shows behind the fixed nav.
   useEffect(() => {
     const prev = document.body.style.background;
-    document.body.style.background = "#DFE0E1";
+    document.body.style.background = rateTable ? "#000" : "#DFE0E1";
     return () => { document.body.style.background = prev; };
-  }, []);
+  }, [rateTable]);
 
   const orderedSteps = useMemo(() => zigzagOrder(stepsFlow), [stepsFlow]);
   const mobileSteps = useMemo(
@@ -185,6 +197,24 @@ export default function PricingUnlimitedPageClient({
     [stepsFlow],
   );
   const [rowTopLeft, rowTopRight, rowBottomLeft, rowBottomRight] = orderedSteps;
+
+  if (rateTable) {
+    return (
+      <PricingRateTable
+        tabs={[
+          { key: "term", label: "Fixed term", href: "/pricing" },
+          {
+            key: "no-expiry",
+            label: "No expiry",
+            bands,
+            validity: "These messages do not expire.",
+          },
+        ]}
+        initialKey="no-expiry"
+        currency={plans[0]?.currency ?? "ZMW"}
+      />
+    );
+  }
 
   return (
     <main className="font-sans" style={{ background: "#DFE0E1" }}>

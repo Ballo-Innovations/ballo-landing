@@ -23,6 +23,7 @@ New UI takes `isFeatureEnabled` from `lib/featureFlags.ts`.
 | `businessDesign` | `NEXT_PUBLIC_FEATURE_BUSINESS_DESIGN` (For my business page matched to the design; `?features=business`) |
 | `professionalDesign` | `NEXT_PUBLIC_FEATURE_PROFESSIONAL_DESIGN` (Professional services page matched to the design; `?features=professional`) |
 | `howItWorksDesign` | `NEXT_PUBLIC_FEATURE_HOW_IT_WORKS_DESIGN` (How it works page matched to the design, with the pinned step scroll; `?features=howitworks`) |
+| `pricingRateTable` | `NEXT_PUBLIC_FEATURE_PRICING_RATE_TABLE` (Pricing page as one rate table; `?features=pricing`) |
 
 QA: `?features=cms`, `?features=chips`, `?features=stack`, `?features=blogcoverflow`, `?features=lockscreen`, `?features=titles`, or `?features=all`. A CMS-backed landing slice needs matching PRs in
 `ballo-ads-backend-v2` and usually `ballo-cms`.

@@ -24,7 +24,8 @@ export type FeatureName =
   | "businessDesign"
   | "guidesCarousel"
   | "professionalDesign"
-  | "howItWorksDesign";
+  | "howItWorksDesign"
+  | "pricingRateTable";
 
 const STORAGE_KEY = "balloads.feature-overrides";
 
@@ -76,6 +77,9 @@ const FEATURE_ALIASES: Record<string, FeatureName> = {
   hiw: "howItWorksDesign",
   howitworks: "howItWorksDesign",
   howitworksdesign: "howItWorksDesign",
+  pricing: "pricingRateTable",
+  ratetable: "pricingRateTable",
+  pricingratetable: "pricingRateTable",
 };
 
 /**
@@ -118,6 +122,7 @@ const FEATURE_ENV_VALUES: Record<FeatureName, string | undefined> = {
   guidesCarousel: process.env.NEXT_PUBLIC_FEATURE_GUIDES_CAROUSEL,
   professionalDesign: process.env.NEXT_PUBLIC_FEATURE_PROFESSIONAL_DESIGN,
   howItWorksDesign: process.env.NEXT_PUBLIC_FEATURE_HOW_IT_WORKS_DESIGN,
+  pricingRateTable: process.env.NEXT_PUBLIC_FEATURE_PRICING_RATE_TABLE,
 };
 
 const ALL_FEATURES = Object.keys(FEATURE_ENV_VALUES) as FeatureName[];
