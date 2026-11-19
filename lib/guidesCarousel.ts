@@ -2,31 +2,30 @@
  * Ordering and geometry for the /guides carousel.
  *
  * `order[0]` is the guide showing in the big card on the left; `order[1...]`
- * are the tiles on the right, in slot order. Promoting a tile SWAPS it with
- * the big card rather than re-sorting the grid, so exactly two cards move per
- * step: the tile flies into the big card and the big card drops into the slot
- * the tile just left. Anything else makes the whole grid jump at once.
+ * are the tiles on the right, in slot order. The tiles are a queue: the guide
+ * that comes forward leaves it, everything behind closes up by one place, and
+ * the guide it replaces joins the back.
  */
-
-/** Promote the guide in grid slot `slot` (0-based) into the big card. */
-export function promote<T>(order: readonly T[], slot: number): T[] {
-  const next = [...order];
-  const from = slot + 1;
-  if (!Number.isInteger(slot) || from < 1 || from >= next.length) return next;
-  [next[0], next[from]] = [next[from], next[0]];
-  return next;
-}
 
 /**
- * Which slot the auto-tour promotes on its `tick`-th step.
+ * Bring the guide in grid slot `slot` (0-based) into the big card.
  *
- * It walks the slots in turn (0, 1, 2, ... and round again) rather than always
- * taking slot 0, because always taking slot 0 just swings between the same two
- * guides forever. Walking gives every guide a turn in the big card.
+ * The tiles that were ahead of it keep their places, the ones behind move up
+ * one, and the guide that was in the big card goes to the last slot. Taking
+ * slot 0 every time is therefore a plain rotation that gives every guide a
+ * turn, which is what the auto-tour does.
  */
-export function tourSlot(tick: number, slotCount: number): number {
-  if (slotCount <= 0) return 0;
-  return ((tick % slotCount) + slotCount) % slotCount;
+export function bringForward<T>(order: readonly T[], slot: number): T[] {
+  const from = slot + 1;
+  if (!Number.isInteger(slot) || from < 1 || from >= order.length) return [...order];
+  const rest = order.slice(1);
+  const [chosen] = rest.splice(slot, 1);
+  return [chosen, ...rest, order[0]];
+}
+
+/** How far a card has to be moved back to appear where it used to be. */
+export function slideOffset(from: Box, to: Box): { dx: number; dy: number } {
+  return { dx: from.left - to.left, dy: from.top - to.top };
 }
 
 export type Box = { left: number; top: number; width: number; height: number };

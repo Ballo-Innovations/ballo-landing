@@ -470,8 +470,12 @@
     animation: none;
   }
 
-  .guides-tile {
+  .guides-tiles .guides-tile {
     transition: none;
+  }
+
+  .guides-tiles .guides-tile:hover {
+    transform: none;
   }
 }
 

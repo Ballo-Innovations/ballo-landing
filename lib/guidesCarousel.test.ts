@@ -1,55 +1,63 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { flightFrames, promote, sameBox, tourSlot } from "./guidesCarousel.ts";
+import { bringForward, flightFrames, sameBox, slideOffset } from "./guidesCarousel.ts";
 
 const GUIDES = ["A", "B", "C", "D", "E", "F", "G"];
 
-describe("promote", () => {
-  it("swaps the chosen slot with the big card", () => {
-    assert.deepEqual(promote(GUIDES, 0), ["B", "A", "C", "D", "E", "F", "G"]);
-    assert.deepEqual(promote(GUIDES, 3), ["E", "B", "C", "D", "A", "F", "G"]);
-    assert.deepEqual(promote(GUIDES, 5), ["G", "B", "C", "D", "E", "F", "A"]);
+describe("bringForward", () => {
+  it("takes the chosen tile out of the queue and sends the big card to the back", () => {
+    assert.deepEqual(bringForward(GUIDES, 0), ["B", "C", "D", "E", "F", "G", "A"]);
+    assert.deepEqual(bringForward(GUIDES, 3), ["E", "B", "C", "D", "F", "G", "A"]);
+    assert.deepEqual(bringForward(GUIDES, 5), ["G", "B", "C", "D", "E", "F", "A"]);
+  });
+
+  it("leaves the tiles ahead of the chosen one where they were", () => {
+    const next = bringForward(GUIDES, 3);
+    assert.deepEqual(next.slice(1, 4), ["B", "C", "D"]);
+  });
+
+  it("moves the tiles behind it up exactly one place", () => {
+    const next = bringForward(GUIDES, 2);
+    assert.equal(next.indexOf("E"), GUIDES.indexOf("E") - 1);
+    assert.equal(next.indexOf("G"), GUIDES.indexOf("G") - 1);
   });
 
   it("keeps every guide exactly once", () => {
-    const next = promote(GUIDES, 4);
-    assert.equal(next.length, GUIDES.length);
+    const next = bringForward(GUIDES, 4);
     assert.deepEqual([...next].sort(), [...GUIDES].sort());
+  });
+
+  it("gives every guide a turn when slot 0 is taken each time, then comes home", () => {
+    let order = [...GUIDES];
+    const seen = [order[0]];
+    for (let i = 0; i < GUIDES.length - 1; i++) {
+      order = bringForward(order, 0);
+      seen.push(order[0]);
+    }
+    assert.deepEqual(seen, GUIDES);
+    assert.deepEqual(bringForward(order, 0), GUIDES);
   });
 
   it("leaves the order alone for a slot that is not there", () => {
     for (const slot of [-1, 6, 99, 1.5, NaN]) {
-      assert.deepEqual(promote(GUIDES, slot), GUIDES, `slot ${slot}`);
+      assert.deepEqual(bringForward(GUIDES, slot), GUIDES, `slot ${slot}`);
     }
   });
 
   it("does not mutate the order it was given", () => {
     const original = [...GUIDES];
-    promote(GUIDES, 2);
+    bringForward(GUIDES, 2);
     assert.deepEqual(GUIDES, original);
   });
 });
 
-describe("tourSlot", () => {
-  it("walks every slot in turn, so every guide gets the big card", () => {
-    const slots = [0, 1, 2, 3, 4, 5, 6, 7].map((t) => tourSlot(t, 6));
-    assert.deepEqual(slots, [0, 1, 2, 3, 4, 5, 0, 1]);
-  });
-
-  it("gives each guide a turn over a full tour", () => {
-    let order = [...GUIDES];
-    const seen = new Set([order[0]]);
-    for (let tick = 0; tick < GUIDES.length - 1; tick++) {
-      order = promote(order, tourSlot(tick, order.length - 1));
-      seen.add(order[0]);
-    }
-    assert.deepEqual([...seen].sort(), [...GUIDES].sort());
-  });
-
-  it("survives a negative or empty count", () => {
-    assert.equal(tourSlot(-1, 6), 5);
-    assert.equal(tourSlot(3, 0), 0);
+describe("slideOffset", () => {
+  it("is the way back to where the card was", () => {
+    assert.deepEqual(
+      slideOffset({ left: 300, top: 400, width: 10, height: 10 }, { left: 100, top: 250, width: 10, height: 10 }),
+      { dx: 200, dy: 150 },
+    );
   });
 });
 
