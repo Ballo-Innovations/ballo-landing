@@ -5,6 +5,8 @@ import "@/app/styles/pages/professional.css";
 
 import { getProfessionalServiceCards } from "@/lib/professionalServicesApi";
 import { ProfessionalAccordion, type ProfessionalServiceItem } from "./ProfessionalAccordion";
+import { ProfessionalDesignFlag } from "./ProfessionalDesignFlag";
+import { resolveFlag } from "@/lib/featureFlags";
 
 import bankingImage from "@/public/BalloAds Assets 2/1.png";
 import retailImage from "@/public/BalloAds Assets 2/4.png";
@@ -119,10 +121,43 @@ const supportHighlights = [
   },
 ];
 
+// Small circled arrow on the designed buttons. Hidden unless the
+// professionalDesign flag is on (see professional.css).
+function CircleArrow() {
+  return (
+    <svg
+      className="prof-btn__icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M10.5 8.5 14 12l-3.5 3.5" />
+    </svg>
+  );
+}
+
 export default async function ProfessionalServicesPage() {
+  // The designed layout is a restyle of the same markup, switched by
+  // data-design. ProfessionalDesignFlag re-applies it on the client for
+  // `?features=` overrides.
+  const designOn = resolveFlag({
+    env: process.env.NEXT_PUBLIC_FEATURE_PROFESSIONAL_DESIGN,
+    defaultEnabled: process.env.NODE_ENV === "development",
+  });
+
   const cards = await getProfessionalServiceCards();
+  // The designed rows are built around a framed photo, so CMS rows are only
+  // used there when every one of them has an image. Otherwise the built-in
+  // industries show, which all have photos.
+  const cmsUsable =
+    cards.length > 0 && (!designOn || cards.every((card) => Boolean(card.imageUrl)));
   const services: ProfessionalServiceItem[] =
-    cards.length > 0
+    cmsUsable
       ? cards.map((card) => ({
           title: card.title,
           subtitle: card.subtitle,
@@ -132,7 +167,8 @@ export default async function ProfessionalServicesPage() {
       : FALLBACK_PROFESSIONAL_SERVICES;
 
   return (
-    <main className="professional-page">
+    <main className="professional-page" data-design={designOn ? "on" : undefined}>
+      <ProfessionalDesignFlag />
       {/* Hero */}
       <section className="prof-hero">
         <div className="prof-hero__inner">
@@ -155,7 +191,9 @@ export default async function ProfessionalServicesPage() {
           <header className="prof-support__head">
             <h2 className="prof-support__title">Learn more about how we can support your growth</h2>
             <Link href="/how-it-works" className="prof-btn prof-btn--light prof-support__head-btn">
-              Learn More
+              <span className="prof-label-classic">Learn More</span>
+              <span className="prof-label-design">Watch Demo</span>
+              <CircleArrow />
             </Link>
           </header>
 
@@ -164,6 +202,7 @@ export default async function ProfessionalServicesPage() {
               <li key={highlight.title} className="prof-support__item">
                 <span className="prof-support__check" aria-hidden="true">
                   <svg
+                    className="prof-support__check-classic"
                     width="14"
                     height="14"
                     viewBox="0 0 24 24"
@@ -174,6 +213,18 @@ export default async function ProfessionalServicesPage() {
                     strokeLinejoin="round"
                   >
                     <path d="M5 12l4 4L19 6" />
+                  </svg>
+                  <svg
+                    className="prof-support__check-design"
+                    viewBox="0 0 28 28"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.6"
+                    strokeLinecap="square"
+                    strokeLinejoin="miter"
+                  >
+                    <path d="M22 14v10H3V5h14" />
+                    <path d="M8 12l5 5L25.5 3.5" />
                   </svg>
                 </span>
                 <div>
@@ -187,9 +238,11 @@ export default async function ProfessionalServicesPage() {
           <div className="prof-support__ctas">
             <WaitlistButton className="prof-btn prof-btn--light" ariaLabel="Sign up for BalloAds">
               Get Started
+              <CircleArrow />
             </WaitlistButton>
             <Link href="/live-chat" className="prof-btn prof-btn--outline">
               Contact us
+              <CircleArrow />
             </Link>
           </div>
         </div>

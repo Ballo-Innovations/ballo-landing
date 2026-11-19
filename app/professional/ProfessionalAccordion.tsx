@@ -44,7 +44,13 @@ export function ProfessionalAccordion({
                 >
                   <span className="prof-accordion__thumb" aria-hidden="true">
                     {service.image ? (
-                      <Image src={service.image} alt="" width={72} height={56} />
+                      <Image
+                        src={service.image}
+                        alt=""
+                        width={680}
+                        height={270}
+                        sizes="(min-width: 900px) 362px, 30vw"
+                      />
                     ) : null}
                   </span>
                   <span className="prof-accordion__titles">
