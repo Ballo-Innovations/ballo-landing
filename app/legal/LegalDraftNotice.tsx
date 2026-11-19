@@ -4,12 +4,9 @@
  */
 export function LegalDraftNotice({ plural = false }: { plural?: boolean }) {
   return (
-    <div
-      role="note"
-      className="max-w-3xl rounded-lg border border-[#ffe08a]/40 bg-[#ffe08a]/[0.07] px-5 py-4 text-[0.975rem] leading-relaxed text-white/85"
-    >
+    <div role="note" className="legal-notice legal-notice--draft">
       <p>
-        <strong className="text-white">Draft for review.</strong>{" "}
+        <strong>Draft for review.</strong>{" "}
         {plural
           ? "Some of these documents are being reviewed and are not yet in force. Until they are, the terms you accepted when you signed up still apply."
           : "This document is being reviewed and is not yet in force. Until it is, the terms you accepted when you signed up still apply."}{" "}

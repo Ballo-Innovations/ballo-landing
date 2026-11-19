@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { LegalDraftNotice } from "./LegalDraftNotice";
 import { LEGAL_GROUPS, getLegalDocuments } from "@/lib/legalApi";
-import { formatLegalDate } from "@/lib/legal/format";
+import { formatLegalAudience, formatLegalDate } from "@/lib/legal/format";
 
 export const metadata: Metadata = {
   title: "Legal | BalloAds",
@@ -21,43 +22,48 @@ export default async function LegalIndexPage() {
   ].filter((g) => g.docs.length > 0);
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 pb-24 pt-16 md:pt-24">
-      <header className="mb-10">
-        <h1 className="text-4xl font-bold leading-tight md:text-5xl">Legal</h1>
-        <p className="landing-body mt-4 max-w-2xl text-white/75">
+    <div className="legal-shell">
+      <header className="legal-hero">
+        <h1 className="legal-title">Legal</h1>
+        <p className="legal-intro">
           The terms and policies that govern BalloAds, how we handle personal data, and what we expect from businesses
           that message their customers through us.
         </p>
       </header>
 
-      {anyInReview ? <LegalDraftNotice plural /> : null}
+      {anyInReview ? (
+        <div className="legal-hero-notice">
+          <LegalDraftNotice plural />
+        </div>
+      ) : null}
 
       {groups.length === 0 ? (
-        <p className="mt-14 text-lg text-white/60">No documents are published yet.</p>
+        <p className="legal-empty">No documents are published yet.</p>
       ) : (
-        <div className="mt-14 flex flex-col gap-14">
+        <div className="legal-groups">
           {groups.map((group) => (
-            <section key={group.key}>
-              <h2 className="mb-1 text-2xl font-bold">{group.title}</h2>
-              {group.description ? <p className="mb-6 text-white/60">{group.description}</p> : null}
-              <ul className="border-t border-white/15">
+            <section key={group.key} className="legal-group" aria-labelledby={`legal-group-${group.key}`}>
+              <div className="legal-group__head">
+                <h2 id={`legal-group-${group.key}`} className="legal-group__title">
+                  {group.title}
+                </h2>
+                {group.description ? <p className="legal-group__desc">{group.description}</p> : null}
+              </div>
+              <ul className="legal-doc-list">
                 {group.docs.map((doc) => {
                   const date = doc.effectiveDate ?? doc.publishedAt?.slice(0, 10) ?? null;
                   return (
-                    <li key={doc.slug} className="border-b border-white/15">
-                      <Link href={`/legal/${doc.slug}`} className="group block py-5">
-                        <span className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                          <span className="text-xl font-bold text-white group-hover:text-[var(--cyan)]">
-                            {doc.title}
+                    <li key={doc.slug}>
+                      <Link href={`/legal/${doc.slug}`} className="legal-doc-row">
+                        <span className="legal-doc-row__main">
+                          <span className="legal-doc-row__title">{doc.title}</span>
+                          {doc.summary ? <span className="legal-doc-row__summary">{doc.summary}</span> : null}
+                          <span className="legal-doc-row__meta">
+                            {doc.audience ? <span>{formatLegalAudience(doc.audience)}</span> : null}
+                            {date ? <span>Updated {formatLegalDate(date)}</span> : null}
                           </span>
-                          {date ? (
-                            <span className="text-sm text-white/45">Updated {formatLegalDate(date)}</span>
-                          ) : null}
                         </span>
-                        {doc.summary ? <span className="mt-1 block text-white/70">{doc.summary}</span> : null}
-                        {doc.audience ? (
-                          <span className="mt-1 block text-sm text-white/45">For: {doc.audience}</span>
-                        ) : null}
+                        <ArrowRight className="legal-doc-row__arrow" size={20} aria-hidden="true" />
                       </Link>
                     </li>
                   );
@@ -70,3 +76,4 @@ export default async function LegalIndexPage() {
     </div>
   );
 }
+
