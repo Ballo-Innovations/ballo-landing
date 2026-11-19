@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { renderLegalHtml } from "./renderLegalHtml.ts";
-import { formatLegalDate } from "./format.ts";
+import { formatLegalAudience, formatLegalDate } from "./format.ts";
 
 describe("renderLegalHtml", () => {
   it("anchors each H2 and lists it in the table of contents", () => {
@@ -47,12 +47,33 @@ describe("renderLegalHtml", () => {
 
   it("keeps tables", () => {
     const { html } = renderLegalHtml("<table><tbody><tr><th><p>A</p></th></tr><tr><td><p>B</p></td></tr></tbody></table>");
-    assert.match(html, /<table><tbody><tr><th><p>A<\/p><\/th><\/tr><tr><td><p>B<\/p><\/td><\/tr><\/tbody><\/table>/);
+    assert.match(html, /<table tabindex="0"><tbody><tr><th><p>A<\/p><\/th><\/tr><tr><td><p>B<\/p><\/td><\/tr><\/tbody><\/table>/);
   });
 });
 
 describe("formatLegalDate", () => {
   it("formats ISO dates without timezone drift", () => {
     assert.equal(formatLegalDate("2026-11-01"), "1 November 2026");
+  });
+});
+
+describe("renderLegalHtml tables", () => {
+  it("makes tables focusable and drops other table attributes", () => {
+    const { html } = renderLegalHtml('<table style="width:900px" onclick="x()"><tbody><tr><td>a</td></tr></tbody></table>');
+    assert.equal(html, '<table tabindex="0"><tbody><tr><td>a</td></tr></tbody></table>');
+  });
+});
+
+describe("formatLegalAudience", () => {
+  it("reads as a sentence after For", () => {
+    assert.equal(formatLegalAudience("Businesses with a BalloAds account"), "For businesses with a BalloAds account");
+    assert.equal(formatLegalAudience("People who receive messages"), "For people who receive messages");
+  });
+  it("keeps names and acronyms capitalised", () => {
+    assert.equal(formatLegalAudience("BalloAds resellers"), "For BalloAds resellers");
+    assert.equal(formatLegalAudience("API users"), "For API users");
+  });
+  it("returns nothing for a blank audience", () => {
+    assert.equal(formatLegalAudience("  "), "");
   });
 });

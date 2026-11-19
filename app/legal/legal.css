@@ -1,69 +1,525 @@
-/* Scoped to /legal. Flat and editorial: the site's navy, white text, cyan used
-   only for links and the active edge of the contents list. */
+/* Scoped to /legal. Flat and editorial: hairlines instead of boxes, white
+   text, cyan only for links and the section being read. The background is the
+   blog's (blog.css .blog-page), so both follow the defaultPageBg flag. */
 
+.legal-page {
+  background: linear-gradient(180deg, #0b0b5e 0%, #08084a 45%, #04042a 80%, #02020f 100%);
+  overflow-x: clip;
+}
+
+html[data-page-bg="hero"] .legal-page {
+  background: var(--page-default-bg);
+}
+
+.legal-page :where(a, summary, table):focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------- Shell, shared headings ---------- */
+
+.legal-shell {
+  max-width: 72rem;
+  margin: 0 auto;
+  /* Clears the floating header. */
+  padding: 8.5rem 1.25rem 6rem;
+}
+
+@media (min-width: 768px) {
+  .legal-shell {
+    padding: 10.5rem 2rem 8rem;
+  }
+}
+
+.legal-title {
+  font-size: clamp(2.5rem, 5.2vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  color: #fff;
+}
+
+.legal-intro {
+  margin-top: 1.25rem;
+  max-width: 42rem;
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+@media (min-width: 768px) {
+  .legal-intro {
+    font-size: 1.3rem;
+  }
+}
+
+/* ---------- Notices ---------- */
+
+.legal-notice {
+  border-left: 3px solid;
+  border-radius: 0 0.6rem 0.6rem 0;
+  padding: 0.9rem 1.15rem;
+  font-size: 0.975rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.legal-notice strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.legal-notice a {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.legal-notice a:hover {
+  color: #fff;
+}
+
+.legal-notice--draft {
+  border-color: #ffd666;
+  background: rgba(255, 214, 102, 0.08);
+}
+
+.legal-notice--archived {
+  border-color: var(--cyan);
+  background: rgba(63, 219, 255, 0.08);
+}
+
+/* Text an editor wrapped in [[TBC: ...]]. */
 .legal-page .legal-tbc {
   background: rgba(255, 214, 102, 0.16);
   color: #ffe08a;
-  border-bottom: 1px dashed rgba(255, 214, 102, 0.7);
-  padding: 0 0.2em;
-  border-radius: 2px;
+  border-bottom: 1px dashed rgba(255, 214, 102, 0.75);
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
-.legal-page .legal-lede {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.175rem;
-  line-height: 1.6;
-  border-left: 2px solid var(--cyan);
-  padding-left: 1.25rem;
+/* ---------- Index (/legal) ---------- */
+
+.legal-hero {
+  max-width: 46rem;
 }
 
-/* Body HTML from the CMS editor. H2s are numbered here (not in the text) so
-   editors write plain headings and the "On this page" list matches. */
+.legal-hero-notice {
+  margin-top: 2.25rem;
+  max-width: 46rem;
+}
+
+.legal-empty {
+  margin-top: 4rem;
+  font-size: 1.125rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.legal-groups {
+  margin-top: 4.5rem;
+}
+
+.legal-group {
+  display: grid;
+  gap: 1.5rem;
+  padding: 2.5rem 0 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+@media (min-width: 1024px) {
+  .legal-group {
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: 4rem;
+  }
+}
+
+.legal-group__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.legal-group__desc {
+  margin-top: 0.5rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.legal-doc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.legal-doc-list > li + li {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* The row's hover wash bleeds past the text column, so pull it out by its padding. */
+.legal-doc-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin: 0 -1rem;
+  padding: 1.25rem 1rem;
+  border-radius: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+/* Side by side, the first title lines up with the group title. */
+@media (min-width: 1024px) {
+  .legal-doc-list > li:first-child .legal-doc-row {
+    margin-top: -1.25rem;
+  }
+}
+
+.legal-doc-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.legal-doc-row__main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.legal-doc-row__title {
+  font-family: var(--font-ubuntu), "Ubuntu", ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+}
+
+.legal-doc-row__summary {
+  margin-top: 0.35rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.legal-doc-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* One line with a dot between audience and date once there is room; stacked on phones. */
+@media (min-width: 640px) {
+  .legal-doc-row__meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem 0;
+  }
+
+  .legal-doc-row__meta > span + span::before {
+    content: "\00B7";
+    margin: 0 0.5rem;
+  }
+}
+
+.legal-doc-row__arrow {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.55);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.legal-doc-row:hover .legal-doc-row__arrow,
+.legal-doc-row:focus-visible .legal-doc-row__arrow {
+  color: var(--cyan);
+  transform: translateX(4px);
+}
+
+/* ---------- Document (/legal/<slug>) ---------- */
+
+.legal-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.925rem;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.legal-crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.legal-crumbs a:hover {
+  color: #fff;
+}
+
+.legal-crumbs [aria-current] {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.legal-doc-head {
+  max-width: 48rem;
+}
+
+.legal-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  margin: 2rem 0 0;
+}
+
+.legal-facts dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.legal-facts dd {
+  margin: 0.3rem 0 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.legal-doc-notices {
+  margin-top: 2rem;
+  max-width: 48rem;
+}
+
+.legal-doc-grid {
+  display: grid;
+  gap: 3rem;
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+@media (min-width: 1024px) {
+  .legal-doc-grid {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: 4.5rem;
+  }
+}
+
+.legal-doc-rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .legal-doc-rail {
+    display: block;
+  }
+
+  .legal-doc-drawer {
+    display: none;
+  }
+}
+
+.legal-doc-main {
+  min-width: 0;
+  max-width: 46rem;
+}
+
+.legal-doc-drawer {
+  margin-bottom: 2.5rem;
+}
+
+/* ---------- On this page ---------- */
+
+.legal-toc--rail {
+  position: sticky;
+  top: 8rem;
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
+}
+
+.legal-toc__label {
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.legal-toc__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.legal-toc__link {
+  display: flex;
+  gap: 0.65rem;
+  margin-left: -1px;
+  padding: 0.4rem 0.75rem;
+  border-left: 2px solid transparent;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.legal-toc__link:hover {
+  color: #fff;
+}
+
+.legal-toc__link[aria-current] {
+  color: #fff;
+  border-left-color: var(--cyan);
+}
+
+.legal-toc__num {
+  min-width: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.legal-toc__link[aria-current] .legal-toc__num {
+  color: var(--cyan);
+}
+
+.legal-toc--drawer {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.legal-toc__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.1rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: #fff;
+}
+
+.legal-toc__summary::-webkit-details-marker {
+  display: none;
+}
+
+.legal-toc__count {
+  margin-left: auto;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.legal-toc__chevron {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease;
+}
+
+.legal-toc--drawer[open] .legal-toc__chevron {
+  transform: rotate(180deg);
+}
+
+.legal-toc--drawer .legal-toc__list {
+  border-left: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.5rem 0.35rem 0.75rem;
+}
+
+.legal-toc--drawer .legal-toc__link {
+  margin-left: 0;
+  border-left: 0;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.legal-toc--drawer .legal-toc__link:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ---------- Body HTML from the CMS editor ----------
+   H2s are numbered here (not in the text) so editors write plain headings and
+   the "On this page" list matches. */
+
 .legal-page .legal-body {
   counter-reset: legal-section;
-  color: rgba(255, 255, 255, 0.8);
   font-size: 1.0625rem;
-  line-height: 1.7;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+@media (min-width: 768px) {
+  .legal-page .legal-body {
+    font-size: 1.1rem;
+  }
 }
 
 .legal-page .legal-body > * + * {
-  margin-top: 1rem;
+  margin-top: 1.1rem;
 }
 
 .legal-page .legal-body h2 {
   counter-increment: legal-section;
-  color: #fff;
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 3.25rem;
+  padding-top: 2.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.3;
-  margin-top: 3rem;
-  scroll-margin-top: 7rem;
+  color: #fff;
+  scroll-margin-top: 8rem;
+}
+
+@media (min-width: 768px) {
+  .legal-page .legal-body h2 {
+    font-size: 1.65rem;
+  }
 }
 
 .legal-page .legal-body h2:first-child {
   margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .legal-page .legal-body h2::before {
-  content: counter(legal-section) ". ";
+  content: counter(legal-section) ".";
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.legal-page .legal-body h2 + * {
+  margin-top: 1.25rem;
 }
 
 .legal-page .legal-body h3 {
-  color: #fff;
-  font-size: 1.15rem;
+  margin-top: 2.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-top: 1.75rem;
+  line-height: 1.35;
+  color: #fff;
 }
 
 .legal-page .legal-body h4 {
-  color: #fff;
+  margin-top: 1.5rem;
   font-weight: 700;
-  margin-top: 1.25rem;
+  color: #fff;
 }
 
 .legal-page .legal-body ul,
 .legal-page .legal-body ol {
-  padding-left: 1.5rem;
+  padding-left: 1.4rem;
 }
 
 .legal-page .legal-body ul {
@@ -74,12 +530,16 @@
   list-style: decimal;
 }
 
+.legal-page .legal-body li {
+  padding-left: 0.25rem;
+}
+
 .legal-page .legal-body li + li {
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 .legal-page .legal-body li::marker {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .legal-page .legal-body li > p {
@@ -95,6 +555,7 @@
 .legal-page .legal-body a {
   color: var(--cyan);
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 4px;
   overflow-wrap: anywhere;
 }
@@ -104,41 +565,59 @@
 }
 
 .legal-page .legal-body blockquote {
-  border-left: 2px solid rgba(255, 255, 255, 0.3);
-  padding-left: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  padding-left: 1.1rem;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .legal-page .legal-body hr {
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
-  margin: 2rem 0;
+  margin: 2.5rem 0;
 }
 
-/* Tables scroll sideways on a phone instead of widening the page. */
+.legal-page .legal-body code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Tables scroll sideways inside their own box on a phone instead of widening the page. */
 .legal-page .legal-body table {
   display: block;
   max-width: 100%;
   overflow-x: auto;
-  border-collapse: collapse;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.75rem;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.975rem;
+  line-height: 1.55;
 }
 
 .legal-page .legal-body th,
 .legal-page .legal-body td {
+  min-width: 9rem;
+  padding: 0.8rem 1rem;
   text-align: left;
   vertical-align: top;
-  padding: 0.75rem 0.875rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  min-width: 9rem;
+}
+
+.legal-page .legal-body tr:last-child > td {
+  border-bottom: 0;
 }
 
 .legal-page .legal-body th {
-  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.78rem;
   font-weight: 700;
-  font-size: 0.8rem;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .legal-page .legal-body th p,
@@ -146,14 +625,136 @@
   margin: 0;
 }
 
+/* ---------- After the text ---------- */
+
+.legal-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 3.5rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+}
+
+.legal-top:hover {
+  color: #fff;
+}
+
+.legal-after {
+  margin-top: 3.5rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.legal-after__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.legal-after__desc {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.legal-versions,
+.legal-others {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+.legal-versions > li {
+  padding: 0.85rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.legal-versions a {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+.legal-versions a:hover .legal-versions__name {
+  color: var(--cyan);
+}
+
+.legal-versions__date {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.legal-versions__note {
+  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.legal-others {
+  display: grid;
+  column-gap: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .legal-others {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.legal-others > li {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.legal-others a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+}
+
+.legal-others a svg {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.legal-others a:hover {
+  color: #fff;
+}
+
+.legal-others a:hover svg {
+  color: var(--cyan);
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal-page *,
+  .legal-page *::before {
+    transition: none !important;
+  }
+}
+
 @media print {
-  .legal-page {
+  .legal-page,
+  html[data-page-bg="hero"] .legal-page {
     background: #fff !important;
     color: #000 !important;
   }
-  .legal-page .legal-body,
-  .legal-page .legal-body * {
+  .legal-page .legal-shell {
+    padding-top: 0;
+  }
+  .legal-page :is(.legal-title, .legal-intro, .legal-facts, .legal-notice, .legal-body),
+  .legal-page :is(.legal-title, .legal-intro, .legal-facts, .legal-notice, .legal-body) * {
     color: #000 !important;
+  }
+  .legal-page .legal-doc-grid {
+    display: block;
   }
   .legal-page .legal-no-print {
     display: none !important;

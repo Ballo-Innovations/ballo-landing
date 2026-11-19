@@ -10,6 +10,8 @@ export type LegalTocItem = { id: string; text: string };
  * - Every <h2> gets a stable id and becomes an "On this page" entry. The
  *   numbering is CSS (counters in app/legal/legal.css), so editors write
  *   plain headings.
+ * - Tables get tabindex="0" so a table that scrolls sideways can be
+ *   scrolled from the keyboard.
  * - `[[TBC: note]]` typed by an editor becomes a highlighted <mark>, so an
  *   unconfirmed fact cannot be missed by a reviewer.
  */
@@ -25,12 +27,15 @@ export function renderLegalHtml(bodyHtml: string): { html: string; toc: LegalToc
       th: ["colspan", "rowspan"],
       td: ["colspan", "rowspan"],
       ol: ["start"],
+      table: ["tabindex"],
     },
     allowedSchemes: ["http", "https", "mailto", "tel"],
     disallowedTagsMode: "discard",
     transformTags: {
       // An H1 in the body would compete with the page title.
       h1: "h2",
+      // Tables scroll sideways on a phone, so keyboard users must be able to focus them.
+      table: () => ({ tagName: "table", attribs: { tabindex: "0" } }),
       a: (tagName, attribs) => {
         const href = attribs.href ?? "";
         const external = /^https?:\/\//i.test(href) && !/^https?:\/\/(www\.)?balloads\.com/i.test(href);
