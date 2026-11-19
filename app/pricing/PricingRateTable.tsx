@@ -163,7 +163,8 @@ export default function PricingRateTable({
               className="prt__input"
               type="number"
               inputMode="numeric"
-              min={1}
+              // min is the step base: 0 keeps the arrow keys on multiples of 250.
+              min={0}
               max={MAX_MESSAGES}
               step={250}
               value={typed}
